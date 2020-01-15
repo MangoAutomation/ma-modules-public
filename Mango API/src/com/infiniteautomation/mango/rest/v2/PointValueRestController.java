@@ -103,7 +103,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
 
     @Autowired
     public PointValueRestController(TemporaryResourceWebSocketHandler websocket, PermissionService permissionService) {
-        this.resourceManager = new MangoTaskTemporaryResourceManager<>(websocket);
+        this.resourceManager = new MangoTaskTemporaryResourceManager<>(permissionService, websocket);
         this.permissionService = permissionService;
     }
 

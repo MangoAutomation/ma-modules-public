@@ -12,6 +12,7 @@ import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource.
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource.TemporaryResourceStatus;
 import com.infiniteautomation.mango.rest.v2.util.CrudNotificationType;
 import com.infiniteautomation.mango.rest.v2.util.RestExceptionMapper;
+import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -33,14 +34,16 @@ public final class MangoTaskTemporaryResourceManager<T> extends TemporaryResourc
         TimerTask expirationTask;
     }
 
+    private final PermissionService permissionService;
     private final TemporaryResourceWebSocketHandler websocketHandler;
 
-    public MangoTaskTemporaryResourceManager() {
-        this(null);
+    public MangoTaskTemporaryResourceManager(PermissionService permissionService) {
+        this(permissionService, null);
     }
 
-    public MangoTaskTemporaryResourceManager(TemporaryResourceWebSocketHandler websocketHandler) {
+    public MangoTaskTemporaryResourceManager(PermissionService permissionService, TemporaryResourceWebSocketHandler websocketHandler) {
         this.websocketHandler = websocketHandler;
+        this.permissionService = permissionService;
     }
 
     @Override
@@ -106,12 +109,14 @@ public final class MangoTaskTemporaryResourceManager<T> extends TemporaryResourc
         tasks.mainTask = new HighPriorityTask("Temporary resource " + resource.getResourceType() + " " + resource.getId()) {
             @Override
             public void run(long runtime) {
-                try {
-                    resource.runTask(user);
-                } catch (Exception e) {
-                    AbstractRestV2Exception error = MangoTaskTemporaryResourceManager.this.mapException(e);
-                    resource.safeError(error);
-                }
+                permissionService.runAs(user, ()-> {
+                    try {
+                        resource.runTask(user);
+                    } catch (Exception e) {
+                        AbstractRestV2Exception error = MangoTaskTemporaryResourceManager.this.mapException(e);
+                        resource.safeError(error);
+                    }
+                });
             }
 
             @Override

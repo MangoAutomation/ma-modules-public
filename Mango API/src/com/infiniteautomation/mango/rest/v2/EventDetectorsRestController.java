@@ -79,7 +79,7 @@ public class EventDetectorsRestController<T extends AbstractEventDetectorVO<T>> 
             AbstractEventDetectorModel<?> model = modelMapper.map(vo, AbstractEventDetectorModel.class, user);
             return model;
         };
-        this.bulkResourceManager = new MangoTaskTemporaryResourceManager<EventDetectorBulkResponse>(websocket);
+        this.bulkResourceManager = new MangoTaskTemporaryResourceManager<EventDetectorBulkResponse>(service.getPermissionService(), websocket);
     }
 
     @ApiOperation(

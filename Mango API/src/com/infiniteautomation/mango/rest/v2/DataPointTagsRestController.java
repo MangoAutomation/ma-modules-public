@@ -110,7 +110,7 @@ public class DataPointTagsRestController {
     @Autowired
     public DataPointTagsRestController(TemporaryResourceWebSocketHandler websocket, DataPointService dataPointService,
             DataPointTagsDao dataPointTagsDao, PermissionService permissionService) {
-        this.bulkResourceManager = new MangoTaskTemporaryResourceManager<TagBulkResponse>(websocket);
+        this.bulkResourceManager = new MangoTaskTemporaryResourceManager<TagBulkResponse>(permissionService, websocket);
         this.dataPointService = dataPointService;
         this.dataPointTagsDao = dataPointTagsDao;
         this.permissionService = permissionService;

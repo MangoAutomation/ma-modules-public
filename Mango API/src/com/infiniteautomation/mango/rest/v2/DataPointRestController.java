@@ -106,7 +106,7 @@ public class DataPointRestController {
     @Autowired
     public DataPointRestController(TemporaryResourceWebSocketHandler websocket, final RestModelMapper modelMapper,
             DataPointService service, DataSourceTableDefinition dataSourceTable, PermissionService permissionService) {
-        this.bulkResourceManager = new MangoTaskTemporaryResourceManager<DataPointBulkResponse>(websocket);
+        this.bulkResourceManager = new MangoTaskTemporaryResourceManager<DataPointBulkResponse>(permissionService, websocket);
         this.service = service;
         this.permissionService = permissionService;
         this.map = (vo, user) -> {
