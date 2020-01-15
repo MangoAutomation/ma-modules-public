@@ -85,6 +85,7 @@ import com.serotonin.m2m2.module.AngularJSModuleDefinition;
 import com.serotonin.m2m2.module.Module;
 import com.serotonin.m2m2.module.ModuleNotificationListener.UpgradeState;
 import com.serotonin.m2m2.module.ModuleRegistry;
+import com.serotonin.m2m2.module.ModuleRegistry.CoreModule;
 import com.serotonin.m2m2.rt.maint.work.BackupWorkItem;
 import com.serotonin.m2m2.rt.maint.work.DatabaseBackupWorkItem;
 import com.serotonin.m2m2.shared.ModuleUtils;
@@ -167,8 +168,14 @@ public class ModulesRestController {
     @ApiOperation(value = "Get Core Module", notes = "For checking current licensing and version")
     @RequestMapping(method = RequestMethod.GET, value = "/core")
     public MappingJacksonValue getCore(@AuthenticationPrincipal User user) {
-        ModuleModel coreModule = getCoreModule();
-        MappingJacksonValue jacksonValue = new MappingJacksonValue(coreModule);
+
+        CoreModuleModel coreModel = new CoreModuleModel(ModuleRegistry.getModule("core"));
+        coreModel.setGuid(Providers.get(ICoreLicense.class).getGuid());
+        coreModel.setInstanceDescription(SystemSettingsDao.instance.getValue(SystemSettingsDao.INSTANCE_DESCRIPTION));
+        coreModel.setDistributor(Common.envProps.getString("distributor"));
+        coreModel.setUpgradeVersionState(SystemSettingsDao.instance.getIntValue(SystemSettingsDao.UPGRADE_VERSION_STATE));
+
+        MappingJacksonValue jacksonValue = new MappingJacksonValue(coreModel);
         if (user.hasAdminRole()) {
             jacksonValue.setSerializationView(ModuleModel.AdminView.class);
         } else {
@@ -183,11 +190,19 @@ public class ModulesRestController {
         user.ensureHasAdminRole();
 
         List<ModuleModel> models = new ArrayList<ModuleModel>();
-        ModuleModel core = getCoreModule();
         List<Module> modules = ModuleRegistry.getModules();
-        models.add(core);
-        for (Module module : modules)
-            models.add(new ModuleModel(module));
+        for (Module module : modules) {
+            if(module instanceof CoreModule) {
+                CoreModuleModel coreModel = new CoreModuleModel(ModuleRegistry.getModule("core"));
+                coreModel.setGuid(Providers.get(ICoreLicense.class).getGuid());
+                coreModel.setInstanceDescription(SystemSettingsDao.instance.getValue(SystemSettingsDao.INSTANCE_DESCRIPTION));
+                coreModel.setDistributor(Common.envProps.getString("distributor"));
+                coreModel.setUpgradeVersionState(SystemSettingsDao.instance.getIntValue(SystemSettingsDao.UPGRADE_VERSION_STATE));
+                models.add(coreModel);
+            }else {
+                models.add(new ModuleModel(module));
+            }
+        }
 
         //Add the unloaded modules at the end?
         List<Module> unloaded = ModuleRegistry.getUnloadedModules();
@@ -244,7 +259,7 @@ public class ModulesRestController {
                         continue;
                     }
                     String name = v.getJsonValue("name").toString();
-                    Module module = "core".equals(name) ? ModuleRegistry.getCoreModule() : ModuleRegistry.getModule(name);
+                    Module module = ModuleRegistry.getModule(name);
                     if (module == null) {
                         it.remove();
                         continue;
@@ -425,8 +440,6 @@ public class ModulesRestController {
         List<Module> modules = ModuleRegistry.getModules();
         Module.sortByName(modules);
 
-        Module core = ModuleRegistry.getCoreModule();
-        modules.add(0, core);
         for (Module module : modules) {
             if(!module.isMarkedForDeletion())
                 jsonModules.put(module.getName(), module.getVersion().toString());
@@ -654,20 +667,6 @@ public class ModulesRestController {
             }
         }
         return false;
-    }
-
-    /**
-     * Create a Core Module Model
-     *
-     * @return
-     */
-    private ModuleModel getCoreModule() {
-        CoreModuleModel coreModel = new CoreModuleModel(ModuleRegistry.getCoreModule());
-        coreModel.setGuid(Providers.get(ICoreLicense.class).getGuid());
-        coreModel.setInstanceDescription(SystemSettingsDao.instance.getValue(SystemSettingsDao.INSTANCE_DESCRIPTION));
-        coreModel.setDistributor(Common.envProps.getString("distributor"));
-        coreModel.setUpgradeVersionState(SystemSettingsDao.instance.getIntValue(SystemSettingsDao.UPGRADE_VERSION_STATE));
-        return coreModel;
     }
 
     private void saveLicense(String license) throws Exception {
