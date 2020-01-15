@@ -13,8 +13,7 @@ import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 
 /**
- * This class is used for the v2 Model Mapper but replicates the
- * functionality of the v1 mapper exactly
+ *
  * @author Terry Packer
  *
  */
@@ -40,5 +39,4 @@ public class VirtualPointLocatorModelMapping implements RestModelJacksonMapping<
     public String getTypeName() {
         return VirtualPointLocatorModel.TYPE_NAME;
     }
-
 }

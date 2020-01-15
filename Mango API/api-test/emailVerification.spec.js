@@ -43,7 +43,7 @@ describe('Email verification', function() {
     
     before('Disable sending email', function() {
         this.smtpHostSetting = new SystemSetting({id: 'emailSmtpHost'});
-
+        
         return this.smtpHostSetting.getValue().then(value => {
             this.smtpHost = value;
             return this.smtpHostSetting.setValue('disabled.example.com');
@@ -132,7 +132,7 @@ describe('Email verification', function() {
             });
 
             it('Can use a public registration token to register', function() {
-                const newUser = createUser();
+                const newUser = createUser(this.publicClient);
 
                 // use default client logged in as admin to generate a token
                 return client.restRequest({
@@ -173,7 +173,7 @@ describe('Email verification', function() {
             });
 
             it('Can\'t use a user token for public registration', function() {
-                const newUser = createUser();
+                const newUser = createUser(this.publicClient);
 
                 // use default client logged in as admin to generate a token
                 return client.restRequest({
@@ -203,7 +203,7 @@ describe('Email verification', function() {
             });
             
             it('Validation works when creating new users', function() {
-                const newUser = createUser();
+                const newUser = createUser(this.publicClient);
                 newUser.password = '';
 
                 // use default client logged in as admin to generate a token
@@ -236,7 +236,7 @@ describe('Email verification', function() {
             });
             
             it('Can\'t set permissions when registering', function() {
-                const newUser = createUser();
+                const newUser = createUser(this.publicClient);
                 newUser.disabled = false;
                 newUser.permissions = ['naughty-permission'];
 

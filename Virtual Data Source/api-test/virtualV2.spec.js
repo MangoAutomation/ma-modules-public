@@ -66,7 +66,6 @@ describe('Virtual data source', function() {
             integralUnit : 'v*s',
             renderedUnit : '',
             pointLocator: locator,
-            modelType: 'DATA_POINT'
         });
     };
     

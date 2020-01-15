@@ -107,13 +107,10 @@ public final class MangoTaskTemporaryResourceManager<T> extends TemporaryResourc
             @Override
             public void run(long runtime) {
                 try {
-                    Common.setUser(user);
                     resource.runTask(user);
                 } catch (Exception e) {
                     AbstractRestV2Exception error = MangoTaskTemporaryResourceManager.this.mapException(e);
                     resource.safeError(error);
-                } finally {
-                    Common.removeUser();;
                 }
             }
 

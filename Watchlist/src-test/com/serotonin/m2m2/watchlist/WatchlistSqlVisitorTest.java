@@ -17,6 +17,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.infiniteautomation.mango.spring.dao.WatchListDao;
+import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.spring.service.WatchListService;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.MangoTestBase;
@@ -76,16 +77,13 @@ public class WatchlistSqlVisitorTest extends MangoTestBase {
 
         final AtomicLong selectCounter = new AtomicLong();
         final AtomicLong countValue = new AtomicLong();
-        Common.setUser(PermissionHolder.SYSTEM_SUPERADMIN);
-        try {
+        Common.getBean(PermissionService.class).runAsSystemAdmin(() -> {
             service.customizedQuery(query, (wl,index) -> {
                 selectCounter.incrementAndGet();
                 assertEquals(2, wl.getReadRoles().size());
             });
             assertEquals(5, service.customizedCount(query));
-        }finally {
-            Common.removeUser();
-        }
+        });
 
         assertEquals(5L, selectCounter.get());
         assertEquals(120L, countValue.get());
