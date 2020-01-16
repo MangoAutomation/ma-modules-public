@@ -15,9 +15,11 @@
  * limitations under the License.
  */
 
-const {createClient, createMockDataSource, createMockDataPoint, createEventDetector, assertValidationErrors, login, defer, delay} = require('@infinite-automation/mango-client/test/testHelper');
+const {createClient, assertValidationErrors, login, defer, delay} = require('@infinite-automation/mango-client/test/testHelper');
 const client = createClient();
-const EventDetectors = client.EventDetector;
+const EventDetector = client.EventDetector;
+const DataSource = client.DataSource;
+const DataPoint = client.DataPoint;
 
 describe('Event detector service', function() {
     this.timeout(5000);
@@ -25,15 +27,22 @@ describe('Event detector service', function() {
     before('Login', function() { return login.call(this, client); });
     
     it('Delete a binary state event detector', () => {
-        const ds = createMockDataSource(client);
+        const ds = new DataSource({ modelType: 'MOCK' });
         return ds.save().then(savedDs => {
             ds.id = savedDs.id;
-            const dp = createMockDataPoint(savedDs.xid, 'BINARY', client);
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
+                pointLocator : {
+                dataType: 'BINARY',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
+            });
             return dp.save().then(savedDp => {
                 const ed = createEventDetector(savedDp.id, 'BINARY_STATE', client);
                 return ed.save().then(savedEd => {
                     savedEd.delete().then(deletedEd => {
-                        return EventDetectors.get(deletedEd.xid).then(ed => {
+                        return EventDetector.get(deletedEd.xid).then(ed => {
                             assert.fail('Should not have found detector ' + ed.xid);
                         }, error => {
                             assert.strictEqual(error.status, 404);
@@ -47,14 +56,21 @@ describe('Event detector service', function() {
     });
     
     it('Can query for a binary state event detector', () => {
-        const ds = createMockDataSource(client);
+        const ds = new DataSource({ modelType: 'MOCK' });
         return ds.save().then(savedDs => {
             ds.id = savedDs.id;
-            const dp = createMockDataPoint(savedDs.xid, 'BINARY', client);
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
+                pointLocator : {
+                dataType: 'BINARY',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
+            });
             return dp.save().then(savedDp => {
                 const ed = createEventDetector(savedDp.id, 'BINARY_STATE', client);
                 return ed.save().then(savedEd => {
-                    return EventDetectors.query(`xid=${savedEd.xid}`).then(result => {
+                    return EventDetector.query(`xid=${savedEd.xid}`).then(result => {
                         assert.strictEqual(1, result.total);
                         assert.strictEqual(savedEd.xid, result[0].xid);
                     });
@@ -66,10 +82,17 @@ describe('Event detector service', function() {
     });
     
     it('Creates a binary state event detector', () => {
-        const ds = createMockDataSource(client);
+        const ds = new DataSource({ modelType: 'MOCK' });
         return ds.save().then(savedDs => {
             ds.id = savedDs.id;
-            const dp = createMockDataPoint(savedDs.xid, 'BINARY', client);
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
+                pointLocator : {
+                dataType: 'BINARY',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
+            });
             return dp.save().then(savedDp => {
                 const ed = createEventDetector(savedDp.id, 'BINARY_STATE', client);
                 return ed.save().then(savedEd => {
@@ -91,10 +114,17 @@ describe('Event detector service', function() {
     });
     
     it('Fails to create a binary state event detector', () => {
-        const ds = createMockDataSource(client);
+        const ds = new DataSource({ modelType: 'MOCK' });
         return ds.save().then(savedDs => {
             ds.id = savedDs.id;
-            const dp = createMockDataPoint(savedDs.xid, 'BINARY', client);
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
+                pointLocator : {
+                dataType: 'BINARY',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
+            });
             return dp.save().then(savedDp => {
                 const ed = createEventDetector(savedDp.id, 'BINARY_STATE', client);
                 ed.duration = null;
@@ -110,10 +140,17 @@ describe('Event detector service', function() {
     });
     
     it('Creates a no update event detector', () => {
-        const ds = createMockDataSource(client);
+        const ds = new DataSource({ modelType: 'MOCK' });
         return ds.save().then(savedDs => {
             ds.id = savedDs.id;
-            const dp = createMockDataPoint(savedDs.xid, 'BINARY', client);
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
+                pointLocator : {
+                dataType: 'BINARY',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
+            });
             return dp.save().then(savedDp => {
                 const ed = createEventDetector(savedDp.id, 'NO_UPDATE', client);
                 return ed.save().then(savedEd => {
@@ -134,10 +171,17 @@ describe('Event detector service', function() {
     });
     
     it('Fails to create a no update event detector', () => {
-        const ds = createMockDataSource(client);
+        const ds = new DataSource({ modelType: 'MOCK' });
         return ds.save().then(savedDs => {
             ds.id = savedDs.id;
-            const dp = createMockDataPoint(savedDs.xid, 'BINARY', client);
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
+                pointLocator : {
+                dataType: 'BINARY',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
+            });
             return dp.save().then(savedDp => {
                 const ed = createEventDetector(savedDp.id, 'BINARY_STATE', client);
                 ed.duration = null;
@@ -153,10 +197,17 @@ describe('Event detector service', function() {
     });
 
     it('Creates a no change event detector', () => {
-        const ds = createMockDataSource(client);
+        const ds = new DataSource({ modelType: 'MOCK' });
         return ds.save().then(savedDs => {
             ds.id = savedDs.id;
-            const dp = createMockDataPoint(savedDs.xid, 'BINARY', client);
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
+                pointLocator : {
+                dataType: 'BINARY',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
+            });
             return dp.save().then(savedDp => {
                 const ed = createEventDetector(savedDp.id, 'NO_CHANGE', client);
                 return ed.save().then(savedEd => {
@@ -177,10 +228,17 @@ describe('Event detector service', function() {
     });
     
     it('Fails to create a no change event detector', () => {
-        const ds = createMockDataSource(client);
+        const ds = new DataSource({ modelType: 'MOCK' });
         return ds.save().then(savedDs => {
             ds.id = savedDs.id;
-            const dp = createMockDataPoint(savedDs.xid, 'BINARY', client);
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
+                pointLocator : {
+                dataType: 'BINARY',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
+            });
             return dp.save().then(savedDp => {
                 const ed = createEventDetector(savedDp.id, 'NO_CHANGE', client);
                 ed.duration = null;
@@ -196,10 +254,17 @@ describe('Event detector service', function() {
     });
     
     it('Creates a state change event detector', () => {
-        const ds = createMockDataSource(client);
+        const ds = new DataSource({ modelType: 'MOCK' });
         return ds.save().then(savedDs => {
             ds.id = savedDs.id;
-            const dp = createMockDataPoint(savedDs.xid, 'BINARY', client);
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
+                pointLocator : {
+                dataType: 'BINARY',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
+            });
             return dp.save().then(savedDp => {
                 const ed = createEventDetector(savedDp.id, 'STATE_CHANGE_COUNT', client);
                 return ed.save().then(savedEd => {
@@ -221,10 +286,17 @@ describe('Event detector service', function() {
     });
     
     it('Fails to create a state change event detector', () => {
-        const ds = createMockDataSource(client);
+        const ds = new DataSource({ modelType: 'MOCK' });
         return ds.save().then(savedDs => {
             ds.id = savedDs.id;
-            const dp = createMockDataPoint(savedDs.xid, 'BINARY', client);
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
+                pointLocator : {
+                dataType: 'BINARY',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
+            });
             return dp.save().then(savedDp => {
                 const ed = createEventDetector(savedDp.id, 'STATE_CHANGE_COUNT', client);
                 ed.duration = null;
@@ -241,10 +313,17 @@ describe('Event detector service', function() {
     });
     
     it('Creates a alphanumeric regex state change event detector', () => {
-        const ds = createMockDataSource(client);
+        const ds = new DataSource({ modelType: 'MOCK' });
         return ds.save().then(savedDs => {
             ds.id = savedDs.id;
-            const dp = createMockDataPoint(savedDs.xid, 'ALPHANUMERIC', client);
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
+                pointLocator : {
+                dataType: 'ALPHANUMERIC',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
+            });
             return dp.save().then(savedDp => {
                 const ed = createEventDetector(savedDp.id, 'ALPHANUMERIC_REGEX_STATE', client);
                 return ed.save().then(savedEd => {
@@ -266,10 +345,17 @@ describe('Event detector service', function() {
     });
     
     it('Fails to create an alphanumeric regex state change event detector', () => {
-        const ds = createMockDataSource(client);
+        const ds = new DataSource({ modelType: 'MOCK' });
         return ds.save().then(savedDs => {
             ds.id = savedDs.id;
-            const dp = createMockDataPoint(savedDs.xid, 'ALPHANUMERIC', client);
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
+                pointLocator : {
+                dataType: 'ALPHANUMERIC',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
+            });
             return dp.save().then(savedDp => {
                 const ed = createEventDetector(savedDp.id, 'ALPHANUMERIC_REGEX_STATE', client);
                 ed.duration = null;
@@ -286,10 +372,17 @@ describe('Event detector service', function() {
     });
 
     it('Creates a analog change event detector', () => {
-        const ds = createMockDataSource(client);
+        const ds = new DataSource({ modelType: 'MOCK' });
         return ds.save().then(savedDs => {
             ds.id = savedDs.id;
-            const dp = createMockDataPoint(savedDs.xid, 'NUMERIC', client);
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
+                pointLocator : {
+                dataType: 'NUMERIC',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
+            });
             return dp.save().then(savedDp => {
                 const ed = createEventDetector(savedDp.id, 'ANALOG_CHANGE', client);
                 return ed.save().then(savedEd => {
@@ -313,10 +406,17 @@ describe('Event detector service', function() {
     });
     
     it('Fails to create an analog change event detector', () => {
-        const ds = createMockDataSource(client);
+        const ds = new DataSource({ modelType: 'MOCK' });
         return ds.save().then(savedDs => {
             ds.id = savedDs.id;
-            const dp = createMockDataPoint(savedDs.xid, 'NUMERIC', client);
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
+                pointLocator : {
+                dataType: 'NUMERIC',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
+            });
             return dp.save().then(savedDp => {
                 const ed = createEventDetector(savedDp.id, 'ANALOG_CHANGE', client);
                 ed.duration = null;
@@ -334,10 +434,17 @@ describe('Event detector service', function() {
     });
     
     it('Creates a high limit event detector', () => {
-        const ds = createMockDataSource(client);
+        const ds = new DataSource({ modelType: 'MOCK' });
         return ds.save().then(savedDs => {
             ds.id = savedDs.id;
-            const dp = createMockDataPoint(savedDs.xid, 'NUMERIC', client);
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
+                pointLocator : {
+                dataType: 'NUMERIC',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
+            });
             return dp.save().then(savedDp => {
                 const ed = createEventDetector(savedDp.id, 'HIGH_LIMIT', client);
                 return ed.save().then(savedEd => {
@@ -362,10 +469,17 @@ describe('Event detector service', function() {
     });
     
     it('Fails to create a high limit event detector', () => {
-        const ds = createMockDataSource(client);
+        const ds = new DataSource({ modelType: 'MOCK' });
         return ds.save().then(savedDs => {
             ds.id = savedDs.id;
-            const dp = createMockDataPoint(savedDs.xid, 'NUMERIC', client);
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
+                pointLocator : {
+                dataType: 'NUMERIC',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
+            });
             return dp.save().then(savedDp => {
                 const ed = createEventDetector(savedDp.id, 'HIGH_LIMIT', client);
                 ed.duration = null;
@@ -385,10 +499,17 @@ describe('Event detector service', function() {
     });
     
     it('Creates a low limit event detector', () => {
-        const ds = createMockDataSource(client);
+        const ds = new DataSource({ modelType: 'MOCK' });
         return ds.save().then(savedDs => {
             ds.id = savedDs.id;
-            const dp = createMockDataPoint(savedDs.xid, 'NUMERIC', client);
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
+                pointLocator : {
+                dataType: 'NUMERIC',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
+            });
             return dp.save().then(savedDp => {
                 const ed = createEventDetector(savedDp.id, 'LOW_LIMIT', client);
                 return ed.save().then(savedEd => {
@@ -413,10 +534,17 @@ describe('Event detector service', function() {
     });
     
     it('Fails to create a low limit event detector', () => {
-        const ds = createMockDataSource(client);
+        const ds = new DataSource({ modelType: 'MOCK' });
         return ds.save().then(savedDs => {
             ds.id = savedDs.id;
-            const dp = createMockDataPoint(savedDs.xid, 'NUMERIC', client);
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
+                pointLocator : {
+                dataType: 'NUMERIC',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
+            });
             return dp.save().then(savedDp => {
                 const ed = createEventDetector(savedDp.id, 'LOW_LIMIT', client);
                 ed.duration = null;
@@ -436,10 +564,17 @@ describe('Event detector service', function() {
     });
     
     it('Creates a range event detector', () => {
-        const ds = createMockDataSource(client);
+        const ds = new DataSource({ modelType: 'MOCK' });
         return ds.save().then(savedDs => {
             ds.id = savedDs.id;
-            const dp = createMockDataPoint(savedDs.xid, 'NUMERIC', client);
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
+                pointLocator : {
+                dataType: 'NUMERIC',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
+            });
             return dp.save().then(savedDp => {
                 const ed = createEventDetector(savedDp.id, 'RANGE', client);
                 return ed.save().then(savedEd => {
@@ -463,10 +598,17 @@ describe('Event detector service', function() {
     });
     
     it('Fails to create a range event detector', () => {
-        const ds = createMockDataSource(client);
+        const ds = new DataSource({ modelType: 'MOCK' });
         return ds.save().then(savedDs => {
             ds.id = savedDs.id;
-            const dp = createMockDataPoint(savedDs.xid, 'NUMERIC', client);
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
+                pointLocator : {
+                dataType: 'NUMERIC',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
+            });
             return dp.save().then(savedDp => {
                 const ed = createEventDetector(savedDp.id, 'RANGE', client);
                 ed.duration = null;
@@ -484,10 +626,17 @@ describe('Event detector service', function() {
     });
     
     it('Creates a negative cusum event detector', () => {
-        const ds = createMockDataSource(client);
+        const ds = new DataSource({ modelType: 'MOCK' });
         return ds.save().then(savedDs => {
             ds.id = savedDs.id;
-            const dp = createMockDataPoint(savedDs.xid, 'NUMERIC', client);
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
+                pointLocator : {
+                dataType: 'NUMERIC',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
+            });
             return dp.save().then(savedDp => {
                 const ed = createEventDetector(savedDp.id, 'NEGATIVE_CUSUM', client);
                 return ed.save().then(savedEd => {
@@ -510,10 +659,17 @@ describe('Event detector service', function() {
     });
     
     it('Fails to create a negative cusum event detector', () => {
-        const ds = createMockDataSource(client);
+        const ds = new DataSource({ modelType: 'MOCK' });
         return ds.save().then(savedDs => {
             ds.id = savedDs.id;
-            const dp = createMockDataPoint(savedDs.xid, 'NUMERIC', client);
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
+                pointLocator : {
+                dataType: 'NUMERIC',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
+            });
             return dp.save().then(savedDp => {
                 const ed = createEventDetector(savedDp.id, 'NEGATIVE_CUSUM', client);
                 ed.duration = null;
@@ -531,10 +687,17 @@ describe('Event detector service', function() {
     });
     
     it('Creates a positive cusum event detector', () => {
-        const ds = createMockDataSource(client);
+        const ds = new DataSource({ modelType: 'MOCK' });
         return ds.save().then(savedDs => {
             ds.id = savedDs.id;
-            const dp = createMockDataPoint(savedDs.xid, 'NUMERIC', client);
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
+                pointLocator : {
+                dataType: 'NUMERIC',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
+            });
             return dp.save().then(savedDp => {
                 const ed = createEventDetector(savedDp.id, 'POSITIVE_CUSUM', client);
                 return ed.save().then(savedEd => {
@@ -557,10 +720,17 @@ describe('Event detector service', function() {
     });
     
     it('Fails to create a positive cusum event detector', () => {
-        const ds = createMockDataSource(client);
+        const ds = new DataSource({ modelType: 'MOCK' });
         return ds.save().then(savedDs => {
             ds.id = savedDs.id;
-            const dp = createMockDataPoint(savedDs.xid, 'NUMERIC', client);
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
+                pointLocator : {
+                dataType: 'NUMERIC',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
+            });
             return dp.save().then(savedDp => {
                 const ed = createEventDetector(savedDp.id, 'POSITIVE_CUSUM', client);
                 ed.duration = null;
@@ -578,10 +748,17 @@ describe('Event detector service', function() {
     });
     
     it('Creates a smoothness event detector', () => {
-        const ds = createMockDataSource(client);
+        const ds = new DataSource({ modelType: 'MOCK' });
         return ds.save().then(savedDs => {
             ds.id = savedDs.id;
-            const dp = createMockDataPoint(savedDs.xid, 'NUMERIC', client);
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
+                pointLocator : {
+                dataType: 'NUMERIC',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
+            });
             return dp.save().then(savedDp => {
                 const ed = createEventDetector(savedDp.id, 'SMOOTHNESS', client);
                 return ed.save().then(savedEd => {
@@ -604,10 +781,17 @@ describe('Event detector service', function() {
     });
     
     it('Fails to create a smoothness event detector', () => {
-        const ds = createMockDataSource(client);
+        const ds = new DataSource({ modelType: 'MOCK' });
         return ds.save().then(savedDs => {
             ds.id = savedDs.id;
-            const dp = createMockDataPoint(savedDs.xid, 'NUMERIC', client);
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
+                pointLocator : {
+                dataType: 'NUMERIC',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
+            });
             return dp.save().then(savedDp => {
                 const ed = createEventDetector(savedDp.id, 'SMOOTHNESS', client);
                 ed.duration = null;
@@ -625,10 +809,17 @@ describe('Event detector service', function() {
     });
     
     it('Creates a multistate state event detector', () => {
-        const ds = createMockDataSource(client);
+        const ds = new DataSource({ modelType: 'MOCK' });
         return ds.save().then(savedDs => {
             ds.id = savedDs.id;
-            const dp = createMockDataPoint(savedDs.xid, 'MULTISTATE', client);
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
+                pointLocator : {
+                dataType: 'MULTISTATE',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
+            });
             return dp.save().then(savedDp => {
                 const ed = createEventDetector(savedDp.id, 'MULTISTATE_STATE', client);
                 return ed.save().then(savedEd => {
@@ -650,10 +841,17 @@ describe('Event detector service', function() {
     });
     
     it('Fails to create a multistate state event detector', () => {
-        const ds = createMockDataSource(client);
+        const ds = new DataSource({ modelType: 'MOCK' });
         return ds.save().then(savedDs => {
             ds.id = savedDs.id;
-            const dp = createMockDataPoint(savedDs.xid, 'MULTISTATE', client);
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
+                pointLocator : {
+                dataType: 'MULTISTATE',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
+            });
             return dp.save().then(savedDp => {
                 const ed = createEventDetector(savedDp.id, 'MULTISTATE_STATE', client);
                 ed.duration = null;
@@ -678,7 +876,7 @@ describe('Event detector service', function() {
       const gotDeleteEventDeferred = defer();
       
       //Create the event detector for add message
-      const ds = createMockDataSource(client);
+      const ds = new DataSource({ modelType: 'MOCK' });
       let ed,originalXid;
       
       return Promise.resolve().then(() => {
@@ -733,7 +931,14 @@ describe('Event detector service', function() {
         }).then(() => delay(500)).then(() => {
             return ds.save().then(savedDs => {
                 ds.id = savedDs.id;
-                const dp = createMockDataPoint(savedDs.xid, 'BINARY', client);
+                const dp = new DataPoint({
+                    dataSourceXid: savedDs.xid,
+                    pointLocator : {
+                    dataType: 'BINARY',
+                    settable: false,
+                    modelType: 'PL.MOCK'
+                        }
+                });
                 return dp.save().then(savedDp => {
                     ed = createEventDetector(savedDp.id, 'BINARY_STATE', client);
                     return ed.save().then(savedEd => {
