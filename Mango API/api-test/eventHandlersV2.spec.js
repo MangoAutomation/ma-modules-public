@@ -20,7 +20,7 @@ const client = createClient();
 const DataSource = client.DataSource;
 const DataPoint = client.DataPoint;
 
-describe('Event handlers v2', function() {
+describe('Event handlers', function() {
     
     // create a context object to replace global which was previously used throughout this suite
     const testContext = {};
@@ -84,7 +84,7 @@ describe('Event handlers v2', function() {
     before('Create test DP 2', function() {
         const dp2 = this.point('test point 2');
         dp2.pointLocator.dataType = 'BINARY';
-        return dp2.save().then(dp =>{
+        return dp2.save().then(dp => {
             testContext.dp2 = dp;
         });
     });
@@ -95,7 +95,6 @@ describe('Event handlers v2', function() {
     after('Delete DS2', function() {
         return testContext.ds2.delete();
     });
-    
     
     it('Create static set point event handler', () => {
         testContext.staticValueSetPointEventHandler = {
@@ -110,7 +109,7 @@ describe('Event handlers v2', function() {
                 activeScript: 'return 0;',
                 inactiveScript: 'return 1;',
                 scriptContext: [{xid: testContext.dp2.xid, variableName:'point2'}],
-                scriptPermissions: ['admin', 'testing'],
+                scriptPermissions: ['superadmin', 'user'],
                 eventTypes: [
                     {
                         eventType: 'DATA_SOURCE',
@@ -147,7 +146,7 @@ describe('Event handlers v2', function() {
             assert.strictEqual(response.data.inactiveScript, testContext.staticValueSetPointEventHandler.inactiveScript);
             
             assert.strictEqual(response.data.scriptContext.length, testContext.staticValueSetPointEventHandler.scriptContext.length);
-            for(let i=0; i<response.data.scriptContext.length; i++){
+            for(let i=0; i<response.data.scriptContext.length; i++) {
                 assert.strictEqual(response.data.scriptContext[i].xid, testContext.staticValueSetPointEventHandler.scriptContext[i].xid);
                 assert.strictEqual(response.data.scriptContext[i].variableName, testContext.staticValueSetPointEventHandler.scriptContext[i].variableName);
             }
@@ -225,7 +224,7 @@ describe('Event handlers v2', function() {
                 activeScript: 'return 0;',
                 inactiveScript: 'return 1;',
                 scriptContext: [{xid: testContext.dp2.xid, variableName:'point2'}],
-                scriptPermissions: ['admin', 'testing'],
+                scriptPermissions: ['superadmin', 'user'],
                 handlerType : "SET_POINT"
               };
         return client.restRequest({
@@ -273,7 +272,7 @@ describe('Event handlers v2', function() {
                 activeScript: 'return 0;',
                 inactiveScript: 'return 1;',
                 scriptContext: [{xid: 'missing', variableName:'point2'}],
-                scriptPermissions: ['admin', 'testing'],
+                scriptPermissions: ['superadmin', 'user'],
                 handlerType : "SET_POINT"
             };
         return client.restRequest({
@@ -574,7 +573,7 @@ describe('Event handlers v2', function() {
                         {xid: testContext.dp1.xid, variableName:'point1'},
                         {xid: testContext.dp2.xid, variableName:'point2'}
                     ],
-                scriptPermissions: ['admin', 'testing'],
+                scriptPermissions: ['superadmin', 'user'],
                 script: 'return 0;',
                 subject: 'INCLUDE_EVENT_MESSAGE',
                 handlerType : "EMAIL"
@@ -656,7 +655,7 @@ describe('Event handlers v2', function() {
                         {xid: 'missing', variableName:'point1'},
                         {xid: testContext.dp2.xid, variableName:'point2'}
                     ],
-                scriptPermissions: ['admin', 'testing'],
+                scriptPermissions: ['superadmin', 'user'],
                 script: 'return 0;',
                 handlerType : "EMAIL"
               };

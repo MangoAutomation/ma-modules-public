@@ -200,7 +200,5 @@ public class MangoJavaScriptModel {
         public void setContextUpdate(Boolean contextUpdate) {
             this.contextUpdate = contextUpdate;
         }
-
-
     }
 }
