@@ -3,8 +3,12 @@
  */
 package com.infiniteautomation.mango.rest.v2.model;
 
+import java.util.Map;
+
 import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.ShouldNeverHappenException;
+import com.serotonin.m2m2.i18n.ProcessMessage;
+import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 /**
@@ -51,7 +55,7 @@ public interface RestModelMapping<F, T> {
     default public F unmap(Object from, PermissionHolder user, RestModelMapper mapper) throws ValidationException {
         throw new ShouldNeverHappenException("Unimplemented");
     }
-    
+
     /**
      * Returns the view to use when serializing the mapped object
      *
@@ -61,6 +65,43 @@ public interface RestModelMapping<F, T> {
      */
     public default Class<?> view(Object from, PermissionHolder user) {
         return null;
+    }
+
+    /**
+     * Perform any model to vo field mappings that may be off during validation
+     *
+     * @param modelClass
+     * @param validatedClass
+     * @param result
+     * @param restModelMapper
+     * @return
+     */
+    default public ProcessResult mapValidationErrors(Class<?> modelClass, Class<?> validatedClass,
+            ProcessResult result, RestModelMapper restModelMapper) {
+        return result;
+    }
+
+    /**
+     * Helper method for basic mapping
+     * @param fieldMap
+     * @param result
+     * @return
+     */
+    default ProcessResult mapValidationErrors(Map<String, String> fieldMap, ProcessResult result) {
+        ProcessResult mapped = new ProcessResult();
+        for(ProcessMessage m : result.getMessages()) {
+            String mappedField = fieldMap.get(m.getContextKey());
+            if(mappedField != null) {
+                mapped.addMessage(new ProcessMessage(
+                        m.getLevel(),
+                        m.getGenericMessage(),
+                        mappedField,
+                        m.getContextualMessage()));
+            }else {
+                mapped.addMessage(m);
+            }
+        }
+        return mapped;
     }
 
 }

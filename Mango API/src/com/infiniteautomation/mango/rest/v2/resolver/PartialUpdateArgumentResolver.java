@@ -1,14 +1,14 @@
 /**
  * Copyright (C) 2018  Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2.patch;
+package com.infiniteautomation.mango.rest.v2.resolver;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
+import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 import org.springframework.web.servlet.HandlerMapping;
@@ -28,6 +29,8 @@ import org.springframework.web.servlet.HandlerMapping;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
+import com.infiniteautomation.mango.rest.v2.patch.PatchVORequestBody;
+import com.infiniteautomation.mango.rest.v2.validation.DefaultValidator;
 import com.infiniteautomation.mango.spring.MangoRuntimeContextConfiguration;
 import com.infiniteautomation.mango.spring.service.AbstractVOService;
 import com.serotonin.m2m2.Common;
@@ -66,7 +69,7 @@ public class PartialUpdateArgumentResolver implements HandlerMethodArgumentResol
         RequestMapping methodAnot = parameter.getMethodAnnotation(RequestMapping.class);
         if( methodAnot == null ) return false;
 
-        if( !Arrays.asList(methodAnot.method()).contains(RequestMethod.PATCH) )
+        if(!ArrayUtils.contains(methodAnot.method(), RequestMethod.PATCH))
             return false;
 
         return parameter.hasParameterAnnotation(PatchVORequestBody.class);
@@ -85,6 +88,10 @@ public class PartialUpdateArgumentResolver implements HandlerMethodArgumentResol
         Class<?> serviceClass = patch.service();
         AbstractVOService<?,?,?> service = (AbstractVOService<?,?,?>)context.getBean(serviceClass);
         PermissionHolder user = Common.getUser();
+
+        //Set the source class into the request scope to use if validation fails
+        webRequest.setAttribute(DefaultValidator.VALIDATION_SOURCE, patch.modelClass(), RequestAttributes.SCOPE_REQUEST);
+
         Object vo;
         switch(patch.idType()) {
             case ID:

@@ -25,6 +25,7 @@ import org.springframework.security.web.WebAttributes;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.HandlerMethod;
@@ -33,6 +34,8 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import com.infiniteautomation.mango.db.query.RQLToCondition.RQLVisitException;
+import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
+import com.infiniteautomation.mango.rest.v2.validation.DefaultValidator;
 import com.infiniteautomation.mango.rest.v2.views.AdminView;
 import com.infiniteautomation.mango.spring.components.EmailAddressVerificationService.EmailAddressInUseException;
 import com.infiniteautomation.mango.util.exception.FeatureDisabledException;
@@ -43,6 +46,7 @@ import com.infiniteautomation.mango.util.exception.TranslatableIllegalStateExcep
 import com.infiniteautomation.mango.util.exception.TranslatableRuntimeException;
 import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableException;
 import com.serotonin.m2m2.module.DefaultPagesDefinition;
 import com.serotonin.m2m2.vo.User;
@@ -61,11 +65,17 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
     final RequestMatcher browserHtmlRequestMatcher;
     final HandlerExceptionResolver handlerExceptionResolver;
+    final RestModelMapper mapper;
 
     @Autowired
-    public RestExceptionHandler(@Qualifier("browserHtmlRequestMatcher") RequestMatcher browserHtmlRequestMatcher, HandlerExceptionResolver handlerExceptionResolver) {
+    public RestExceptionHandler(
+            @Qualifier("browserHtmlRequestMatcher")
+            RequestMatcher browserHtmlRequestMatcher,
+            HandlerExceptionResolver handlerExceptionResolver,
+            RestModelMapper mapper) {
         this.browserHtmlRequestMatcher = browserHtmlRequestMatcher;
         this.handlerExceptionResolver = handlerExceptionResolver;
+        this.mapper = mapper;
     }
 
     /**
@@ -104,7 +114,16 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     })
     public ResponseEntity<Object> handleValidationException(HttpServletRequest request, HttpServletResponse response, Exception ex, WebRequest req) {
         ValidationException validationException = (ValidationException) ex;
-        return handleExceptionInternal(ex, new ValidationFailedRestException(validationException.getValidationResult()), new HttpHeaders(), HttpStatus.UNPROCESSABLE_ENTITY, req);
+
+        ProcessResult result = validationException.getValidationResult();
+
+        //Do any potential mapping of VO property names to model property names
+        Class<?> modelClass = (Class<?>) req.getAttribute(DefaultValidator.VALIDATION_SOURCE, RequestAttributes.SCOPE_REQUEST);
+        if(validationException.getValidatedClass() != null && modelClass != null) {
+            result = mapper.mapValidationErrors(modelClass, validationException.getValidatedClass(), result);
+        }
+
+        return handleExceptionInternal(ex, new ValidationFailedRestException(result), new HttpHeaders(), HttpStatus.UNPROCESSABLE_ENTITY, req);
     }
 
     @ExceptionHandler({

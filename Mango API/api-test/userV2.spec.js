@@ -15,116 +15,13 @@
  * limitations under the License.
  */
 
-const {createClient, login, uuid, delay} = require('@infinite-automation/mango-module-tools/test-helper/testHelper');
+const {createClient, assertValidationErrors, login, uuid, delay} = require('@infinite-automation/mango-client/test/testHelper');
 const client = createClient();
+const User = client.User;
+const Role = client.Role;
 
-function userV2Factory(client) {
-    const MangoObject = client.MangoObject;
-    
-    return class UserV2 extends MangoObject {
-        static get baseUrl() {
-            return '/rest/v2/users';
-        }
-
-        static get idProperty() {
-            return 'username';
-        }
-        
-        static login(username, password, retries, retryDelay) {
-            return client.restRequest({
-                path: '/rest/v2/login',
-                method: 'POST',
-                data: {username, password},
-                retries: retries || 0,
-                retryDelay: retryDelay || 5000
-            }).then(response => {
-                return (new UserV2()).updateSelf(response);
-            });
-        }
-        
-        static logout() {
-            return client.restRequest({
-                path: '/rest/v2/logout',
-                method: 'POST'
-            });
-        }
-
-        static current() {
-            return client.restRequest({
-                path: this.baseUrl + '/current'
-            }).then(response => {
-                return (new UserV2()).updateSelf(response);
-            });
-        }
-
-        static lockPassword(username) {
-            return client.restRequest({
-               path: this.baseUrl + '/' + encodeURIComponent(`${username}`) + '/lock-password',
-               method: 'PUT'
-            });
-        }
-        
-        static patch(id, values) {
-            var options = {};
-            options[this.idProperty] = id;
-            return (new this(options).patch(values));
-        }
-        
-        su(username) {
-            let url = '/rest/v2/login/su?username=' + encodeURIComponent(`${username}`);
-            return client.restRequest({
-                path: url,
-                method: 'POST'
-             }).then(response => {
-                 return this.updateSelf(response);
-             });
-        }
-        
-        exitSu() {
-            let url = '/rest/v2/login/exit-su';
-            return client.restRequest({
-                path: url,
-                method: 'POST'
-             }).then(response => {
-                 return this.updateSelf(response);
-             });
-        }
-        
-        patch(values) {
-            return client.restRequest({
-                path: this.constructor.baseUrl + '/' + encodeURIComponent(this[this.constructor.idProperty]),
-                method: 'PATCH',
-                data: values
-            }).then(response => {
-                return this.updateSelf(response);
-            });
-        }
-        
-        updateHomeUrl(url) {
-            return client.restRequest({
-                path: this.constructor.baseUrl + '/' + encodeURIComponent(this[this.constructor.idProperty]) + '/homepage?url=' + encodeURIComponent(url),
-                method: 'PUT'
-            }).then(response => {
-                return this.updateSelf(response);
-            });
-        }
-        
-        toggleMuted(muted) {
-            let path = this.constructor.baseUrl + '/' + encodeURIComponent(this[this.constructor.idProperty])  + '/mute';
-            if(muted) {
-                path += '?mute=' + muted;
-            }
-            return client.restRequest({
-                path: path,
-                method: 'PUT'
-            }).then(response => {
-                return this.updateSelf(response);
-            });
-        }
-    };
-}
-
-describe('User V2 endpoint tests', function() {
+describe('User endpoint tests', function() {
+    this.timeout(10000);
     before('Login', function() { return login.call(this, client); });
     
     before('Helper functions', function() {
@@ -135,12 +32,12 @@ describe('User V2 endpoint tests', function() {
         };
         this.clients = {};
         this.configs = {};
-        this.UserV2 = userV2Factory(client);
     });
     
     beforeEach('Create test User', function() {
         const username = uuid();
         const testUserPassword = uuid();
+        const testUserRole = new Role();
         this.testUserSettings = {
             name: 'name',
             username: username,
@@ -153,7 +50,7 @@ describe('User V2 endpoint tests', function() {
             receiveAlarmEmails: 'IGNORE',
             receiveOwnAuditEvents: false,
             muted: false,
-            permissions: ['testuser', 'test'],
+            permissions: [testUserRole.xid],
             sessionExpirationOverride: true,
             sessionExpirationPeriod: {
                 periods: 1,
@@ -168,19 +65,17 @@ describe('User V2 endpoint tests', function() {
             } 
         };
         
-        const testUser = new this.UserV2(this.testUserSettings);
-        
-        //Save user and setup a session user for it
-        return testUser.save().then(user => {
-            assert.equal(user.username, username);
-            this.configs.user = {
-                    username: username,
-                    password: testUserPassword
-            };
-            this.clients.user = createClient(this.configs.user);
-            this.clients.user.User = userV2Factory(this.clients.user);
-            this.clients.user.user = new this.clients.user.User(user);
-            return this.login(this.configs.user, this.clients.user.User);
+        const testUser = new User(this.testUserSettings);
+        return testUserRole.save().then(()=>{
+            //Save user and setup a session user for it
+            return testUser.save().then(user => {
+                assert.equal(user.username, username);
+                this.clients.user = createClient();
+                return this.clients.user.User.login(user.username, testUserPassword).then(loggedIn => {
+                    //Save a reference to the created user
+                    this.clients.user.user = loggedIn;
+                });
+            });
         });
     });
     
@@ -207,19 +102,16 @@ describe('User V2 endpoint tests', function() {
                 },
                 organization: 'Infinite Automation Systems'
             };
-        const testAdminUser = new this.UserV2(this.adminUserSettings);
+        const testAdminUser = new User(this.adminUserSettings);
         
         //Save user and setup a session user for it
         return testAdminUser.save().then(user => {
             assert.equal(user.username, username);
-            this.configs.admin = {
-                    username: username,
-                    password: testAdminUserPassword
-            };
-            this.clients.admin = createClient(this.configs.admin);
-            this.clients.admin.User = userV2Factory(this.clients.admin);
-            this.clients.admin.user = new this.clients.admin.User(user);
-            return this.login(this.configs.admin, this.clients.admin.User);
+            this.clients.admin = createClient();
+            return this.clients.admin.User.login(user.username, testAdminUserPassword).then(loggedIn => {
+                //Save a reference to the created user
+                this.clients.admin.user = loggedIn;
+            });
         });
     });
     
@@ -250,15 +142,16 @@ describe('User V2 endpoint tests', function() {
             assert.isNull(user.emailVerified);
             assert.isString(user.created);
             assert.isAbove(new Date(user.created).valueOf(), 0);
-            assert.include(user.permissions, 'user');
+            assert.include(user.permissions, this.testUserSettings.permissions[0]);
         });
     });
     
     it('Fails to create user without password', function() {
         const username = uuid();
-        const invalidUser = new this.UserV2({
+        const invalidUser = new User({
                 name: 'name',
                 username: username,
+                password: null,
                 email: `${username}@example.com`,
                 phone: '808-888-8888',
                 disabled: false,
@@ -268,18 +161,16 @@ describe('User V2 endpoint tests', function() {
                 muted: false,
                 locale: ''
             });
-        return invalidUser.save().then(response => {
-            throw new Error('Should not have created user');
+        return invalidUser.save().then(saved => {
+            throw new Error('Should not have created user ' + saved.username);
         }, error => {
-            assert.strictEqual(error.status, 422);
-            assert.strictEqual(error.data.result.messages.length, 1);
-            assert.strictEqual(error.data.result.messages[0].property, 'password');
+            assertValidationErrors(['password'], error);
         });
     });
     
     it('Cannot use empty strings and nulls in permission', function() {
         const username = uuid();
-        const testUser = new this.UserV2({
+        const testUser = new User({
                 name: 'name',
                 username: username,
                 email: `${username}@example.com`,
@@ -289,24 +180,24 @@ describe('User V2 endpoint tests', function() {
                 homeUrl: 'www.google.com',
                 receiveAlarmEmails: 'NONE',
                 receiveOwnAuditEvents: false,
-                permissions: [null, '','test'],
+                permissions: [null, ''],
                 muted: false,
                 locale: ''
             });
         return testUser.save().then(user => {
-            throw new Error('Should not have created user');
+            throw new Error('Should not have created user ' + user.username);
         }, error => {
-            assert.strictEqual(error.status, 422);
-            assert.strictEqual(error.data.result.messages.length, 1);
-            assert.strictEqual(error.data.result.messages[0].property, 'permissions');
+            assertValidationErrors(['permissions', 'permissions'], error);
         });
     });
     
     it('Can lock other users password as admin ', function() {
-        return this.clients.admin.User.lockPassword(this.clients.user.user.username).then(response => {
+        return this.clients.admin.User.lockPassword(this.testUserSettings.username).then(response => {
             assert.strictEqual(response.status, 200);
-            return this.login(this.configs.user, this.clients.user.User).then(response => {
-                throw new Error('Should not have logged in');
+            return this.clients.user.User.login(
+                    this.testUserSettings.username,
+                    this.testUserSettings.password).then(user => {
+                throw new Error('Should not have logged in as user ' + user.username);
             }, error => {
                 assert.strictEqual(error.status, 401); 
             });
@@ -314,16 +205,16 @@ describe('User V2 endpoint tests', function() {
     });
     
     it('Can\'t lock other users password as user ', function() {
-        return this.clients.user.User.lockPassword(this.clients.admin.user.username).then(response => {
-            throw new Error('Should not have locked password');
+        return this.clients.admin.User.lockPassword(this.clients.admin.user.username).then(user => {
+            throw new Error('Should not have locked password ' + user.username);
         }, error => {
             assert.strictEqual(error.status, 403); 
         });
     });
     
     it('Can\'t lock own password', function() {
-        return this.clients.admin.User.lockPassword(this.clients.admin.user.username).then(response => {
-            throw new Error('Should not have locked password');
+        return this.clients.admin.User.lockPassword(this.clients.admin.user.username).then(user => {
+            throw new Error('Should not have locked password for ' + user.username);
         }, error => {
             assert.strictEqual(error.status, 403); 
         });
@@ -331,62 +222,51 @@ describe('User V2 endpoint tests', function() {
     
     it('Can\'t make self non admin', function() {
         return this.clients.admin.user.patch({
-            permissions: ['test']
-        }).then(response => {
-            throw new Error('Should not have updated user');
+            permissions: ['user']
+        }).then(user => {
+            throw new Error('Should not have updated user ' + user.username);
         }, error => {
-           assert.strictEqual(error.status, 422);
-           assert.strictEqual(error.data.result.messages.length, 1);
-           assert.strictEqual(error.data.result.messages[0].property, 'permissions');
+            assertValidationErrors(['permissions'], error);
         });  
     });
     
     it('Can\'t disable self as admin', function() {
         return this.clients.admin.user.patch({
             disabled: true
-        }).then(response => {
-            throw new Error('Should not have updated user');
+        }).then(user => {
+            throw new Error('Should not have updated user ' + user.username);
         }, error => {
-           assert.strictEqual(error.status, 422); 
-           assert.strictEqual(error.data.result.messages.length, 1);
-           assert.strictEqual(error.data.result.messages[0].property, 'disabled');
+            assertValidationErrors(['disabled'], error);
         }); 
     });
     
     it('Can\'t disable self as user', function() {
         return this.clients.user.user.patch({
             disabled: true
-        }).then(response => {
-            throw new Error('Should not have updated user');
+        }).then(user => {
+            throw new Error('Should not have updated user ' + user.username);
         }, error => {
-           assert.strictEqual(error.status, 422); 
-           assert.strictEqual(error.data.result.messages.length, 1);
-           assert.strictEqual(error.data.result.messages[0].property, 'disabled');
+            assertValidationErrors(['disabled'], error);
         }); 
     });
     
     it('Can\'t update permissions as user', function() {
         return this.clients.user.user.patch({
-            permissions: ['new', 'permissions']
-        }).then(response => {
-            throw new Error('Should not have updated user');
+            permissions: ['user']
+        }).then(user => {
+            throw new Error('Should not have updated user ' + user.username);
         }, error => {
-           assert.strictEqual(error.status, 422);
-           assert.strictEqual(error.status, 422); 
-           assert.strictEqual(error.data.result.messages.length, 1);
-           assert.strictEqual(error.data.result.messages[0].property, 'permissions');
+            assertValidationErrors(['permissions'], error);
         }); 
     });
     
     it('Can\'t rename self to existing user as user', function() {
         return this.clients.user.user.patch({
             username: this.clients.admin.user.username,
-        }).then(response => {
-            throw new Error('Should not have updated user');
+        }).then(user  => {
+            throw new Error('Should not have updated user '  + user.username);
         }, error => {
-           assert.strictEqual(error.status, 422); 
-           assert.strictEqual(error.data.result.messages.length, 1);
-           assert.strictEqual(error.data.result.messages[0].property, 'username');
+            assertValidationErrors(['username'], error);
         }); 
     });
 
@@ -435,14 +315,35 @@ describe('User V2 endpoint tests', function() {
         });
     });
     
+    it('Can\'t Set session expiry to less than 1 second', function() {
+        const user = new User({
+            sessionExpirationOverride: true,
+            sessionExpirationPeriod: {
+                    periods: 100,
+                    type: 'MILLISECONDS'           
+                }
+        });
+        return user.save().then(user => {
+            throw new Error('Timeout cannot be < 1s for ' + user.username);
+        }, error => {
+            assert.strictEqual(error.status, 422);
+        });   
+    });
+    
+    it('Returns the current user', () => {
+        return this.clients.admin.User.current().then(user => {
+            assert.equal(user.username, this.adminUserSettings.username);
+        });
+    });
+    
     it('User session timeout override expires session', function() {
         this.timeout(5000);
         const loginClient = createClient();
         return loginClient.User.login(this.testUserSettings.username, this.testUserSettings.password).then(() => {
             return delay(2000);
         }).then(() => {
-            return loginClient.User.current().then(response => {
-                throw new Error('Session should be expired');
+            return loginClient.User.current().then(user => {
+                throw new Error('Session should be expired for '  + user.username);
             }, error => {
                 assert.strictEqual(error.status, 401);
             });
@@ -474,7 +375,7 @@ describe('User V2 endpoint tests', function() {
         const dateCreated = new Date(100000).toISOString();
         const emailVerified = new Date(100000).toISOString();
         
-        const invalidUser = new this.UserV2({
+        const invalidUser = new User({
             name: 'name',
             username: username,
             password: uuid(),
@@ -488,7 +389,7 @@ describe('User V2 endpoint tests', function() {
             receiveAlarmEmails: 'IGNORE',
             receiveOwnAuditEvents: false,
             muted: false,
-            permissions: ['testuser', 'test'],
+            permissions: [],
             sessionExpirationOverride: true,
             sessionExpirationPeriod: {
                 periods: 1,
@@ -527,11 +428,9 @@ describe('User V2 endpoint tests', function() {
     it('Can\'t set email to a used email address', function() {
         this.clients.admin.user.email = this.clients.user.user.email;
         return this.clients.admin.user.save().then(user => {
-            throw new Error('Should not have saved user');
+            throw new Error('Should not have saved user ' + user.username);
         }, error => {
-            assert.strictEqual(error.status, 422);
-            assert.strictEqual(error.data.result.messages.length, 1);
-            assert.strictEqual(error.data.result.messages[0].property, 'email');
+            assertValidationErrors(['email'], error);
         });
     });
 
@@ -560,6 +459,107 @@ describe('User V2 endpoint tests', function() {
             return this.clients.admin.user.exitSu().then(user => {
                 assert.strictEqual(user.username, this.clients.admin.user.username);
             });
+        });
+    });
+    
+    it('Cannot change password to something with too few Uppercase letters', function() {
+        this.testUser.password = "testings";
+        let currentSettingValue;
+        return SystemSettings.getValue('password.rule.upperCaseCount', 'INTEGER').then(response => {
+            currentSettingValue = response;
+            return SystemSettings.setValue('password.rule.upperCaseCount', 6, 'INTEGER').then(response => {
+                return this.testUser.save().then(user => {
+                    throw new Error('Should not have changed password for user' + user.username);
+                }, error => {
+                    assertValidationErrors(['password'], error);
+                });  
+            }).finally(() => {
+                return SystemSettings.setValue('password.rule.upperCaseCount', currentSettingValue, 'INTEGER');
+            }); 
+        });
+    });
+    
+    it('Cannot change password to something with too few Lowercase letters', function() {
+        this.testUser.password = "TESTINGS";
+        let currentSettingValue;
+        return SystemSettings.getValue('password.rule.lowerCaseCount', 'INTEGER').then(response => {
+            currentSettingValue = response;
+            return SystemSettings.setValue('password.rule.lowerCaseCount', 6, 'INTEGER').then(response => {
+                return this.testUser.save().then(user => {
+                    throw new Error('Should not have changed password for ' + user.username);
+                }, error => {
+                    assertValidationErrors(['password'], error);
+                });  
+            }).finally(() => {
+                return SystemSettings.setValue('password.rule.lowerCaseCount', currentSettingValue, 'INTEGER');
+            });
+        });
+    });
+    
+    it('Cannot change password to something with too few digits', function() {
+        this.testUser.password = "112TESTINGS";
+        let currentSettingValue;
+        return SystemSettings.getValue('password.rule.digitCount', 'INTEGER').then(response => {
+            currentSettingValue = response;
+            return SystemSettings.setValue('password.rule.digitCount', 6, 'INTEGER').then(response => {
+                return this.testUser.save().then(user => {
+                    throw new Error('Should not have changed password for ' + user.username);
+                }, error => {
+                    assertValidationErrors(['password'], error);
+                });  
+            }).finally(() => {
+                return SystemSettings.setValue('password.rule.digitCount', currentSettingValue, 'INTEGER');
+            }); 
+        });
+    });
+    
+    it('Cannot change password to something with too few special chars', function() {
+        this.testUser.password = "%%%&TESTINGS";
+        let currentSettingValue;
+        return SystemSettings.getValue('password.rule.specialCount', 'INTEGER').then(response => {
+            currentSettingValue = response;
+            return SystemSettings.setValue('password.rule.specialCount', 6, 'INTEGER').then(response => {
+                return this.testUser.save().then(user => {
+                    throw new Error('Should not have changed password for '  + user.username);
+                }, error => {
+                    assertValidationErrors(['password'], error);
+                });  
+            }).finally(() => {
+                return SystemSettings.setValue('password.rule.specialCount', currentSettingValue, 'INTEGER');
+            });  
+        });
+    });
+    
+    it('Cannot change password to something with too short', function() {
+        this.testUser.password = "12345678910";
+
+        return SystemSettings.getValue('password.rule.lengthMin', 'INTEGER').then(response => {
+            const currentSettingValue = response;
+            return SystemSettings.setValue('password.rule.lengthMin', 12, 'INTEGER').then(response => {
+                return this.testUser.save().then(user => {
+                    throw new Error('Should not have changed password for ' + user.username);
+                }, error => {
+                    assertValidationErrors(['password'], error);
+                });  
+            }).finally(() => {
+                return SystemSettings.setValue('password.rule.lengthMin', currentSettingValue, 'INTEGER');
+            });  
+        });
+    });
+    
+    it('Cannot change password to something with too long', function() {
+        this.testUser.password = "12345678910";
+        return SystemSettings.getValue('password.rule.lengthMax', 'INTEGER').then(response => {
+            const currentSettingValue = response;
+            return SystemSettings.setValue('password.rule.lengthMax', 8, 'INTEGER').then(response => {
+                return this.testUser.save().then(user => {
+                    throw new Error('Should not have changed password for ' + user.username);
+                }, error => {
+                    assertValidationErrors(['password'], error);
+                });  
+            }).finally(() => {
+                return SystemSettings.setValue('password.rule.lengthMax', currentSettingValue, 'INTEGER');
+            }); 
         });
     });
     

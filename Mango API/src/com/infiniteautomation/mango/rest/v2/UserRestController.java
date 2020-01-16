@@ -21,6 +21,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -117,6 +118,7 @@ public class UserRestController {
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<UserModel> createUser(
             @ApiParam(value="User", required=true)
+            @Validated
             @RequestBody(required=true)
             UserModel model,
             @AuthenticationPrincipal User user,
@@ -137,6 +139,7 @@ public class UserRestController {
     @RequestMapping(method = RequestMethod.PUT, value="/{username}")
     public ResponseEntity<UserModel> updateUser(
             @PathVariable String username,
+            @Validated
             @ApiParam(value="User", required=true)
             @RequestBody(required=true)
             UserModel model,

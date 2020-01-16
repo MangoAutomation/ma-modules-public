@@ -3,8 +3,11 @@
  */
 package com.infiniteautomation.mango.rest.v2;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.TimeZone;
+
+import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -19,6 +22,7 @@ import org.springframework.http.converter.ResourceHttpMessageConverter;
 import org.springframework.http.converter.ResourceRegionHttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.validation.Validator;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -44,8 +48,9 @@ import com.infiniteautomation.mango.rest.v2.mapping.PointValueTimeStreamCsvMessa
 import com.infiniteautomation.mango.rest.v2.mapping.SerotoninJsonMessageConverter;
 import com.infiniteautomation.mango.rest.v2.mapping.SqlMessageConverter;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
-import com.infiniteautomation.mango.rest.v2.patch.PartialUpdateArgumentResolver;
+import com.infiniteautomation.mango.rest.v2.resolver.PartialUpdateArgumentResolver;
 import com.infiniteautomation.mango.rest.v2.util.MangoRestTemporaryResourceContainer;
+import com.infiniteautomation.mango.rest.v2.validation.DefaultValidator;
 import com.infiniteautomation.mango.spring.MangoCommonConfiguration;
 import com.infiniteautomation.mango.spring.MangoRuntimeContextConfiguration;
 import com.serotonin.m2m2.Common;
@@ -66,6 +71,7 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
 
     final ObjectMapper mapper;
     final PartialUpdateArgumentResolver resolver;
+    final List<HttpMessageConverter<?>> converters;
 
     @Autowired
     public MangoRestDispatcherConfiguration(
@@ -75,6 +81,7 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
             RestModelMapper modelMapper) {
         this.mapper = mapper;
         this.resolver = resolver;
+        this.converters = new ArrayList<>();
 
         mapper
         .registerModule(new MangoRestV2JacksonModule())
@@ -82,6 +89,22 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
         .registerModule(new JScienceModule());
 
         modelMapper.addMappings(mapper);
+    }
+
+    @PostConstruct
+    public void init() {
+        //Setup our message converter list
+        converters.add(new ResourceHttpMessageConverter());
+        converters.add(new ResourceRegionHttpMessageConverter());
+        converters.add(new JsonStreamMessageConverter(mapper));
+        converters.add(new MappingJackson2HttpMessageConverter(mapper));
+        converters.add(new ByteArrayHttpMessageConverter());
+        converters.add(new HtmlHttpMessageConverter());
+        converters.add(new SerotoninJsonMessageConverter());
+        converters.add(new SqlMessageConverter());
+        converters.add(new PointValueTimeStreamCsvMessageConverter(csvMapper()));
+        converters.add(new GenericCSVMessageConverter(csvObjectMapper()));
+        converters.add(new StringHttpMessageConverter(Common.UTF8_CS));
     }
 
     /**
@@ -112,7 +135,6 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
         // dont set defaultContentType to text/html, we dont want this for REST
         // it causes Accept: */* headers to map to Accept: text/html
         // which causes hell for finding acceptable content types
-
         configurer
         .favorPathExtension(false)
         .ignoreAcceptHeader(false)
@@ -146,23 +168,17 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
     }
 
     /**
-     * Configure the Message Converters for the API
+     * Configure the Message Converters for the API, this will override any defaults
+     *  added by Spring.
      */
     @Override
     public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
+        converters.addAll(this.converters);
+    }
 
-        // see WebMvcConfigurationSupport.addDefaultHttpMessageConverters()
-        converters.add(new ResourceHttpMessageConverter());
-        converters.add(new ResourceRegionHttpMessageConverter());
-        converters.add(new JsonStreamMessageConverter(mapper));
-        converters.add(new MappingJackson2HttpMessageConverter(mapper));
-        converters.add(new ByteArrayHttpMessageConverter());
-        converters.add(new HtmlHttpMessageConverter());
-        converters.add(new SerotoninJsonMessageConverter());
-        converters.add(new SqlMessageConverter());
-        converters.add(new PointValueTimeStreamCsvMessageConverter(csvMapper()));
-        converters.add(new GenericCSVMessageConverter(csvObjectMapper()));
-        converters.add(new StringHttpMessageConverter(Common.UTF8_CS));
+    @Override
+    public Validator getValidator() {
+        return new DefaultValidator();
     }
 
     /**
@@ -173,7 +189,6 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
     public MangoRestTemporaryResourceContainer<ImportStatusProvider> importStatusResources() {
         return new MangoRestTemporaryResourceContainer<ImportStatusProvider>("IMPORT_");
     }
-
 
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {

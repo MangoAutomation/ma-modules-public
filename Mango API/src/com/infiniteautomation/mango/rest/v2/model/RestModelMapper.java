@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
 import com.infiniteautomation.mango.rest.v2.exception.ServerErrorException;
+import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
@@ -39,9 +40,9 @@ public class RestModelMapper {
         for(RestModelMapping<?,?> mapping : this.mappings) {
             if(mapping instanceof RestModelJacksonMapping)
                 objectMapper.registerSubtypes(new NamedType(mapping.toClass(), ((RestModelJacksonMapping<?,?>)mapping).getTypeName()));
-        }        
+        }
     }
-    
+
     public <T> T map(Object from, Class<T> model, PermissionHolder user) {
         Objects.requireNonNull(from);
         Objects.requireNonNull(model);
@@ -77,13 +78,13 @@ public class RestModelMapper {
 
         throw new ServerErrorException(new TranslatableMessage("rest.missingModelMapping", from.getClass(), model));
     }
-    
-    public <T> T unMap(Object from, Class<T> model, PermissionHolder user) {
+
+    public <T> T unMap(Object from, Class<T> vo, PermissionHolder user) {
         Objects.requireNonNull(from);
-        Objects.requireNonNull(model);
+        Objects.requireNonNull(vo);
 
         for (RestModelMapping<?,?> mapping : mappings) {
-            if (mapping.supports(model, from.getClass())) {
+            if (mapping.supports(vo, from.getClass())) {
                 @SuppressWarnings("unchecked")
                 T result = (T) mapping.unmap(from, user, this);
                 if (result != null) {
@@ -92,6 +93,24 @@ public class RestModelMapper {
             }
         }
 
-        throw new ServerErrorException(new TranslatableMessage("rest.missingModelMapping", from.getClass(), model));
+        throw new ServerErrorException(new TranslatableMessage("rest.missingModelMapping", from.getClass(), vo));
+    }
+
+    /**
+     * @param validatedClass
+     * @param result
+     * @return
+     */
+    public ProcessResult mapValidationErrors(Class<?> modelClass, Class<?> validatedClass, ProcessResult result) {
+        Objects.requireNonNull(modelClass);
+        Objects.requireNonNull(validatedClass);
+
+        for (RestModelMapping<?,?> mapping : mappings) {
+            if (mapping.supports(validatedClass, modelClass)) {
+                return mapping.mapValidationErrors(modelClass, validatedClass, result, this);
+            }
+        }
+
+        return result;
     }
 }
