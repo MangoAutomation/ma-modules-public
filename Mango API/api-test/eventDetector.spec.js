@@ -41,7 +41,7 @@ describe('Event detector service', function() {
             return dp.save().then(savedDp => {
                 const ed = EventDetector.createEventDetector(savedDp.id, 'BINARY_STATE');
                 return ed.save().then(savedEd => {
-                    savedEd.delete().then(deletedEd => {
+                    return savedEd.delete().then(deletedEd => {
                         return EventDetector.get(deletedEd.xid).then(ed => {
                             assert.fail('Should not have found detector ' + ed.xid);
                         }, error => {
