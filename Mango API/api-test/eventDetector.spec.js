@@ -39,7 +39,7 @@ describe('Event detector service', function() {
                     }
             });
             return dp.save().then(savedDp => {
-                const ed = createEventDetector(savedDp.id, 'BINARY_STATE', client);
+                const ed = EventDetector.createEventDetector(savedDp.id, 'BINARY_STATE');
                 return ed.save().then(savedEd => {
                     savedEd.delete().then(deletedEd => {
                         return EventDetector.get(deletedEd.xid).then(ed => {
@@ -68,7 +68,7 @@ describe('Event detector service', function() {
                     }
             });
             return dp.save().then(savedDp => {
-                const ed = createEventDetector(savedDp.id, 'BINARY_STATE', client);
+                const ed = EventDetector.createEventDetector(savedDp.id, 'BINARY_STATE');
                 return ed.save().then(savedEd => {
                     return EventDetector.query(`xid=${savedEd.xid}`).then(result => {
                         assert.strictEqual(1, result.total);
@@ -94,7 +94,7 @@ describe('Event detector service', function() {
                     }
             });
             return dp.save().then(savedDp => {
-                const ed = createEventDetector(savedDp.id, 'BINARY_STATE', client);
+                const ed = EventDetector.createEventDetector(savedDp.id, 'BINARY_STATE');
                 return ed.save().then(savedEd => {
                     assert.isNumber(savedEd.id);
                     assert.strictEqual(ed.xid, savedEd.xid);
@@ -126,7 +126,7 @@ describe('Event detector service', function() {
                     }
             });
             return dp.save().then(savedDp => {
-                const ed = createEventDetector(savedDp.id, 'BINARY_STATE', client);
+                const ed = EventDetector.createEventDetector(savedDp.id, 'BINARY_STATE');
                 ed.duration = null;
                 return ed.save().then(savedEd => {
                     assert.fail('Should not have saved detector ' + savedEd.xid);
@@ -152,7 +152,7 @@ describe('Event detector service', function() {
                     }
             });
             return dp.save().then(savedDp => {
-                const ed = createEventDetector(savedDp.id, 'NO_UPDATE', client);
+                const ed = EventDetector.createEventDetector(savedDp.id, 'NO_UPDATE');
                 return ed.save().then(savedEd => {
                     assert.isNumber(savedEd.id);
                     assert.strictEqual(ed.xid, savedEd.xid);
@@ -183,7 +183,7 @@ describe('Event detector service', function() {
                     }
             });
             return dp.save().then(savedDp => {
-                const ed = createEventDetector(savedDp.id, 'BINARY_STATE', client);
+                const ed = EventDetector.createEventDetector(savedDp.id, 'BINARY_STATE');
                 ed.duration = null;
                 return ed.save().then(savedEd => {
                     assert.fail('Should not have saved detector ' + savedEd.xid);
@@ -209,7 +209,7 @@ describe('Event detector service', function() {
                     }
             });
             return dp.save().then(savedDp => {
-                const ed = createEventDetector(savedDp.id, 'NO_CHANGE', client);
+                const ed = EventDetector.createEventDetector(savedDp.id, 'NO_CHANGE');
                 return ed.save().then(savedEd => {
                     assert.isNumber(savedEd.id);
                     assert.strictEqual(ed.xid, savedEd.xid);
@@ -240,7 +240,7 @@ describe('Event detector service', function() {
                     }
             });
             return dp.save().then(savedDp => {
-                const ed = createEventDetector(savedDp.id, 'NO_CHANGE', client);
+                const ed = EventDetector.createEventDetector(savedDp.id, 'NO_CHANGE');
                 ed.duration = null;
                 return ed.save().then(savedEd => {
                     assert.fail('Should not have saved detector ' + savedEd.xid);
@@ -266,7 +266,7 @@ describe('Event detector service', function() {
                     }
             });
             return dp.save().then(savedDp => {
-                const ed = createEventDetector(savedDp.id, 'STATE_CHANGE_COUNT', client);
+                const ed = EventDetector.createEventDetector(savedDp.id, 'STATE_CHANGE_COUNT');
                 return ed.save().then(savedEd => {
                     assert.isNumber(savedEd.id);
                     assert.strictEqual(ed.xid, savedEd.xid);
@@ -298,7 +298,7 @@ describe('Event detector service', function() {
                     }
             });
             return dp.save().then(savedDp => {
-                const ed = createEventDetector(savedDp.id, 'STATE_CHANGE_COUNT', client);
+                const ed = EventDetector.createEventDetector(savedDp.id, 'STATE_CHANGE_COUNT');
                 ed.duration = null;
                 ed.changeCount = -1;
                 return ed.save().then(savedEd => {
@@ -325,7 +325,7 @@ describe('Event detector service', function() {
                     }
             });
             return dp.save().then(savedDp => {
-                const ed = createEventDetector(savedDp.id, 'ALPHANUMERIC_REGEX_STATE', client);
+                const ed = EventDetector.createEventDetector(savedDp.id, 'ALPHANUMERIC_REGEX_STATE');
                 return ed.save().then(savedEd => {
                     assert.isNumber(savedEd.id);
                     assert.strictEqual(ed.xid, savedEd.xid);
@@ -357,7 +357,7 @@ describe('Event detector service', function() {
                     }
             });
             return dp.save().then(savedDp => {
-                const ed = createEventDetector(savedDp.id, 'ALPHANUMERIC_REGEX_STATE', client);
+                const ed = EventDetector.createEventDetector(savedDp.id, 'ALPHANUMERIC_REGEX_STATE');
                 ed.duration = null;
                 ed.state = null;
                 return ed.save().then(savedEd => {
@@ -384,7 +384,7 @@ describe('Event detector service', function() {
                     }
             });
             return dp.save().then(savedDp => {
-                const ed = createEventDetector(savedDp.id, 'ANALOG_CHANGE', client);
+                const ed = EventDetector.createEventDetector(savedDp.id, 'ANALOG_CHANGE');
                 return ed.save().then(savedEd => {
                     assert.isNumber(savedEd.id);
                     assert.strictEqual(ed.xid, savedEd.xid);
@@ -418,7 +418,7 @@ describe('Event detector service', function() {
                     }
             });
             return dp.save().then(savedDp => {
-                const ed = createEventDetector(savedDp.id, 'ANALOG_CHANGE', client);
+                const ed = EventDetector.createEventDetector(savedDp.id, 'ANALOG_CHANGE');
                 ed.duration = null;
                 ed.checkIncrease = false;
                 ed.checkDecrease = false;
@@ -446,7 +446,7 @@ describe('Event detector service', function() {
                     }
             });
             return dp.save().then(savedDp => {
-                const ed = createEventDetector(savedDp.id, 'HIGH_LIMIT', client);
+                const ed = EventDetector.createEventDetector(savedDp.id, 'HIGH_LIMIT', client);
                 return ed.save().then(savedEd => {
                     assert.isNumber(savedEd.id);
                     assert.strictEqual(ed.xid, savedEd.xid);
@@ -481,7 +481,7 @@ describe('Event detector service', function() {
                     }
             });
             return dp.save().then(savedDp => {
-                const ed = createEventDetector(savedDp.id, 'HIGH_LIMIT', client);
+                const ed = EventDetector.createEventDetector(savedDp.id, 'HIGH_LIMIT');
                 ed.duration = null;
                 ed.useResetLimit = true;
                 ed.notHigher = true;
@@ -511,7 +511,7 @@ describe('Event detector service', function() {
                     }
             });
             return dp.save().then(savedDp => {
-                const ed = createEventDetector(savedDp.id, 'LOW_LIMIT', client);
+                const ed = EventDetector.createEventDetector(savedDp.id, 'LOW_LIMIT');
                 return ed.save().then(savedEd => {
                     assert.isNumber(savedEd.id);
                     assert.strictEqual(ed.xid, savedEd.xid);
@@ -546,7 +546,7 @@ describe('Event detector service', function() {
                     }
             });
             return dp.save().then(savedDp => {
-                const ed = createEventDetector(savedDp.id, 'LOW_LIMIT', client);
+                const ed = EventDetector.createEventDetector(savedDp.id, 'LOW_LIMIT');
                 ed.duration = null;
                 ed.useResetLimit = true;
                 ed.notLower = true;
@@ -576,7 +576,7 @@ describe('Event detector service', function() {
                     }
             });
             return dp.save().then(savedDp => {
-                const ed = createEventDetector(savedDp.id, 'RANGE', client);
+                const ed = EventDetector.createEventDetector(savedDp.id, 'RANGE');
                 return ed.save().then(savedEd => {
                     assert.isNumber(savedEd.id);
                     assert.strictEqual(ed.xid, savedEd.xid);
@@ -610,7 +610,7 @@ describe('Event detector service', function() {
                     }
             });
             return dp.save().then(savedDp => {
-                const ed = createEventDetector(savedDp.id, 'RANGE', client);
+                const ed = EventDetector.createEventDetector(savedDp.id, 'RANGE');
                 ed.duration = null;
                 ed.high = 10;
                 ed.low = 11;
@@ -638,7 +638,7 @@ describe('Event detector service', function() {
                     }
             });
             return dp.save().then(savedDp => {
-                const ed = createEventDetector(savedDp.id, 'NEGATIVE_CUSUM', client);
+                const ed = EventDetector.createEventDetector(savedDp.id, 'NEGATIVE_CUSUM');
                 return ed.save().then(savedEd => {
                     assert.isNumber(savedEd.id);
                     assert.strictEqual(ed.xid, savedEd.xid);
@@ -671,7 +671,7 @@ describe('Event detector service', function() {
                     }
             });
             return dp.save().then(savedDp => {
-                const ed = createEventDetector(savedDp.id, 'NEGATIVE_CUSUM', client);
+                const ed = EventDetector.createEventDetector(savedDp.id, 'NEGATIVE_CUSUM');
                 ed.duration = null;
                 ed.limit = "NaN";
                 ed.weight = "NaN";
@@ -699,7 +699,7 @@ describe('Event detector service', function() {
                     }
             });
             return dp.save().then(savedDp => {
-                const ed = createEventDetector(savedDp.id, 'POSITIVE_CUSUM', client);
+                const ed = EventDetector.createEventDetector(savedDp.id, 'POSITIVE_CUSUM');
                 return ed.save().then(savedEd => {
                     assert.isNumber(savedEd.id);
                     assert.strictEqual(ed.xid, savedEd.xid);
@@ -732,7 +732,7 @@ describe('Event detector service', function() {
                     }
             });
             return dp.save().then(savedDp => {
-                const ed = createEventDetector(savedDp.id, 'POSITIVE_CUSUM', client);
+                const ed = EventDetector.createEventDetector(savedDp.id, 'POSITIVE_CUSUM');
                 ed.duration = null;
                 ed.limit = "NaN";
                 ed.weight = "NaN";
@@ -760,7 +760,7 @@ describe('Event detector service', function() {
                     }
             });
             return dp.save().then(savedDp => {
-                const ed = createEventDetector(savedDp.id, 'SMOOTHNESS', client);
+                const ed = EventDetector.createEventDetector(savedDp.id, 'SMOOTHNESS');
                 return ed.save().then(savedEd => {
                     assert.isNumber(savedEd.id);
                     assert.strictEqual(ed.xid, savedEd.xid);
@@ -793,7 +793,7 @@ describe('Event detector service', function() {
                     }
             });
             return dp.save().then(savedDp => {
-                const ed = createEventDetector(savedDp.id, 'SMOOTHNESS', client);
+                const ed = EventDetector.createEventDetector(savedDp.id, 'SMOOTHNESS');
                 ed.duration = null;
                 ed.limit = "NaN";
                 ed.boxcar = "NaN";
@@ -821,7 +821,7 @@ describe('Event detector service', function() {
                     }
             });
             return dp.save().then(savedDp => {
-                const ed = createEventDetector(savedDp.id, 'MULTISTATE_STATE', client);
+                const ed = EventDetector.createEventDetector(savedDp.id, 'MULTISTATE_STATE');
                 return ed.save().then(savedEd => {
                     assert.isNumber(savedEd.id);
                     assert.strictEqual(ed.xid, savedEd.xid);
@@ -853,7 +853,7 @@ describe('Event detector service', function() {
                     }
             });
             return dp.save().then(savedDp => {
-                const ed = createEventDetector(savedDp.id, 'MULTISTATE_STATE', client);
+                const ed = EventDetector.createEventDetector(savedDp.id, 'MULTISTATE_STATE');
                 ed.duration = null;
                 return ed.save().then(savedEd => {
                     assert.fail('Should not have saved detector ' + savedEd.xid);
@@ -940,7 +940,7 @@ describe('Event detector service', function() {
                         }
                 });
                 return dp.save().then(savedDp => {
-                    ed = createEventDetector(savedDp.id, 'BINARY_STATE', client);
+                    ed = EventDetector.createEventDetector(savedDp.id, 'BINARY_STATE');
                     return ed.save().then(savedEd => {
                         originalXid = savedEd.xid;
                     });
