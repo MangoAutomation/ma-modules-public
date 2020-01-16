@@ -19,9 +19,9 @@ const {createClient, assertValidationErrors, login, uuid, delay} = require('@inf
 const client = createClient();
 const User = client.User;
 const Role = client.Role;
+const SystemSettings = client.SystemSetting;
 
 describe('User endpoint tests', function() {
-    this.timeout(10000);
     before('Login', function() { return login.call(this, client); });
     
     before('Helper functions', function() {
@@ -251,12 +251,14 @@ describe('User endpoint tests', function() {
     });
     
     it('Can\'t update permissions as user', function() {
+        this.timeout(10000000);
+        debugger;
         return this.clients.user.user.patch({
             permissions: ['user']
         }).then(user => {
             throw new Error('Should not have updated user ' + user.username);
         }, error => {
-            assertValidationErrors(['permissions'], error);
+            assertValidationErrors(['permissions', 'permissions'], error);
         }); 
     });
     
@@ -330,7 +332,7 @@ describe('User endpoint tests', function() {
         });   
     });
     
-    it('Returns the current user', () => {
+    it('Returns the current user', function() {
         return this.clients.admin.User.current().then(user => {
             assert.equal(user.username, this.adminUserSettings.username);
         });
@@ -463,12 +465,12 @@ describe('User endpoint tests', function() {
     });
     
     it('Cannot change password to something with too few Uppercase letters', function() {
-        this.testUser.password = "testings";
+        this.clients.user.user.password = "testings";
         let currentSettingValue;
         return SystemSettings.getValue('password.rule.upperCaseCount', 'INTEGER').then(response => {
             currentSettingValue = response;
             return SystemSettings.setValue('password.rule.upperCaseCount', 6, 'INTEGER').then(response => {
-                return this.testUser.save().then(user => {
+                return this.clients.user.user.save().then(user => {
                     throw new Error('Should not have changed password for user' + user.username);
                 }, error => {
                     assertValidationErrors(['password'], error);
@@ -480,12 +482,12 @@ describe('User endpoint tests', function() {
     });
     
     it('Cannot change password to something with too few Lowercase letters', function() {
-        this.testUser.password = "TESTINGS";
+        this.clients.user.user.password = "TESTINGS";
         let currentSettingValue;
         return SystemSettings.getValue('password.rule.lowerCaseCount', 'INTEGER').then(response => {
             currentSettingValue = response;
             return SystemSettings.setValue('password.rule.lowerCaseCount', 6, 'INTEGER').then(response => {
-                return this.testUser.save().then(user => {
+                return this.clients.user.user.save().then(user => {
                     throw new Error('Should not have changed password for ' + user.username);
                 }, error => {
                     assertValidationErrors(['password'], error);
@@ -497,12 +499,12 @@ describe('User endpoint tests', function() {
     });
     
     it('Cannot change password to something with too few digits', function() {
-        this.testUser.password = "112TESTINGS";
+        this.clients.user.user.password = "112TESTINGS";
         let currentSettingValue;
         return SystemSettings.getValue('password.rule.digitCount', 'INTEGER').then(response => {
             currentSettingValue = response;
             return SystemSettings.setValue('password.rule.digitCount', 6, 'INTEGER').then(response => {
-                return this.testUser.save().then(user => {
+                return this.clients.user.user.save().then(user => {
                     throw new Error('Should not have changed password for ' + user.username);
                 }, error => {
                     assertValidationErrors(['password'], error);
@@ -514,12 +516,12 @@ describe('User endpoint tests', function() {
     });
     
     it('Cannot change password to something with too few special chars', function() {
-        this.testUser.password = "%%%&TESTINGS";
+        this.clients.user.user.password = "%%%&TESTINGS";
         let currentSettingValue;
         return SystemSettings.getValue('password.rule.specialCount', 'INTEGER').then(response => {
             currentSettingValue = response;
             return SystemSettings.setValue('password.rule.specialCount', 6, 'INTEGER').then(response => {
-                return this.testUser.save().then(user => {
+                return this.clients.user.user.save().then(user => {
                     throw new Error('Should not have changed password for '  + user.username);
                 }, error => {
                     assertValidationErrors(['password'], error);
@@ -531,12 +533,12 @@ describe('User endpoint tests', function() {
     });
     
     it('Cannot change password to something with too short', function() {
-        this.testUser.password = "12345678910";
+        this.clients.user.user.password = "12345678910";
 
         return SystemSettings.getValue('password.rule.lengthMin', 'INTEGER').then(response => {
             const currentSettingValue = response;
             return SystemSettings.setValue('password.rule.lengthMin', 12, 'INTEGER').then(response => {
-                return this.testUser.save().then(user => {
+                return this.clients.user.user.save().then(user => {
                     throw new Error('Should not have changed password for ' + user.username);
                 }, error => {
                     assertValidationErrors(['password'], error);
@@ -548,11 +550,11 @@ describe('User endpoint tests', function() {
     });
     
     it('Cannot change password to something with too long', function() {
-        this.testUser.password = "12345678910";
+        this.clients.user.user.password = "12345678910";
         return SystemSettings.getValue('password.rule.lengthMax', 'INTEGER').then(response => {
             const currentSettingValue = response;
             return SystemSettings.setValue('password.rule.lengthMax', 8, 'INTEGER').then(response => {
-                return this.testUser.save().then(user => {
+                return this.clients.user.user.save().then(user => {
                     throw new Error('Should not have changed password for ' + user.username);
                 }, error => {
                     assertValidationErrors(['password'], error);
