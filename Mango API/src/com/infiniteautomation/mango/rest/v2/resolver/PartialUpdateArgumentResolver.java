@@ -27,10 +27,10 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 import org.springframework.web.servlet.HandlerMapping;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.infiniteautomation.mango.rest.v2.advice.MangoRequestBodyAdvice;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.patch.PatchVORequestBody;
-import com.infiniteautomation.mango.rest.v2.validation.DefaultValidator;
 import com.infiniteautomation.mango.spring.MangoRuntimeContextConfiguration;
 import com.infiniteautomation.mango.spring.service.AbstractVOService;
 import com.serotonin.m2m2.Common;
@@ -90,7 +90,7 @@ public class PartialUpdateArgumentResolver implements HandlerMethodArgumentResol
         PermissionHolder user = Common.getUser();
 
         //Set the source class into the request scope to use if validation fails
-        webRequest.setAttribute(DefaultValidator.VALIDATION_SOURCE, patch.modelClass(), RequestAttributes.SCOPE_REQUEST);
+        webRequest.setAttribute(MangoRequestBodyAdvice.MODEL_CLASS, patch.modelClass(), RequestAttributes.SCOPE_REQUEST);
 
         Object vo;
         switch(patch.idType()) {

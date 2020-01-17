@@ -278,36 +278,6 @@ describe('User endpoint tests', function() {
         });
     });
     
-    it('Queries to match all user roles as admin', function() {
-        this.timeout(10000000);
-        return this.clients.admin.User.query(`permissionsContainsAll(permissions,user,${this.testUserRole.xid})&username=${this.clients.user.user.username}`).then(result => {
-            console.log(result);
-            assert.equal(result.total, 1);
-            assert.equal(result[0].username, this.clients.user.user.username);
-        });
-    });
-    
-    it('Queries not to match all user roles as admin', function() {
-        this.timeout(10000000);
-        return this.clients.admin.User.query(`permissionsContainsAll(permissions,user,superadmin)&username=${this.clients.user.user.username}`).then(result => {
-            console.log(result);
-            assert.equal(result.total, 0);
-        });
-    });
-    
-    it('Queries to match one user roles as admin', function() {
-        return this.clients.admin.User.query(`permissionsContainsAny(permissions,superadmin)&username=${this.clients.admin.user.username}`).then(result => {
-            assert.equal(result.total, 1);
-            assert.equal(result[0].username, this.clients.admin.user.username);
-        });
-    });
-    
-    it('Queries not to match any user roles as admin', function() {
-        return this.clients.admin.User.query(`permissionsContainsAny(permissions,superadmin)&username=${this.clients.user.user.username}`).then(result => {
-            assert.equal(result.total, 0);
-        });
-    });
-    
     it('Queries for disabled users as admin', function() {
         //First disable the test user
         return this.clients.admin.User.patch(this.clients.user.user.username, {
@@ -315,7 +285,7 @@ describe('User endpoint tests', function() {
         }).then(user => {
             assert.equal(user.username, this.testUserSettings.username);
             assert.equal(user.disabled, true);
-            return this.clients.admin.User.query('disabled=true').then(result => {
+            return this.clients.admin.User.query(`disabled=true&username=${this.testUserSettings.username}`).then(result => {
                 assert.equal(result.total, 1);
                 assert.equal(result[0].username, this.testUserSettings.username);
             });

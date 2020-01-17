@@ -34,8 +34,8 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import com.infiniteautomation.mango.db.query.RQLToCondition.RQLVisitException;
+import com.infiniteautomation.mango.rest.v2.advice.MangoRequestBodyAdvice;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
-import com.infiniteautomation.mango.rest.v2.validation.DefaultValidator;
 import com.infiniteautomation.mango.rest.v2.views.AdminView;
 import com.infiniteautomation.mango.spring.components.EmailAddressVerificationService.EmailAddressInUseException;
 import com.infiniteautomation.mango.util.exception.FeatureDisabledException;
@@ -118,7 +118,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         ProcessResult result = validationException.getValidationResult();
 
         //Do any potential mapping of VO property names to model property names
-        Class<?> modelClass = (Class<?>) req.getAttribute(DefaultValidator.VALIDATION_SOURCE, RequestAttributes.SCOPE_REQUEST);
+        Class<?> modelClass = (Class<?>) req.getAttribute(MangoRequestBodyAdvice.MODEL_CLASS, RequestAttributes.SCOPE_REQUEST);
         if(validationException.getValidatedClass() != null && modelClass != null) {
             result = mapper.mapValidationErrors(modelClass, validationException.getValidatedClass(), result);
         }
