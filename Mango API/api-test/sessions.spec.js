@@ -29,7 +29,7 @@ describe('Sessions and expiry', function() {
             username,
             email: `${username}@example.com`,
             name: `${username}`,
-            permissions: 'user',
+            permissions: ['user'],
             password: this.testUserPassword
         });
         return this.testUser.save();
@@ -73,7 +73,7 @@ describe('Sessions and expiry', function() {
         const loginClient = createClient();
 
         return loginClient.User.login(this.testUser.username, this.testUserPassword).then(() => {
-            this.testUser.permissions = `user,${uuid()}`;
+            this.testUser.permissions = ['user','superadmin'];
             return this.testUser.save();
         }).then(() => {
             return loginClient.User.current().then(response => {
