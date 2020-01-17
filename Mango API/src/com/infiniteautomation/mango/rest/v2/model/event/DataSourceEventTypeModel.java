@@ -14,42 +14,36 @@ import com.serotonin.m2m2.rt.event.type.DataSourceEventType;
  */
 
 public class DataSourceEventTypeModel extends AbstractEventTypeModel<DataSourceEventType, AbstractDataSourceModel<?>, String> {
-    
+
     private AlarmLevels alarmLevel;
-    
+
     public DataSourceEventTypeModel() {
         super(new DataSourceEventType());
     }
-    
+
     public DataSourceEventTypeModel(DataSourceEventType type) {
         super(type);
         alarmLevel = type.getAlarmLevel();
     }
-    
+
     public DataSourceEventTypeModel(DataSourceEventType type, AbstractDataSourceModel<?> reference1) {
         super(type, reference1);
         alarmLevel = type.getAlarmLevel();
     }
-    
+
     public DataSourceEventTypeModel(DataSourceEventType type, AbstractDataSourceModel<?> reference1, String reference2) {
         super(type, reference1, reference2);
         alarmLevel = type.getAlarmLevel();
     }
 
-    /**
-     * @return the alarmLevel
-     */
     public AlarmLevels getAlarmLevel() {
         return alarmLevel;
     }
-    
-    /**
-     * @param alarmLevel the alarmLevel to set
-     */
+
     public void setAlarmLevel(AlarmLevels alarmLevel) {
         this.alarmLevel = alarmLevel;
     }
-    
+
     @Override
     public DataSourceEventType toVO() {
         return new DataSourceEventType(referenceId1, referenceId2 , alarmLevel, duplicateHandling);

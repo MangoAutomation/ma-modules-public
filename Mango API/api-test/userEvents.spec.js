@@ -63,7 +63,7 @@ describe('User Event query tests', function(){
       });
     });
     
-    it('Gets websocket notifications for raised events', function() {
+    it('Gets websocket notifications for raised user events', function() {
         this.timeout(5000);
         
         let ws;
