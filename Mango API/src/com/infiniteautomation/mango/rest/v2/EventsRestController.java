@@ -199,11 +199,11 @@ public class EventsRestController {
     }
 
     private StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
+        rql = RQLUtils.addAndRestriction(rql, new ASTNode("eq", "userId", user.getId()));
+
         if (user.hasAdminRole()) {
             return new StreamedVORqlQueryWithTotal<>(service, rql, fieldMap, valueConverters, item -> true, vo -> map.apply(vo, user));
         } else {
-            //TODO we may only need this restriction
-            rql = RQLUtils.addAndRestriction(rql, new ASTNode("eq", "userId", user.getId()));
             return new StreamedVORqlQueryWithTotal<>(service, rql, fieldMap, valueConverters, item -> service.hasReadPermission(user, item), vo -> map.apply(vo, user));
         }
     }

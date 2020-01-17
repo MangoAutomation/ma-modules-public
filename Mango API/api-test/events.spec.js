@@ -286,7 +286,6 @@ describe('Events v2 tests', function(){
             path: `/rest/v2/events?eq(eventType,DATA_POINT)&eq(referenceId1,${this.testPoint1.id})&sort(-activeTimestamp)&limit(15,0)`,
             method: 'GET'
         }).then(response => {
-            console.log(response.data);
             assert.strictEqual(response.data.items.length, 1);
             assert.isAtLeast(response.data.total, 1);
         });
