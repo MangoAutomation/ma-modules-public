@@ -37,7 +37,7 @@ public abstract class AbstractPublisherModel<POINT extends PublishedPointVO, PUB
     public static final String MODEL_TYPE = "modelType";
 
     @JsonIgnore
-    protected PublisherDefinition definition;
+    protected PublisherDefinition<?> definition;
     
     @ApiModelProperty("Read only description of publisher connection")
     @JsonInclude(JsonInclude.Include.NON_NULL)
