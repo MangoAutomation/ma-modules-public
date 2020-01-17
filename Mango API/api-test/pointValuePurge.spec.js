@@ -195,7 +195,7 @@ describe('Point value purge', function() {
             //Ensure we set the intra shard purge setting
             //mangoNoSql.intraShardPurge
             return client.restRequest({
-                path: '/rest/v1/system-settings/mangoNoSql.intraShardPurge?type=BOOLEAN',
+                path: '/rest/v2/system-settings/mangoNoSql.intraShardPurge?type=BOOLEAN',
                 method: 'PUT',
                 data: true
             }).then(response => {
