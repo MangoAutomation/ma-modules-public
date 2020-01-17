@@ -37,7 +37,7 @@ describe('User endpoint tests', function() {
     beforeEach('Create test User', function() {
         const username = uuid();
         const testUserPassword = uuid();
-        const testUserRole = new Role();
+        this.testUserRole = new Role();
         this.testUserSettings = {
             name: 'name',
             username: username,
@@ -50,7 +50,7 @@ describe('User endpoint tests', function() {
             receiveAlarmEmails: 'IGNORE',
             receiveOwnAuditEvents: false,
             muted: false,
-            permissions: [testUserRole.xid],
+            permissions: [this.testUserRole.xid],
             sessionExpirationOverride: true,
             sessionExpirationPeriod: {
                 periods: 1,
@@ -66,7 +66,7 @@ describe('User endpoint tests', function() {
         };
         
         const testUser = new User(this.testUserSettings);
-        return testUserRole.save().then(()=>{
+        return this.testUserRole.save().then(()=>{
             //Save user and setup a session user for it
             return testUser.save().then(user => {
                 assert.equal(user.username, username);
@@ -118,7 +118,7 @@ describe('User endpoint tests', function() {
     afterEach('Deletes the test user', function() {
         return client.User.delete(this.clients.user.user.username).then(user => {
             assert.equal(user.username, this.clients.user.user.username);
-        });
+        }).then(this.testUserRole.delete());
     });
     
     afterEach('Deletes the test admin user', function() {
@@ -251,14 +251,12 @@ describe('User endpoint tests', function() {
     });
     
     it('Can\'t update permissions as user', function() {
-        this.timeout(10000000);
-        debugger;
         return this.clients.user.user.patch({
             permissions: ['user']
         }).then(user => {
             throw new Error('Should not have updated user ' + user.username);
         }, error => {
-            assertValidationErrors(['permissions', 'permissions'], error);
+            assertValidationErrors(['permissions'], error);
         }); 
     });
     
@@ -280,17 +278,33 @@ describe('User endpoint tests', function() {
         });
     });
     
-    it('Queries to match all user permissions as admin', function() {
-        return this.clients.admin.User.query(`permissionsContainsAll(permissions,testuser,test)&username=${this.clients.user.user.username}`).then(result => {
+    it('Queries to match all user roles as admin', function() {
+        this.timeout(10000000);
+        return this.clients.admin.User.query(`permissionsContainsAll(permissions,user,${this.testUserRole.xid})&username=${this.clients.user.user.username}`).then(result => {
+            console.log(result);
             assert.equal(result.total, 1);
-            assert.equal(result[0].username, this.testUserSettings.username);
+            assert.equal(result[0].username, this.clients.user.user.username);
         });
     });
     
-    it('Queries to match one user permission as admin', function() {
-        return this.clients.admin.User.query(`permissionsContainsAny(permissions,testuser)&username=${this.clients.user.user.username}`).then(result => {
+    it('Queries not to match all user roles as admin', function() {
+        this.timeout(10000000);
+        return this.clients.admin.User.query(`permissionsContainsAll(permissions,user,superadmin)&username=${this.clients.user.user.username}`).then(result => {
+            console.log(result);
+            assert.equal(result.total, 0);
+        });
+    });
+    
+    it('Queries to match one user roles as admin', function() {
+        return this.clients.admin.User.query(`permissionsContainsAny(permissions,superadmin)&username=${this.clients.admin.user.username}`).then(result => {
             assert.equal(result.total, 1);
-            assert.equal(result[0].username, this.testUserSettings.username);
+            assert.equal(result[0].username, this.clients.admin.user.username);
+        });
+    });
+    
+    it('Queries not to match any user roles as admin', function() {
+        return this.clients.admin.User.query(`permissionsContainsAny(permissions,superadmin)&username=${this.clients.user.user.username}`).then(result => {
+            assert.equal(result.total, 0);
         });
     });
     
