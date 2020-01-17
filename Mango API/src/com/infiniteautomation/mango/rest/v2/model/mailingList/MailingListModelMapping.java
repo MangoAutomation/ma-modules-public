@@ -47,6 +47,13 @@ public class MailingListModelMapping implements RestModelMapping<MailingList, Ma
     }
 
     @Override
+    public boolean supports(Class<?> from, Class<?> toClass) {
+        return this.fromClass().isAssignableFrom(from) &&
+                (toClass.isAssignableFrom(this.toClass())
+                        || toClass.isAssignableFrom(MailingListWithRecipientsModel.class));
+    }
+
+    @Override
     public MailingListModel map(Object from, PermissionHolder user, RestModelMapper mapper) {
         MailingList vo = (MailingList)from;
         MailingListModel model;
@@ -87,7 +94,7 @@ public class MailingListModelMapping implements RestModelMapping<MailingList, Ma
 
         if(model.getEditPermissions() != null) {
             Set<Role> roles = new HashSet<>();
-            vo.setReadRoles(roles);
+            vo.setEditRoles(roles);
             for(String role : model.getEditPermissions()) {
                 try {
                     roles.add(roleService.get(role).getRole());
