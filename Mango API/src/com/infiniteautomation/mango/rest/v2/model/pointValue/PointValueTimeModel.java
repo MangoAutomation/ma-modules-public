@@ -32,11 +32,7 @@ public class PointValueTimeModel {
     public PointValueTimeModel(){
 
     }
-    /**
-     *
-     *
-     * @param data - PointValueTime object
-     */
+
     public PointValueTimeModel(PointValueTime data) {
 
         this.dataType = DataTypeEnum.convertTo(data.getValue().getDataType());
@@ -49,7 +45,6 @@ public class PointValueTimeModel {
             this.annotation = ((IAnnotated) data).getSourceMessage();
 
     }
-
 
     public DataTypeEnum getDataType() {
         return dataType;
