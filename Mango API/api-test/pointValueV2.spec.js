@@ -23,7 +23,7 @@ const moment = require('moment-timezone');
 
 describe('Point values v2', function() {
     before('Login', function() { return login.call(this, client); });
-
+    this.timeout(10000000);
     const newDataPoint = (xid, dsXid, rollupType, simplifyType, simplifyValue) => {
         return new DataPoint({
             xid: xid,

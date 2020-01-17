@@ -37,6 +37,7 @@ import com.infiniteautomation.mango.rest.v2.exception.AbstractRestV2Exception;
 import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.LegacyXidPointValueTimeModel;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueField;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueImportResult;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeModel;
@@ -44,7 +45,6 @@ import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStrea
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PurgeDataPointValuesModel;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PurgePointValuesResponseModel;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.RollupEnum;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.XidPointValueTimeModel;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.MultiDataPointDefaultRollupStatisticsQuantizerStream;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.MultiDataPointStatisticsQuantizerStream;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.LatestQueryInfo;
@@ -819,21 +819,21 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
     }
 
     @ApiOperation(
-            value = "Import Point Values for one or many Data Points",
+            value = "Import Point Values for one or many Data Points, this is deprecated and it is recommended to use the /point-value-modification endpoints",
             notes = "Data Point must exist and user must have write access"
             )
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<Collection<PointValueImportResult>> savePointsValues(HttpServletRequest request,
             @ApiParam(value = "Shall data point listeners be notifified, default is NEVER", required = false, allowMultiple = false)
     @RequestParam(defaultValue="NEVER") FireEvents fireEvents,
-    @RequestBody(required = true) List<XidPointValueTimeModel> models,
+    @RequestBody(required = true) List<LegacyXidPointValueTimeModel> models,
     @AuthenticationPrincipal User user
             ) {
 
         //Map of XIDs to results
         Map<String, PointValueImportResult> results = new HashMap<String, PointValueImportResult>();
 
-        for(XidPointValueTimeModel model : models) {
+        for(LegacyXidPointValueTimeModel model : models) {
             PointValueImportResult result = results.get(model.getXid());
             if(result == null) {
                 result = new PointValueImportResult(model.getXid(), dao, permissionService, fireEvents, user);

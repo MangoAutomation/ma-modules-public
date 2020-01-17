@@ -1,20 +1,25 @@
 /**
- * Copyright (C) 2019  Infinite Automation Software. All rights reserved.
+ * Copyright (C) 2020  Infinite Automation Software. All rights reserved.
  */
+
 package com.infiniteautomation.mango.rest.v2.model.pointValue;
 
-import java.time.ZonedDateTime;
-
 /**
- * @author Terry Packer
+ * Left here for legacy purposes in the point value rest controller.
  *
+ * To import values consider using the PointValueModificationRestController
+ * with the XidPointValueTimeModel.  The difference being
+ * the time format.
+ *
+ * @author Terry Packer
  */
-public class XidPointValueTimeModel {
+@Deprecated
+public class LegacyXidPointValueTimeModel {
+
     private String xid;
     private Object value;
-    private ZonedDateTime timestamp;
+    private long timestamp;
     private String annotation;
-
     public String getXid() {
         return xid;
     }
@@ -27,10 +32,10 @@ public class XidPointValueTimeModel {
     public void setValue(Object value) {
         this.value = value;
     }
-    public ZonedDateTime getTimestamp() {
+    public long getTimestamp() {
         return timestamp;
     }
-    public void setTimestamp(ZonedDateTime timestamp) {
+    public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
     }
     public String getAnnotation() {
@@ -39,8 +44,5 @@ public class XidPointValueTimeModel {
     public void setAnnotation(String annotation) {
         this.annotation = annotation;
     }
-    @Override
-    public String toString() {
-        return xid + " - " + value + "@" + timestamp;
-    }
+
 }
