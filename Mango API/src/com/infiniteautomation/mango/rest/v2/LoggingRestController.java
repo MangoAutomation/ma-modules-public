@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.infiniteautomation.mango.db.query.QueryAttribute;
+import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.model.JSONStreamedArray;
 import com.infiniteautomation.mango.rest.v2.model.filestore.FileModel;
@@ -103,7 +104,12 @@ public class LoggingRestController {
         ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
         File file = new File(Common.getLogsDir(), filename);
         if(file.exists()){
-            return new LogQueryArrayStream(filename, query);
+            //Pattern pattern = new
+            if(filename.matches(LogQueryArrayStream.LOGFILE_REGEX)){
+                return new LogQueryArrayStream(filename, query);
+            }else {
+                throw new AccessDeniedException();
+            }
         }else{
             throw new NotFoundRestException();
         }
