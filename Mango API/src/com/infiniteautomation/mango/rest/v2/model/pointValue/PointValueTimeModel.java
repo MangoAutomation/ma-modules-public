@@ -24,7 +24,7 @@ import com.serotonin.m2m2.rt.dataImage.types.NumericValue;
 public class PointValueTimeModel {
 
 
-    private DataTypeEnum type;
+    private DataTypeEnum dataType;
     private Object value;
     private long timestamp;
     private TranslatableMessage annotation;
@@ -39,8 +39,8 @@ public class PointValueTimeModel {
      */
     public PointValueTimeModel(PointValueTime data) {
 
-        this.type = DataTypeEnum.convertTo(data.getValue().getDataType());
-        if(type != DataTypeEnum.IMAGE){
+        this.dataType = DataTypeEnum.convertTo(data.getValue().getDataType());
+        if(dataType != DataTypeEnum.IMAGE){
             this.value = data.getValue().getObjectValue();
         }
         this.timestamp = data.getTime();
@@ -51,11 +51,11 @@ public class PointValueTimeModel {
     }
 
 
-    public DataTypeEnum getType() {
-        return type;
+    public DataTypeEnum getDataType() {
+        return dataType;
     }
-    public void setType(DataTypeEnum type) {
-        this.type = type;
+    public void setDataType(DataTypeEnum type) {
+        this.dataType = type;
     }
     public Object getValue() {
         return value;
@@ -78,7 +78,7 @@ public class PointValueTimeModel {
 
     public PointValueTime toVO(){
         DataValue dataValue = null;
-        switch(this.type){
+        switch(this.dataType){
             case ALPHANUMERIC:
                 dataValue = new AlphanumericValue((String) this.value);
                 break;
