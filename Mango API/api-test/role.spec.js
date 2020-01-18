@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-const {createClient, assertValidationErrors, login} = require('@infinite-automation/mango-client/test/testHelper');
+const {createClient, assertValidationErrors, defer, delay, login} = require('@infinite-automation/mango-client/test/testHelper');
 const client = createClient();
 const Role = client.Role;
 const User = client.User;
@@ -24,7 +24,7 @@ describe('Role endpoint tests', function() {
     before('Login', function() { return login.call(this, client); });
     
     it('Create a new role', () => {
-        const role = new Role(client);
+        const role = new Role();
         const local = Object.assign({}, role);
         return role.save().then(saved => {
             assert.strictEqual(saved, role);
@@ -35,7 +35,7 @@ describe('Role endpoint tests', function() {
     });
     
     it('Cannot create a role with a space', () => {
-        const role = new Role(client);
+        const role = new Role();
         role.xid = 'xid with spaces';
         return role.save().then(savedRole => {
             assert.fail('Should not have created role ' + savedRole.xid);
@@ -45,7 +45,7 @@ describe('Role endpoint tests', function() {
     });
     
     it('Cannot change a role xid', () => {
-        const role = new Role(client);
+        const role = new Role();
         return role.save().then(saved => {
             saved.xid = saved.xid + 'updated';
             return saved.save().then(updated => {
@@ -57,7 +57,7 @@ describe('Role endpoint tests', function() {
     });
     
     it('Update a role', () => {
-        const role = new Role(client);
+        const role = new Role();
         return role.save().then(saved => {
             saved.name = saved.name + 'updated';
             const local = Object.assign({}, saved);
@@ -71,7 +71,7 @@ describe('Role endpoint tests', function() {
     
     
     it('Get a role', () => {
-        const role = new Role(client);
+        const role = new Role();
         const local = Object.assign({}, role);
         return role.save().then(saved => {
             return Role.get(saved.xid).then(gotten => {
@@ -83,7 +83,7 @@ describe('Role endpoint tests', function() {
     });
     
     it('Patch a role', () => {
-        const role = new Role(client);
+        const role = new Role();
         return role.save().then(saved => {
             const local = Object.assign({}, saved);
             return saved.patch({name: local.name + 'updated'}).then(updated => {
@@ -95,7 +95,7 @@ describe('Role endpoint tests', function() {
     });
     
     it('Delete a role', () => {
-        const role = new Role(client);
+        const role = new Role();
         return role.save().then(saved => {
             return saved.delete().then(deleted => {
                 return Role.get(deleted.xid).then(gotten => {
@@ -174,12 +174,256 @@ describe('Role endpoint tests', function() {
     });
     
     it('Can query for role via name', () => {
-        const role = new Role(client);
+        const role = new Role();
         return role.save().then(saved => {
             return Role.query(`xid=${saved.xid}`).then(result => {
                 assert.strictEqual(result.total, 1);
                 assert.strictEqual(result[0].xid, saved.xid);
             });
         });
+    });
+    
+    it('Gets websocket notifications for role create', function() {
+
+        let ws;
+        const subscription = {
+            notificationTypes: ['create'],
+            messageType: 'REQUEST',
+            requestType: 'SUBSCRIPTION'
+        };
+        
+        const socketOpenDeferred = defer();
+        const listUpdatedDeferred = defer();
+
+        const role = new Role();
+        
+        return Promise.resolve().then(() => {
+            ws = client.openWebSocket({
+                path: '/rest/v2/websocket/roles'
+            });
+
+            ws.on('open', () => {
+                socketOpenDeferred.resolve();
+            });
+            
+            ws.on('error', error => {
+                const msg = new Error(`WebSocket error, error: ${error}`);
+                socketOpenDeferred.reject(msg);
+                listUpdatedDeferred.reject(msg);
+            });
+            
+            ws.on('close', (code, reason) => {
+                const msg = new Error(`WebSocket closed, code: ${code}, reason: ${reason}`);
+                socketOpenDeferred.reject(msg);
+                listUpdatedDeferred.reject(msg);
+            });
+
+            ws.on('message', msgStr => {
+                try{
+                    assert.isString(msgStr);
+                    const msg = JSON.parse(msgStr);
+                    if(msg.messageType === 'NOTIFICATION') {
+                        assert.strictEqual(msg.notificationType, 'create');
+                        assert.strictEqual(msg.payload.name, role.name);
+                        assert.strictEqual(msg.payload.xid, role.xid);
+                        listUpdatedDeferred.resolve();                           
+                    }
+                }catch(e){
+                    listUpdatedDeferred.reject(e);
+                }
+            });
+            return socketOpenDeferred.promise;
+        }).then(() => {
+            const send = defer();
+            ws.send(JSON.stringify(subscription), error => {
+                if (error != null) {
+                    send.reject(error);
+                } else {
+                    send.resolve();
+                }
+            });
+            return send.promise;
+            
+        }).then(() => {
+            return role.save().then(saved => {
+                assert.isNumber(saved.id);
+                assert.strictEqual(role.xid, saved.xid);
+            });
+        }).then(() => listUpdatedDeferred.promise).then((r)=>{
+            ws.close();
+            return r;
+        },e => {
+            ws.close();
+            return Promise.reject(e);
+        }).finally(() => {
+            role.delete();
+        });
+    });
+
+    it('Gets websocket notifications for role update', function() {
+
+        let ws;
+        const subscription = {
+                notificationTypes: ['update'],
+                messageType: 'REQUEST',
+                requestType: 'SUBSCRIPTION'
+            };
+        
+        const socketOpenDeferred = defer();
+        const listUpdatedDeferred = defer();
+        
+        const role = new Role();
+
+        return Promise.resolve().then(() => {
+            ws = client.openWebSocket({
+                path: '/rest/v2/websocket/roles'
+            });
+
+            ws.on('open', () => {
+                socketOpenDeferred.resolve();
+            });
+            
+            ws.on('error', error => {
+                const msg = new Error(`WebSocket error, error: ${error}`);
+                socketOpenDeferred.reject(msg);
+                listUpdatedDeferred.reject(msg);
+            });
+            
+            ws.on('close', (code, reason) => {
+                const msg = new Error(`WebSocket closed, code: ${code}, reason: ${reason}`);
+                socketOpenDeferred.reject(msg);
+                listUpdatedDeferred.reject(msg);
+            });
+
+            ws.on('message', msgStr => {
+                try{
+                    assert.isString(msgStr);
+                    const msg = JSON.parse(msgStr);
+                    if(msg.messageType === 'NOTIFICATION') {
+                        assert.strictEqual(msg.notificationType, 'update');
+                        assert.strictEqual(msg.payload.name, role.name);
+                        assert.strictEqual(msg.payload.xid, role.xid);
+                        listUpdatedDeferred.resolve();                           
+                        listUpdatedDeferred.resolve(); 
+                    }
+                }catch(e){
+                    listUpdatedDeferred.reject(e);
+                }
+            });
+
+            return socketOpenDeferred.promise;
+        }).then(() => {
+            const send = defer();
+            ws.send(JSON.stringify(subscription), error => {
+                if (error != null) {
+                    send.reject(error);
+                } else {
+                    send.resolve();
+                }
+            });
+            return send.promise;
+            
+        }).then(() => delay(1000)).then(() => {
+            //TODO Fix DaoNotificationWebSocketHandler so we can remove this delay, only required for cold start
+            return role.save().then(saved => {
+                assert.isNumber(saved.id);
+                role.id = saved.id;
+                role.name = 'new name';
+                assert.strictEqual(role.xid, saved.xid);
+                return role.save().then(updated =>{
+                    assert.strictEqual(role.xid, updated.xid);
+                    assert.strictEqual(role.name, updated.name);
+                });
+            });
+        }).then(() => listUpdatedDeferred.promise).then((r)=>{
+            ws.close();
+            return r;
+        },e => {
+            ws.close();
+            return Promise.reject(e);
+        }).finally(() => {
+            role.delete();
+        });
+    });
+    
+    it('Gets websocket notifications for role delete', function() {
+
+        let ws;
+        const subscription = {
+                notificationTypes: ['delete'],
+                messageType: 'REQUEST',
+                requestType: 'SUBSCRIPTION'
+            };
+        
+        const socketOpenDeferred = defer();
+        const listUpdatedDeferred = defer();
+
+        const role = new Role();
+        
+        return Promise.resolve().then(() => {
+            ws = client.openWebSocket({
+                path: '/rest/v2/websocket/roles'
+            });
+
+            ws.on('open', () => {
+                socketOpenDeferred.resolve();
+            });
+            
+            ws.on('error', error => {
+                const msg = new Error(`WebSocket error, error: ${error}`);
+                socketOpenDeferred.reject(msg);
+                listUpdatedDeferred.reject(msg);
+            });
+            
+            ws.on('close', (code, reason) => {
+                const msg = new Error(`WebSocket closed, code: ${code}, reason: ${reason}`);
+                socketOpenDeferred.reject(msg);
+                listUpdatedDeferred.reject(msg);
+            });
+
+            ws.on('message', msgStr => {
+                try{
+                    assert.isString(msgStr);
+                    const msg = JSON.parse(msgStr);
+                    if(msg.messageType === 'NOTIFICATION') {
+                        assert.strictEqual(msg.notificationType, 'delete');
+                        assert.strictEqual(msg.payload.name, role.name);
+                        assert.strictEqual(msg.payload.xid, role.xid);
+                        listUpdatedDeferred.resolve();                           
+                        listUpdatedDeferred.resolve(); 
+                    }
+                }catch(e){
+                    listUpdatedDeferred.reject(e);
+                }
+            });
+
+            return socketOpenDeferred.promise;
+        }).then(() => {
+            const send = defer();
+            ws.send(JSON.stringify(subscription), error => {
+                if (error != null) {
+                    send.reject(error);
+                } else {
+                    send.resolve();
+                }
+            });
+            return send.promise;
+            
+        }).then(() => delay(1000)).then(() => {
+            //TODO Fix DaoNotificationWebSocketHandler so we can remove this delay, only required for cold start
+            return role.save().then(saved => {
+                assert.isNumber(saved.id);
+                role.id = saved.id;
+                role.name = 'new name';
+                assert.strictEqual(role.xid, saved.xid);
+                return role.delete();
+            });
+        }).then(() => listUpdatedDeferred.promise).then((r)=>{
+            ws.close();
+            return r;
+        },e => {
+            ws.close();
+            return Promise.reject(e);
+        })
     });
 });

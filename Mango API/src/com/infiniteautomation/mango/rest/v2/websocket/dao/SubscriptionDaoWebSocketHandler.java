@@ -70,7 +70,7 @@ public abstract class SubscriptionDaoWebSocketHandler<T extends AbstractBasicVO>
 
             Set<String> notificationTypes = new HashSet<>();
             for (String type : subscription.getNotificationTypes()) {
-                notificationTypes.add("add".equals(type) ? "create": type);
+                notificationTypes.add("add".equals(type) ? "create" : type);
             }
             subscription.setNotificationTypes(notificationTypes);
 
