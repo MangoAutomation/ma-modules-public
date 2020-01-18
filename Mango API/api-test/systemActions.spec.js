@@ -53,7 +53,7 @@ describe('System Action Endpoints', function() {
           method: 'PUT'
       }).then(response => {
 
-        return delay(3000).then(() => {
+        return delay(5000).then(() => {
           return client.restRequest({
             path: response.headers.location,
             method: 'GET'
