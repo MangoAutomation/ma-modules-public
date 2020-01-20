@@ -13,6 +13,7 @@ import com.infiniteautomation.mango.spring.events.DaoEventType;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.AbstractBasicVO;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 /**
  * @author Jared Wiltshire
@@ -84,8 +85,8 @@ public abstract class DaoNotificationWebSocketHandler<T extends AbstractBasicVO>
         }
     }
 
-    abstract protected boolean hasPermission(User user, T vo);
-    abstract protected Object createModel(T vo, User user);
+    abstract protected boolean hasPermission(PermissionHolder user, T vo);
+    abstract protected Object createModel(T vo, PermissionHolder user);
 
     protected boolean isModelPerUser() {
         return false;

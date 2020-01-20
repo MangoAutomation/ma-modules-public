@@ -11,8 +11,8 @@ import com.infiniteautomation.mango.rest.v2.model.jsondata.JsonDataModel;
 import com.infiniteautomation.mango.rest.v2.websocket.dao.SubscriptionDaoWebSocketHandler;
 import com.infiniteautomation.mango.spring.events.DaoEvent;
 import com.infiniteautomation.mango.spring.service.PermissionService;
-import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.json.JsonDataVO;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 
 /**
@@ -29,12 +29,12 @@ public class JsonDataWebSocketHandlerV2 extends SubscriptionDaoWebSocketHandler<
     }
 
     @Override
-    protected boolean hasPermission(User user, JsonDataVO vo) {
+    protected boolean hasPermission(PermissionHolder user, JsonDataVO vo) {
         return service.hasAnyRole(user, vo.getReadRoles());
     }
 
     @Override
-    protected Object createModel(JsonDataVO vo, User user) {
+    protected Object createModel(JsonDataVO vo, PermissionHolder user) {
         return new JsonDataModel(vo);
     }
 

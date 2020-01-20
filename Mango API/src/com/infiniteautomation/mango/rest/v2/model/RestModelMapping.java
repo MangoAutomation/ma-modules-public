@@ -46,13 +46,27 @@ public interface RestModelMapping<F, T> {
 
     /**
      * TODO Mango 4.0 remove default and require an implementation
-     * Unmap a model into an object
+     * Unmap a model by creating a new object
      * @param from
      * @param user
      * @param mapper
      * @return
      */
     default public F unmap(Object from, PermissionHolder user, RestModelMapper mapper) throws ValidationException {
+        throw new ShouldNeverHappenException("Unimplemented");
+    }
+
+    /**
+     * TODO Mango 4.0 remove default and require an implementation
+     * Unmap a model into an existing object
+     * @param from
+     * @param into
+     * @param user
+     * @param mapper
+     * @return
+     * @throws ValidationException
+     */
+    default public F unmapInto(Object from, F into, PermissionHolder user, RestModelMapper mapper) throws ValidationException {
         throw new ShouldNeverHappenException("Unimplemented");
     }
 

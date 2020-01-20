@@ -12,7 +12,7 @@ import com.infiniteautomation.mango.rest.v2.model.role.RoleModelMapping;
 import com.infiniteautomation.mango.rest.v2.websocket.WebSocketMapping;
 import com.infiniteautomation.mango.spring.events.DaoEvent;
 import com.infiniteautomation.mango.spring.service.RoleService;
-import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.vo.role.RoleVO;
 
 /**
@@ -35,12 +35,12 @@ public class RoleWebSocketHandler extends SubscriptionDaoWebSocketHandler<RoleVO
     }
 
     @Override
-    protected boolean hasPermission(User user, RoleVO vo) {
+    protected boolean hasPermission(PermissionHolder user, RoleVO vo) {
         return service.hasReadPermission(user, vo);
     }
 
     @Override
-    protected Object createModel(RoleVO vo, User user) {
+    protected Object createModel(RoleVO vo, PermissionHolder user) {
         return mapping.map(vo, user, mapper);
     }
 

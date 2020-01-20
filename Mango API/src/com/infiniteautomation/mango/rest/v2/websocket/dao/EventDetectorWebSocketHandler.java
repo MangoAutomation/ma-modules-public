@@ -13,8 +13,8 @@ import com.infiniteautomation.mango.rest.v2.websocket.DaoNotificationWebSocketHa
 import com.infiniteautomation.mango.rest.v2.websocket.WebSocketMapping;
 import com.infiniteautomation.mango.spring.events.DaoEvent;
 import com.infiniteautomation.mango.spring.service.EventDetectorsService;
-import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.detector.AbstractEventDetectorVO;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 /**
  * @author Terry Packer
@@ -34,12 +34,12 @@ public class EventDetectorWebSocketHandler <T extends AbstractEventDetectorVO<T>
     }
 
     @Override
-    protected boolean hasPermission(User user, T vo) {
+    protected boolean hasPermission(PermissionHolder user, T vo) {
         return service.hasReadPermission(user, vo);
     }
 
     @Override
-    protected Object createModel(T vo, User user) {
+    protected Object createModel(T vo, PermissionHolder user) {
         return modelMapper.map(vo, AbstractEventDetectorModel.class, user);
     }
 

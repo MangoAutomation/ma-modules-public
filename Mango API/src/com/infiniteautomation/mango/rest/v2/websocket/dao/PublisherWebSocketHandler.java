@@ -13,7 +13,7 @@ import com.infiniteautomation.mango.rest.v2.websocket.DaoNotificationWebSocketHa
 import com.infiniteautomation.mango.rest.v2.websocket.WebSocketMapping;
 import com.infiniteautomation.mango.spring.events.DaoEvent;
 import com.infiniteautomation.mango.spring.service.PublisherService;
-import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.vo.publish.PublishedPointVO;
 import com.serotonin.m2m2.vo.publish.PublisherVO;
 
@@ -35,12 +35,12 @@ public class PublisherWebSocketHandler <POINT extends PublishedPointVO, PUBLISHE
     }
 
     @Override
-    protected boolean hasPermission(User user, PUBLISHER vo) {
+    protected boolean hasPermission(PermissionHolder user, PUBLISHER vo) {
         return service.hasReadPermission(user, vo);
     }
 
     @Override
-    protected Object createModel(PUBLISHER vo, User user) {
+    protected Object createModel(PUBLISHER vo, PermissionHolder user) {
         return modelMapper.map(vo, AbstractPublisherModel.class, user);
     }
 

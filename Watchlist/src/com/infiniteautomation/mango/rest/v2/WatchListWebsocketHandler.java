@@ -14,7 +14,7 @@ import com.infiniteautomation.mango.rest.v2.websocket.DaoNotificationWebSocketHa
 import com.infiniteautomation.mango.rest.v2.websocket.WebSocketMapping;
 import com.infiniteautomation.mango.spring.events.DaoEvent;
 import com.infiniteautomation.mango.spring.service.WatchListService;
-import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.watchlist.WatchListVO;
 
 /**
@@ -39,12 +39,12 @@ public class WatchListWebsocketHandler extends DaoNotificationWebSocketHandler<W
     }
 
     @Override
-    protected boolean hasPermission(User user, WatchListVO vo) {
+    protected boolean hasPermission(PermissionHolder user, WatchListVO vo) {
         return service.hasReadPermission(user, vo);
     }
 
     @Override
-    protected Object createModel(WatchListVO vo, User user) {
+    protected Object createModel(WatchListVO vo, PermissionHolder user) {
         return mapping.map(vo, user, mapper);
     }
 

@@ -13,8 +13,8 @@ import com.infiniteautomation.mango.rest.v2.websocket.DaoNotificationWebSocketHa
 import com.infiniteautomation.mango.rest.v2.websocket.WebSocketMapping;
 import com.infiniteautomation.mango.spring.events.DaoEvent;
 import com.infiniteautomation.mango.spring.service.MailingListService;
-import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.mailingList.MailingList;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 /**
  * @author Jared Wiltshire
@@ -36,12 +36,12 @@ public class MailingListWebSocketHandler extends DaoNotificationWebSocketHandler
     }
 
     @Override
-    protected boolean hasPermission(User user, MailingList vo) {
+    protected boolean hasPermission(PermissionHolder user, MailingList vo) {
         return service.hasReadPermission(user, vo);
     }
 
     @Override
-    protected Object createModel(MailingList vo, User user) {
+    protected Object createModel(MailingList vo, PermissionHolder user) {
         return mapping.map(vo, user, mapper);
     }
 

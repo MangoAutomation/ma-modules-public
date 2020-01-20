@@ -12,6 +12,7 @@ import com.infiniteautomation.mango.rest.v2.websocket.DaoNotificationWebSocketHa
 import com.infiniteautomation.mango.rest.v2.websocket.WebSocketMapping;
 import com.infiniteautomation.mango.spring.events.DaoEvent;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 /**
  * @author Terry Packer
@@ -21,15 +22,18 @@ import com.serotonin.m2m2.vo.User;
 public class UserWebSocketHandler extends DaoNotificationWebSocketHandler<User>{
 
     @Override
-    protected boolean hasPermission(User user, User vo) {
-        if(user.hasAdminRole())
+    protected boolean hasPermission(PermissionHolder user, User vo) {
+        if(user.hasAdminRole()) {
             return true;
-        else
-            return user.getId() == vo.getId();
+        }else if(user instanceof User && ((User)user).getId() == vo.getId()){
+            return true;
+        }else {
+            return false;
+        }
     }
 
     @Override
-    protected Object createModel(User vo, User user) {
+    protected Object createModel(User vo, PermissionHolder user) {
         return new UserModel(vo);
     }
 

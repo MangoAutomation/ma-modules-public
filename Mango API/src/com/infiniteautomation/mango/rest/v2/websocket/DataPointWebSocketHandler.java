@@ -14,7 +14,7 @@ import com.infiniteautomation.mango.spring.events.DaoEvent;
 import com.infiniteautomation.mango.spring.events.DataPointTagsUpdatedEvent;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.serotonin.m2m2.vo.DataPointVO;
-import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 /**
  * @author Terry Packer
@@ -36,12 +36,12 @@ public class DataPointWebSocketHandler extends DaoNotificationWebSocketHandler<D
     }
 
     @Override
-    protected boolean hasPermission(User user, DataPointVO vo) {
+    protected boolean hasPermission(PermissionHolder user, DataPointVO vo) {
         return user.hasAdminRole() || permissionService.hasDataSourcePermission(user, vo.getDataSourceId());
     }
 
     @Override
-    protected Object createModel(DataPointVO vo, User user) {
+    protected Object createModel(DataPointVO vo, PermissionHolder user) {
         return mapper.map(vo, DataPointModel.class, user);
     }
 

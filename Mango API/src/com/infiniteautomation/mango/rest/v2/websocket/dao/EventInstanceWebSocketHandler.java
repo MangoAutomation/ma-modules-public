@@ -15,8 +15,8 @@ import com.infiniteautomation.mango.rest.v2.model.event.EventInstanceModel;
 import com.infiniteautomation.mango.rest.v2.websocket.DaoNotificationWebSocketHandler;
 import com.infiniteautomation.mango.rest.v2.websocket.WebSocketMapping;
 import com.infiniteautomation.mango.spring.events.DaoEvent;
-import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.EventInstanceVO;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 /**
  * @author Terry Packer
@@ -26,7 +26,7 @@ import com.serotonin.m2m2.vo.event.EventInstanceVO;
 @WebSocketMapping("/websocket/event-instances")
 public class EventInstanceWebSocketHandler extends DaoNotificationWebSocketHandler<EventInstanceVO> {
 
-    private final BiFunction<EventInstanceVO, User, EventInstanceModel> map;
+    private final BiFunction<EventInstanceVO, PermissionHolder, EventInstanceModel> map;
 
     @Autowired
     public EventInstanceWebSocketHandler(RestModelMapper modelMapper) {
@@ -36,7 +36,7 @@ public class EventInstanceWebSocketHandler extends DaoNotificationWebSocketHandl
     }
 
     @Override
-    protected boolean hasPermission(User user, EventInstanceVO vo) {
+    protected boolean hasPermission(PermissionHolder user, EventInstanceVO vo) {
         if(user.hasAdminRole()) {
             return true;
         }else {
@@ -45,7 +45,7 @@ public class EventInstanceWebSocketHandler extends DaoNotificationWebSocketHandl
     }
 
     @Override
-    protected Object createModel(EventInstanceVO vo, User user) {
+    protected Object createModel(EventInstanceVO vo, PermissionHolder user) {
         return map.apply(vo, user);
     }
 
