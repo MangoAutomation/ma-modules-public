@@ -152,9 +152,7 @@ describe('Virtual data source', function() {
             eventAlarmLevels: [
                 {
                     eventType: 'POLL_ABORTED',
-                    duplicateHandling: 'IGNORE',
                     level: 'INFORMATION',
-                    description: 'Poll aborted'
                  }
             ],
             polling: false,
