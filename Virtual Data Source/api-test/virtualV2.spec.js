@@ -169,6 +169,8 @@ describe('Virtual data source', function() {
     }
     
     function assertPointLocator(saved, local) {
+        assert.strictEqual(saved.dataType, local.dataType);
+        
         assert.strictEqual(saved.changeType, local.changeType);
         switch(saved.changeType) {
             case 'ALTERNATE_BOOLEAN':

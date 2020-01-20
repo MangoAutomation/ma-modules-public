@@ -147,11 +147,9 @@ describe('VMStat data source', function() {
             eventAlarmLevels: [
                 {
                     eventType: 'DATA_SOURCE_EXCEPTION',
-                    duplicateHandling: 'IGNORE',
                     level: 'INFORMATION'
                  },{
                      eventType: 'PARSE_EXCEPTION',
-                     duplicateHandling: 'IGNORE',
                      level: 'INFORMATION'
                  }
             ],
@@ -168,7 +166,7 @@ describe('VMStat data source', function() {
     }
     
     function assertPointLocator(saved, local) {
-        assert.strictEqual(saved.dataTypeId, local.dataTypeId);
+        assert.strictEqual(saved.dataType, local.dataType);
         assert.strictEqual(saved.settable, local.settable);
         assert.strictEqual(saved.attribute, local.attribute);
     }
