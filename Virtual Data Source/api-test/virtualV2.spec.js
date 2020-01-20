@@ -29,7 +29,7 @@ describe('Virtual data source', function() {
         const ds = newDataSource();
         const local = Object.assign({}, ds);
         return ds.save().then(saved => {
-            testHelper.assertDataSource(saved, local);
+            testHelper.assertDataSource(saved, local, assertDataSourceAttributes);
         }, error => {
             assertValidationErrors([''], error);
         }).finally(() => {
@@ -41,12 +41,12 @@ describe('Virtual data source', function() {
         const ds = newDataSource();
         const local = Object.assign({}, ds);
         return ds.save().then(saved => {
-            testHelper.assertDataSource(saved, local);
+            testHelper.assertDataSource(saved, local, assertDataSourceAttributes);
             //Make changes
             saved.name = uuid();
             saved.polling = true;
             return saved.save().then(updated => {
-                testHelper.assertDataSource(saved, updated); 
+                testHelper.assertDataSource(saved, updated, assertDataSourceAttributes); 
             });
         }, error => {
             assertValidationErrors([''], error);
@@ -58,7 +58,7 @@ describe('Virtual data source', function() {
     it('Delete data source', () => {
         const ds = newDataSource();
         return ds.save().then(saved => {
-            testHelper.assertDataSource(ds, saved);
+            testHelper.assertDataSource(ds, saved, assertDataSourceAttributes);
             return ds.delete().then(() => {
                return DataSource.get(saved.xid).then(notFound => {
                    assert.fail('Should not have found ds ' + notFound.xid);
@@ -72,7 +72,7 @@ describe('Virtual data source', function() {
     it('Create data point', () => {
         const ds = newDataSource();
         return ds.save().then(saved => {
-            testHelper.assertDataSource(ds, saved);
+            testHelper.assertDataSource(ds, saved, assertDataSourceAttributes);
             const dp = newDataPoint(ds.xid);
             return dp.save().then(saved => {
                 testHelper.assertDataPoint(saved, dp, assertPointLocator);
@@ -87,7 +87,7 @@ describe('Virtual data source', function() {
     it('Update data point', () => {
         const ds = newDataSource();
         return ds.save().then(saved => {
-            testHelper.assertDataSource(ds, saved);
+            testHelper.assertDataSource(ds, saved, assertDataSourceAttributes);
             const dp = newDataPoint(ds.xid);
             const local = Object.assign({}, dp);
             return dp.save().then(saved => {
@@ -110,7 +110,7 @@ describe('Virtual data source', function() {
     it('Delete data point', () => {
         const ds = newDataSource();
         return ds.save().then(saved => {
-            testHelper.assertDataSource(ds, saved);
+            testHelper.assertDataSource(ds, saved, assertDataSourceAttributes);
             const dp = newDataPoint(ds.xid);
             return dp.save().then(saved => {
                 testHelper.assertDataPoint(saved, dp, assertPointLocator);
@@ -141,7 +141,6 @@ describe('Virtual data source', function() {
     }
     function newDataSource() {
         return new DataSource({
-            polling: false,
             pollPeriod: {
                 periods: 5,
                 type: 'SECONDS'
@@ -157,8 +156,17 @@ describe('Virtual data source', function() {
                     description: 'Poll aborted'
                  }
             ],
+            polling: false,
             modelType: 'VIRTUAL'
         });
+    }
+    
+    function assertDataSourceAttributes(saved, local) {
+        assert.strictEqual(saved.polling, local.polling);
+        assert.strictEqual(saved.pollPeriod.periods, local.pollPeriod.periods);
+        assert.strictEqual(saved.pollPeriod.type, local.pollPeriod.type);
+        assert.strictEqual(saved.quantize, local.quantize);
+        assert.strictEqual(saved.useCron, local.useCron);
     }
     
     function assertPointLocator(saved, local) {
