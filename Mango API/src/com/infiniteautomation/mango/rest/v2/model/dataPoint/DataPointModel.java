@@ -19,6 +19,7 @@ import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.util.UnitUtil;
 import com.serotonin.m2m2.vo.DataPointVO;
+import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.role.Role;
 
 
@@ -163,9 +164,12 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
         }
         //TODO Mango 4.0 Use ModelMapper.unmap
         if(StringUtils.isNotEmpty(dataSourceXid)) {
-            Integer dsId = DataSourceDao.getInstance().getIdByXid(dataSourceXid);
-            if(dsId!= null) {
-                point.setDataSourceId(dsId);
+            DataSourceVO<?> ds = DataSourceDao.getInstance().getByXid(dataSourceXid);
+            if(ds!= null) {
+                point.setDataSourceId(ds.getId());
+                point.setDataSourceName(ds.getName());
+                point.setDataSourceXid(ds.getXid());
+                point.setDataSourceTypeName(ds.getTypeKey());
             }
         }
         //TODO Mango 4.0 Use ModelMapper.unmap
