@@ -45,8 +45,9 @@ describe('Virtual data source', function() {
             //Make changes
             saved.name = uuid();
             saved.polling = true;
+            const localUpdate = Object.assign({}, saved);
             return saved.save().then(updated => {
-                testHelper.assertDataSource(saved, updated, assertDataSourceAttributes); 
+                testHelper.assertDataSource(updated, localUpdate, assertDataSourceAttributes); 
             });
         }, error => {
             assertValidationErrors([''], error);
