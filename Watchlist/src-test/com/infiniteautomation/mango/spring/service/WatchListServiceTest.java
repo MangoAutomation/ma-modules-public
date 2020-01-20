@@ -106,4 +106,14 @@ public class WatchListServiceTest extends AbstractVOServiceWithPermissionsTest<W
         return copy;
     }
 
+    @Override
+    void addReadRoleToFail(Role role, WatchListVO vo) {
+        vo.getReadRoles().add(role);
+    }
+
+    @Override
+    void addEditRoleToFail(Role role, WatchListVO vo) {
+        vo.getEditRoles().add(role);
+    }
+
 }
