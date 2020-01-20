@@ -4,13 +4,14 @@
  */
 package com.serotonin.m2m2.vmstat;
 
+import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.module.DataSourceDefinition;
-import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
-public class VMStatDataSourceDefinition extends DataSourceDefinition {
-	
-	public static final String DATA_SOURCE_TYPE = "VMSTAT";
-	
+public class VMStatDataSourceDefinition extends DataSourceDefinition<VMStatDataSourceVO> {
+
+    public static final String DATA_SOURCE_TYPE = "VMSTAT";
+
     @Override
     public String getDataSourceTypeName() {
         return DATA_SOURCE_TYPE;
@@ -22,8 +23,17 @@ public class VMStatDataSourceDefinition extends DataSourceDefinition {
     }
 
     @Override
-    protected DataSourceVO<?> createDataSourceVO() {
+    protected VMStatDataSourceVO createDataSourceVO() {
         return new VMStatDataSourceVO();
+    }
+
+    @Override
+    public void validate(ProcessResult response, VMStatDataSourceVO ds, PermissionHolder user) {
+        if (ds.getPollSeconds() < 1)
+            response.addContextualMessage("pollSeconds", "validate.greaterThanZero", ds.getPollSeconds());
+
+        if (!VMStatDataSourceVO.OUTPUT_SCALE_CODES.isValidId(ds.getOutputScale()))
+            response.addContextualMessage("outputScale", "validate.invalidValue");
     }
 
 }

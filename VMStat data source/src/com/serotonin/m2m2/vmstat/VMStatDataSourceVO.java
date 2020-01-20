@@ -14,7 +14,6 @@ import com.serotonin.json.JsonReader;
 import com.serotonin.json.ObjectWriter;
 import com.serotonin.json.spi.JsonProperty;
 import com.serotonin.json.type.JsonObject;
-import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
@@ -95,17 +94,6 @@ public class VMStatDataSourceVO extends DataSourceVO<VMStatDataSourceVO> {
 
     public void setOutputScale(int outputScale) {
         this.outputScale = outputScale;
-    }
-
-    @Override
-    public void validate(ProcessResult response) {
-        super.validate(response);
-
-        if (pollSeconds < 1)
-            response.addContextualMessage("pollSeconds", "validate.greaterThanZero", pollSeconds);
-
-        if (!OUTPUT_SCALE_CODES.isValidId(outputScale))
-            response.addContextualMessage("outputScale", "validate.invalidValue");
     }
 
     //
