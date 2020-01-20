@@ -16,7 +16,7 @@
  */
 
 const testHelper = require('@infinite-automation/mango-client/test/testHelper');
-const {createClient, uuid, login} = testHelper;
+const {createClient, uuid, assertValidationErrors, login} = testHelper;
 
 const client = createClient();
 const DataSource = client.DataSource;
