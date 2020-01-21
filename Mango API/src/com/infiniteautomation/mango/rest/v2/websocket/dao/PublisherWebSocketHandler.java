@@ -23,30 +23,30 @@ import com.serotonin.m2m2.vo.publish.PublisherVO;
  */
 @Component("PublisherWebSocketHandlerV2")
 @WebSocketMapping("/websocket/publishers")
-public class PublisherWebSocketHandler <POINT extends PublishedPointVO, PUBLISHER extends PublisherVO<POINT>> extends DaoNotificationWebSocketHandler<PUBLISHER>{
+public class PublisherWebSocketHandler extends DaoNotificationWebSocketHandler<PublisherVO<? extends PublishedPointVO>>{
 
-    private final PublisherService<POINT> service;
+    private final PublisherService service;
     private final RestModelMapper modelMapper;
 
     @Autowired
-    public PublisherWebSocketHandler(PublisherService<POINT> service, RestModelMapper modelMapper) {
+    public PublisherWebSocketHandler(PublisherService service, RestModelMapper modelMapper) {
         this.service = service;
         this.modelMapper = modelMapper;
     }
 
     @Override
-    protected boolean hasPermission(PermissionHolder user, PUBLISHER vo) {
+    protected boolean hasPermission(PermissionHolder user, PublisherVO<? extends PublishedPointVO> vo) {
         return service.hasReadPermission(user, vo);
     }
 
     @Override
-    protected Object createModel(PUBLISHER vo, PermissionHolder user) {
+    protected Object createModel(PublisherVO<? extends PublishedPointVO> vo, PermissionHolder user) {
         return modelMapper.map(vo, AbstractPublisherModel.class, user);
     }
 
     @Override
     @EventListener
-    protected void handleDaoEvent(DaoEvent<? extends PUBLISHER> event) {
+    protected void handleDaoEvent(DaoEvent<? extends PublisherVO<? extends PublishedPointVO>> event) {
         this.notify(event);
     }
 

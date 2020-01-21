@@ -48,7 +48,7 @@ public class SerialPointLocatorVO extends AbstractPointLocatorVO<SerialPointLoca
      * @see com.serotonin.m2m2.vo.dataSource.PointLocatorVO#validate(com.serotonin.m2m2.i18n.ProcessResult, com.serotonin.m2m2.vo.DataPointVO, com.serotonin.m2m2.vo.dataSource.DataSourceVO)
      */
     @Override
-    public void validate(ProcessResult response, DataPointVO dpvo, DataSourceVO<?> dsvo) {
+    public void validate(ProcessResult response, DataPointVO dpvo, DataSourceVO dsvo) {
         if (!(dsvo instanceof SerialDataSourceVO))
             response.addContextualMessage("dataSourceId", "dpEdit.validate.invalidDataSourceType");
 		if (pointIdentifier == null)

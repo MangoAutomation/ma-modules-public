@@ -33,12 +33,12 @@ import io.swagger.annotations.ApiModelProperty;
  */
 @JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.EXISTING_PROPERTY, property=AbstractPublisherModel.MODEL_TYPE)
 public abstract class AbstractPublisherModel<POINT extends PublishedPointVO, PUBLISHER extends PublisherVO<POINT>> extends AbstractVoModel<PUBLISHER> {
-    
+
     public static final String MODEL_TYPE = "modelType";
 
     @JsonIgnore
     protected PublisherDefinition<?> definition;
-    
+
     @ApiModelProperty("Read only description of publisher connection")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     protected TranslatableMessage connectionDescription;
@@ -56,14 +56,14 @@ public abstract class AbstractPublisherModel<POINT extends PublishedPointVO, PUB
     protected boolean sendSnapshot;
     protected TimePeriod snapshotSendPeriod;
     protected boolean publishAttributeChanges;
-    
-    
+
+
     /**
      * Return the TYPE_NAME from the Publisher Source definition
      * @return
      */
     public abstract String getModelType();
-    
+
     /**
      * Model a point
      * @param point
@@ -74,20 +74,20 @@ public abstract class AbstractPublisherModel<POINT extends PublishedPointVO, PUB
     @SuppressWarnings("unchecked")
     @Override
     protected PUBLISHER newVO() {
-        PublisherDefinition def = getDefinition();
+        PublisherDefinition<?> def = getDefinition();
         PUBLISHER vo = (PUBLISHER) def.baseCreatePublisherVO();
         vo.setDefinition(def);
         return vo;
     }
-    
+
     @JsonIgnore
-    public PublisherDefinition getDefinition() {
-        PublisherDefinition definition = ModuleRegistry.getPublisherDefinition(getModelType());
+    public PublisherDefinition<?> getDefinition() {
+        PublisherDefinition<?> definition = ModuleRegistry.getPublisherDefinition(getModelType());
         if(definition == null)
             throw new GenericRestException(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage("rest.exception.modelNotFound", getModelType()));
         return definition;
     }
-    
+
     @Override
     public void fromVO(PUBLISHER vo) {
         super.fromVO(vo);
@@ -97,7 +97,7 @@ public abstract class AbstractPublisherModel<POINT extends PublishedPointVO, PUB
         this.enabled = vo.isEnabled();
         this.eventAlarmLevels = new ArrayList<>();
         ExportCodes eventCodes = vo.getEventCodes();
-        
+
         for(EventTypeVO evt : vo.getEventTypes()) {
             PublisherEventType dsEvt = (PublisherEventType)evt.getEventType();
             EventTypeAlarmLevelModel model = new EventTypeAlarmLevelModel(
@@ -108,12 +108,12 @@ public abstract class AbstractPublisherModel<POINT extends PublishedPointVO, PUB
                     );
             this.eventAlarmLevels.add(model);
         }
-        
+
         this.points = new ArrayList<>();
         for(POINT point : vo.getPoints()) {
             this.points.add(modelPoint(point));
         }
-        
+
         this.publishType = PublisherVO.PUBLISH_TYPE_CODES.getCode(vo.getPublishType());
         this.cacheWarningSize = vo.getCacheWarningSize();
         this.cacheDiscardSize = vo.getCacheDiscardSize();
@@ -121,25 +121,25 @@ public abstract class AbstractPublisherModel<POINT extends PublishedPointVO, PUB
         this.snapshotSendPeriod = new TimePeriod(vo.getSnapshotSendPeriods(), TimePeriodType.convertTo(vo.getSnapshotSendPeriodType()));
         this.publishAttributeChanges = vo.isPublishAttributeChanges();
     }
-    
+
     @Override
     public PUBLISHER toVO() {
         PUBLISHER vo = super.toVO();
         vo.setEnabled(enabled);
-        
+
         if(eventAlarmLevels != null) {
             for(EventTypeAlarmLevelModel eval : eventAlarmLevels) {
                 vo.setAlarmLevel(eval.getEventType(), eval.getLevel());
             }
         }
-        
+
         if(points != null) {
             List<POINT> pointVos = new ArrayList<>();
             for(AbstractPublishedPointModel<POINT> pm : points)
                 pointVos.add(pm.toVO());
             vo.setPoints(pointVos);
         }
-        
+
         vo.setPublishType(PublisherVO.PUBLISH_TYPE_CODES.getId(publishType));
         vo.setCacheWarningSize(cacheWarningSize);
         vo.setCacheDiscardSize(cacheDiscardSize);
@@ -151,8 +151,8 @@ public abstract class AbstractPublisherModel<POINT extends PublishedPointVO, PUB
         vo.setPublishAttributeChanges(publishAttributeChanges);
         return vo;
     }
-    
-    
+
+
     /**
      * Get the description for the publisher's connection
      * @return
@@ -252,5 +252,5 @@ public abstract class AbstractPublisherModel<POINT extends PublishedPointVO, PUB
     public void setPoints(List<AbstractPublishedPointModel<POINT>> points) {
         this.points = points;
     }
-    
+
 }

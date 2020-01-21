@@ -207,7 +207,7 @@ public class InternalDataSourceRT extends PollingDataSource<InternalDataSourceVO
     }
 
     private void defaultNewPointToDataSource(DataPointVO dpvo, String dsXid) {
-        DataSourceVO<?> dsvo = DataSourceDao.getInstance().getDataSource(dsXid);
+        DataSourceVO dsvo = DataSourceDao.getInstance().getDataSource(dsXid);
         if(dsvo == null)
             throw new ShouldNeverHappenException("Error creating point, unknown data source: "+dsXid);
         dpvo.setDeviceName(dsvo.getName());

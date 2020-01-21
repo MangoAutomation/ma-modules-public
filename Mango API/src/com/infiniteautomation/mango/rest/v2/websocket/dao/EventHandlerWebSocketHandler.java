@@ -26,13 +26,13 @@ import com.serotonin.m2m2.vo.permission.PermissionHolder;
  */
 @Component("EventHandlerWebSocketHandlerV2")
 @WebSocketMapping("/websocket/event-handlers")
-public class EventHandlerWebSocketHandler<T extends AbstractEventHandlerVO<T>> extends DaoNotificationWebSocketHandler<T> {
+public class EventHandlerWebSocketHandler<T extends AbstractEventHandlerVO> extends DaoNotificationWebSocketHandler<T> {
 
-    private final EventHandlerService<T> service;
+    private final EventHandlerService service;
     private final BiFunction<T, PermissionHolder, AbstractEventHandlerModel<T>> map;
 
     @Autowired
-    public EventHandlerWebSocketHandler(EventHandlerService<T> service, RestModelMapper modelMapper) {
+    public EventHandlerWebSocketHandler(EventHandlerService service, RestModelMapper modelMapper) {
         this.service = service;
         //Map the event types into the model
         this.map = (vo, user) -> {

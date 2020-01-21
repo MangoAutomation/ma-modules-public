@@ -443,7 +443,7 @@ public class JsonDataRestController {
             this.service.insert(vo);
         }
         // can't modify the vo data here as it will be sent out over websocket asynchronously
-        JsonDataVO copied = vo.copy();
+        JsonDataVO copied = (JsonDataVO) vo.copy();
         // return only the data that was saved, i.e. the data that we supplied a path to
         copied.setJsonData(dataToReturn);
         URI location = builder.path("/json-data/{xid}").buildAndExpand(new Object[]{vo.getXid()}).toUri();

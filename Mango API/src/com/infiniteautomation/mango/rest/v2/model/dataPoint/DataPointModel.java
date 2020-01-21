@@ -164,7 +164,7 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
         }
         //TODO Mango 4.0 Use ModelMapper.unmap
         if(StringUtils.isNotEmpty(dataSourceXid)) {
-            DataSourceVO<?> ds = DataSourceDao.getInstance().getByXid(dataSourceXid);
+            DataSourceVO ds = DataSourceDao.getInstance().getByXid(dataSourceXid);
             if(ds!= null) {
                 point.setDataSourceId(ds.getId());
                 point.setDataSourceName(ds.getName());

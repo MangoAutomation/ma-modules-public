@@ -46,10 +46,10 @@ import io.swagger.annotations.ApiParam;
 public class SerialDataSourceRestController {
 
     private final Log LOG = LogFactory.getLog(SerialDataSourceRestController.class);
-    private final DataSourceService<?> service;
+    private final DataSourceService service;
 
     @Autowired
-    public SerialDataSourceRestController(DataSourceService<?> service) {
+    public SerialDataSourceRestController(DataSourceService service) {
         this.service = service;
     }
 
@@ -63,7 +63,7 @@ public class SerialDataSourceRestController {
 
         List<SerialTestResultModel> results = new ArrayList<>();
 
-        DataSourceVO<?> ds = service.get(xid);
+        DataSourceVO ds = service.get(xid);
         if(!(ds instanceof SerialDataSourceVO))
             throw new BadRequestException(new TranslatableMessage("validate.incompatibleDataSourceType"));
 

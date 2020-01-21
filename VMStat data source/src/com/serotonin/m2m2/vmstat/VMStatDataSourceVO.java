@@ -25,7 +25,7 @@ import com.serotonin.m2m2.vo.event.EventTypeVO;
 /**
  * @author Matthew Lohbihler
  */
-public class VMStatDataSourceVO extends DataSourceVO<VMStatDataSourceVO> {
+public class VMStatDataSourceVO extends DataSourceVO {
     @Override
     protected void addEventTypes(List<EventTypeVO> ets) {
         ets.add(createEventType(VMStatDataSourceRT.DATA_SOURCE_EXCEPTION_EVENT, new TranslatableMessage(

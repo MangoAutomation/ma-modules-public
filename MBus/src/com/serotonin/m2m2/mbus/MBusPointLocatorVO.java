@@ -136,7 +136,7 @@ public class MBusPointLocatorVO extends AbstractPointLocatorVO<MBusPointLocatorV
     }
 
     @Override
-    public void validate(ProcessResult response, DataPointVO dpvo, DataSourceVO<?> dsvo) {
+    public void validate(ProcessResult response, DataPointVO dpvo, DataSourceVO dsvo) {
         if (!(dsvo instanceof MBusDataSourceVO))
             response.addContextualMessage("dataSourceId", "dpEdit.validate.invalidDataSourceType");
 

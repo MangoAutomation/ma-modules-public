@@ -67,13 +67,13 @@ import net.jazdw.rql.parser.ASTNode;
 @Api(value="Event Detectors, full REST v2 implementation")
 @RestController()
 @RequestMapping("/full-event-detectors")
-public class EventDetectorsRestController<T extends AbstractEventDetectorVO<T>> {
+public class EventDetectorsRestController {
 
-    private final EventDetectorsService<T> service;
-    private final BiFunction<AbstractEventDetectorVO<T>, User, AbstractEventDetectorModel<?>> map;
+    private final EventDetectorsService service;
+    private final BiFunction<AbstractEventDetectorVO, User, AbstractEventDetectorModel<?>> map;
 
     @Autowired
-    public EventDetectorsRestController(EventDetectorsService<T> service, RestModelMapper modelMapper, TemporaryResourceWebSocketHandler websocket){
+    public EventDetectorsRestController(EventDetectorsService service, RestModelMapper modelMapper, TemporaryResourceWebSocketHandler websocket){
         this.service = service;
         this.map = (vo, user) -> {
             AbstractEventDetectorModel<?> model = modelMapper.map(vo, AbstractEventDetectorModel.class, user);
@@ -132,10 +132,10 @@ public class EventDetectorsRestController<T extends AbstractEventDetectorVO<T>> 
     public ResponseEntity<AbstractEventDetectorModel<?>> create(
             @ApiParam(value = "Restart the source to load in the changes", required = false, defaultValue="true", allowMultiple = false)
             @RequestParam(required=false, defaultValue="true") boolean restart,
-            @RequestBody AbstractEventDetectorModel<T> model,
+            @RequestBody AbstractEventDetectorModel<? extends AbstractEventDetectorVO> model,
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
-        T vo = service.insertAndReload(model.toVO(), restart);
+        AbstractEventDetectorVO vo = service.insertAndReload(model.toVO(), restart);
         URI location = builder.path("/full-event-detectors/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
@@ -152,12 +152,12 @@ public class EventDetectorsRestController<T extends AbstractEventDetectorVO<T>> 
             @ApiParam(value = "XID of Event Handler to update", required = true, allowMultiple = false)
             @PathVariable String xid,
             @ApiParam(value = "Event Handler of update", required = true, allowMultiple = false)
-            @RequestBody AbstractEventDetectorModel<T> model,
+            @RequestBody AbstractEventDetectorModel<? extends AbstractEventDetectorVO> model,
             @ApiParam(value = "Restart the source to load in the changes", required = false, defaultValue="true", allowMultiple = false)
             @RequestParam(required=false, defaultValue="true") boolean restart,
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
-        T vo = service.updateAndReload(xid, model.toVO(), restart);
+        AbstractEventDetectorVO vo = service.updateAndReload(xid, model.toVO(), restart);
         URI location = builder.path("/full-event-detectors/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
@@ -176,13 +176,13 @@ public class EventDetectorsRestController<T extends AbstractEventDetectorVO<T>> 
             @PatchVORequestBody(
                     service=EventHandlerService.class,
                     modelClass=AbstractEventDetectorModel.class)
-            AbstractEventDetectorModel<T> model,
+            AbstractEventDetectorModel<? extends AbstractEventDetectorVO> model,
             @ApiParam(value = "Restart the source to load in the changes", required = false, defaultValue="true", allowMultiple = false)
             @RequestParam(required=false, defaultValue="true") boolean restart,
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
 
-        T vo = service.updateAndReload(xid, model.toVO(), restart);
+        AbstractEventDetectorVO vo = service.updateAndReload(xid, model.toVO(), restart);
 
         URI location = builder.path("/full-event-detectors/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
@@ -235,13 +235,13 @@ public class EventDetectorsRestController<T extends AbstractEventDetectorVO<T>> 
 
     private static final String RESOURCE_TYPE_BULK_EVENT_DETECTOR = "BULK_EVENT_DETECTOR";
 
-    public static class EventDetectorIndividualRequest<ED extends AbstractEventDetectorVO<ED>> extends VoIndividualRequest<AbstractEventDetectorModel<ED>> {
+    public static class EventDetectorIndividualRequest extends VoIndividualRequest<AbstractEventDetectorModel<? extends AbstractEventDetectorVO>> {
     }
 
     public static class EventDetectorIndividualResponse extends VoIndividualResponse<AbstractEventDetectorModel<?>> {
     }
 
-    public static class EventDetectorBulkRequest<ED extends AbstractEventDetectorVO<ED>> extends BulkRequest<VoAction, AbstractEventDetectorModel<ED>, EventDetectorIndividualRequest<ED>> {
+    public static class EventDetectorBulkRequest extends BulkRequest<VoAction, AbstractEventDetectorModel<? extends AbstractEventDetectorVO>, EventDetectorIndividualRequest> {
     }
 
     public static class EventDetectorBulkResponse extends BulkResponse<EventDetectorIndividualResponse> {
@@ -255,7 +255,7 @@ public class EventDetectorsRestController<T extends AbstractEventDetectorVO<T>> 
     @RequestMapping(method = RequestMethod.POST, value="/bulk", consumes=MediaTypes.CSV_VALUE)
     public ResponseEntity<TemporaryResource<EventDetectorBulkResponse, AbstractRestV2Exception>> bulkEventDetectorOperationCSV(
             @RequestBody
-            List<AbstractEventDetectorModel<T>> eds,
+            List<AbstractEventDetectorModel<? extends AbstractEventDetectorVO>> eds,
 
             @ApiParam(value = "Restart the source to load in the changes", required = false, defaultValue="true", allowMultiple = false)
             @RequestParam(required=false, defaultValue="true") boolean restart,
@@ -265,17 +265,17 @@ public class EventDetectorsRestController<T extends AbstractEventDetectorVO<T>> 
 
             UriComponentsBuilder builder) {
 
-        EventDetectorBulkRequest<T> bulkRequest = new EventDetectorBulkRequest<T>();
+        EventDetectorBulkRequest bulkRequest = new EventDetectorBulkRequest();
 
         bulkRequest.setRequests(eds.stream().map(actionAndModel -> {
-            AbstractEventDetectorModel<T> ed = actionAndModel;
+            AbstractEventDetectorModel<? extends AbstractEventDetectorVO> ed = actionAndModel;
             VoAction action = actionAndModel.getAction();
             String originalXid = actionAndModel.getOriginalXid();
             if (originalXid == null && ed != null) {
                 originalXid = ed.getXid();
             }
 
-            EventDetectorIndividualRequest<T> request = new EventDetectorIndividualRequest<T>();
+            EventDetectorIndividualRequest request = new EventDetectorIndividualRequest();
             request.setAction(action == null ? VoAction.UPDATE : action);
             request.setXid(originalXid);
             request.setBody(ed);
@@ -290,7 +290,7 @@ public class EventDetectorsRestController<T extends AbstractEventDetectorVO<T>> 
     @RequestMapping(method = RequestMethod.POST, value="/bulk")
     public ResponseEntity<TemporaryResource<EventDetectorBulkResponse, AbstractRestV2Exception>> bulkEventDetectorOperation(
             @RequestBody
-            EventDetectorBulkRequest<T> requestBody,
+            EventDetectorBulkRequest requestBody,
 
             @ApiParam(value = "Restart the source to load in the changes", required = false, defaultValue="true", allowMultiple = false)
             @RequestParam(required=false, defaultValue="true") boolean restart,
@@ -301,8 +301,8 @@ public class EventDetectorsRestController<T extends AbstractEventDetectorVO<T>> 
             UriComponentsBuilder builder) {
 
         VoAction defaultAction = requestBody.getAction();
-        AbstractEventDetectorModel<T> defaultBody = requestBody.getBody();
-        List<EventDetectorIndividualRequest<T>> requests = requestBody.getRequests();
+        AbstractEventDetectorModel<? extends AbstractEventDetectorVO> defaultBody = requestBody.getBody();
+        List<EventDetectorIndividualRequest> requests = requestBody.getRequests();
 
         if (requests == null) {
             throw new BadRequestException(new TranslatableMessage("rest.error.mustNotBeNull", "requests"));
@@ -322,7 +322,7 @@ public class EventDetectorsRestController<T extends AbstractEventDetectorVO<T>> 
 
                     resource.progressOrSuccess(bulkResponse, i++, requests.size());
 
-                    for (EventDetectorIndividualRequest<T> request : requests) {
+                    for (EventDetectorIndividualRequest request : requests) {
                         UriComponentsBuilder reqBuilder = UriComponentsBuilder.newInstance();
                         EventDetectorIndividualResponse individualResponse = doIndividualRequest(request, restart, defaultAction, defaultBody, taskUser, reqBuilder);
                         bulkResponse.addResponse(individualResponse);
@@ -448,7 +448,7 @@ public class EventDetectorsRestController<T extends AbstractEventDetectorVO<T>> 
     }
 
     //TODO improve performance by tracking all data sources that need to be restarted and restart at the end?
-    private EventDetectorIndividualResponse doIndividualRequest(EventDetectorIndividualRequest<T> request, boolean restart, VoAction defaultAction, AbstractEventDetectorModel<T> defaultBody, User user, UriComponentsBuilder builder) {
+    private EventDetectorIndividualResponse doIndividualRequest(EventDetectorIndividualRequest request, boolean restart, VoAction defaultAction, AbstractEventDetectorModel<? extends AbstractEventDetectorVO> defaultBody, User user, UriComponentsBuilder builder) {
         EventDetectorIndividualResponse result = new EventDetectorIndividualResponse();
 
         try {
@@ -461,7 +461,7 @@ public class EventDetectorsRestController<T extends AbstractEventDetectorVO<T>> 
             }
             result.setAction(action);
 
-            AbstractEventDetectorModel<T> body = request.getBody() == null ? defaultBody : request.getBody();
+            AbstractEventDetectorModel<? extends AbstractEventDetectorVO> body = request.getBody() == null ? defaultBody : request.getBody();
 
             switch (action) {
                 case GET:
@@ -501,7 +501,7 @@ public class EventDetectorsRestController<T extends AbstractEventDetectorVO<T>> 
         return result;
     }
 
-    private StreamedArrayWithTotal doQuery(ASTNode rql, User user, Function<T, ?> toModel) {
+    private StreamedArrayWithTotal doQuery(ASTNode rql, User user, Function<AbstractEventDetectorVO, ?> toModel) {
         //If we are admin or have overall data source permission we can view all
         if (user.hasAdminRole()) {
             return new StreamedVORqlQueryWithTotal<>(service, rql, toModel);

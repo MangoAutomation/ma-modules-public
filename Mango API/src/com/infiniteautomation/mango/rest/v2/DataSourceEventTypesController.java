@@ -36,10 +36,10 @@ import io.swagger.annotations.ApiOperation;
 @RequestMapping("/data-source-event-types")
 public class DataSourceEventTypesController {
 
-    private final DataSourceService<?> service;
+    private final DataSourceService service;
 
     @Autowired
-    public DataSourceEventTypesController(DataSourceService<?> service) {
+    public DataSourceEventTypesController(DataSourceService service) {
         this.service = service;
     }
 
@@ -53,7 +53,7 @@ public class DataSourceEventTypesController {
             @AuthenticationPrincipal User user){
 
         DataSourceDefinition<?> def = service.getDefinition(dataSourceType, user);
-        DataSourceVO<?> vo = def.baseCreateDataSourceVO();
+        DataSourceVO vo = def.baseCreateDataSourceVO();
         List<EventTypeVO> eventTypes = vo.getEventTypes();
         ExportCodes codes = vo.getEventCodes();
 

@@ -22,7 +22,7 @@ import net.jazdw.rql.parser.ASTNode;
  * @author Jared Wiltshire
  * @author Terry Packer
  */
-public class StreamedVORqlQueryWithTotal<T extends AbstractVO<T>, TABLE extends AbstractTableDefinition, DAO extends AbstractDao<T, TABLE>, SERVICE extends AbstractVOService<T, TABLE, DAO>> extends StreamedBasicVORqlQueryWithTotal<T, TABLE, DAO, SERVICE> {
+public class StreamedVORqlQueryWithTotal<T extends AbstractVO, TABLE extends AbstractTableDefinition, DAO extends AbstractDao<T, TABLE>, SERVICE extends AbstractVOService<T, TABLE, DAO>> extends StreamedBasicVORqlQueryWithTotal<T, TABLE, DAO, SERVICE> {
 
     public StreamedVORqlQueryWithTotal(SERVICE service, ConditionSortLimit conditions) {
         this(service, conditions, item -> true, Function.identity());

@@ -105,7 +105,7 @@ public class VirtualPointLocatorVO extends AbstractPointLocatorVO<VirtualPointLo
 	}
 
 	@Override
-	public void validate(ProcessResult response, DataPointVO dpvo, DataSourceVO<?> dsvo) {
+	public void validate(ProcessResult response, DataPointVO dpvo, DataSourceVO dsvo) {
 	    if (!(dsvo instanceof VirtualDataSourceVO))
             response.addContextualMessage("dataSourceId", "dpEdit.validate.invalidDataSourceType");     
 		if (!DataTypes.CODES.isValidId(dataTypeId))

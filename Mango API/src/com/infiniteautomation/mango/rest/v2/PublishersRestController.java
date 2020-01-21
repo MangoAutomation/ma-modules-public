@@ -32,7 +32,6 @@ import com.infiniteautomation.mango.rest.v2.patch.PatchVORequestBody;
 import com.infiniteautomation.mango.spring.service.PublisherService;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.vo.User;
-import com.serotonin.m2m2.vo.publish.PublishedPointVO;
 import com.serotonin.m2m2.vo.publish.PublisherVO;
 import com.serotonin.m2m2.web.MediaTypes;
 
@@ -48,13 +47,13 @@ import net.jazdw.rql.parser.ASTNode;
 @Api(value="Mango Publishers")
 @RestController
 @RequestMapping("/publishers-v2")
-public class PublishersRestController<POINT extends PublishedPointVO, PUBLISHER extends PublisherVO<POINT>> {
+public class PublishersRestController {
 
-    private final PublisherService<POINT> service;
+    private final PublisherService service;
     private final BiFunction<PublisherVO<?>, User, AbstractPublisherModel<?,?>> map;
 
     @Autowired
-    public PublishersRestController(final PublisherService<POINT> service, final RestModelMapper modelMapper) {
+    public PublishersRestController(final PublisherService service, final RestModelMapper modelMapper) {
         this.service = service;
         this.map = (vo, user) -> {
             return modelMapper.map(vo, AbstractPublisherModel.class, user);
@@ -106,7 +105,7 @@ public class PublishersRestController<POINT extends PublishedPointVO, PUBLISHER 
     @ApiOperation(value = "Save publisher")
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<AbstractPublisherModel<?,?>> save(
-            @RequestBody(required=true) AbstractPublisherModel<POINT, PUBLISHER> model,
+            @RequestBody(required=true) AbstractPublisherModel<?, ?> model,
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder,
             HttpServletRequest request) {
@@ -122,7 +121,7 @@ public class PublishersRestController<POINT extends PublishedPointVO, PUBLISHER 
     @RequestMapping(method = RequestMethod.PUT, value = "/{xid}")
     public ResponseEntity<AbstractPublisherModel<?,?>> update(
             @PathVariable String xid,
-            @RequestBody(required=true) AbstractPublisherModel<POINT, PUBLISHER> model,
+            @RequestBody(required=true) AbstractPublisherModel<?, ?> model,
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder,
             HttpServletRequest request) {
@@ -146,7 +145,7 @@ public class PublishersRestController<POINT extends PublishedPointVO, PUBLISHER 
             @PatchVORequestBody(
                     service=PublisherService.class,
                     modelClass=AbstractPublisherModel.class)
-            AbstractPublisherModel<POINT, PUBLISHER> model,
+            AbstractPublisherModel<?, ?> model,
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
 

@@ -24,7 +24,7 @@ import net.jazdw.rql.parser.ASTNode;
  * @author Jared Wiltshire
  */
 @Deprecated
-public class StreamedVOQueryWithTotal<T extends AbstractVO<?>, TABLE extends AbstractBasicTableDefinition, DAO extends AbstractBasicDao<T, TABLE>> implements StreamedArrayWithTotal {
+public class StreamedVOQueryWithTotal<T extends AbstractVO, TABLE extends AbstractBasicTableDefinition, DAO extends AbstractBasicDao<T, TABLE>> implements StreamedArrayWithTotal {
     private final DAO dao;
     private final ConditionSortLimit conditions;
     private final Function<T, ?> toModel;

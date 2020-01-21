@@ -579,7 +579,7 @@ public class DataPointRestController {
             this.user = user;
 
             this.dsIdMap = new HashMap<Integer, DataSourceSummary>();
-            for(DataSourceVO<?> ds : DataSourceDao.getInstance().getAll()){
+            for(DataSourceVO ds : DataSourceDao.getInstance().getAll()){
                 dsIdMap.put(ds.getId(), new DataSourceSummary(ds.getId(), ds.getXid(), ds.getEditRoles()));
             }
         }

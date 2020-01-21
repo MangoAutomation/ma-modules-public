@@ -328,7 +328,7 @@ public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
                 if(vo != null)
                     eventName = vo.getName();
             }else if((dataPoints.size() == 0) && (dataSources.size() == 1)){
-                DataSourceVO<?> vo = DataSourceDao.getInstance().get(dataSources.get(0));
+                DataSourceVO vo = DataSourceDao.getInstance().get(dataSources.get(0));
                 if(vo != null)
                     eventName = vo.getName();
             }else if((dataPoints.size() > 1) && (dataSources.size() == 0)){

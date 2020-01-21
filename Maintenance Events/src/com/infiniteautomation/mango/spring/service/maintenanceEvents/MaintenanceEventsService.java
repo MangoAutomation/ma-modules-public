@@ -47,10 +47,10 @@ import net.jazdw.rql.parser.ASTNode;
 @Service
 public class MaintenanceEventsService extends AbstractVOService<MaintenanceEventVO, MaintenanceEventsTableDefinition, MaintenanceEventDao>{
 
-    private final DataSourceDao<DataSourceVO<?>> dataSourceDao;
+    private final DataSourceDao<DataSourceVO> dataSourceDao;
 
     @Autowired
-    public MaintenanceEventsService(MaintenanceEventDao dao, DataSourceDao<DataSourceVO<?>> dataSourceDao, PermissionService permissionService) {
+    public MaintenanceEventsService(MaintenanceEventDao dao, DataSourceDao<DataSourceVO> dataSourceDao, PermissionService permissionService) {
         super(dao, permissionService);
         this.dataSourceDao = dataSourceDao;
     }
@@ -222,7 +222,7 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
      */
     class DataPointPermissionsCheckCallback implements MappedRowCallback<DataPointVO> {
 
-        Map<Integer, DataSourceVO<?>> sources = new HashMap<>();
+        Map<Integer, DataSourceVO> sources = new HashMap<>();
         MutableBoolean hasPermission = new MutableBoolean(true);
         boolean read;
         PermissionHolder user;
@@ -245,16 +245,16 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
             }else {
                 if(read) {
                     if(!permissionService.hasDataPointReadPermission(user, point)) {
-                        DataSourceVO<?> source = sources.computeIfAbsent(point.getDataSourceId(), k -> {
-                            DataSourceVO<?> newDs = dataSourceDao.get(k);
+                        DataSourceVO source = sources.computeIfAbsent(point.getDataSourceId(), k -> {
+                            DataSourceVO newDs = dataSourceDao.get(k);
                             return newDs;
                         });
                         if(!permissionService.hasDataSourcePermission(user, source))
                             hasPermission.setFalse();
                     }
                 }else {
-                    DataSourceVO<?> source = sources.computeIfAbsent(point.getDataSourceId(), k -> {
-                        DataSourceVO<?> newDs = dataSourceDao.get(k);
+                    DataSourceVO source = sources.computeIfAbsent(point.getDataSourceId(), k -> {
+                        DataSourceVO newDs = dataSourceDao.get(k);
                         return newDs;
                     });
                     if(!permissionService.hasDataSourcePermission(user, source))
@@ -269,7 +269,7 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
      *
      * @author Terry Packer
      */
-    class DataSourcePermissionsCheckCallback implements MappedRowCallback<DataSourceVO<?>> {
+    class DataSourcePermissionsCheckCallback implements MappedRowCallback<DataSourceVO> {
 
         MutableBoolean hasPermission = new MutableBoolean(true);
         PermissionHolder user;
@@ -283,7 +283,7 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
         }
 
         @Override
-        public void row(DataSourceVO<?> source, int index) {
+        public void row(DataSourceVO source, int index) {
 
             if(!hasPermission.getValue()) {
                 //short circuit the logic if we already failed
@@ -375,7 +375,7 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
 
         //Validate that the ids are legit
         for(int i=0; i<vo.getDataSources().size(); i++) {
-            DataSourceVO<?> ds = DataSourceDao.getInstance().get(vo.getDataSources().get(i));
+            DataSourceVO ds = DataSourceDao.getInstance().get(vo.getDataSources().get(i));
             if(ds == null) {
                 response.addContextualMessage("dataSources[" + i + "]", "validate.invalidValue");
             }

@@ -22,13 +22,13 @@ import com.serotonin.m2m2.vo.permission.PermissionHolder;
  */
 @Component("DataSourceWebSocketHandlerV2")
 @WebSocketMapping("/websocket/data-sources")
-public class DataSourceWebSocketHandler<T extends DataSourceVO<T>> extends DaoNotificationWebSocketHandler<T>{
+public class DataSourceWebSocketHandler<T extends DataSourceVO> extends DaoNotificationWebSocketHandler<T>{
 
-    private final DataSourceService<T> service;
+    private final DataSourceService service;
     private final RestModelMapper modelMapper;
 
     @Autowired
-    public DataSourceWebSocketHandler(DataSourceService<T> service, RestModelMapper modelMapper) {
+    public DataSourceWebSocketHandler(DataSourceService service, RestModelMapper modelMapper) {
         this.service = service;
         this.modelMapper = modelMapper;
     }

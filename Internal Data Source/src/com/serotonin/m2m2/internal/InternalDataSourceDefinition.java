@@ -20,7 +20,7 @@ public class InternalDataSourceDefinition extends DataSourceDefinition {
     }
 
     @Override
-    protected DataSourceVO<?> createDataSourceVO() {
+    protected DataSourceVO createDataSourceVO() {
         return new InternalDataSourceVO();
     }
 

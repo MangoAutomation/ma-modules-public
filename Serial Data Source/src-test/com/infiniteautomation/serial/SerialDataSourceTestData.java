@@ -31,7 +31,7 @@ public class SerialDataSourceTestData {
     }
 
     // ========== POINT CREATION METHODS ===========
-    public static DataPointRT getMatchAllPoint(DataSourceVO<?> ds) {
+    public static DataPointRT getMatchAllPoint(DataSourceVO ds) {
         DataPointVO vo = new DataPointVO();
         vo.setName("matchAll");
         vo.setXid("matchAll");
@@ -44,7 +44,7 @@ public class SerialDataSourceTestData {
         vo.setPointLocator(plVo);
         return new DataPointRT(vo, plVo.createRuntime(), ds, null, null);
     }
-    public static DataPointRT getNewlineTerminated(DataSourceVO<?> ds) {
+    public static DataPointRT getNewlineTerminated(DataSourceVO ds) {
         DataPointVO vo = new DataPointVO();
         vo.setName("newlineTerminated");
         vo.setXid("newlineTerminated");
@@ -57,7 +57,7 @@ public class SerialDataSourceTestData {
         vo.setPointLocator(plVo);
         return new DataPointRT(vo, plVo.createRuntime(), ds, null, null);
     }
-    public static DataPointRT getCustomPoint(String name, String xid, String valueRegex, int valueIndex, String pointIdentifier, DataSourceVO<?> ds) {
+    public static DataPointRT getCustomPoint(String name, String xid, String valueRegex, int valueIndex, String pointIdentifier, DataSourceVO ds) {
         DataPointVO vo = new DataPointVO();
         vo.setName(name);
         vo.setXid(xid);

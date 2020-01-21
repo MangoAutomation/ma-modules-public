@@ -47,7 +47,7 @@ public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO, Mainten
     private final String SELECT_DATA_SOURCES;
 
     private DataPointDao dataPointDao;
-    private DataSourceDao<DataSourceVO<?>> dataSourceDao;
+    private DataSourceDao<DataSourceVO> dataSourceDao;
 
     private static final LazyInitSupplier<MaintenanceEventDao> springInstance = new LazyInitSupplier<>(() -> {
         Object o = Common.getRuntimeContext().getBean(MaintenanceEventDao.class);
@@ -59,7 +59,7 @@ public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO, Mainten
     @Autowired
     private MaintenanceEventDao(
             MaintenanceEventsTableDefinition table,
-            DataPointDao dataPointDao, DataSourceDao<DataSourceVO<?>> dataSourceDao,
+            DataPointDao dataPointDao, DataSourceDao<DataSourceVO> dataSourceDao,
             @Qualifier(MangoRuntimeContextConfiguration.DAO_OBJECT_MAPPER_NAME)ObjectMapper mapper,
             ApplicationEventPublisher publisher) {
         super(AuditEvent.TYPE_NAME,
@@ -144,14 +144,14 @@ public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO, Mainten
      * @param maintenanceEventId
      * @param callback
      */
-    public void getDataSources(int maintenanceEventId, final MappedRowCallback<DataSourceVO<?>> callback){
-        RowMapper<DataSourceVO<?>> mapper = dataSourceDao.getRowMapper();
+    public void getDataSources(int maintenanceEventId, final MappedRowCallback<DataSourceVO> callback){
+        RowMapper<DataSourceVO> mapper = dataSourceDao.getRowMapper();
         this.ejt.query(SELECT_DATA_SOURCES, new Object[]{maintenanceEventId}, new RowCallbackHandler(){
             private int row = 0;
 
             @Override
             public void processRow(ResultSet rs) throws SQLException {
-                DataSourceVO<?> vo = mapper.mapRow(rs, row);
+                DataSourceVO vo = mapper.mapRow(rs, row);
                 dataSourceDao.loadRelationalData(vo);
                 callback.row(vo, row);
                 row++;

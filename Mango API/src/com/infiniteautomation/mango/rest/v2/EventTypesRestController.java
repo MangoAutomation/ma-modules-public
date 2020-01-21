@@ -75,18 +75,18 @@ import net.jazdw.rql.parser.ASTNode;
 public class EventTypesRestController {
 
     private final DataPointService dataPointService;
-    private final DataSourceDao<?> dataSourceDao;
-    private final PublisherDao<?> publisherDao;
-    private final EventDetectorDao<?> eventDetectorDao;
+    private final DataSourceDao dataSourceDao;
+    private final PublisherDao publisherDao;
+    private final EventDetectorDao eventDetectorDao;
     private final PermissionService permissionService;
     private final RestModelMapper modelMapper;
 
     @Autowired
     public EventTypesRestController(
             DataPointService dataPointService,
-            DataSourceDao<?> dataSourceDao,
-            PublisherDao<?> publisherDao,
-            EventDetectorDao<?> eventDetectorDao,
+            DataSourceDao dataSourceDao,
+            PublisherDao publisherDao,
+            EventDetectorDao eventDetectorDao,
             PermissionService permissionService,
             RestModelMapper modelMapper) {
         this.dataPointService = dataPointService;
@@ -350,9 +350,9 @@ public class EventTypesRestController {
 
                 //Get Event Detectors, ensure only 1 data point in list
                 //TODO via query instead
-                List<AbstractPointEventDetectorVO<?>> peds = this.eventDetectorDao.getForSourceType(EventTypeNames.DATA_POINT);
+                List<AbstractPointEventDetectorVO> peds = this.eventDetectorDao.getForSourceType(EventTypeNames.DATA_POINT);
                 Map<Integer, DataPointVO> uniquePointsMap = new HashMap<>();
-                for(AbstractPointEventDetectorVO<?> ped : peds) {
+                for(AbstractPointEventDetectorVO ped : peds) {
                     uniquePointsMap.put(ped.getDataPoint().getId(), ped.getDataPoint());
                 }
 
@@ -371,7 +371,7 @@ public class EventTypesRestController {
                 if(subtype != null)
                     throw new BadRequestException();
 
-                for(DataSourceVO<?> vo : dataSourceDao.getAll()) {
+                for(DataSourceVO vo : dataSourceDao.getAll()) {
                     if(permissionService.hasDataSourcePermission(user, vo)) {
                         AbstractDataSourceModel<?> dsModel = modelMapper.map(vo, AbstractDataSourceModel.class, user);
                         DataSourceEventTypeModel model = new DataSourceEventTypeModel(new DataSourceEventType(vo.getId(), 0), dsModel);
@@ -458,7 +458,7 @@ public class EventTypesRestController {
                 DataPointVO dp = this.dataPointService.get(referenceId1);
                 dp.setTags(DataPointTagsDao.getInstance().getTagsForDataPointId(dp.getId()));
 
-                for(AbstractPointEventDetectorVO<?> vo : dp.getEventDetectors()) {
+                for(AbstractPointEventDetectorVO vo : dp.getEventDetectors()) {
                     AbstractPointEventDetectorModel<?> edm =  modelMapper.map(vo, AbstractPointEventDetectorModel.class, user);
                     EventTypeVO type = vo.getEventType();
                     DataPointEventType eventType = (DataPointEventType)type.getEventType();
@@ -472,7 +472,7 @@ public class EventTypesRestController {
                 if(subtype != null)
                     throw new BadRequestException();
 
-                DataSourceVO<?> ds = dataSourceDao.get(referenceId1);
+                DataSourceVO ds = dataSourceDao.get(referenceId1);
                 if(ds == null)
                     throw new NotFoundException();
 

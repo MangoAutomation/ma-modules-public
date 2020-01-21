@@ -73,17 +73,17 @@ import net.jazdw.rql.parser.ASTNode;
 @Api(value="Event Handlers Rest Controller")
 @RestController("EventHandlersRestControllerV2")
 @RequestMapping("/event-handlers")
-public class EventHandlersRestController<T extends AbstractEventHandlerVO<T>> {
+public class EventHandlersRestController {
 
-    private final EventHandlerService<T> service;
-    private final BiFunction<T, User, AbstractEventHandlerModel<T>> map;
+    private final EventHandlerService service;
+    private final BiFunction<AbstractEventHandlerVO, User, AbstractEventHandlerModel<? extends AbstractEventHandlerVO>> map;
     private final MangoJavaScriptService javaScriptService;
 
     private final Map<String, Function<Object, Object>> valueConverters;
     private final Map<String, Field<?>> fieldMap;
 
     @Autowired
-    public EventHandlersRestController(EventHandlerService<T> service, MangoJavaScriptService javaScriptService, final RestModelMapper modelMapper) {
+    public EventHandlersRestController(EventHandlerService service, MangoJavaScriptService javaScriptService, final RestModelMapper modelMapper) {
         this.service = service;
 
         //Map the event types into the model
@@ -92,7 +92,7 @@ public class EventHandlersRestController<T extends AbstractEventHandlerVO<T>> {
                 return (AbstractEventTypeModel<?,?, ?>) modelMapper.map(type, AbstractEventTypeModel.class, user);
             }).collect(Collectors.toList());
             @SuppressWarnings("unchecked")
-            AbstractEventHandlerModel<T> model = modelMapper.map(vo, AbstractEventHandlerModel.class, user);
+            AbstractEventHandlerModel<? extends AbstractEventHandlerVO> model = modelMapper.map(vo, AbstractEventHandlerModel.class, user);
             model.setEventTypes(eventTypes);
             return model;
         };
@@ -145,11 +145,11 @@ public class EventHandlersRestController<T extends AbstractEventHandlerVO<T>> {
             )
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<AbstractEventHandlerModel<?>> create(
-            @RequestBody AbstractEventHandlerModel<T> model,
+            @RequestBody AbstractEventHandlerModel<? extends AbstractEventHandlerVO> model,
             @ApiParam(value="User", required=true)
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
-        T vo = service.insert(model.toVO());
+        AbstractEventHandlerVO vo = service.insert(model.toVO());
         URI location = builder.path("/event-handlers/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
@@ -162,15 +162,15 @@ public class EventHandlersRestController<T extends AbstractEventHandlerVO<T>> {
             response=AbstractEventHandlerModel.class
             )
     @RequestMapping(method = RequestMethod.PUT, value="/{xid}")
-    public ResponseEntity<AbstractEventHandlerModel<T>> update(
+    public ResponseEntity<AbstractEventHandlerModel<? extends AbstractEventHandlerVO>> update(
             @ApiParam(value = "XID of Event Handler to update", required = true, allowMultiple = false)
             @PathVariable String xid,
             @ApiParam(value = "Event Handler of update", required = true, allowMultiple = false)
-            @RequestBody AbstractEventHandlerModel<T> model,
+            @RequestBody AbstractEventHandlerModel<? extends AbstractEventHandlerVO> model,
             @ApiParam(value="User", required=true)
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
-        T vo = service.update(xid, model.toVO());
+        AbstractEventHandlerVO vo = service.update(xid, model.toVO());
         URI location = builder.path("/event-handlers/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
@@ -190,12 +190,12 @@ public class EventHandlersRestController<T extends AbstractEventHandlerVO<T>> {
             @PatchVORequestBody(
                     service=EventHandlerService.class,
                     modelClass=AbstractEventHandlerModel.class)
-            AbstractEventHandlerModel<T> model,
+            AbstractEventHandlerModel<? extends AbstractEventHandlerVO> model,
 
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
 
-        T vo = service.update(xid, model.toVO());
+        AbstractEventHandlerVO vo = service.update(xid, model.toVO());
 
         URI location = builder.path("/event-handlers/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
@@ -227,7 +227,7 @@ public class EventHandlersRestController<T extends AbstractEventHandlerVO<T>> {
     @PreAuthorize("isAdmin()")
     @RequestMapping(method = RequestMethod.POST, value="/validate")
     public void validate(
-            @RequestBody AbstractEventHandlerModel<T> model,
+            @RequestBody AbstractEventHandlerModel<? extends AbstractEventHandlerVO> model,
             @ApiParam(value="User", required=true)
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {

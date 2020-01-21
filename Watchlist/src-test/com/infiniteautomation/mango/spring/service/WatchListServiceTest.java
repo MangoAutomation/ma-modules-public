@@ -98,7 +98,7 @@ public class WatchListServiceTest extends AbstractVOServiceWithPermissionsTest<W
 
     @Override
     WatchListVO updateVO(WatchListVO existing) {
-        WatchListVO copy = existing.copy();
+        WatchListVO copy = (WatchListVO) existing.copy();
         copy.setName(UUID.randomUUID().toString());
         Map<String, Object> randomData = new HashMap<>();
         randomData.put(UUID.randomUUID().toString(), UUID.randomUUID().toString());

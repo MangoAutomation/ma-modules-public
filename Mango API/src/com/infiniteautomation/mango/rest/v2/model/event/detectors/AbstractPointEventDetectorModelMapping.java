@@ -14,13 +14,13 @@ import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 /**
  * Helper to load data point and its tags into model always
- * 
+ *
  * @author Terry Packer
  *
  */
-public abstract class AbstractPointEventDetectorModelMapping<T extends AbstractPointEventDetectorVO<T>, M extends AbstractPointEventDetectorModel<T>> implements RestModelJacksonMapping<T, M> {
+public abstract class AbstractPointEventDetectorModelMapping<T extends AbstractPointEventDetectorVO, M extends AbstractPointEventDetectorModel<T>> implements RestModelJacksonMapping<T, M> {
 
-    
+
     protected M loadDataPoint(T detector, M model, PermissionHolder user, RestModelMapper mapper) {
         DataPointVO dp = DataPointDao.getInstance().get(detector.getSourceId());
         if(dp != null) {
@@ -29,5 +29,5 @@ public abstract class AbstractPointEventDetectorModelMapping<T extends AbstractP
         }
         return model;
     }
-    
+
 }

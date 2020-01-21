@@ -22,7 +22,7 @@ public class MBusDataSourceDefinition extends DataSourceDefinition {
     }
 
     @Override
-    protected DataSourceVO<?> createDataSourceVO() {
+    protected DataSourceVO createDataSourceVO() {
         return new MBusDataSourceVO();
     }
 }

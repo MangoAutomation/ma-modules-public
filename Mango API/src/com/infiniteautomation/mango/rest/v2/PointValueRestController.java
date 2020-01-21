@@ -1149,7 +1149,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
                 (resource, taskUser) -> {
                     PurgePointValuesResponseModel result = new PurgePointValuesResponseModel();
 
-                    Map<Integer, DataSourceVO<?>> dataSourceMap = new HashMap<>();
+                    Map<Integer, DataSourceVO> dataSourceMap = new HashMap<>();
                     Map<String, DataPointVO> dataPointsMap = new HashMap<>();
 
                     //Build the list of data point Xids
@@ -1165,7 +1165,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
                             }
                         }
                     }else {
-                        DataSourceVO<?> ds = DataSourceDao.getInstance().getByXid(model.getDataSourceXid());
+                        DataSourceVO ds = DataSourceDao.getInstance().getByXid(model.getDataSourceXid());
                         xids = new ArrayList<>();
                         if(ds != null) {
                             dataSourceMap.put(ds.getId(), ds);
@@ -1190,7 +1190,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
                             if(dp == null)
                                 throw new NotFoundException();
 
-                            DataSourceVO<?> ds = dataSourceMap.get(dp.getDataSourceId());
+                            DataSourceVO ds = dataSourceMap.get(dp.getDataSourceId());
                             if(ds == null)
                                 throw new NotFoundException();
 

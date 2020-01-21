@@ -72,12 +72,12 @@ public class JsonEmportV2Controller extends AbstractMangoRestV2Controller {
 
     private final MangoRestTemporaryResourceContainer<ImportStatusProvider> importStatusResources;
     private final JsonConfigImportWebSocketHandler websocket;
-    private final EmportService<?,?,?> service;
+    private final EmportService service;
     @Autowired
     public JsonEmportV2Controller(
             JsonConfigImportWebSocketHandler websocket,
             MangoRestTemporaryResourceContainer<ImportStatusProvider> importStatusResources,
-            EmportService<?,?,?>service) {
+            EmportService service) {
         this.websocket = websocket;
         this.importStatusResources = importStatusResources;
         this.service = service;
@@ -217,7 +217,7 @@ public class JsonEmportV2Controller extends AbstractMangoRestV2Controller {
      */
     public class ImportStatusProvider extends MangoRestTemporaryResource<ImportStatusProvider> implements ProgressiveTaskListener {
 
-        private final ImportTask<?,?,?> task;
+        private final ImportTask task;
         private final JsonConfigImportWebSocketHandler websocket;
         private final long expirationMs;
 

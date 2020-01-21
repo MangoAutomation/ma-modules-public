@@ -279,7 +279,7 @@ public class MBusDataSourceRestController {
      */
     private void ensureNotRunning(String dataSourceXid, User user) throws PermissionException {
         try {
-            DataSourceVO<?> ds = service.get(dataSourceXid, user);
+            DataSourceVO ds = service.get(dataSourceXid, user);
             if (Common.runtimeManager.isDataSourceRunning(ds.getId())) 
                 throw new BadRequestException(new TranslatableMessage("dsEdit.mbus.noSearchWhileDataSourceRunning"));
         }catch(NotFoundException e) {

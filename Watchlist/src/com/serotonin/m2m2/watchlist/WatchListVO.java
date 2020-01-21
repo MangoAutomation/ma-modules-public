@@ -34,7 +34,7 @@ import com.serotonin.m2m2.vo.role.Role;
  * @author Terry Packer
  *
  */
-public class WatchListVO extends AbstractVO<WatchListVO>{
+public class WatchListVO extends AbstractVO {
 
     private static final long serialVersionUID = 1L;
 

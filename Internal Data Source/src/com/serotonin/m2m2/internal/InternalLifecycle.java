@@ -140,7 +140,7 @@ public class InternalLifecycle extends LifecycleDefinition {
      *
      */
     private void maybeInstallSystemMonitor(boolean safe) {
-        DataSourceVO<?> ds = DataSourceDao.getInstance().getByXid(SYSTEM_DATASOURCE_XID);
+        DataSourceVO ds = DataSourceDao.getInstance().getByXid(SYSTEM_DATASOURCE_XID);
         if(ds == null){
             //Create Data Source
             DataSourceDefinition def = ModuleRegistry.getDataSourceDefinition(InternalDataSourceDefinition.DATA_SOURCE_TYPE);
@@ -177,7 +177,7 @@ public class InternalLifecycle extends LifecycleDefinition {
     /**
      *
      */
-    private void maybeCreatePoints(boolean safe, DataSourceVO<?> vo) {
+    private void maybeCreatePoints(boolean safe, DataSourceVO vo) {
         Map<String, ValueMonitor<?>> monitors = getAllHomePageMonitors();
         Iterator<String> it = monitors.keySet().iterator();
         while(it.hasNext()){

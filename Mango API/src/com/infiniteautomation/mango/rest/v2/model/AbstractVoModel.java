@@ -16,23 +16,23 @@ import io.swagger.annotations.ApiModelProperty;
  *
  * @author Terry Packer
  */
-public abstract class AbstractVoModel<VO extends AbstractVO<?>> {
-    
+public abstract class AbstractVoModel<VO extends AbstractVO> {
+
     @JsonInclude(JsonInclude.Include.NON_NULL)
     protected Integer id;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     protected String xid;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     protected String name;
-    
+
     protected AbstractVoModel() { }
-    
+
     @ApiModelProperty(value ="ID of object in database")
     @JsonGetter("id")
     public Integer getId(){
         return id;
     }
-    
+
     @ApiModelProperty(value = "XID of object", required = false)
     @JsonGetter("xid")
     public String getXid(){
@@ -43,7 +43,7 @@ public abstract class AbstractVoModel<VO extends AbstractVO<?>> {
     public void setXid(String xid){
         this.xid = xid;
     }
-    
+
     @ApiModelProperty(value = "Name of object", required = false)
     @JsonGetter("name")
     public String getName(){
@@ -78,5 +78,5 @@ public abstract class AbstractVoModel<VO extends AbstractVO<?>> {
      * @return
      */
     protected abstract VO newVO();
-    
+
 }

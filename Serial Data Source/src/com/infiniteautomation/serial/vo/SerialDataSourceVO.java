@@ -32,7 +32,7 @@ import com.serotonin.m2m2.vo.event.EventTypeVO;
 import com.serotonin.util.SerializationHelper;
 
 @JsonEntity
-public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
+public class SerialDataSourceVO extends DataSourceVO {
 
     private static final ExportCodes EVENT_CODES = new ExportCodes();
     static {

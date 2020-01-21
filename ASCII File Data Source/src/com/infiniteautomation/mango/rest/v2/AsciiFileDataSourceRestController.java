@@ -91,7 +91,7 @@ public class AsciiFileDataSourceRestController {
             @PathVariable String xid,
             @AuthenticationPrincipal User user) {
         
-        DataSourceVO<?> ds = service.get(xid, user);
+        DataSourceVO ds = service.get(xid, user);
         if(!(ds instanceof AsciiFileDataSourceVO))
             throw new BadRequestException(new TranslatableMessage("validate.incompatibleDataSourceType"));
         

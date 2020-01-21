@@ -126,7 +126,7 @@ public abstract class SubscriptionDaoWebSocketHandler<T extends AbstractBasicVO>
 
     protected String getXid(T vo) {
         if (vo instanceof AbstractVO) {
-            return ((AbstractVO<?>) vo).getXid();
+            return ((AbstractVO) vo).getXid();
         }
         return null;
     }

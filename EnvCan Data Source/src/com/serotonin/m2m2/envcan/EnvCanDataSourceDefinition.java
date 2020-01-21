@@ -17,7 +17,7 @@ public class EnvCanDataSourceDefinition extends DataSourceDefinition {
     }
 
     @Override
-    protected DataSourceVO<?> createDataSourceVO() {
+    protected DataSourceVO createDataSourceVO() {
         return new EnvCanDataSourceVO();
     }
 }

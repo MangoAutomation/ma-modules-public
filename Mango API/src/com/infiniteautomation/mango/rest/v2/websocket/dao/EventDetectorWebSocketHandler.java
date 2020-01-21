@@ -22,13 +22,13 @@ import com.serotonin.m2m2.vo.permission.PermissionHolder;
  */
 @Component()
 @WebSocketMapping("/websocket/full-event-detectors")
-public class EventDetectorWebSocketHandler <T extends AbstractEventDetectorVO<T>> extends DaoNotificationWebSocketHandler<T> {
+public class EventDetectorWebSocketHandler <T extends AbstractEventDetectorVO> extends DaoNotificationWebSocketHandler<T> {
 
-    private final EventDetectorsService<T> service;
+    private final EventDetectorsService service;
     private final RestModelMapper modelMapper;
 
     @Autowired
-    public EventDetectorWebSocketHandler(EventDetectorsService<T> service, RestModelMapper modelMapper) {
+    public EventDetectorWebSocketHandler(EventDetectorsService service, RestModelMapper modelMapper) {
         this.service = service;
         this.modelMapper = modelMapper;
     }

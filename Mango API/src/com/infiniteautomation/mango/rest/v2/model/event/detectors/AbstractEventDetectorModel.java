@@ -27,17 +27,17 @@ import io.swagger.annotations.ApiModelProperty;
  *
  */
 @JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.EXISTING_PROPERTY, property=AbstractEventDetectorModel.DETECTOR_TYPE)
-public abstract class AbstractEventDetectorModel<T extends AbstractEventDetectorVO<T>> extends AbstractVoModel<T> {
+public abstract class AbstractEventDetectorModel<T extends AbstractEventDetectorVO> extends AbstractVoModel<T> {
     public static final String DETECTOR_TYPE = "detectorType";
 
     //Hack so that we can import a list via CSV, I wasn't able to get the unwrapped ActionAndModel class to deserialize the model fields into 'model'
     @ApiModelProperty("Action to use for CSV import")
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    protected VoAction action;    
+    protected VoAction action;
     @ApiModelProperty("Original XID for use in CSV import")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     protected String originalXid;
-    
+
     protected int sourceId;
     @ApiModelProperty("Read only description of detector")
     protected TranslatableMessage description;
@@ -47,7 +47,7 @@ public abstract class AbstractEventDetectorModel<T extends AbstractEventDetector
     protected String sourceTypeName;
     @ApiModelProperty("Xids for event handlers tied to this detector.  If supplied in the model it will replace any existing mappings.")
     protected List<String> handlerXids;
-    
+
     @Override
     public void fromVO(T vo) {
         super.fromVO(vo);
@@ -58,7 +58,7 @@ public abstract class AbstractEventDetectorModel<T extends AbstractEventDetector
         this.sourceTypeName = vo.getDetectorSourceType();
         this.handlerXids = vo.getEventHandlerXids();
     }
-    
+
     @Override
     public T toVO() {
         T vo = super.toVO();
@@ -67,35 +67,35 @@ public abstract class AbstractEventDetectorModel<T extends AbstractEventDetector
             vo.setEventHandlerXids(handlerXids);
         return vo;
     }
-    
+
     @Override
     protected T newVO() {
         EventDetectorDefinition<T> def = getDefinition();
         return def.baseCreateEventDetectorVO(sourceId);
     }
-    
+
     @JsonIgnore
     public EventDetectorDefinition<T> getDefinition() {
         EventDetectorDefinition<T> definition = ModuleRegistry.getEventDetectorDefinition(getDetectorType());
         if(definition == null)
             throw new GenericRestException(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage("rest.exception.modelNotFound", getDetectorType()));
         return definition;
-    }    
-    
+    }
+
     /**
      * The type name of our module element definition
      * @return
      */
     @JsonGetter("detectorType")
     public abstract String getDetectorType();
-    
+
     /**
      * @return the sourceTypeName
      */
     public String getSourceTypeName() {
         return sourceTypeName;
     }
-    
+
     public boolean isRtnApplicable() {
         return rtnApplicable;
     }
@@ -116,28 +116,28 @@ public abstract class AbstractEventDetectorModel<T extends AbstractEventDetector
     public void setAlarmLevel(AlarmLevels alarmLevel) {
         this.alarmLevel = alarmLevel;
     }
-    
+
     /**
      * @return the sourceId
      */
     public int getSourceId() {
         return sourceId;
     }
-    
+
     /**
      * @param sourceId the sourceId to set
      */
     public void setSourceId(int sourceId) {
         this.sourceId = sourceId;
     }
-    
+
     /**
      * @return the handlers
      */
     public List<String> getHandlerXids() {
         return handlerXids;
     }
-    
+
     /**
      * @param handlers the handlers to set
      */
@@ -160,5 +160,5 @@ public abstract class AbstractEventDetectorModel<T extends AbstractEventDetector
     public void setOriginalXid(String originalXid) {
         this.originalXid = originalXid;
     }
-    
+
 }

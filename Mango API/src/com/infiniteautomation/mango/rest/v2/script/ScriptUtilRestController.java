@@ -91,7 +91,7 @@ public class ScriptUtilRestController {
                 else
                     source = new OneTimePointAnnotation(user, annotation);
 
-                DataSourceRT<? extends DataSourceVO<?>> dsrt = Common.runtimeManager.getRunningDataSource(dprt.getDataSourceId());
+                DataSourceRT<? extends DataSourceVO> dsrt = Common.runtimeManager.getRunningDataSource(dprt.getDataSourceId());
                 dsrt.setPointValue(dprt, newValue, source);
             }
             catch (ResultTypeException e) {
