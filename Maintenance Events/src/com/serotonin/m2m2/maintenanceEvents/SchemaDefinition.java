@@ -9,9 +9,9 @@ import java.util.List;
 import com.serotonin.m2m2.module.DatabaseSchemaDefinition;
 
 public class SchemaDefinition extends DatabaseSchemaDefinition {
-    
+
     public static final String TABLE_NAME = "maintenanceEvents";
-    
+
     @Override
     public String getNewInstallationCheckTableName() {
         return TABLE_NAME;
@@ -31,7 +31,7 @@ public class SchemaDefinition extends DatabaseSchemaDefinition {
 
     @Override
     public int getDatabaseSchemaVersion() {
-        return 3;
+        return 4;
     }
 
 }

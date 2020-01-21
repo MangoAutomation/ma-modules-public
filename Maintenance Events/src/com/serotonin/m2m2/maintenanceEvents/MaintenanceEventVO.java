@@ -7,7 +7,9 @@ package com.serotonin.m2m2.maintenanceEvents;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
@@ -23,10 +25,8 @@ import com.serotonin.json.type.JsonObject;
 import com.serotonin.json.type.JsonValue;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.Common.TimePeriods;
-import com.serotonin.m2m2.db.dao.AbstractDao;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
-import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
@@ -35,7 +35,7 @@ import com.serotonin.m2m2.vo.AbstractVO;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.event.EventTypeVO;
-import com.serotonin.timer.CronTimerTrigger;
+import com.serotonin.m2m2.vo.role.Role;
 
 public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
 
@@ -102,7 +102,7 @@ public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
     private int timeoutPeriods = 0;
     private int timeoutPeriodType = TimePeriods.HOURS;
     @JsonProperty
-    private String togglePermission;
+    private Set<Role> toggleRoles = Collections.unmodifiableSet(Collections.emptySet());
 
     @Override
     public boolean isNew() {
@@ -301,12 +301,12 @@ public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
         this.timeoutPeriodType = timeoutPeriodType;
     }
 
-    public String getTogglePermission() {
-        return togglePermission;
+    public Set<Role> getToggleRoles() {
+        return toggleRoles;
     }
 
-    public void setTogglePermission(String togglePermission) {
-        this.togglePermission = togglePermission;
+    public void setToggleRoles(Set<Role> toggleRoles) {
+        this.toggleRoles = toggleRoles;
     }
 
     public EventTypeVO getEventType() {
@@ -434,77 +434,6 @@ public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
         return "event.audit.maintenanceEvent";
     }
 
-    @Override
-    public void validate(ProcessResult response) {
-        super.validate(response);
-
-        if((dataSources.size() < 1) &&(dataPoints.size() < 1)) {
-            response.addContextualMessage("dataSources", "validate.invalidValue");
-            response.addContextualMessage("dataPoints", "validate.invalidValue");
-        }
-
-        //Validate that the ids are legit
-        for(int i=0; i<dataSources.size(); i++) {
-            DataSourceVO<?> vo = DataSourceDao.getInstance().get(dataSources.get(i));
-            if(vo == null) {
-                response.addContextualMessage("dataSources[" + i + "]", "validate.invalidValue");
-            }
-        }
-
-        for(int i=0; i<dataPoints.size(); i++) {
-            DataPointVO vo = DataPointDao.getInstance().get(dataPoints.get(i));
-            if(vo == null) {
-                response.addContextualMessage("dataPoints[" + i + "]", "validate.invalidValue");
-            }
-        }
-
-        // Check that cron patterns are ok.
-        if (scheduleType == TYPE_CRON) {
-            try {
-                new CronTimerTrigger(activeCron);
-            }
-            catch (Exception e) {
-                response.addContextualMessage("activeCron", "maintenanceEvents.validate.activeCron", e.getMessage());
-            }
-
-            try {
-                new CronTimerTrigger(inactiveCron);
-            }
-            catch (Exception e) {
-                response.addContextualMessage("inactiveCron", "maintenanceEvents.validate.inactiveCron", e.getMessage());
-            }
-        }
-
-        // Test that the triggers can be created.
-        MaintenanceEventRT rt = new MaintenanceEventRT(this);
-        try {
-            rt.createTrigger(true);
-        }
-        catch (RuntimeException e) {
-            response.addContextualMessage("activeCron", "maintenanceEvents.validate.activeTrigger", e.getMessage());
-        }
-
-        try {
-            rt.createTrigger(false);
-        }
-        catch (RuntimeException e) {
-            response.addContextualMessage("inactiveCron", "maintenanceEvents.validate.inactiveTrigger", e.getMessage());
-        }
-
-        // If the event is once, make sure the active time is earlier than the inactive time.
-        if (scheduleType == TYPE_ONCE) {
-            DateTime adt = new DateTime(activeYear, activeMonth, activeDay, activeHour, activeMinute, activeSecond, 0);
-            DateTime idt = new DateTime(inactiveYear, inactiveMonth, inactiveDay, inactiveHour, inactiveMinute,
-                    inactiveSecond, 0);
-            if (idt.getMillis() <= adt.getMillis())
-                response.addContextualMessage("scheduleType", "maintenanceEvents.validate.invalidRtn");
-            if(timeoutPeriods > 0) {
-                if (!Common.TIME_PERIOD_CODES.isValidId(timeoutPeriods))
-                    response.addContextualMessage("updatePeriodType", "validate.invalidValue");
-            }
-        }
-    }
-
     //
     //
     // Serialization
@@ -545,10 +474,10 @@ public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
         name = jsonObject.getString("alias");
         String text = jsonObject.getString("dataSourceXid");
         if (text != null) {
-            DataSourceVO<?> ds = DataSourceDao.getInstance().getDataSource(text);
-            if (ds == null)
+            Integer id = DataSourceDao.getInstance().getIdByXid(text);
+            if (id == null)
                 throw new TranslatableJsonException("emport.error.maintenanceEvent.invalid", "dataSourceXid", text);
-            dataSources.add(ds.getId());
+            dataSources.add(id);
         }
 
         JsonArray jsonDataPoints = jsonObject.getJsonArray("dataPointXids");
@@ -599,13 +528,8 @@ public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
                 throw new TranslatableJsonException("emport.error.maintenanceEvent.invalid", "timeoutPeriodType", text,
                         Common.TIME_PERIOD_CODES.getCodeList());
         }
-    }
 
-    /* (non-Javadoc)
-     * @see com.serotonin.m2m2.vo.AbstractVO#getDao()
-     */
-    @Override
-    protected AbstractDao<MaintenanceEventVO> getDao() {
-        return MaintenanceEventDao.getInstance();
+        this.toggleRoles = readLegacyPermissions("togglePermissions", this.toggleRoles, jsonObject);
+
     }
 }

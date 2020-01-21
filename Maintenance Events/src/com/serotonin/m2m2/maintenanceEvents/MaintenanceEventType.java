@@ -6,6 +6,7 @@ package com.serotonin.m2m2.maintenanceEvents;
 
 import java.io.IOException;
 
+import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.serotonin.json.JsonException;
 import com.serotonin.json.JsonReader;
 import com.serotonin.json.ObjectWriter;
@@ -15,8 +16,6 @@ import com.serotonin.m2m2.rt.event.type.DuplicateHandling;
 import com.serotonin.m2m2.rt.event.type.EventType;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
-import com.serotonin.m2m2.vo.permission.Permissions;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.eventType.EventTypeModel;
 
 public class MaintenanceEventType extends EventType {
     public static final String TYPE_NAME = "MAINTENANCE";
@@ -106,27 +105,19 @@ public class MaintenanceEventType extends EventType {
         writer.writeEntry("XID", MaintenanceEventDao.getInstance().getXidById(maintenanceId));
     }
 
-    /* (non-Javadoc)
-     * @see com.serotonin.m2m2.rt.event.type.EventType#asModel()
-     */
     @Override
-    public EventTypeModel asModel() {
-        return new MaintenanceEventTypeModel(this);
-    }
-
-    @Override
-    public boolean hasPermission(PermissionHolder user) {
-        MaintenanceEventVO vo = MaintenanceEventDao.getInstance().getFull(maintenanceId);
+    public boolean hasPermission(PermissionHolder user, PermissionService service) {
+        MaintenanceEventVO vo = MaintenanceEventDao.getInstance().get(maintenanceId);
         if(vo == null)
             return false;
         else {
             for(int dsId : vo.getDataSources())
-                if(!Permissions.hasDataSourcePermission(user, dsId))
+                if(!service.hasDataSourcePermission(user, dsId))
                     return false;
 
             for(int dpId : vo.getDataPoints()) {
                 DataPointVO dp = DataPointDao.getInstance().get(dpId);
-                if(dp != null && !Permissions.hasDataPointReadPermission(user, dp))
+                if(dp != null && !service.hasDataPointReadPermission(user, dp))
                     return false;
             }
         }

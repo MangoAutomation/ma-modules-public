@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventDao;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventType;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventVO;
-import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 /**
  * @author Terry Packer
@@ -18,7 +18,7 @@ import com.serotonin.m2m2.vo.User;
 public class MaintenanceEventTypeModelMapping implements RestModelMapping<MaintenanceEventType, MaintenanceEventTypeModel>{
 
     @Override
-    public MaintenanceEventTypeModel map(Object o, User user, RestModelMapper mapper) {
+    public MaintenanceEventTypeModel map(Object o, PermissionHolder user, RestModelMapper mapper) {
         MaintenanceEventType type = (MaintenanceEventType)o;
         MaintenanceEventVO vo = MaintenanceEventDao.getInstance().get(type.getReferenceId1());
         MaintenanceEventTypeModel model;

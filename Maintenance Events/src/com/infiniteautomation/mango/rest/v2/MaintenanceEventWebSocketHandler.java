@@ -13,7 +13,7 @@ import com.infiniteautomation.mango.rest.v2.websocket.WebSocketMapping;
 import com.infiniteautomation.mango.spring.events.DaoEvent;
 import com.infiniteautomation.mango.spring.service.maintenanceEvents.MaintenanceEventsService;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventVO;
-import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 /**
  *
@@ -27,7 +27,7 @@ public class MaintenanceEventWebSocketHandler extends DaoNotificationWebSocketHa
     private  MaintenanceEventsService service;
 
     @Override
-    protected boolean hasPermission(User user, MaintenanceEventVO vo) {
+    protected boolean hasPermission(PermissionHolder user, MaintenanceEventVO vo) {
         try{
             service.ensureReadPermission(user, vo);
             return true;
@@ -37,7 +37,7 @@ public class MaintenanceEventWebSocketHandler extends DaoNotificationWebSocketHa
     }
 
     @Override
-    protected Object createModel(MaintenanceEventVO vo) {
+    protected Object createModel(MaintenanceEventVO vo, PermissionHolder user) {
         return new MaintenanceEventModel(vo);
     }
 

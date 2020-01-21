@@ -25,7 +25,6 @@ create table maintenanceEvents (
   inactiveCron varchar(25),
   timeoutPeriods int,
   timeoutPeriodType int,
-  togglePermission varchar(255),
   primary key (id)
 );
 alter table maintenanceEvents add constraint maintenanceEventsUn1 unique (xid);

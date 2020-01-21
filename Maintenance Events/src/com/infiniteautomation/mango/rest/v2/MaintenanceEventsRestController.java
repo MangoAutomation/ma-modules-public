@@ -51,13 +51,13 @@ public class MaintenanceEventsRestController {
 
     @Autowired
     private MaintenanceEventDao dao;
-    
+
     private MaintenanceEventsService service;
-    
+
     public MaintenanceEventsRestController(@Autowired MaintenanceEventsService service) {
         this.service = service;
     }
-    
+
     @ApiOperation(
             value = "Get maintenance event by XID",
             notes = "Only events that user has permission to are returned"
@@ -67,9 +67,9 @@ public class MaintenanceEventsRestController {
             @ApiParam(value = "Valid XID", required = true, allowMultiple = false)
             @PathVariable String xid,
             @AuthenticationPrincipal User user) {
-        return new MaintenanceEventModel(service.getFull(xid, user));
+        return new MaintenanceEventModel(service.get(xid));
     }
-    
+
     @ApiOperation(value = "Partially update an existing maintenance event")
     @RequestMapping(method = RequestMethod.PATCH, value = "/{xid}")
     public ResponseEntity<MaintenanceEventModel> partialUpdate(
@@ -84,7 +84,7 @@ public class MaintenanceEventsRestController {
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
 
-        MaintenanceEventVO vo = service.update(xid, model.toVO(), user);
+        MaintenanceEventVO vo = service.update(xid, model.toVO());
 
         URI location = builder.path("/maintenance-events/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
@@ -103,13 +103,13 @@ public class MaintenanceEventsRestController {
 
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
-        MaintenanceEventVO vo = service.update(xid, model.toVO(), user);
+        MaintenanceEventVO vo = service.update(xid, model.toVO());
         URI location = builder.path("/maintenance-events/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
         return new ResponseEntity<>(new MaintenanceEventModel(vo), headers, HttpStatus.OK);
     }
-    
+
     @ApiOperation(value = "Create new maintenance event", notes="User must have global data source permission")
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<MaintenanceEventModel> create(
@@ -118,43 +118,43 @@ public class MaintenanceEventsRestController {
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
 
-        MaintenanceEventVO vo = service.insert(model.toVO(), user);
-        
+        MaintenanceEventVO vo = service.insert(model.toVO());
+
         URI location = builder.path("/maintenance-events/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
 
         return new ResponseEntity<>(new MaintenanceEventModel(vo), headers, HttpStatus.OK);
     }
-    
+
     @ApiOperation(value = "Delete a maintenance event")
     @RequestMapping(method = RequestMethod.DELETE, value = "/{xid}")
     public MaintenanceEventModel delete(
             @ApiParam(value = "Valid maintenance event XID", required = true, allowMultiple = false)
             @PathVariable String xid,
             @AuthenticationPrincipal User user) {
-        return new MaintenanceEventModel(service.delete(xid, user));
+        return new MaintenanceEventModel(service.delete(xid));
     }
-    
+
     @ApiOperation(value = "Toggle the state of a maintenance event", notes="must have toggle permission, returns boolean state of event")
     @RequestMapping(method = RequestMethod.PUT, value = "/toggle/{xid}")
     public ResponseEntity<Boolean> toggle(
             @PathVariable String xid,
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
-        boolean activated = service.toggle(xid, user);
+        boolean activated = service.toggle(xid);
         URI location = builder.path("/maintenance-events/{xid}").buildAndExpand(xid).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
         return new ResponseEntity<>(activated, headers, HttpStatus.OK);
     }
-    
+
     @ApiOperation(value = "Get the current active state of a maintenance event", notes="must have toggle permission, returns new boolean state of event")
     @RequestMapping(method = RequestMethod.GET, value = "/active/{xid}")
     public ResponseEntity<Boolean> getState(@PathVariable String xid, @AuthenticationPrincipal User user) {
-        return new ResponseEntity<>(service.isEventActive(xid, user), HttpStatus.OK);
+        return new ResponseEntity<>(service.isEventActive(xid), HttpStatus.OK);
     }
-    
+
     @ApiOperation(value = "Set the state of a maintenance event, only change state if necessary ignore if no change and just return current state", notes="must have toggle permission, returns new boolean state of event")
     @RequestMapping(method = RequestMethod.PUT, value = "/active/{xid}")
     public ResponseEntity<Boolean> setState(
@@ -163,15 +163,15 @@ public class MaintenanceEventsRestController {
             @RequestParam(value="active", required=true, defaultValue="false") boolean active,
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
-        
-        boolean activated = service.setState(xid, user, active);
+
+        boolean activated = service.setState(xid, active);
         URI location = builder.path("/maintenance-events/{xid}").buildAndExpand(xid).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
         return new ResponseEntity<>(activated, headers, HttpStatus.OK);
     }
-    
-    
+
+
     @ApiOperation(
             value = "Query Maintenance Events",
             notes = "Use RQL formatted query",
@@ -186,7 +186,7 @@ public class MaintenanceEventsRestController {
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
         return service.doQuery(rql, user, transformVisit);
     }
-    
+
     @ApiOperation(
             value = "Find Maintenance Events linked to data points by point IDs",
             notes = "Returns a map of point ids to a list of events that have this data point in their list OR the its data source in the list",
@@ -212,12 +212,12 @@ public class MaintenanceEventsRestController {
                     fillDataSources(model);
                     models.add(model);
                 }
-                
+
             });
         }
         return map;
     }
-    
+
     @ApiOperation(
             value = "Find Maintenance Events linked to data points by point XIDs",
             notes = "Returns a map of point xids to a list of events that have this data point in their list OR the its data source in the list",
@@ -234,7 +234,7 @@ public class MaintenanceEventsRestController {
         for(String xid: pointXids) {
             List<MaintenanceEventModel> models = new ArrayList<>();
             map.put(xid, models);
-           dao.getForDataPoint(xid, new MappedRowCallback<MaintenanceEventVO>() {
+            dao.getForDataPoint(xid, new MappedRowCallback<MaintenanceEventVO>() {
 
                 @Override
                 public void row(MaintenanceEventVO vo, int index) {
@@ -243,12 +243,12 @@ public class MaintenanceEventsRestController {
                     fillDataSources(model);
                     models.add(model);
                 }
-                
+
             });
         }
         return map;
     }
-    
+
     @ApiOperation(
             value = "Find Maintenance Events linked to data sources by source IDs",
             notes = "Returns a map of source ids to a list of events that have this data source in thier list",
@@ -274,12 +274,12 @@ public class MaintenanceEventsRestController {
                     fillDataSources(model);
                     models.add(model);
                 }
-                
+
             });
         }
         return map;
     }
-    
+
     @ApiOperation(
             value = "Find Maintenance Events linked to data sources by source XIDs",
             notes = "Returns a map of source xids to a list of events that have this data source in thier list",
@@ -297,8 +297,8 @@ public class MaintenanceEventsRestController {
             List<MaintenanceEventModel> models = new ArrayList<>();
             map.put(xid, models);
             if(xid != null) {
-               dao.getForDataSource(xid, new MappedRowCallback<MaintenanceEventVO>() {
-    
+                dao.getForDataSource(xid, new MappedRowCallback<MaintenanceEventVO>() {
+
                     @Override
                     public void row(MaintenanceEventVO vo, int index) {
                         MaintenanceEventModel model = new MaintenanceEventModel(vo);
@@ -306,22 +306,22 @@ public class MaintenanceEventsRestController {
                         fillDataSources(model);
                         models.add(model);
                     }
-                    
+
                 });
             }
         }
         return map;
     }
-    
+
     //Helpers for Queries
-    
+
     final Function<MaintenanceEventVO, Object> transformVisit = item -> {
         MaintenanceEventModel model = new MaintenanceEventModel(item);
         fillDataPoints(model);
         fillDataSources(model);
         return model;
     };
-    
+
     /**
      * Set the data point XIDs if there are any, id must be set in model
      * @param model
@@ -336,7 +336,7 @@ public class MaintenanceEventsRestController {
         });
         model.setDataPoints(xids.size() == 0 ? null : xids);
     }
-    
+
     /**
      * Set the data source XIDs if there are any, id must be set in model
      * @param model

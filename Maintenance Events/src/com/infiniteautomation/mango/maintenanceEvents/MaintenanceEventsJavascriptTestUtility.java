@@ -7,6 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.infiniteautomation.mango.spring.service.MangoJavaScriptService;
+import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.spring.service.maintenanceEvents.MaintenanceEventsService;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.infiniteautomation.mango.util.exception.TranslatableIllegalStateException;
@@ -15,7 +16,6 @@ import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventDao;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventRT;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventVO;
 import com.serotonin.m2m2.vo.permission.PermissionException;
-import com.serotonin.m2m2.vo.permission.Permissions;
 
 /**
  * @author Terry Packer
@@ -24,62 +24,71 @@ import com.serotonin.m2m2.vo.permission.Permissions;
 public class MaintenanceEventsJavascriptTestUtility extends MaintenanceEventsJavascriptUtility{
 
     @Autowired
-    public MaintenanceEventsJavascriptTestUtility(MangoJavaScriptService service, MaintenanceEventsService meService) {
-        super(service, meService);
+    public MaintenanceEventsJavascriptTestUtility(MangoJavaScriptService service, PermissionService permissionService, MaintenanceEventsService meService) {
+        super(service, permissionService, meService);
     }
-    
+
     @Override
     public boolean toggle(String xid)
             throws NotFoundException, PermissionException, TranslatableIllegalStateException {
-        MaintenanceEventRT rt = meService.getEventRT(xid, permissions);
-        return !rt.isEventActive();
+        return this.permissionService.runAs(permissions, () -> {
+            MaintenanceEventRT rt = meService.getEventRT(xid);
+            return !rt.isEventActive();
+        });
     }
-    
+
     @Override
     public boolean setState(String xid, boolean state) {
-        meService.getEventRT(xid, permissions); //check that it's enabled, we have toggle permissions
-        return state;
+
+        return this.permissionService.runAs(permissions, () -> {
+            meService.getEventRT(xid); //check that it's enabled, we have toggle permissions
+            return state;
+        });
     }
-    
+
     @Override
     public MaintenanceEventVO insert(MaintenanceEventVO vo)
             throws NotFoundException, PermissionException, ValidationException {
         //Ensure they can create an event
-        Permissions.ensureDataSourcePermission(permissions);
-        
+        permissionService.ensureDataSourcePermission(permissions);
+
         //Generate an Xid if necessary
         if(StringUtils.isEmpty(vo.getXid()))
             vo.setXid(MaintenanceEventDao.getInstance().generateUniqueXid());
-        
-        vo.ensureValid();
+
+        meService.ensureValid(vo, permissions);
         return vo;
     }
-    
+
     @Override
     public MaintenanceEventVO update(MaintenanceEventVO existing, MaintenanceEventVO vo)
             throws NotFoundException, PermissionException, ValidationException {
         meService.ensureEditPermission(permissions, existing);
         //Don't change ID ever
         vo.setId(existing.getId());
-        vo.ensureValid();
+        meService.ensureValid(vo, permissions);
         return vo;
     }
-    
+
     @Override
     public MaintenanceEventVO update(String existingXid, MaintenanceEventVO vo)
             throws NotFoundException, PermissionException, ValidationException {
-        MaintenanceEventVO existing = meService.getFull(existingXid, permissions);
-        meService.ensureEditPermission(permissions, existing);
-        //Don't change ID ever
-        vo.setId(existing.getId());
-        vo.ensureValid();
-        return vo;
+        return this.permissionService.runAs(permissions, () -> {
+            MaintenanceEventVO existing = meService.get(existingXid);
+            meService.ensureEditPermission(permissions, existing);
+            //Don't change ID ever
+            vo.setId(existing.getId());
+            meService.ensureValid(vo, permissions);
+            return vo;
+        });
     }
-    
+
     @Override
     public MaintenanceEventVO delete(String xid) throws NotFoundException, PermissionException {
-        MaintenanceEventVO vo = meService.getFull(xid, permissions);
-        meService.ensureEditPermission(permissions, vo);
-        return vo;
+        return this.permissionService.runAs(permissions, () -> {
+            MaintenanceEventVO vo = meService.get(xid);
+            meService.ensureEditPermission(permissions, vo);
+            return vo;
+        });
     }
 }

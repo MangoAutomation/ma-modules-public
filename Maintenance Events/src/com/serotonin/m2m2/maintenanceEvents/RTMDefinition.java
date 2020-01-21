@@ -25,11 +25,11 @@ public class RTMDefinition extends RuntimeManagerDefinition {
 
     @Override
     public void initialize(boolean safe) {
-        for (MaintenanceEventVO vo : MaintenanceEventDao.getInstance().getAllFull()) {
+        for (MaintenanceEventVO vo : MaintenanceEventDao.getInstance().getAll()) {
             if (!vo.isDisabled()) {
                 if (safe) {
                     vo.setDisabled(true);
-                    MaintenanceEventDao.getInstance().save(vo);
+                    MaintenanceEventDao.getInstance().update(vo.getId(), vo);
                 }
                 else
                     startMaintenanceEvent(vo);
@@ -58,17 +58,17 @@ public class RTMDefinition extends RuntimeManagerDefinition {
     public boolean isActiveMaintenanceEventForDataSource(int dataSourceId) {
         for (MaintenanceEventRT rt : maintenanceEvents) {
             for(Integer dsId : rt.getVo().getDataSources())
-            if (dsId == dataSourceId && rt.isEventActive())
-                return true;
+                if (dsId == dataSourceId && rt.isEventActive())
+                    return true;
         }
         return false;
     }
-    
+
     public boolean isActiveMaintenanceEventForDataPoint(int dataPointId) {
         for (MaintenanceEventRT rt : maintenanceEvents) {
             for(Integer dpId : rt.getVo().getDataPoints())
-            if (dpId == dataPointId && rt.isEventActive())
-                return true;
+                if (dpId == dataPointId && rt.isEventActive())
+                    return true;
         }
         return false;
     }
@@ -86,7 +86,11 @@ public class RTMDefinition extends RuntimeManagerDefinition {
         // If the maintenance event is running, stop it.
         stopMaintenanceEvent(vo.getId());
 
-        MaintenanceEventDao.getInstance().saveFull(vo);
+        if(vo.isNew()) {
+            MaintenanceEventDao.getInstance().insert(vo);
+        }else {
+            MaintenanceEventDao.getInstance().update(vo.getId(), vo);
+        }
 
         // If the maintenance event is enabled, start it.
         if (!vo.isDisabled())

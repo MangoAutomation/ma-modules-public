@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.infiniteautomation.mango.rest.v2.model.AbstractVoModel;
+import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;
@@ -59,9 +59,6 @@ public class MaintenanceEventModel extends AbstractVoModel<MaintenanceEventVO> {
         fromVO(vo);
     }
 
-    /* (non-Javadoc)
-     * @see com.infiniteautomation.mango.rest.v2.model.AbstractVoModel#toVO()
-     */
     @Override
     public MaintenanceEventVO toVO() {
         MaintenanceEventVO vo = super.toVO();
@@ -110,13 +107,10 @@ public class MaintenanceEventModel extends AbstractVoModel<MaintenanceEventVO> {
         vo.setInactiveCron(inactiveCron);
         vo.setTimeoutPeriods(timeoutPeriods == null ? 0 : timeoutPeriods);
         vo.setTimeoutPeriodType(Common.TIME_PERIOD_CODES.getId(timeoutPeriodType));
-        vo.setTogglePermission(togglePermission);
+        vo.setToggleRoles(Common.getBean(PermissionService.class).explodeLegacyPermissionGroupsToRoles(togglePermission));
         return vo;
     }
 
-    /* (non-Javadoc)
-     * @see com.infiniteautomation.mango.rest.v2.model.AbstractVoModel#fromVO(com.serotonin.m2m2.vo.AbstractVO)
-     */
     @Override
     public void fromVO(MaintenanceEventVO vo) {
         super.fromVO(vo);
@@ -157,12 +151,9 @@ public class MaintenanceEventModel extends AbstractVoModel<MaintenanceEventVO> {
         inactiveCron = vo.getInactiveCron();
         timeoutPeriods = vo.getTimeoutPeriods();
         timeoutPeriodType = Common.TIME_PERIOD_CODES.getCode(vo.getTimeoutPeriodType());
-        togglePermission = vo.getTogglePermission();
+        togglePermission = PermissionService.implodeRoles(vo.getToggleRoles());
     }
 
-    /* (non-Javadoc)
-     * @see com.infiniteautomation.mango.rest.v2.model.AbstractVoModel#newVO()
-     */
     @Override
     protected MaintenanceEventVO newVO() {
         return new MaintenanceEventVO();

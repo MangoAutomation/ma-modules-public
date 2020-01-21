@@ -7,35 +7,35 @@ package com.serotonin.m2m2.maintenanceEvents;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Types;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
+import org.jooq.Record;
+import org.jooq.Select;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.infiniteautomation.mango.spring.MangoRuntimeContextConfiguration;
 import com.infiniteautomation.mango.util.LazyInitSupplier;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.db.MappedRowCallback;
-import com.serotonin.db.pair.IntStringPair;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.AbstractDao;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
+import com.serotonin.m2m2.db.dao.RoleDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 
 @Repository()
-public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO> {
+public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO, MaintenanceEventsTableDefinition> {
 
     private final String SELECT_POINT_IDS = "SELECT dataPointId FROM maintenanceEventDataPoints WHERE maintenanceEventId=?";
     private final String SELECT_DATA_SOURCE_IDS = "SELECT dataSourceId FROM maintenanceEventDataSources WHERE maintenanceEventId=?";
@@ -56,14 +56,19 @@ public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO> {
         return (MaintenanceEventDao)o;
     });
 
-    private MaintenanceEventDao(@Autowired DataPointDao dataPointDao, @Autowired DataSourceDao<DataSourceVO<?>> dataSourceDao) {
-        super(AuditEvent.TYPE_NAME, "m",
-                new String[] {},
-                false, new TranslatableMessage("header.maintenanceEvents"));
+    @Autowired
+    private MaintenanceEventDao(
+            MaintenanceEventsTableDefinition table,
+            DataPointDao dataPointDao, DataSourceDao<DataSourceVO<?>> dataSourceDao,
+            @Qualifier(MangoRuntimeContextConfiguration.DAO_OBJECT_MAPPER_NAME)ObjectMapper mapper,
+            ApplicationEventPublisher publisher) {
+        super(AuditEvent.TYPE_NAME,
+                table, new TranslatableMessage("header.maintenanceEvents"),
+                mapper, publisher);
         this.dataPointDao = dataPointDao;
         this.dataSourceDao = dataSourceDao;
-        SELECT_POINTS = dataPointDao.getSelectAllSql() + " JOIN maintenanceEventDataPoints mep ON mep.dataPointId = dp.id WHERE mep.maintenanceEventId=?";
-        SELECT_DATA_SOURCES = dataSourceDao.getSelectAllSql() + " JOIN maintenanceEventDataSources med ON med.dataSourceId = ds.id WHERE med.maintenanceEventId=?";
+        SELECT_POINTS = dataPointDao.getJoinedSelectQuery().getSQL() + " JOIN maintenanceEventDataPoints mep ON mep.dataPointId = dp.id WHERE mep.maintenanceEventId=?";
+        SELECT_DATA_SOURCES = dataSourceDao.getJoinedSelectQuery().getSQL() + " JOIN maintenanceEventDataSources med ON med.dataSourceId = ds.id WHERE med.maintenanceEventId=?";
     }
 
     /**
@@ -74,30 +79,25 @@ public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO> {
         return springInstance.get();
     }
 
-    /* (non-Javadoc)
-     * @see com.serotonin.m2m2.db.dao.AbstractBasicDao#delete(int, java.lang.String)
-     */
     @Override
-    public void delete(MaintenanceEventVO vo, String initiatorId) {
+    public boolean delete(MaintenanceEventVO vo) {
         if (vo != null) {
-            getTransactionTemplate().execute(new TransactionCallbackWithoutResult() {
-                @Override
-                protected void doInTransactionWithoutResult(TransactionStatus status) {
-                    ejt.update("delete from eventHandlersMapping where eventTypeName=? and eventTypeRef1=?", new Object[] {
-                            MaintenanceEventType.TYPE_NAME, vo.getId() });
-                    MaintenanceEventDao.super.delete(vo, initiatorId);
-                }
+            return getTransactionTemplate().execute(status -> {
+                ejt.update("delete from eventHandlersMapping where eventTypeName=? and eventTypeRef1=?", new Object[] {
+                        MaintenanceEventType.TYPE_NAME, vo.getId()});
+                return MaintenanceEventDao.super.delete(vo);
             });
+        }else {
+            return false;
         }
     }
-
-    /* (non-Javadoc)
-     * @see com.serotonin.m2m2.db.dao.AbstractBasicDao#loadRelationalData(com.serotonin.m2m2.vo.AbstractBasicVO)
-     */
     @Override
     public void loadRelationalData(MaintenanceEventVO vo) {
         vo.setDataPoints(queryForList(SELECT_POINT_IDS, new Object[] {vo.getId()}, Integer.class));
         vo.setDataSources(queryForList(SELECT_DATA_SOURCE_IDS, new Object[] {vo.getId()}, Integer.class));
+        //Populate permissions
+        vo.setToggleRoles(RoleDao.getInstance().getRoles(vo, "TOGGLE"));
+
     }
 
     /**
@@ -112,7 +112,9 @@ public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO> {
 
             @Override
             public void processRow(ResultSet rs) throws SQLException {
-                callback.row(pointMapper.mapRow(rs, row), row);
+                DataPointVO vo = pointMapper.mapRow(rs, row);
+                dataPointDao.loadRelationalData(vo);
+                callback.row(vo, row);
                 row++;
             }
 
@@ -149,7 +151,9 @@ public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO> {
 
             @Override
             public void processRow(ResultSet rs) throws SQLException {
-                callback.row(mapper.mapRow(rs, row), row);
+                DataSourceVO<?> vo = mapper.mapRow(rs, row);
+                dataSourceDao.loadRelationalData(vo);
+                callback.row(vo, row);
                 row++;
             }
 
@@ -182,7 +186,7 @@ public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO> {
      * @param callback
      */
     public void getForDataPoint(int dataPointId, MappedRowCallback<MaintenanceEventVO> callback) {
-        DataPointVO vo = dataPointDao.getDataPoint(dataPointId);
+        DataPointVO vo = dataPointDao.get(dataPointId);
         if(vo == null)
             return;
         getForDataPoint(vo, callback);
@@ -193,7 +197,7 @@ public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO> {
      * @param callback
      */
     public void getForDataPoint(String dataPointXid, MappedRowCallback<MaintenanceEventVO> callback) {
-        DataPointVO vo = dataPointDao.getDataPoint(dataPointXid);
+        DataPointVO vo = dataPointDao.getByXid(dataPointXid);
         if(vo == null)
             return;
         getForDataPoint(vo, callback);
@@ -204,26 +208,17 @@ public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO> {
         List<Integer> ids = queryForList(SELECT_BY_DATA_POINT, new Object[] {vo.getId()}, Integer.class);
         if(ids.size() == 0)
             return;
-        StringBuilder b = new StringBuilder();
-        b.append(SELECT_ALL);
-        b.append(" WHERE id IN(?");
-        for(int i=0; i<ids.size() - 1; i++)
-            b.append(",?");
-        b.append(")");
-        query(b.toString(), ids.toArray(new Integer[ids.size()]), getRowMapper(), callback);
+        Select<Record> query = this.getJoinedSelectQuery().where(this.table.getIdAlias().in(ids));
+        List<Object> args = query.getBindValues();
+        query(query.getSQL(), args.toArray(), getRowMapper(), callback);
 
         //Get the events that are listed for the point's data source
         ids = queryForList(SELECT_BY_DATA_SOURCE, new Object[] {vo.getDataSourceId()}, Integer.class);
         if(ids.size() == 0)
             return;
-        b = new StringBuilder();
-        b.append(SELECT_ALL);
-        b.append(" WHERE id IN(?");
-        for(int i=0; i<ids.size() - 1; i++)
-            b.append(",?");
-        b.append(")");
-        query(b.toString(), ids.toArray(new Integer[ids.size()]), getRowMapper(), callback);
-
+        query = this.getJoinedSelectQuery().where(this.table.getIdAlias().in(ids));
+        args = query.getBindValues();
+        query(query.getSQL(), args.toArray(), getRowMapper(), callback);
     }
 
     /**
@@ -249,13 +244,9 @@ public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO> {
         List<Integer> ids = queryForList(SELECT_BY_DATA_SOURCE, new Object[] {dataSourceId}, Integer.class);
         if(ids.size() == 0)
             return;
-        StringBuilder b = new StringBuilder();
-        b.append(SELECT_ALL);
-        b.append(" WHERE id IN(?");
-        for(int i=0; i<ids.size() - 1; i++)
-            b.append(",?");
-        b.append(")");
-        query(b.toString(), ids.toArray(new Integer[ids.size()]), getRowMapper(), callback);
+        Select<Record> query = this.getJoinedSelectQuery().where(this.table.getIdAlias().in(ids));
+        List<Object> args = query.getBindValues();
+        query(query.getSQL(), args.toArray(), getRowMapper(), callback);
     }
 
     private static final String INSERT_DATA_SOURCE_IDS = "INSERT INTO maintenanceEventDataSources (maintenanceEventId, dataSourceId) VALUES (?,?)";
@@ -264,9 +255,6 @@ public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO> {
     private static final String INSERT_DATA_POINT_IDS = "INSERT INTO maintenanceEventDataPoints (maintenanceEventId, dataPointId) VALUES (?,?)";
     private static final String DELETE_DATA_POINT_IDS = "DELETE FROM maintenanceEventDataPoints WHERE maintenanceEventId=?";
 
-    /* (non-Javadoc)
-     * @see com.serotonin.m2m2.db.dao.AbstractBasicDao#saveRelationalData(com.serotonin.m2m2.vo.AbstractBasicVO, boolean)
-     */
     @Override
     public void saveRelationalData(MaintenanceEventVO vo, boolean insert) {
         if(insert) {
@@ -279,6 +267,15 @@ public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO> {
             ejt.update(DELETE_DATA_POINT_IDS, new Object[] {vo.getId()});
             ejt.batchUpdate(INSERT_DATA_POINT_IDS, new InsertDataPoints(vo));
         }
+
+        //Replace the role mappings
+        RoleDao.getInstance().replaceRolesOnVoPermission(vo.getToggleRoles(), vo, "TOGGLE", insert);
+
+    }
+
+    @Override
+    public void deleteRelationalData(MaintenanceEventVO vo) {
+        RoleDao.getInstance().deleteRolesForVoPermission(vo, "TOGGLE");
     }
 
     private static class InsertDataSources implements BatchPreparedStatementSetter {
@@ -288,16 +285,11 @@ public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO> {
             this.vo = vo;
         }
 
-        /* (non-Javadoc)
-         * @see org.springframework.jdbc.core.BatchPreparedStatementSetter#getBatchSize()
-         */
         @Override
         public int getBatchSize() {
             return vo.getDataSources().size();
         }
-        /* (non-Javadoc)
-         * @see org.springframework.jdbc.core.BatchPreparedStatementSetter#setValues(java.sql.PreparedStatement, int)
-         */
+
         @Override
         public void setValues(PreparedStatement ps, int i) throws SQLException {
             ps.setInt(1, vo.getId());
@@ -312,16 +304,11 @@ public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO> {
             this.vo = vo;
         }
 
-        /* (non-Javadoc)
-         * @see org.springframework.jdbc.core.BatchPreparedStatementSetter#getBatchSize()
-         */
         @Override
         public int getBatchSize() {
             return vo.getDataPoints().size();
         }
-        /* (non-Javadoc)
-         * @see org.springframework.jdbc.core.BatchPreparedStatementSetter#setValues(java.sql.PreparedStatement, int)
-         */
+
         @Override
         public void setValues(PreparedStatement ps, int i) throws SQLException {
             ps.setInt(1, vo.getId());
@@ -329,33 +316,11 @@ public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO> {
         }
     }
 
-    /* (non-Javadoc)
-     * @see com.serotonin.m2m2.db.dao.AbstractDao#getXidPrefix()
-     */
     @Override
     protected String getXidPrefix() {
         return MaintenanceEventVO.XID_PREFIX;
     }
 
-    /* (non-Javadoc)
-     * @see com.serotonin.m2m2.db.dao.AbstractDao#getNewVo()
-     */
-    @Override
-    public MaintenanceEventVO getNewVo() {
-        return new MaintenanceEventVO();
-    }
-
-    /* (non-Javadoc)
-     * @see com.serotonin.m2m2.db.dao.AbstractBasicDao#getTableName()
-     */
-    @Override
-    protected String getTableName() {
-        return SchemaDefinition.TABLE_NAME;
-    }
-
-    /* (non-Javadoc)
-     * @see com.serotonin.m2m2.db.dao.AbstractBasicDao#voToObjectArray(com.serotonin.m2m2.vo.AbstractBasicVO)
-     */
     @Override
     protected Object[] voToObjectArray(MaintenanceEventVO me) {
         return new Object[] {
@@ -379,55 +344,10 @@ public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO> {
                 me.getInactiveSecond(),
                 me.getInactiveCron(),
                 me.getTimeoutPeriods(),
-                me.getTimeoutPeriodType(),
-                me.getTogglePermission()
+                me.getTimeoutPeriodType()
         };
     }
 
-    /* (non-Javadoc)
-     * @see com.serotonin.m2m2.db.dao.AbstractBasicDao#getPropertyTypeMap()
-     */
-    @Override
-    protected LinkedHashMap<String, Integer> getPropertyTypeMap() {
-        LinkedHashMap<String, Integer> map = new LinkedHashMap<String, Integer>();
-        map.put("id", Types.INTEGER);
-        map.put("xid", Types.VARCHAR);
-        map.put("alias", Types.VARCHAR);
-        map.put("alarmLevel", Types.INTEGER);
-        map.put("scheduleType", Types.INTEGER);
-        map.put("disabled", Types.CHAR);
-        map.put("activeYear", Types.INTEGER);
-        map.put("activeMonth", Types.INTEGER);
-        map.put("activeDay", Types.INTEGER);
-        map.put("activeHour", Types.INTEGER);
-        map.put("activeMinute", Types.INTEGER);
-        map.put("activeSecond", Types.INTEGER);
-        map.put("activeCron", Types.VARCHAR);
-        map.put("inactiveYear", Types.INTEGER);
-        map.put("inactiveMonth", Types.INTEGER);
-        map.put("inactiveDay", Types.INTEGER);
-        map.put("inactiveHour", Types.INTEGER);
-        map.put("inactiveMinute", Types.INTEGER);
-        map.put("inactiveSecond", Types.INTEGER);
-        map.put("inactiveCron", Types.VARCHAR);
-        map.put("timeoutPeriods", Types.INTEGER);
-        map.put("timeoutPeriodType", Types.INTEGER);
-        map.put("togglePermission", Types.VARCHAR);
-        return map;
-    }
-
-    /* (non-Javadoc)
-     * @see com.serotonin.m2m2.db.dao.AbstractBasicDao#getPropertiesMap()
-     */
-    @Override
-    protected Map<String, IntStringPair> getPropertiesMap() {
-        HashMap<String, IntStringPair> map = new HashMap<String, IntStringPair>();
-        return map;
-    }
-
-    /* (non-Javadoc)
-     * @see com.serotonin.m2m2.db.dao.AbstractBasicDao#getRowMapper()
-     */
     @Override
     public RowMapper<MaintenanceEventVO> getRowMapper() {
         return new MaintenanceEventRowMapper();
@@ -460,7 +380,6 @@ public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO> {
             me.setInactiveCron(rs.getString(++i));
             me.setTimeoutPeriods(rs.getInt(++i));
             me.setTimeoutPeriodType(rs.getInt(++i));
-            me.setTogglePermission(rs.getString(++i));
             return me;
         }
     }
