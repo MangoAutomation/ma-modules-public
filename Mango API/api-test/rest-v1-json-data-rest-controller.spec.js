@@ -22,25 +22,34 @@ const client = createClient();
 describe('json-data-rest-controller', function() {
     before('Login', function() { return login.call(this, client); });
 
-    const testSetup = function() {
+    const testSetup = function(params, requestBody) {
+        // common test setup, e.g. create a VO object
         return client.restRequest({
             method: 'POST',
-            path: `/rest/v1/json-data/${this.params.xid}`,
+            path: `/rest/v1/json-data/${params.xid}`,
             params: {
-                editPermission: this.params.editPermission || [],
-                name: this.params.name || 'test data',
-                publicData: this.params.publicData,
-                readPermission: this.params.readPermission || []
+                editPermission: params.editPermission || [],
+                name: params.name || 'test data',
+                publicData: params.publicData,
+                readPermission: params.readPermission || []
             },
-            data: this.requestBody || {}
+            data: requestBody || {
+                key1: 'value1',
+                key2: 'value2',
+                objectKey: {
+                    prop1: true,
+                    prop2: false
+                },
+                arrayKey: [1,2,3]
+            }
         });
     };
     
-    const testTeardown = function() {
+    const testTeardown = function(params) {
         // common test teardown, e.g. delete a VO object
         return client.restRequest({
             method: 'DELETE',
-            path: `/rest/v1/json-data/${this.params.xid}`,
+            path: `/rest/v1/json-data/${params.xid}`,
         });
     };
     
@@ -64,23 +73,18 @@ describe('json-data-rest-controller', function() {
 
     // Get Public JSON Data - Returns only the data
     it('GET /rest/v1/json-data/public/{xid}', function() {
-        this.requestBody = {
-            key1: 'value1',
-            key2: 'value2'
-        };
-        
-        this.params = {
+        const params = {
             xid: uuid(), // in = path, description = XID, required = true, type = string, default = , enum = 
             publicData: true
         };
         
         return Promise.resolve().then(() => {
-            return testSetup.call(this);
+            return testSetup.call(this, params);
         }).then(() => {
             const publicClient = createClient();
             return publicClient.restRequest({
                 method: 'GET',
-                path: `/rest/v1/json-data/public/${this.params.xid}`,
+                path: `/rest/v1/json-data/public/${params.xid}`,
             });
         }).then(response => {
             // OK
@@ -104,7 +108,6 @@ describe('json-data-rest-controller', function() {
             assert.isString(response.data.readPermission, 'data.readPermission');
             // DESCRIPTION: Messages for validation of data
             assert.isArray(response.data.validationMessages, 'data.validationMessages');
-            //assert.isAbove(response.data.validationMessages.length, 0, 'data.validationMessages');
             response.data.validationMessages.forEach((item, index) => {
                 // MODEL: RestValidationMessage
                 assert.isObject(item, 'data.validationMessages[]');
@@ -118,26 +121,22 @@ describe('json-data-rest-controller', function() {
             assert.isString(response.data.xid, 'data.xid');
             // END MODEL: JsonData
         }).finally(() => {
-            return testTeardown.call(this).catch(noop);
+            return testTeardown.call(this, params).catch(noop);
         });
     });
 
     // Get JSON Data - Returns only the data
     it('GET /rest/v1/json-data/{xid}', function() {
-        this.requestBody = {
-            key1: 'value1',
-            key2: 'value2'
-        };
-        this.params = {
+        const params = {
             xid: uuid() // in = path, description = XID, required = true, type = string, default = , enum = 
         };
         
         return Promise.resolve().then(() => {
-            return testSetup.call(this);
+            return testSetup.call(this, params);
         }).then(() => {
             return client.restRequest({
                 method: 'GET',
-                path: `/rest/v1/json-data/${this.params.xid}`,
+                path: `/rest/v1/json-data/${params.xid}`,
             });
         }).then(response => {
             // OK
@@ -161,7 +160,6 @@ describe('json-data-rest-controller', function() {
             assert.isString(response.data.readPermission, 'data.readPermission');
             // DESCRIPTION: Messages for validation of data
             assert.isArray(response.data.validationMessages, 'data.validationMessages');
-            //assert.isAbove(response.data.validationMessages.length, 0, 'data.validationMessages');
             response.data.validationMessages.forEach((item, index) => {
                 // MODEL: RestValidationMessage
                 assert.isObject(item, 'data.validationMessages[]');
@@ -175,17 +173,17 @@ describe('json-data-rest-controller', function() {
             assert.isString(response.data.xid, 'data.xid');
             // END MODEL: JsonData
         }).finally(() => {
-            return testTeardown.call(this).catch(noop);
+            return testTeardown.call(this, params).catch(noop);
         });
     });
 
     // Create/replace JSON Data - 
     it('POST /rest/v1/json-data/{xid}', function() {
-        this.requestBody = {
+        const requestBody = {
             key1: 'value1'
         };
-        this.params = {
-            data: this.requestBody, // in = body, description = Data to save, required = false, type = , default = , enum = 
+        const params = {
+            data: requestBody, // in = body, description = Data to save, required = false, type = , default = , enum = 
             editPermission: ['string'], // in = query, description = Edit Permissions, required = false, type = array, default = , enum = 
             name: 'string', // in = query, description = Name, required = true, type = string, default = , enum = 
             publicData: false, // in = query, description = Is public?, required = true, type = boolean, default = false, enum = 
@@ -196,14 +194,14 @@ describe('json-data-rest-controller', function() {
         return Promise.resolve().then(() => {
             return client.restRequest({
                 method: 'POST',
-                path: `/rest/v1/json-data/${this.params.xid}`,
+                path: `/rest/v1/json-data/${params.xid}`,
                 params: {
-                    editPermission: this.params.editPermission,
-                    name: this.params.name,
-                    publicData: this.params.publicData,
-                    readPermission: this.params.readPermission
+                    editPermission: params.editPermission,
+                    name: params.name,
+                    publicData: params.publicData,
+                    readPermission: params.readPermission
                 },
-                data: this.requestBody
+                data: requestBody
             });
         }).then(response => {
             // Created
@@ -217,6 +215,7 @@ describe('json-data-rest-controller', function() {
             // MODEL: ArbitraryJsonData
             assert.isObject(response.data.jsonData, 'data.jsonData');
             assert.strictEqual(response.data.jsonData.key1, 'value1');
+            assert.doesNotHaveAnyKeys(response.data.jsonData, ['value2', 'value3']);
             // END MODEL: ArbitraryJsonData
             // DESCRIPTION: Model Type Definition
             assert.isString(response.data.modelType, 'data.modelType');
@@ -226,7 +225,6 @@ describe('json-data-rest-controller', function() {
             assert.isString(response.data.readPermission, 'data.readPermission');
             // DESCRIPTION: Messages for validation of data
             assert.isArray(response.data.validationMessages, 'data.validationMessages');
-            //assert.isAbove(response.data.validationMessages.length, 0, 'data.validationMessages');
             response.data.validationMessages.forEach((item, index) => {
                 // MODEL: RestValidationMessage
                 assert.isObject(item, 'data.validationMessages[]');
@@ -240,17 +238,17 @@ describe('json-data-rest-controller', function() {
             assert.isString(response.data.xid, 'data.xid');
             // END MODEL: JsonData
         }).finally(() => {
-            return testTeardown.call(this).catch(noop);
+            return testTeardown.call(this, params).catch(noop);
         });
     });
 
     // Append JSON Data to existing - 
     it('PUT /rest/v1/json-data/{xid}', function() {
-        this.requestBody = {
-            key1: 'value1'
+        const requestBody = {
+            key3: 'value3'
         };
-        this.params = {
-            data: this.requestBody, // in = body, description = Data to save, required = false, type = , default = , enum = 
+        const params = {
+            data: requestBody, // in = body, description = Data to save, required = false, type = , default = , enum = 
             editPermission: ['string'], // in = query, description = Edit Permissions, required = false, type = array, default = , enum = 
             name: 'string', // in = query, description = Name, required = true, type = string, default = , enum = 
             publicData: false, // in = query, description = Is public?, required = true, type = boolean, default = false, enum = 
@@ -259,23 +257,21 @@ describe('json-data-rest-controller', function() {
         };
         
         return Promise.resolve().then(() => {
-            return testSetup.call(this);
+            return testSetup.call(this, params);
         }).then(() => {
             return client.restRequest({
                 method: 'PUT',
-                path: `/rest/v1/json-data/${this.params.xid}`,
+                path: `/rest/v1/json-data/${params.xid}`,
                 params: {
-                    editPermission: this.params.editPermission,
-                    name: this.params.name,
-                    publicData: this.params.publicData,
-                    readPermission: this.params.readPermission
+                    editPermission: params.editPermission,
+                    name: params.name,
+                    publicData: params.publicData,
+                    readPermission: params.readPermission
                 },
-                data: {
-                    key2: 'value2'
-                }
+                data: requestBody
             });
         }).then(response => {
-            // OK
+            // Created
             assert.strictEqual(response.status, 201);
             // MODEL: JsonData
             // DESCRIPTION: Json Data Model
@@ -287,6 +283,7 @@ describe('json-data-rest-controller', function() {
             assert.isObject(response.data.jsonData, 'data.jsonData');
             assert.strictEqual(response.data.jsonData.key1, 'value1');
             assert.strictEqual(response.data.jsonData.key2, 'value2');
+            assert.strictEqual(response.data.jsonData.key3, 'value3');
             // END MODEL: ArbitraryJsonData
             // DESCRIPTION: Model Type Definition
             assert.isString(response.data.modelType, 'data.modelType');
@@ -296,7 +293,6 @@ describe('json-data-rest-controller', function() {
             assert.isString(response.data.readPermission, 'data.readPermission');
             // DESCRIPTION: Messages for validation of data
             assert.isArray(response.data.validationMessages, 'data.validationMessages');
-            //assert.isAbove(response.data.validationMessages.length, 0, 'data.validationMessages');
             response.data.validationMessages.forEach((item, index) => {
                 // MODEL: RestValidationMessage
                 assert.isObject(item, 'data.validationMessages[]');
@@ -310,15 +306,15 @@ describe('json-data-rest-controller', function() {
             assert.isString(response.data.xid, 'data.xid');
             // END MODEL: JsonData
         }).finally(() => {
-            return testTeardown.call(this).catch(noop);
+            return testTeardown.call(this, params).catch(noop);
         });
     });
-    
-    // Append JSON Data to existing - 
-    it('PUT /rest/v1/json-data/{xid} using array', function() {
-        this.requestBody = [0];
-        this.params = {
-            data: this.requestBody, // in = body, description = Data to save, required = false, type = , default = , enum = 
+
+    // Append JSON Data to existing - append to arrays
+    it('PUT /rest/v1/json-data/{xid} append to arrays', function() {
+        const requestBody = 1;
+        const params = {
+            data: requestBody, // in = body, description = Data to save, required = false, type = , default = , enum = 
             editPermission: ['string'], // in = query, description = Edit Permissions, required = false, type = array, default = , enum = 
             name: 'string', // in = query, description = Name, required = true, type = string, default = , enum = 
             publicData: false, // in = query, description = Is public?, required = true, type = boolean, default = false, enum = 
@@ -327,21 +323,21 @@ describe('json-data-rest-controller', function() {
         };
         
         return Promise.resolve().then(() => {
-            return testSetup.call(this);
+            return testSetup.call(this, params, [0]);
         }).then(() => {
             return client.restRequest({
                 method: 'PUT',
-                path: `/rest/v1/json-data/${this.params.xid}`,
+                path: `/rest/v1/json-data/${params.xid}`,
                 params: {
-                    editPermission: this.params.editPermission,
-                    name: this.params.name,
-                    publicData: this.params.publicData,
-                    readPermission: this.params.readPermission
+                    editPermission: params.editPermission,
+                    name: params.name,
+                    publicData: params.publicData,
+                    readPermission: params.readPermission
                 },
-                data: 1
+                data: requestBody
             });
         }).then(response => {
-            // OK
+            // Created
             assert.strictEqual(response.status, 201);
             // MODEL: JsonData
             // DESCRIPTION: Json Data Model
@@ -362,7 +358,6 @@ describe('json-data-rest-controller', function() {
             assert.isString(response.data.readPermission, 'data.readPermission');
             // DESCRIPTION: Messages for validation of data
             assert.isArray(response.data.validationMessages, 'data.validationMessages');
-            //assert.isAbove(response.data.validationMessages.length, 0, 'data.validationMessages');
             response.data.validationMessages.forEach((item, index) => {
                 // MODEL: RestValidationMessage
                 assert.isObject(item, 'data.validationMessages[]');
@@ -376,25 +371,22 @@ describe('json-data-rest-controller', function() {
             assert.isString(response.data.xid, 'data.xid');
             // END MODEL: JsonData
         }).finally(() => {
-            return testTeardown.call(this).catch(noop);
+            return testTeardown.call(this, params).catch(noop);
         });
     });
 
     // Fully Delete JSON Data - 
     it('DELETE /rest/v1/json-data/{xid}', function() {
-        this.requestBody = {
-            key1: 'value1'
-        };
-        this.params = {
+        const params = {
             xid: uuid() // in = path, description = XID, required = true, type = string, default = , enum = 
         };
         
         return Promise.resolve().then(() => {
-            return testSetup.call(this);
+            return testSetup.call(this, params);
         }).then(() => {
             return client.restRequest({
                 method: 'DELETE',
-                path: `/rest/v1/json-data/${this.params.xid}`,
+                path: `/rest/v1/json-data/${params.xid}`,
             });
         }).then(response => {
             // OK
@@ -416,7 +408,6 @@ describe('json-data-rest-controller', function() {
             assert.isString(response.data.readPermission, 'data.readPermission');
             // DESCRIPTION: Messages for validation of data
             assert.isArray(response.data.validationMessages, 'data.validationMessages');
-            //assert.isAbove(response.data.validationMessages.length, 0, 'data.validationMessages');
             response.data.validationMessages.forEach((item, index) => {
                 // MODEL: RestValidationMessage
                 assert.isObject(item, 'data.validationMessages[]');
@@ -430,28 +421,23 @@ describe('json-data-rest-controller', function() {
             assert.isString(response.data.xid, 'data.xid');
             // END MODEL: JsonData
         }).finally(() => {
-            return testTeardown.call(this).catch(noop);
+            return testTeardown.call(this, params).catch(noop);
         });
     });
 
     // Get JSON Data using a path - To get a sub component of the data use a path of member.submember
     it('GET /rest/v1/json-data/{xid}/{path}', function() {
-        this.requestBody = {
-            property1: {
-                testString: '1234'
-            }
-        };
-        this.params = {
-            path: 'property1', // in = path, description = Data path using dots as separator, required = true, type = string, default = , enum = 
+        const params = {
+            path: 'objectKey', // in = path, description = Data path using dots as separator, required = true, type = string, default = , enum = 
             xid: uuid() // in = path, description = XID, required = true, type = string, default = , enum = 
         };
         
         return Promise.resolve().then(() => {
-            return testSetup.call(this);
+            return testSetup.call(this, params);
         }).then(() => {
             return client.restRequest({
                 method: 'GET',
-                path: `/rest/v1/json-data/${this.params.xid}/${this.params.path}`,
+                path: `/rest/v1/json-data/${params.xid}/${params.path}`,
             });
         }).then(response => {
             // OK
@@ -464,7 +450,8 @@ describe('json-data-rest-controller', function() {
             assert.isNumber(response.data.id, 'data.id');
             // MODEL: ArbitraryJsonData
             assert.isObject(response.data.jsonData, 'data.jsonData');
-            assert.strictEqual(response.data.jsonData.testString, '1234', 'data.jsonData');
+            assert.isTrue(response.data.jsonData.prop1);
+            assert.isFalse(response.data.jsonData.prop2);
             // END MODEL: ArbitraryJsonData
             // DESCRIPTION: Model Type Definition
             assert.isString(response.data.modelType, 'data.modelType');
@@ -474,7 +461,6 @@ describe('json-data-rest-controller', function() {
             assert.isString(response.data.readPermission, 'data.readPermission');
             // DESCRIPTION: Messages for validation of data
             assert.isArray(response.data.validationMessages, 'data.validationMessages');
-            //assert.isAbove(response.data.validationMessages.length, 0, 'data.validationMessages');
             response.data.validationMessages.forEach((item, index) => {
                 // MODEL: RestValidationMessage
                 assert.isObject(item, 'data.validationMessages[]');
@@ -488,39 +474,39 @@ describe('json-data-rest-controller', function() {
             assert.isString(response.data.xid, 'data.xid');
             // END MODEL: JsonData
         }).finally(() => {
-            return testTeardown.call(this).catch(noop);
+            return testTeardown.call(this, params).catch(noop);
         });
     });
 
     // Replace JSON Data - {path} is the path to data with dots data.member.submember
     it('POST /rest/v1/json-data/{xid}/{path}', function() {
-        this.requestBody = {
-            property1: {}
+        const requestBody = {
+            prop1: 1,
+            prop2: 2
         };
-        
-        this.params = {
-            data: this.requestBody, // in = body, description = Data to save, required = false, type = , default = , enum = 
+        const params = {
+            data: requestBody, // in = body, description = Data to save, required = false, type = , default = , enum = 
             editPermission: ['string'], // in = query, description = Edit Permissions, required = false, type = array, default = , enum = 
             name: 'string', // in = query, description = Name, required = true, type = string, default = , enum = 
-            path: 'property1', // in = path, description = Data path using dots as separator, required = true, type = string, default = , enum = 
+            path: 'objectKey', // in = path, description = Data path using dots as separator, required = true, type = string, default = , enum = 
             publicData: false, // in = query, description = Is public?, required = true, type = boolean, default = false, enum = 
             readPermission: ['string'], // in = query, description = Read Permissions, required = false, type = array, default = , enum = 
             xid: uuid() // in = path, description = XID, required = true, type = string, default = , enum = 
         };
         
         return Promise.resolve().then(() => {
-            return testSetup.call(this);
+            return testSetup.call(this, params);
         }).then(() => {
             return client.restRequest({
                 method: 'POST',
-                path: `/rest/v1/json-data/${this.params.xid}/${this.params.path}`,
+                path: `/rest/v1/json-data/${params.xid}/${params.path}`,
                 params: {
-                    editPermission: this.params.editPermission,
-                    name: this.params.name,
-                    publicData: this.params.publicData,
-                    readPermission: this.params.readPermission
+                    editPermission: params.editPermission,
+                    name: params.name,
+                    publicData: params.publicData,
+                    readPermission: params.readPermission
                 },
-                data: {newValue: 1}
+                data: requestBody
             });
         }).then(response => {
             // Created
@@ -533,7 +519,8 @@ describe('json-data-rest-controller', function() {
             assert.isNumber(response.data.id, 'data.id');
             // MODEL: ArbitraryJsonData
             assert.isObject(response.data.jsonData, 'data.jsonData');
-            assert.strictEqual(response.data.jsonData.newValue, 1, 'data.jsonData.property1.newValue');
+            assert.strictEqual(response.data.jsonData.prop1, 1);
+            assert.strictEqual(response.data.jsonData.prop2, 2);
             // END MODEL: ArbitraryJsonData
             // DESCRIPTION: Model Type Definition
             assert.isString(response.data.modelType, 'data.modelType');
@@ -543,7 +530,6 @@ describe('json-data-rest-controller', function() {
             assert.isString(response.data.readPermission, 'data.readPermission');
             // DESCRIPTION: Messages for validation of data
             assert.isArray(response.data.validationMessages, 'data.validationMessages');
-            //assert.isAbove(response.data.validationMessages.length, 0, 'data.validationMessages');
             response.data.validationMessages.forEach((item, index) => {
                 // MODEL: RestValidationMessage
                 assert.isObject(item, 'data.validationMessages[]');
@@ -557,46 +543,41 @@ describe('json-data-rest-controller', function() {
             assert.isString(response.data.xid, 'data.xid');
             // END MODEL: JsonData
         }).finally(() => {
-            return testTeardown.call(this).catch(noop);
+            return testTeardown.call(this, params).catch(noop);
         });
     });
 
     // Append JSON Data to existing - {path} is the path to data with dots data.member.submember
     it('PUT /rest/v1/json-data/{xid}/{path}', function() {
-        this.requestBody = {
-            property1: {
-                key1: 'value1'
-            }
+        const requestBody = {
+            prop3: 123
         };
-        
-        this.params = {
-            data: this.requestBody, // in = body, description = Data to save, required = false, type = , default = , enum = 
+        const params = {
+            data: requestBody, // in = body, description = Data to save, required = false, type = , default = , enum = 
             editPermission: ['string'], // in = query, description = Edit Permissions, required = false, type = array, default = , enum = 
             name: 'string', // in = query, description = Name, required = true, type = string, default = , enum = 
-            path: 'property1', // in = path, description = Data path using dots as separator, required = true, type = string, default = , enum = 
+            path: 'objectKey', // in = path, description = Data path using dots as separator, required = true, type = string, default = , enum = 
             publicData: false, // in = query, description = Is public?, required = true, type = boolean, default = false, enum = 
             readPermission: ['string'], // in = query, description = Read Permissions, required = false, type = array, default = , enum = 
             xid: uuid() // in = path, description = XID, required = true, type = string, default = , enum = 
         };
         
         return Promise.resolve().then(() => {
-            return testSetup.call(this);
+            return testSetup.call(this, params);
         }).then(() => {
             return client.restRequest({
                 method: 'PUT',
-                path: `/rest/v1/json-data/${this.params.xid}/${this.params.path}`,
+                path: `/rest/v1/json-data/${params.xid}/${params.path}`,
                 params: {
-                    editPermission: this.params.editPermission,
-                    name: this.params.name,
-                    publicData: this.params.publicData,
-                    readPermission: this.params.readPermission
+                    editPermission: params.editPermission,
+                    name: params.name,
+                    publicData: params.publicData,
+                    readPermission: params.readPermission
                 },
-                data: {
-                    key2: 'value2'
-                }
+                data: requestBody
             });
         }).then(response => {
-            // OK
+            // Created
             assert.strictEqual(response.status, 201);
             // MODEL: JsonData
             // DESCRIPTION: Json Data Model
@@ -606,8 +587,9 @@ describe('json-data-rest-controller', function() {
             assert.isNumber(response.data.id, 'data.id');
             // MODEL: ArbitraryJsonData
             assert.isObject(response.data.jsonData, 'data.jsonData');
-            assert.strictEqual(response.data.jsonData.key1, 'value1', 'data.jsonData.key1');
-            assert.strictEqual(response.data.jsonData.key2, 'value2', 'data.jsonData.key2');
+            assert.isTrue(response.data.jsonData.prop1);
+            assert.isFalse(response.data.jsonData.prop2);
+            assert.strictEqual(response.data.jsonData.prop3, 123);
             // END MODEL: ArbitraryJsonData
             // DESCRIPTION: Model Type Definition
             assert.isString(response.data.modelType, 'data.modelType');
@@ -617,7 +599,6 @@ describe('json-data-rest-controller', function() {
             assert.isString(response.data.readPermission, 'data.readPermission');
             // DESCRIPTION: Messages for validation of data
             assert.isArray(response.data.validationMessages, 'data.validationMessages');
-            //assert.isAbove(response.data.validationMessages.length, 0, 'data.validationMessages');
             response.data.validationMessages.forEach((item, index) => {
                 // MODEL: RestValidationMessage
                 assert.isObject(item, 'data.validationMessages[]');
@@ -631,27 +612,23 @@ describe('json-data-rest-controller', function() {
             assert.isString(response.data.xid, 'data.xid');
             // END MODEL: JsonData
         }).finally(() => {
-            return testTeardown.call(this).catch(noop);
+            return testTeardown.call(this, params).catch(noop);
         });
     });
 
     // Partially Delete JSON Data - {path} is the path to data with dots data.member.submember
     it('DELETE /rest/v1/json-data/{xid}/{path}', function() {
-        this.requestBody = {
-            property1: {}
-        };
-        
-        this.params = {
-            path: 'property1', // in = path, description = Data path using dots as separator, required = true, type = string, default = , enum = 
+        const params = {
+            path: 'objectKey', // in = path, description = Data path using dots as separator, required = true, type = string, default = , enum = 
             xid: uuid() // in = path, description = XID, required = true, type = string, default = , enum = 
         };
         
         return Promise.resolve().then(() => {
-            return testSetup.call(this);
+            return testSetup.call(this, params);
         }).then(() => {
             return client.restRequest({
                 method: 'DELETE',
-                path: `/rest/v1/json-data/${this.params.xid}/${this.params.path}`,
+                path: `/rest/v1/json-data/${params.xid}/${params.path}`,
             });
         }).then(response => {
             // OK
@@ -664,7 +641,7 @@ describe('json-data-rest-controller', function() {
             assert.isNumber(response.data.id, 'data.id');
             // MODEL: ArbitraryJsonData
             assert.isObject(response.data.jsonData, 'data.jsonData');
-            assert.strictEqual(Object.keys(response.data.jsonData).length, 0, 'data.jsonData key length');
+            assert.doesNotHaveAnyKeys(response.data.jsonData, ['objectKey'], 'data.jsonData');
             // END MODEL: ArbitraryJsonData
             // DESCRIPTION: Model Type Definition
             assert.isString(response.data.modelType, 'data.modelType');
@@ -674,7 +651,6 @@ describe('json-data-rest-controller', function() {
             assert.isString(response.data.readPermission, 'data.readPermission');
             // DESCRIPTION: Messages for validation of data
             assert.isArray(response.data.validationMessages, 'data.validationMessages');
-            //assert.isAbove(response.data.validationMessages.length, 0, 'data.validationMessages');
             response.data.validationMessages.forEach((item, index) => {
                 // MODEL: RestValidationMessage
                 assert.isObject(item, 'data.validationMessages[]');
@@ -688,7 +664,7 @@ describe('json-data-rest-controller', function() {
             assert.isString(response.data.xid, 'data.xid');
             // END MODEL: JsonData
         }).finally(() => {
-            return testTeardown.call(this).catch(noop);
+            return testTeardown.call(this, params).catch(noop);
         });
     });
 
