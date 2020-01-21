@@ -1409,4 +1409,42 @@ describe('Point values v2', function() {
                     moment.tz(pointValues1[0].timestamp, 'Australia/Sydney').startOf('day').format());
         });
     });
+    
+    // Update an existing data point's value - Data point must exist and be enabled
+    it.skip('PUT /rest/v1/point-values/{xid}', function() {
+        const requestBody = {
+            annotation: 'test annotation',
+            dataType: 'NUMERIC',
+            timestamp: 0,
+            value: 123
+        };
+        const params = {
+            model: requestBody, // in = body, description = model, required = true, type = , default = , enum = 
+            unitConversion: false, // in = query, description = Return converted value using displayed unit, required = false, type = boolean, default = false, enum = 
+            xid: uuid() // in = path, description = xid, required = true, type = string, default = , enum = 
+        };
+        
+        return Promise.resolve().then(() => {
+            return client.restRequest({
+                method: 'PUT',
+                path: `/rest/v2/point-values/${params.xid}`,
+                params: {
+                    unitConversion: params.unitConversion
+                },
+                data: requestBody
+            });
+        }).then(response => {
+            // OK
+            assert.strictEqual(response.status, 200);
+            // MODEL: PointValueTimeModel
+            assert.isObject(response.data, 'data');
+            assert.isString(response.data.annotation, 'data.annotation');
+            assert.isString(response.data.dataType, 'data.dataType');
+            assert.include(["ALPHANUMERIC","BINARY","MULTISTATE","NUMERIC","IMAGE"], response.data.dataType, 'data.dataType');
+            assert.isNumber(response.data.timestamp, 'data.timestamp');
+            assert.isObject(response.data.value, 'data.value');
+            // END MODEL: PointValueTimeModel
+        });
+    });
+
 });
