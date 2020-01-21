@@ -7,13 +7,13 @@ import org.springframework.stereotype.Component;
 
 import com.infiniteautomation.mango.rest.v2.model.RestModelJacksonMapping;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
-import com.infiniteautomation.serial.vo.SerialPointLocatorModel;
+import com.infiniteautomation.mango.rest.v2.model.SerialPointLocatorModel;
 import com.infiniteautomation.serial.vo.SerialPointLocatorVO;
-import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 
 /**
- * This class is used for the v2 Model Mapper but replicates the 
+ * This class is used for the v2 Model Mapper but replicates the
  * functionality of the v1 mapper exactly
  * @author Terry Packer
  *
@@ -32,7 +32,7 @@ public class SerialPointLocatorModelMapping implements RestModelJacksonMapping<S
     }
 
     @Override
-    public SerialPointLocatorModel map(Object from, User user, RestModelMapper mapper) {
+    public SerialPointLocatorModel map(Object from, PermissionHolder user, RestModelMapper mapper) {
         return new SerialPointLocatorModel((SerialPointLocatorVO)from);
     }
 

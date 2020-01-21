@@ -24,7 +24,6 @@ import com.serotonin.json.type.JsonObject;
 import com.serotonin.json.type.JsonString;
 import com.serotonin.json.type.JsonValue;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.util.ExportCodes;
@@ -34,15 +33,15 @@ import com.serotonin.util.SerializationHelper;
 
 @JsonEntity
 public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
-	
+
     private static final ExportCodes EVENT_CODES = new ExportCodes();
     static {
         EVENT_CODES.addElement(SerialDataSourceRT.DATA_SOURCE_EXCEPTION_EVENT, "DATA_SOURCE_EXCEPTION");
         EVENT_CODES.addElement(SerialDataSourceRT.POINT_READ_EXCEPTION_EVENT, "POINT_READ_EXCEPTION");
         EVENT_CODES.addElement(SerialDataSourceRT.POINT_WRITE_EXCEPTION_EVENT, "POINT_WRITE_EXCEPTION");
         EVENT_CODES.addElement(SerialDataSourceRT.POINT_READ_PATTERN_MISMATCH_EVENT, "POINT_READ_PATTERN_MISMATCH_EVENT");
-   }
-    
+    }
+
     @JsonProperty
     private String commPortId;
     @JsonProperty
@@ -73,55 +72,55 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
     private int maxHistoricalIOLogs = 1;
     @JsonProperty
     private int retries = 1;
-    
-	@Override
-	public TranslatableMessage getConnectionDescription() {
-		return new TranslatableMessage("serial.connection",this.commPortId);
-	}
 
-	@Override
-	public SerialPointLocatorVO createPointLocator() {
-		return new SerialPointLocatorVO();
-	}
+    @Override
+    public TranslatableMessage getConnectionDescription() {
+        return new TranslatableMessage("serial.connection",this.commPortId);
+    }
 
-	@Override
-	public SerialDataSourceRT createDataSourceRT() {
-		return new SerialDataSourceRT(this);
-	}
+    @Override
+    public SerialPointLocatorVO createPointLocator() {
+        return new SerialPointLocatorVO();
+    }
 
-	@Override
-	public ExportCodes getEventCodes() {
-		return EVENT_CODES;
-	}
+    @Override
+    public SerialDataSourceRT createDataSourceRT() {
+        return new SerialDataSourceRT(this);
+    }
 
-	@Override
-	protected void addEventTypes(List<EventTypeVO> eventTypes) {
-		eventTypes.add(createEventType(SerialDataSourceRT.DATA_SOURCE_EXCEPTION_EVENT, new TranslatableMessage(
+    @Override
+    public ExportCodes getEventCodes() {
+        return EVENT_CODES;
+    }
+
+    @Override
+    protected void addEventTypes(List<EventTypeVO> eventTypes) {
+        eventTypes.add(createEventType(SerialDataSourceRT.DATA_SOURCE_EXCEPTION_EVENT, new TranslatableMessage(
                 "event.ds.dataSource")));
-		eventTypes.add(createEventType(SerialDataSourceRT.POINT_READ_EXCEPTION_EVENT, new TranslatableMessage(
+        eventTypes.add(createEventType(SerialDataSourceRT.POINT_READ_EXCEPTION_EVENT, new TranslatableMessage(
                 "event.ds.pointRead")));
-		eventTypes.add(createEventType(SerialDataSourceRT.POINT_WRITE_EXCEPTION_EVENT, new TranslatableMessage(
+        eventTypes.add(createEventType(SerialDataSourceRT.POINT_WRITE_EXCEPTION_EVENT, new TranslatableMessage(
                 "event.ds.pointWrite")));
-		eventTypes.add(createEventType(SerialDataSourceRT.POINT_READ_PATTERN_MISMATCH_EVENT, new TranslatableMessage(
+        eventTypes.add(createEventType(SerialDataSourceRT.POINT_READ_PATTERN_MISMATCH_EVENT, new TranslatableMessage(
                 "event.serial.patternMismatchException")));
-		
-	}
 
-	public String getCommPortId() {
-		return commPortId;
-	}
+    }
 
-	public void setCommPortId(String commPortId) {
-		this.commPortId = commPortId;
-	}
+    public String getCommPortId() {
+        return commPortId;
+    }
 
-	public int getBaudRate() {
-		return baudRate;
-	}
+    public void setCommPortId(String commPortId) {
+        this.commPortId = commPortId;
+    }
 
-	public void setBaudRate(int baudRate) {
-		this.baudRate = baudRate;
-	}
+    public int getBaudRate() {
+        return baudRate;
+    }
+
+    public void setBaudRate(int baudRate) {
+        this.baudRate = baudRate;
+    }
 
     /**
      * @return the flowControlIn
@@ -194,148 +193,96 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
     }
 
     public int getReadTimeout() {
-		return readTimeout;
-	}
-
-	public void setReadTimeout(int readTimeout) {
-		this.readTimeout = readTimeout;
-	}
-	
-	public boolean getUseTerminator() {
-		return useTerminator;
-	}
-	
-	public void setUseTerminator(boolean useTerminator) {
-		this.useTerminator = useTerminator;
-	}
-
-	public String getMessageTerminator() {
-		return messageTerminator;
-	}
-
-	public void setMessageTerminator(String messageTerminator) {
-		this.messageTerminator = messageTerminator;
-	}
-
-	public String getMessageRegex() {
-		return messageRegex;
-	}
-
-	public void setMessageRegex(String messageRegex) {
-		this.messageRegex = messageRegex;
-	}
-
-	public int getPointIdentifierIndex() {
-		return pointIdentifierIndex;
-	}
-
-	public void setPointIdentifierIndex(int pointIdentifierIndex) {
-		this.pointIdentifierIndex = pointIdentifierIndex;
-	}
-	
-	public boolean isHex() {
-		return hex;
-	}
-
-	public void setHex(boolean hex) {
-		this.hex = hex;
-	}
-
-	public boolean isLogIO() {
-		return logIO;
-	}
-
-	public void setLogIO(boolean logIO) {
-		this.logIO = logIO;
-	}
-	
-	public int getMaxMessageSize() {
-		return maxMessageSize;
-	}
-
-	public void setMaxMessageSize(int maxMessageSize) {
-		this.maxMessageSize = maxMessageSize;
-	}
-    public float getIoLogFileSizeMBytes() {
-		return ioLogFileSizeMBytes;
-	}
-
-	public void setIoLogFileSizeMBytes(float ioLogFileSizeMBytes) {
-		this.ioLogFileSizeMBytes = ioLogFileSizeMBytes;
-	}
-
-	public int getMaxHistoricalIOLogs() {
-		return maxHistoricalIOLogs;
-	}
-
-	public void setMaxHistoricalIOLogs(int maxHistoricalIOLogs) {
-		this.maxHistoricalIOLogs = maxHistoricalIOLogs;
-	}
-	
-	public int getRetries() {
-	    return retries;
-	}
-	
-	public void setRetries(int retries) {
-	    this.retries = retries;
-	}
-
-	
-    public String getIoLogPath() {
-    	return new File(Common.getLogsDir(), SerialDataSourceRT.getIOLogFileName(getId())).getPath();
+        return readTimeout;
     }
-	
-	
-	@Override
-    public void validate(ProcessResult response) {
-        super.validate(response);
-        if (isBlank(commPortId))
-            response.addContextualMessage("commPortId", "validate.required");
-        if (baudRate <= 0)
-            response.addContextualMessage("baudRate", "validate.invalidValue");
-        if (flowControlIn == null)
-            response.addContextualMessage("flowControlIn", "validate.required");
-        if (flowControlOut == null)
-            response.addContextualMessage("flowControlOut", "validate.required");
-        if (dataBits == null)
-            response.addContextualMessage("dataBits", "validate.required");
-        if (stopBits == null)
-            response.addContextualMessage("stopBits", "validate.required");
-        if (parity == null)
-            response.addContextualMessage("parity", "validate.required");
-        
-        if(useTerminator) {
-        	if(messageTerminator.length() <= 0)
-        		response.addContextualMessage("messageTerminator", "validate.required");
-        	 if (isBlank(messageRegex))
-                 response.addContextualMessage("messageRegex", "validate.required");
-        	 if(pointIdentifierIndex < 0)
-             	response.addContextualMessage("pointIdentifierIndex", "validate.invalidValue");
-        	 
-        	 if(hex){
-        		 if(!messageTerminator.matches("[0-9A-Fa-f]+")){
-        			 response.addContextualMessage("messageTerminator", "serial.validate.notHex");
-        		 }
-        	 }
-        	 
-        }
-        
-        if(readTimeout <= 0)
-        	response.addContextualMessage("readTimeout","validate.greaterThanZero");        
-        
-        if(maxMessageSize <= 0){
-        	response.addContextualMessage("maxMessageSize","validate.greaterThanZero"); 
-        }
-        
-        if (ioLogFileSizeMBytes <= 0)
-            response.addContextualMessage("ioLogFileSizeMBytes", "validate.greaterThanZero");
-        if (maxHistoricalIOLogs <= 0)
-            response.addContextualMessage("maxHistoricalIOLogs", "validate.greaterThanZero");     
-        
-        if(retries < 0)
-            response.addContextualMessage("retries", "validate.cannotBeNegative");
 
-     }
+    public void setReadTimeout(int readTimeout) {
+        this.readTimeout = readTimeout;
+    }
+
+    public boolean getUseTerminator() {
+        return useTerminator;
+    }
+
+    public void setUseTerminator(boolean useTerminator) {
+        this.useTerminator = useTerminator;
+    }
+
+    public String getMessageTerminator() {
+        return messageTerminator;
+    }
+
+    public void setMessageTerminator(String messageTerminator) {
+        this.messageTerminator = messageTerminator;
+    }
+
+    public String getMessageRegex() {
+        return messageRegex;
+    }
+
+    public void setMessageRegex(String messageRegex) {
+        this.messageRegex = messageRegex;
+    }
+
+    public int getPointIdentifierIndex() {
+        return pointIdentifierIndex;
+    }
+
+    public void setPointIdentifierIndex(int pointIdentifierIndex) {
+        this.pointIdentifierIndex = pointIdentifierIndex;
+    }
+
+    public boolean isHex() {
+        return hex;
+    }
+
+    public void setHex(boolean hex) {
+        this.hex = hex;
+    }
+
+    public boolean isLogIO() {
+        return logIO;
+    }
+
+    public void setLogIO(boolean logIO) {
+        this.logIO = logIO;
+    }
+
+    public int getMaxMessageSize() {
+        return maxMessageSize;
+    }
+
+    public void setMaxMessageSize(int maxMessageSize) {
+        this.maxMessageSize = maxMessageSize;
+    }
+    public float getIoLogFileSizeMBytes() {
+        return ioLogFileSizeMBytes;
+    }
+
+    public void setIoLogFileSizeMBytes(float ioLogFileSizeMBytes) {
+        this.ioLogFileSizeMBytes = ioLogFileSizeMBytes;
+    }
+
+    public int getMaxHistoricalIOLogs() {
+        return maxHistoricalIOLogs;
+    }
+
+    public void setMaxHistoricalIOLogs(int maxHistoricalIOLogs) {
+        this.maxHistoricalIOLogs = maxHistoricalIOLogs;
+    }
+
+    public int getRetries() {
+        return retries;
+    }
+
+    public void setRetries(int retries) {
+        this.retries = retries;
+    }
+
+
+    public String getIoLogPath() {
+        return new File(Common.getLogsDir(), SerialDataSourceRT.getIOLogFileName(getId())).getPath();
+    }
 
     //
     // /
@@ -346,13 +293,13 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
     private static final int version = 6;
     //Track previous data types for field serialization
     private static final ObjectStreamField[] serialPersistentFields
-        = { 
-                new ObjectStreamField("flowControlIn", int.class),
-                new ObjectStreamField("flowControlOut", int.class),
-                new ObjectStreamField("dataBits", int.class),
-                new ObjectStreamField("stopBits", int.class),
-                new ObjectStreamField("parity", int.class)
-          };
+    = {
+            new ObjectStreamField("flowControlIn", int.class),
+            new ObjectStreamField("flowControlOut", int.class),
+            new ObjectStreamField("dataBits", int.class),
+            new ObjectStreamField("stopBits", int.class),
+            new ObjectStreamField("parity", int.class)
+    };
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.writeInt(version);
         SerializationHelper.writeSafeUTF(out, commPortId);
@@ -613,7 +560,7 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
     @Override
     public void jsonRead(JsonReader reader, JsonObject jsonObject) throws JsonException {
         super.jsonRead(reader, jsonObject);
-        
+
         JsonValue value = jsonObject.get("flowControlIn");
         if(value != null) {
             if(value instanceof JsonString) {
@@ -637,7 +584,7 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
                 }
             }
         }
-        
+
         value = jsonObject.get("flowControlOut");
         if(value != null) {
             if(value instanceof JsonString) {
@@ -661,7 +608,7 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
                 }
             }
         }
-        
+
         value = jsonObject.get("dataBits");
         if(value != null) {
             try {
@@ -674,7 +621,7 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
                 throw new TranslatableJsonException("emport.error.invalid", "dataBits", value, DataBits.values());
             }
         }
-        
+
         value = jsonObject.get("stopBits");
         if(value != null) {
             try {
@@ -687,7 +634,7 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
                 throw new TranslatableJsonException("emport.error.invalid", "stopBits", value, StopBits.values());
             }
         }
-        
+
         if(value != null) {
             try {
                 value = jsonObject.get("parity");
@@ -701,17 +648,17 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
             }
         }
     }
-	
-	public static boolean isBlank(CharSequence cs) {
-		int strLen;
-		if ((cs == null) || ((strLen = cs.length()) == 0))
-			return true;
 
-		for (int i = 0; i < strLen; ++i) {
-			if (!(Character.isWhitespace(cs.charAt(i)))) {
-				return false;
-			}
-		}
-		return true;
-	}
+    public static boolean isBlank(CharSequence cs) {
+        int strLen;
+        if ((cs == null) || ((strLen = cs.length()) == 0))
+            return true;
+
+        for (int i = 0; i < strLen; ++i) {
+            if (!(Character.isWhitespace(cs.charAt(i)))) {
+                return false;
+            }
+        }
+        return true;
+    }
 }
