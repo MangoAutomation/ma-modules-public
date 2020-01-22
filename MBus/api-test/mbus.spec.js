@@ -18,6 +18,7 @@
 const uuidV4 = require('uuid/v4');
 const {createClient, login} = require('@infinite-automation/mango-module-tools/test-helper/testHelper');
 const client = createClient();
+const {DataSource, DataPoint} = client;
 
 describe('Legacy MBus Data Source tests ', function() {
     before('Login', function() { return login.call(this, client); });
