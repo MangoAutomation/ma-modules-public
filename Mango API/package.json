@@ -3,29 +3,12 @@
   "name": "@infinite-automation/mangoApi",
   "version": "3.8.0-SNAPSHOT",
   "description": "Mango API",
-  "main": "web/mangoApi.js",
-  "dependencies": {
-    "@infinite-automation/mango-client": "^0.8.0",
-    "chai": "^4.2.0",
-    "csv-parser": "^2.3.2",
-    "csv-writer": "^1.5.0",
-    "mocha": "^5.2.0",
-    "tmp": "^0.0.33"
-  },
+  "main": "web/angular/mangoApi.js",
+  "dependencies": {},
   "devDependencies": {
-    "@infinite-automation/mango-module-tools": "^1.0.0",
-    "clean-webpack-plugin": "^0.1.19",
-    "copy-webpack-plugin": "^4.5.1",
-    "css-loader": "^0.28.10",
-    "file-loader": "^1.1.11",
-    "html-loader": "^0.5.5",
-    "raw-loader": "^0.5.1",
-    "style-loader": "^0.20.2",
-    "webpack": "^4.41.2",
-    "webpack-cli": "^3.3.10"
-  },
-  "scripts": {
-    "webpack": "webpack --config webpack.config.js"
+    "@infinite-automation/mango-module-tools": "^2.0.5",
+    "csv-parser": "~2.3.2",
+    "csv-writer": "~1.5.0"
   },
   "author": "Luis Güette <luis@infiniteautomation.com>",
   "license": "UNLICENSED",
