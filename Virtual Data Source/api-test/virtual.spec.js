@@ -18,6 +18,7 @@
 const {createClient, login} = require('@infinite-automation/mango-module-tools/test-helper/testHelper');
 const client = createClient();
 const uuidV4 = require('uuid/v4');
+const {DataSource, DataPoint} = client;
 
 describe('Test Virtual data source', function() {
     before('Login', function() { return login.call(this, client); });
