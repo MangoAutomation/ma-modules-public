@@ -1,10 +1,17 @@
 package com.infiniteautomation.serial;
 
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+
 import org.apache.commons.lang3.StringUtils;
 
 import com.infiniteautomation.serial.vo.SerialDataSourceVO;
+import com.infiniteautomation.serial.vo.SerialPointLocatorVO;
+import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.module.DataSourceDefinition;
+import com.serotonin.m2m2.vo.DataPointVO;
+import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 public class SerialDataSourceDefinition extends DataSourceDefinition<SerialDataSourceVO> {
@@ -73,6 +80,31 @@ public class SerialDataSourceDefinition extends DataSourceDefinition<SerialDataS
 
         if(ds.getRetries() < 0)
             response.addContextualMessage("retries", "validate.cannotBeNegative");
+    }
+
+    @Override
+    public void validate(ProcessResult response, DataPointVO dpvo, DataSourceVO dsvo, PermissionHolder user) {
+        if (!(dsvo instanceof SerialDataSourceVO))
+            response.addContextualMessage("dataSourceId", "dpEdit.validate.invalidDataSourceType");
+
+        SerialPointLocatorVO pl = dpvo.getPointLocator();
+
+        if (pl.getPointIdentifier() == null)
+            response.addContextualMessage("pointIdentifier", "validate.invalidValue");
+
+        if (SerialDataSourceVO.isBlank(pl.getValueRegex()))
+            response.addContextualMessage("valueRegex", "validate.required");
+        try {
+            Pattern.compile(pl.getValueRegex()).matcher("").find(); // Validate the regex
+        } catch (PatternSyntaxException e) {
+            response.addContextualMessage("valueRegex", "serial.validate.badRegex", e.getMessage());
+        }
+
+        if(pl.getValueIndex() < 0)
+            response.addContextualMessage("valueIndex","validate.invalidValue");
+
+        if (!DataTypes.CODES.isValidId(pl.getDataTypeId()))
+            response.addContextualMessage("dataTypeId", "validate.invalidValue");
 
     }
 

@@ -3,9 +3,8 @@ package com.infiniteautomation.serial.vo;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
+import com.infiniteautomation.serial.SerialDataSourceDefinition;
 import com.infiniteautomation.serial.rt.SerialPointLocatorRT;
 import com.serotonin.json.JsonException;
 import com.serotonin.json.JsonReader;
@@ -14,12 +13,8 @@ import com.serotonin.json.spi.JsonProperty;
 import com.serotonin.json.spi.JsonSerializable;
 import com.serotonin.json.type.JsonObject;
 import com.serotonin.m2m2.DataTypes;
-import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.dataSource.AbstractPointLocatorVO;
-import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
-import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.util.SerializationHelper;
 
 public class SerialPointLocatorVO extends AbstractPointLocatorVO<SerialPointLocatorVO> implements JsonSerializable{
@@ -46,26 +41,8 @@ public class SerialPointLocatorVO extends AbstractPointLocatorVO<SerialPointLoca
     }
 
     @Override
-    public void validate(ProcessResult response, DataPointVO dpvo, DataSourceVO dsvo, PermissionHolder user) {
-        if (!(dsvo instanceof SerialDataSourceVO))
-            response.addContextualMessage("dataSourceId", "dpEdit.validate.invalidDataSourceType");
-        if (pointIdentifier == null)
-            response.addContextualMessage("pointIdentifier", "validate.invalidValue");
-
-        if (SerialDataSourceVO.isBlank(valueRegex))
-            response.addContextualMessage("valueRegex", "validate.required");
-        try {
-            Pattern.compile(valueRegex).matcher("").find(); // Validate the regex
-        } catch (PatternSyntaxException e) {
-            response.addContextualMessage("valueRegex", "serial.validate.badRegex", e.getMessage());
-        }
-
-        if(valueIndex < 0)
-            response.addContextualMessage("valueIndex","validate.invalidValue");
-
-        if (!DataTypes.CODES.isValidId(dataTypeId))
-            response.addContextualMessage("dataTypeId", "validate.invalidValue");
-
+    public String getDataSourceType() {
+        return SerialDataSourceDefinition.DATA_SOURCE_TYPE;
     }
 
     @JsonProperty
