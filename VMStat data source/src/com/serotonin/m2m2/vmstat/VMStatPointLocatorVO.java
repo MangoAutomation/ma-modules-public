@@ -14,14 +14,10 @@ import com.serotonin.json.ObjectWriter;
 import com.serotonin.json.spi.JsonSerializable;
 import com.serotonin.json.type.JsonObject;
 import com.serotonin.m2m2.DataTypes;
-import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.util.ExportCodes;
-import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.dataSource.AbstractPointLocatorVO;
-import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
-import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 /**
  * @author Matthew Lohbihler
@@ -101,13 +97,9 @@ public class VMStatPointLocatorVO extends AbstractPointLocatorVO<VMStatPointLoca
     }
 
     @Override
-    public void validate(ProcessResult response, DataPointVO dpvo, DataSourceVO dsvo, PermissionHolder user) {
-        if (!(dsvo instanceof VMStatDataSourceVO))
-            response.addContextualMessage("dataSourceId", "dpEdit.validate.invalidDataSourceType");
-        if (!ATTRIBUTE_CODES.isValidId(attributeId))
-            response.addContextualMessage("attributeId", "validate.invalidValue");
+    public String getDataSourceType() {
+        return VMStatDataSourceDefinition.DATA_SOURCE_TYPE;
     }
-
     //
     // /
     // / Serialization

@@ -6,6 +6,8 @@ package com.serotonin.m2m2.vmstat;
 
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.module.DataSourceDefinition;
+import com.serotonin.m2m2.vo.DataPointVO;
+import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 public class VMStatDataSourceDefinition extends DataSourceDefinition<VMStatDataSourceVO> {
@@ -34,6 +36,15 @@ public class VMStatDataSourceDefinition extends DataSourceDefinition<VMStatDataS
 
         if (!VMStatDataSourceVO.OUTPUT_SCALE_CODES.isValidId(ds.getOutputScale()))
             response.addContextualMessage("outputScale", "validate.invalidValue");
+    }
+
+    @Override
+    public void validate(ProcessResult response, DataPointVO dpvo, DataSourceVO dsvo, PermissionHolder user) {
+        if (!(dsvo instanceof VMStatDataSourceVO))
+            response.addContextualMessage("dataSourceId", "dpEdit.validate.invalidDataSourceType");
+        VMStatPointLocatorVO pl = dpvo.getPointLocator();
+        if (!VMStatPointLocatorVO.ATTRIBUTE_CODES.isValidId(pl.getAttributeId()))
+            response.addContextualMessage("attributeId", "validate.invalidValue");
     }
 
 }
