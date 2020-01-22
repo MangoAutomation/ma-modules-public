@@ -9,7 +9,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.i18n.ProcessResult;
-import com.serotonin.m2m2.module.DataSourceDefinition;
+import com.serotonin.m2m2.module.PollingDataSourceDefinition;
 import com.serotonin.m2m2.util.IntMessagePair;
 import com.serotonin.m2m2.virtual.vo.ChangeTypeVO;
 import com.serotonin.m2m2.virtual.vo.VirtualDataSourceVO;
@@ -18,7 +18,7 @@ import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
-public class VirtualDataSourceDefinition extends DataSourceDefinition<VirtualDataSourceVO> {
+public class VirtualDataSourceDefinition extends PollingDataSourceDefinition<VirtualDataSourceVO> {
 
     public static final String TYPE_NAME = "VIRTUAL";
 
