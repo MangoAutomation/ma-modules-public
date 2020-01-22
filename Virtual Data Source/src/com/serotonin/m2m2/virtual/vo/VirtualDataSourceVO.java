@@ -20,7 +20,7 @@ import com.serotonin.m2m2.util.ExportCodes;
 import com.serotonin.m2m2.virtual.rt.VirtualDataSourceRT;
 import com.serotonin.m2m2.vo.dataSource.PollingDataSourceVO;
 
-public class VirtualDataSourceVO extends PollingDataSourceVO<VirtualDataSourceVO> {
+public class VirtualDataSourceVO extends PollingDataSourceVO {
 
 
     private static final ExportCodes EVENT_CODES = new ExportCodes();
