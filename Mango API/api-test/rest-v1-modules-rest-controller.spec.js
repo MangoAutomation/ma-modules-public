@@ -513,7 +513,7 @@ describe('modules-rest-controller', function() {
     });
 
     // Get Available Upgrades - Check the store for Upgrades
-    it('GET /rest/v1/modules/upgrades-available', function() {
+    it.skip('GET /rest/v1/modules/upgrades-available', function() {
         const params = {
         };
         

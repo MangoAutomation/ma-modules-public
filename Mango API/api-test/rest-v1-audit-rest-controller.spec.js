@@ -49,7 +49,9 @@ describe('audit-rest-controller', function() {
                 assert.isNumber(item.objectId, 'data.items[].objectId');
                 assert.isNumber(item.timestamp, 'data.items[].timestamp');
                 assert.isString(item.typeName, 'data.items[].typeName');
-                assert.isString(item.username, 'data.items[].username');
+                if (item.username) {
+                    assert.isString(item.username, 'data.items[].username');
+                }
                 // END MODEL: AuditEventInstanceModel
             });
             assert.isNumber(response.data.total, 'data.total');
