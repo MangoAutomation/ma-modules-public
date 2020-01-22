@@ -21,6 +21,8 @@ const client = createClient();
 // Mango REST V1 API - User Comments
 describe('user-comment-rest-controller', function() {
     before('Login', function() { return login.call(this, client); });
+
+    const noCreate = [];
     
     beforeEach('Test setup', function() {
         this.currentTest.xid = uuid();
@@ -30,18 +32,18 @@ describe('user-comment-rest-controller', function() {
             comment: 'string',
             commentType: 'POINT',
             referenceId: 1,
-            timestamp: new Date().valueOf(),
+            timestamp: null,
             //userId: 1,
             username: 'admin'
         };
         
-        if (this.currentTest.title === 'POST /rest/v1/comments') return;
-        
-        return client.restRequest({
-            method: 'POST',
-            path: '/rest/v1/comments',
-            data: this.currentTest.expectedResult
-        });
+        if (!noCreate.includes(this.currentTest)) {
+            return client.restRequest({
+                method: 'POST',
+                path: '/rest/v1/comments',
+                data: this.currentTest.expectedResult
+            });
+        }
     });
     
     afterEach('Test teardown', function() {
@@ -96,13 +98,13 @@ describe('user-comment-rest-controller', function() {
     });
 
     // Create New User Comment - 
-    it('POST /rest/v1/comments', function() {
+    noCreate[noCreate.length] = it('POST /rest/v1/comments', function() {
         const requestBody =
         { // title: UserCommentModel
             comment: 'string',
             commentType: 'POINT',
             referenceId: 1,
-            timestamp: new Date().valueOf(),
+            timestamp: null,
             //userId: 0,
             username: 'admin',
             xid: this.test.xid
@@ -292,7 +294,7 @@ describe('user-comment-rest-controller', function() {
             comment: 'new comment',
             commentType: 'POINT',
             referenceId: 1,
-            timestamp: new Date().valueOf(),
+            timestamp: null,
             //userId: 0,
             username: 'admin'
         };
