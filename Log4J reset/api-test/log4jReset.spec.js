@@ -15,10 +15,11 @@
  * limitations under the License.
  */
 
-const config = require('@infinite-automation/mango-client/test/setup');
+const {createClient, login, defer} = require('@infinite-automation/mango-module-tools/test-helper/testHelper');
+const client = createClient();
 
 describe('Log4J Utilities', function() {
-    before('Login', config.login);
+    before('Login', function() { return login.call(this, client); });
     
     it('Gets websocket notifications for RESET', function() {
         this.timeout(5000);
@@ -34,9 +35,9 @@ describe('Log4J Utilities', function() {
             resourceTypes: ['log4JUtil']
         };
         const testData = {id: ''};
-        const socketOpenDeferred = config.defer();
-        const subscribeDeferred = config.defer();
-        const actionFinishedDeferred = config.defer();
+        const socketOpenDeferred = defer();
+        const subscribeDeferred = defer();
+        const actionFinishedDeferred = defer();
 
         return Promise.resolve().then(() => {
             ws = client.openWebSocket({
@@ -74,7 +75,7 @@ describe('Log4J Utilities', function() {
 
             return socketOpenDeferred.promise;
         }).then(() => {
-            const send = config.defer();
+            const send = defer();
             ws.send(JSON.stringify(subscription), error => {
                 if (error != null) {
                     send.reject(error);

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-const {createClient, login, uuid, config, delay} = require('@infinite-automation/mango-client/test/testHelper');
+const {createClient, login, uuid, config, delay} = require('@infinite-automation/mango-module-tools/test-helper/testHelper');
 const client = createClient();
 const User = client.User;
 

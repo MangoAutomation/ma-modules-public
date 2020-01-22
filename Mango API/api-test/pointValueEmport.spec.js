@@ -19,7 +19,7 @@
  * 
  */
 
-const {createClient, login, uuid, delay} = require('@infinite-automation/mango-client/test/testHelper');
+const {createClient, login, uuid, delay} = require('@infinite-automation/mango-module-tools/test-helper/testHelper');
 const client = createClient();
 const DataPoint = client.DataPoint;
 const DataSource = client.DataSource;

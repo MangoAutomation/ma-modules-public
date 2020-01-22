@@ -16,7 +16,7 @@
  */
 
 /* global describe, before, after, it, assert */
-const {createClient, login, uuid} = require('@infinite-automation/mango-client/test/testHelper');
+const {createClient, login, uuid} = require('@infinite-automation/mango-module-tools/test-helper/testHelper');
 const client = createClient();
 const DataSource = client.DataSource;
 const DataPoint = client.DataPoint;

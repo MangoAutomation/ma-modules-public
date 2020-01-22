@@ -16,7 +16,7 @@
  */
 
 const fs = require('fs');
-const {createClient, login, delay, noop, config} = require('@infinite-automation/mango-client/test/testHelper');
+const {createClient, login, delay, noop, config} = require('@infinite-automation/mango-module-tools/test-helper/testHelper');
 const client = createClient();
 const MangoObject = client.MangoObject;
 const DataSource = client.DataSource;

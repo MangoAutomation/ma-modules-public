@@ -15,10 +15,11 @@
  * the License.
  */
 const uuidV4 = require('uuid/v4');
-const config = require('@infinite-automation/mango-client/test/setup');
+const {createClient, login} = require('@infinite-automation/mango-module-tools/test-helper/testHelper');
+const client = createClient();
 
 describe('EnvCan data source v1', function() {
-    before('Login', config.login);
+    before('Login', function() { return login.call(this, client); });
     
     const ds = function () { 
         return {
@@ -137,7 +138,7 @@ describe('EnvCan data source v1', function() {
 });
 
 describe('EnvCan data source v2', function() {
-    before('Login', config.login);
+    before('Login', function() { return login.call(this, client); });
     
     const ds = function() {
         return {

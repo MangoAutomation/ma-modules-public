@@ -15,10 +15,11 @@
  * limitations under the License.
  */
 
-const config = require('@infinite-automation/mango-client/test/setup');
+const {createClient, login} = require('@infinite-automation/mango-module-tools/test-helper/testHelper');
+const client = createClient();
 
 describe('Virtual data source v2', function() {
-    before('Login', config.login);
+    before('Login', function() { return login.call(this, client); });
 
     const vrtDs = {
             xid: 'DS_VIRT_TEST',

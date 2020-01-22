@@ -15,10 +15,11 @@
  * the License.
  */
 
-const config = require('@infinite-automation/mango-client/test/setup');
+const {createClient, login} = require('@infinite-automation/mango-module-tools/test-helper/testHelper');
+const client = createClient();
 
 describe('Serial data source', function() {
-    before('Login', config.login);
+    before('Login', function() { return login.call(this, client); });
 
     const dsv1 = {
             xid: 'DS_TEST',
