@@ -8,8 +8,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -21,7 +19,6 @@ import com.serotonin.json.spi.JsonProperty;
 import com.serotonin.json.spi.JsonSerializable;
 import com.serotonin.json.type.JsonObject;
 import com.serotonin.m2m2.DataTypes;
-import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.types.AlphanumericValue;
@@ -30,13 +27,10 @@ import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.rt.dataImage.types.MultistateValue;
 import com.serotonin.m2m2.rt.dataImage.types.NumericValue;
 import com.serotonin.m2m2.rt.dataSource.PointLocatorRT;
-import com.serotonin.m2m2.util.IntMessagePair;
+import com.serotonin.m2m2.virtual.VirtualDataSourceDefinition;
 import com.serotonin.m2m2.virtual.rt.ChangeTypeRT;
 import com.serotonin.m2m2.virtual.rt.VirtualPointLocatorRT;
-import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.dataSource.AbstractPointLocatorVO;
-import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
-import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 public class VirtualPointLocatorVO extends AbstractPointLocatorVO<VirtualPointLocatorVO> implements
 JsonSerializable {
@@ -51,7 +45,7 @@ JsonSerializable {
         return changeType.getDescription();
     }
 
-    private ChangeTypeVO getChangeType() {
+    public ChangeTypeVO getChangeType() {
         if (changeTypeId == ChangeTypeVO.Types.ALTERNATE_BOOLEAN)
             return alternateBooleanChange;
         if (changeTypeId == ChangeTypeVO.Types.BROWNIAN)
@@ -106,132 +100,8 @@ JsonSerializable {
     }
 
     @Override
-    public void validate(ProcessResult response, DataPointVO dpvo, DataSourceVO dsvo, PermissionHolder user) {
-        if (!(dsvo instanceof VirtualDataSourceVO))
-            response.addContextualMessage("dataSourceId", "dpEdit.validate.invalidDataSourceType");
-        if (!DataTypes.CODES.isValidId(dataTypeId))
-            response.addContextualMessage("dataTypeId", "validate.invalidValue");
-
-        // Alternate boolean
-        if (changeTypeId == ChangeTypeVO.Types.ALTERNATE_BOOLEAN) {
-            if (StringUtils.isBlank(alternateBooleanChange.getStartValue()))
-                response.addContextualMessage(
-                        "alternateBooleanChange.startValue",
-                        "validate.required");
-        }
-
-        // Brownian
-        else if (changeTypeId == ChangeTypeVO.Types.BROWNIAN) {
-            if (brownianChange.getMin() >= brownianChange.getMax())
-                response.addContextualMessage("brownianChange.max",
-                        "validate.maxGreaterThanMin");
-            if (brownianChange.getMaxChange() <= 0)
-                response.addContextualMessage("brownianChange.maxChange",
-                        "validate.greaterThanZero");
-            if (StringUtils.isBlank(brownianChange.getStartValue()))
-                response.addContextualMessage("brownianChange.startValue",
-                        "validate.required");
-        }
-
-        // Increment analog
-        else if (changeTypeId == ChangeTypeVO.Types.INCREMENT_ANALOG) {
-            if (incrementAnalogChange.getMin() >= incrementAnalogChange
-                    .getMax())
-                response.addContextualMessage("incrementAnalogChange.max",
-                        "validate.maxGreaterThanMin");
-            //			if (incrementAnalogChange.getChange() <= 0)
-            //				response.addContextualMessage("incrementAnalogChange.change",
-            //						"validate.greaterThanZero");
-            if (StringUtils.isBlank(incrementAnalogChange.getStartValue()))
-                response.addContextualMessage(
-                        "incrementAnalogChange.startValue", "validate.required");
-        }
-
-        // Increment multistate
-        else if (changeTypeId == ChangeTypeVO.Types.INCREMENT_MULTISTATE) {
-            if (ArrayUtils.isEmpty(incrementMultistateChange.getValues()))
-                response.addContextualMessage(
-                        "incrementMultistateChange.values", "validate.atLeast1");
-            if (StringUtils.isBlank(incrementMultistateChange.getStartValue()))
-                response.addContextualMessage(
-                        "incrementMultistateChange.startValue",
-                        "validate.required");
-        }
-
-        // No change
-        else if (changeTypeId == ChangeTypeVO.Types.NO_CHANGE) {
-            if (StringUtils.isBlank(noChange.getStartValue())
-                    && dataTypeId != DataTypes.ALPHANUMERIC)
-                response.addContextualMessage("noChange.startValue",
-                        "validate.required");
-        }
-
-        // Random analog
-        else if (changeTypeId == ChangeTypeVO.Types.RANDOM_ANALOG) {
-            if (randomAnalogChange.getMin() >= randomAnalogChange.getMax())
-                response.addContextualMessage("randomAnalogChange.max",
-                        "validate.maxGreaterThanMin");
-            if (StringUtils.isBlank(randomAnalogChange.getStartValue()))
-                response.addContextualMessage("randomAnalogChange.startValue",
-                        "validate.required");
-        }
-
-        // Random boolean
-        else if (changeTypeId == ChangeTypeVO.Types.RANDOM_BOOLEAN) {
-            if (StringUtils.isBlank(randomBooleanChange.getStartValue()))
-                response.addContextualMessage("randomBooleanChange.startValue",
-                        "validate.required");
-        }
-
-        // Random multistate
-        else if (changeTypeId == ChangeTypeVO.Types.RANDOM_MULTISTATE) {
-            if (ArrayUtils.isEmpty(randomMultistateChange.getValues()))
-                response.addContextualMessage("randomMultistateChange.values",
-                        "validate.atLeast1");
-            if (StringUtils.isBlank(randomMultistateChange.getStartValue()))
-                response.addContextualMessage(
-                        "randomMultistateChange.startValue",
-                        "validate.required");
-        }
-
-        // Analog attractor
-        else if (changeTypeId == ChangeTypeVO.Types.ANALOG_ATTRACTOR) {
-            if (analogAttractorChange.getMaxChange() <= 0)
-                response.addContextualMessage(
-                        "analogAttractorChange.maxChange",
-                        "validate.greaterThanZero");
-            if (analogAttractorChange.getVolatility() < 0)
-                response.addContextualMessage(
-                        "analogAttractorChange.volatility",
-                        "validate.cannotBeNegative");
-            if (analogAttractorChange.getAttractionPointId() < 1)
-                response.addContextualMessage(
-                        "analogAttractorChange.attractionPointId",
-                        "validate.required");
-            if (StringUtils.isBlank(analogAttractorChange.getStartValue()))
-                response.addContextualMessage(
-                        "analogAttractorChange.startValue", "validate.required");
-        }
-        // Analog attractor
-        else if (changeTypeId == ChangeTypeVO.Types.SINUSOIDAL) {
-            // Nothing to validate here
-        } else
-            response.addContextualMessage("changeTypeId",
-                    "validate.invalidChoice");
-
-        ChangeTypeVO changeType = getChangeType();
-        if (changeType != null) {
-            boolean found = false;
-            for (IntMessagePair imp : ChangeTypeVO.getChangeTypes(dataTypeId)) {
-                if (imp.getKey() == changeTypeId) {
-                    found = true;
-                    break;
-                }
-            }
-
-            if (!found)
-                response.addGenericMessage("virtual.changeType.incompatible");
-        }
+    public String getDataSourceType() {
+        return VirtualDataSourceDefinition.TYPE_NAME;
     }
 
     private int dataTypeId = DataTypes.BINARY;
