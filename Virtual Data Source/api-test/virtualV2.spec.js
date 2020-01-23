@@ -155,6 +155,12 @@ describe('Virtual data source', function() {
                     level: 'INFORMATION',
                  }
             ],
+            pollPeriod: {
+                periods: 5,
+                type: 'SECONDS'
+            },
+            quantize: false,
+            useCron: false,
             polling: false,
             modelType: 'VIRTUAL'
         });
