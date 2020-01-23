@@ -50,13 +50,13 @@ import io.swagger.annotations.ApiParam;
 @RequestMapping("/ascii-file-data-source")
 public class AsciiFileDataSourceRestController {
 
-    private final DataSourceService<?> service;
-    
+    private final DataSourceService service;
+
     @Autowired
-    public AsciiFileDataSourceRestController(DataSourceService<?> service) {
+    public AsciiFileDataSourceRestController(DataSourceService service) {
         this.service = service;
     }
-    
+
     @PreAuthorize("hasDataSourcePermission()")
     @ApiOperation(value = "Validate ASCII File is readable on Server", notes = "")
     @RequestMapping(method = RequestMethod.POST, value = "/validate-ascii-file-exists", consumes= {"text/plain;charset=UTF-8"})
@@ -70,18 +70,18 @@ public class AsciiFileDataSourceRestController {
         }catch(Exception e) {
             throw new BadRequestException(new TranslatableMessage("dsEdit.file.ioexceptionCanonical", path));
         }
-        
+
         String restrictedPaths = SystemSettingsDao.instance.getValue(AsciiFileSystemSettingsDefinition.RESTRICTED_PATH);
         if(!StringUtils.isEmpty(restrictedPaths))
             for(String p : restrictedPaths.split(";"))
                 if(path.startsWith(p)) {
                     throw new AccessDeniedException(new TranslatableMessage("dsEdit.file.pathRestrictedBy", path));
                 }
-        
+
         if (!verify.exists() || !verify.canRead())
             throw new AccessDeniedException(new TranslatableMessage("dsEdit.file.cannotRead"));
     }
-    
+
     @ApiOperation(value = "Validate ASCII", notes = "")
     @RequestMapping(method = RequestMethod.POST, value = "/validate-ascii/{xid}", consumes= {"text/plain;charset=UTF-8"})
     public List<AsciiFileTestResultModel> validateASCIIString(
@@ -90,23 +90,23 @@ public class AsciiFileDataSourceRestController {
             @ApiParam(value = "Valid ASCII data source XID", required = true, allowMultiple = false)
             @PathVariable String xid,
             @AuthenticationPrincipal User user) {
-        
-        DataSourceVO ds = service.get(xid, user);
+
+        DataSourceVO ds = service.get(xid);
         if(!(ds instanceof AsciiFileDataSourceVO))
             throw new BadRequestException(new TranslatableMessage("validate.incompatibleDataSourceType"));
-        
+
         //Message we will work with
         String msg = StringEscapeUtils.unescapeJava(ascii);
-        
+
         //Map to store the values vs the points they are for
         List<AsciiFileTestResultModel> results = new ArrayList<>();
-        
+
         DataPointDao dpd = DataPointDao.getInstance();
-        List<DataPointVO> points = dpd.getDataPoints(ds.getId(), null);
-        
+        List<DataPointVO> points = dpd.getDataPoints(ds.getId());
+
         for(final DataPointVO vo : points){
             MatchCallback callback = new MatchCallback(){
-    
+
                 @Override
                 public void onMatch(String pointIdentifier, PointValueTime value) {
                     AsciiFileTestResultModel result = new AsciiFileTestResultModel();
@@ -120,7 +120,7 @@ public class AsciiFileDataSourceRestController {
                         result.setTimestamp(new Date(value.getTime()));
                     }
                 }
-    
+
                 @Override
                 public void pointPatternMismatch(String message, String pointValueRegex) {
                     AsciiFileTestResultModel result = new AsciiFileTestResultModel();
@@ -130,10 +130,10 @@ public class AsciiFileDataSourceRestController {
                     result.setPointXid(vo.getXid());
                     result.setError(new TranslatableMessage("dsEdit.file.test.noPointRegexMatch"));
                 }
-    
+
                 @Override
                 public void messagePatternMismatch(String message, String messageRegex) { }
-    
+
                 @Override
                 public void pointNotIdentified(String message, String messageRegex, int pointIdentifierIndex) {
                     AsciiFileTestResultModel result = new AsciiFileTestResultModel();
@@ -143,7 +143,7 @@ public class AsciiFileDataSourceRestController {
                     result.setPointXid(vo.getXid());
                     result.setError( new TranslatableMessage("dsEdit.file.test.noIdentifierFound"));
                 }
-    
+
                 @Override
                 public void matchGeneralFailure(Exception e) {
 
@@ -156,17 +156,17 @@ public class AsciiFileDataSourceRestController {
                 }
             };
             AsciiFilePointLocatorVO locator = vo.getPointLocator();
-            AsciiFileDataSourceRT.matchPointValueTime(msg, 
-                    Pattern.compile(locator.getValueRegex()), 
+            AsciiFileDataSourceRT.matchPointValueTime(msg,
+                    Pattern.compile(locator.getValueRegex()),
                     locator.getPointIdentifier(),
                     locator.getPointIdentifierIndex(),
                     locator.getDataTypeId(),
                     locator.getValueIndex(),
                     locator.getHasTimestamp(),
-                    locator.getTimestampIndex(), 
+                    locator.getTimestampIndex(),
                     locator.getTimestampFormat(), callback);
         }
         return results;
     }
-    
+
 }
