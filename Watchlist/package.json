@@ -1,0 +1,20 @@
+{
+  "private": true,
+  "name": "@infinite-automation/watchlists",
+  "version": "3.8.0-SNAPSHOT",
+  "description": "Page for dynamically adding points to lists to monitor their values via AJAX",
+  "main": "web/angular/watchlists.js",
+  "dependencies": {},
+  "devDependencies": {
+    "@infinite-automation/mango-module-tools": "^2.1.0"
+  },
+  "author": "Jared Wiltshire <jared@infiniteautomation.com>",
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/infiniteautomation/ma-modules-public.git"
+  },
+  "com_infiniteautomation": {
+    "moduleName": "watchlists"
+  }
+}
