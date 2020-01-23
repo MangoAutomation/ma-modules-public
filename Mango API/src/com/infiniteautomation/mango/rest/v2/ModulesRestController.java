@@ -169,7 +169,7 @@ public class ModulesRestController {
     @RequestMapping(method = RequestMethod.GET, value = "/core")
     public MappingJacksonValue getCore(@AuthenticationPrincipal User user) {
 
-        CoreModuleModel coreModel = new CoreModuleModel(ModuleRegistry.getModule("core"));
+        CoreModuleModel coreModel = new CoreModuleModel(ModuleRegistry.getModule(ModuleRegistry.CORE_MODULE_NAME));
         coreModel.setGuid(Providers.get(ICoreLicense.class).getGuid());
         coreModel.setInstanceDescription(SystemSettingsDao.instance.getValue(SystemSettingsDao.INSTANCE_DESCRIPTION));
         coreModel.setDistributor(Common.envProps.getString("distributor"));
@@ -193,7 +193,7 @@ public class ModulesRestController {
         List<Module> modules = ModuleRegistry.getModules();
         for (Module module : modules) {
             if(module instanceof CoreModule) {
-                CoreModuleModel coreModel = new CoreModuleModel(ModuleRegistry.getModule("core"));
+                CoreModuleModel coreModel = new CoreModuleModel(ModuleRegistry.getModule(ModuleRegistry.CORE_MODULE_NAME));
                 coreModel.setGuid(Providers.get(ICoreLicense.class).getGuid());
                 coreModel.setInstanceDescription(SystemSettingsDao.instance.getValue(SystemSettingsDao.INSTANCE_DESCRIPTION));
                 coreModel.setDistributor(Common.envProps.getString("distributor"));
