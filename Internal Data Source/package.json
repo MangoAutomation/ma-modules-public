@@ -6,7 +6,7 @@
   "main": "web/angular/internal.js",
   "dependencies": {},
   "devDependencies": {
-    "@infinite-automation/mango-module-tools": "^2.0.5"
+    "@infinite-automation/mango-module-tools": "^2.1.0"
   },
   "scripts": {
     "webpack": "webpack --config webpack.config.js"
