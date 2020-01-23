@@ -47,7 +47,7 @@ public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO, Mainten
     private final String SELECT_DATA_SOURCES;
 
     private DataPointDao dataPointDao;
-    private DataSourceDao<DataSourceVO> dataSourceDao;
+    private DataSourceDao dataSourceDao;
 
     private static final LazyInitSupplier<MaintenanceEventDao> springInstance = new LazyInitSupplier<>(() -> {
         Object o = Common.getRuntimeContext().getBean(MaintenanceEventDao.class);
@@ -59,7 +59,7 @@ public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO, Mainten
     @Autowired
     private MaintenanceEventDao(
             MaintenanceEventsTableDefinition table,
-            DataPointDao dataPointDao, DataSourceDao<DataSourceVO> dataSourceDao,
+            DataPointDao dataPointDao, DataSourceDao dataSourceDao,
             @Qualifier(MangoRuntimeContextConfiguration.DAO_OBJECT_MAPPER_NAME)ObjectMapper mapper,
             ApplicationEventPublisher publisher) {
         super(AuditEvent.TYPE_NAME,

@@ -11,9 +11,12 @@ import java.util.List;
 import java.util.Set;
 
 import org.junit.BeforeClass;
+import org.junit.Test;
 
 import com.infiniteautomation.mango.spring.service.maintenanceEvents.MaintenanceEventsService;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventDao;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventVO;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventsTableDefinition;
@@ -21,8 +24,10 @@ import com.serotonin.m2m2.maintenanceEvents.RTMDefinition;
 import com.serotonin.m2m2.maintenanceEvents.SchemaDefinition;
 import com.serotonin.m2m2.module.ModuleElementDefinition;
 import com.serotonin.m2m2.module.definitions.permissions.DataSourcePermissionDefinition;
+import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.IDataPoint;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.role.Role;
 
 /**
@@ -46,17 +51,18 @@ public class MaintenanceEventsServiceTest extends AbstractVOServiceWithPermissio
 
     @Override
     void setReadRoles(Set<Role> roles, MaintenanceEventVO vo) {
-        vo.setToggleRoles(roles);
+        //A user with read permission for all data points (and sources) in this event has read permission
         if(roles != null) {
             getService().permissionService.runAsSystemAdmin(() -> {
-                Set<Role> existing = roleService.getRoles(getCreatePermissionType());
-                for(Role r :roles) {
-                    if(!existing.contains(r) && !r.equals(roleService.getUserRole())) {
-                        roleService.addRoleToPermission(r, getCreatePermissionType(), systemSuperadmin);
-                    }
+                //Get the data points and add our roles to the read roles
+                for(int dpId : vo.getDataPoints()) {
+                    DataPointVO dp = DataPointDao.getInstance().get(dpId);
+                    dp.setReadRoles(roles);
+                    DataPointDao.getInstance().update(dp.getId(), dp);
                 }
             });
         }
+        vo.setToggleRoles(roles);
     }
 
     @Override
@@ -66,17 +72,19 @@ public class MaintenanceEventsServiceTest extends AbstractVOServiceWithPermissio
 
     @Override
     void setEditRoles(Set<Role> roles, MaintenanceEventVO vo) {
-        vo.setToggleRoles(roles);
+        //A user with edit permission for the sources of all points (and all data sources sources) in this event has edit permission
         if(roles != null) {
             getService().permissionService.runAsSystemAdmin(() -> {
-                Set<Role> existing = roleService.getRoles(getCreatePermissionType());
-                for(Role r :roles) {
-                    if(!existing.contains(r) && !r.equals(roleService.getUserRole())) {
-                        roleService.addRoleToPermission(r, getCreatePermissionType(), systemSuperadmin);
-                    }
+                //Get the data points and add our roles to the read roles
+                for(int dpId : vo.getDataPoints()) {
+                    DataPointVO dp = DataPointDao.getInstance().get(dpId);
+                    DataSourceVO ds = DataSourceDao.getInstance().get(dp.getDataSourceId());
+                    ds.setEditRoles(roles);
+                    DataSourceDao.getInstance().update(ds.getId(), ds);
                 }
             });
         }
+        vo.setToggleRoles(roles);
     }
 
     @Override
@@ -108,23 +116,28 @@ public class MaintenanceEventsServiceTest extends AbstractVOServiceWithPermissio
         for(IDataPoint point : createMockDataPoints(5)) {
             vo.getDataPoints().add(point.getId());
         }
-
-        getService().permissionService.runAsSystemAdmin(() -> {
-            Set<Role> existing = roleService.getRoles(getCreatePermissionType());
-            for(Role r : owner.getRoles()) {
-                if(!existing.contains(r) && !r.equals(roleService.getUserRole())) {
-                    roleService.addRoleToPermission(r, getCreatePermissionType(), systemSuperadmin);
-                }
-            }
-        });
         return vo;
     }
 
     @Override
     MaintenanceEventVO updateVO(MaintenanceEventVO existing) {
-        MaintenanceEventVO vo = existing.copy();
+        MaintenanceEventVO vo = (MaintenanceEventVO)existing.copy();
         vo.setName("testing");
         return vo;
     }
+
+    @Override
+    @Test()
+    public void testCannotRemoveEditAccess() {
+        //This test does not apply
+    }
+
+    @Override
+    @Test()
+    public void testAddEditRoleUserDoesNotHave() {
+        //This test does not apply
+    }
+
+    //TODO Test Add/Remove/Use Toggle Permission
 
 }

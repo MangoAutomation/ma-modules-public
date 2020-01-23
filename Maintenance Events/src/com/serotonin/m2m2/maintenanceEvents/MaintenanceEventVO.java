@@ -37,7 +37,7 @@ import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.event.EventTypeVO;
 import com.serotonin.m2m2.vo.role.Role;
 
-public class MaintenanceEventVO extends AbstractVO<MaintenanceEventVO> {
+public class MaintenanceEventVO extends AbstractVO {
 
     private static final long serialVersionUID = 1L;
 

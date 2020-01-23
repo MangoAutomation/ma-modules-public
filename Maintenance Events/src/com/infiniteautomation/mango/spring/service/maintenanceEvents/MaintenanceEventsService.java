@@ -47,10 +47,10 @@ import net.jazdw.rql.parser.ASTNode;
 @Service
 public class MaintenanceEventsService extends AbstractVOService<MaintenanceEventVO, MaintenanceEventsTableDefinition, MaintenanceEventDao>{
 
-    private final DataSourceDao<DataSourceVO> dataSourceDao;
+    private final DataSourceDao dataSourceDao;
 
     @Autowired
-    public MaintenanceEventsService(MaintenanceEventDao dao, DataSourceDao<DataSourceVO> dataSourceDao, PermissionService permissionService) {
+    public MaintenanceEventsService(MaintenanceEventDao dao, DataSourceDao dataSourceDao, PermissionService permissionService) {
         super(dao, permissionService);
         this.dataSourceDao = dataSourceDao;
     }
