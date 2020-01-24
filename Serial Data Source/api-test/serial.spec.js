@@ -113,9 +113,9 @@ describe('Serial data source', function() {
             const local = Object.assign({}, dp);
             return dp.save().then(saved => {
                 testHelper.assertDataPoint(saved, local, assertPointLocator);
-                saved.valueIndex = 1;
-                saved.valueRegex = '.*test';
-                saved.pointIdentifier = 'id2';
+                saved.pointLocator.valueIndex = 1;
+                saved.pointLocator.valueRegex = '.*test';
+                saved.pointLocator.pointIdentifier = 'id2';
                 
                 const localUpdate = Object.assign({}, saved);
                 return saved.save().then(updated => {

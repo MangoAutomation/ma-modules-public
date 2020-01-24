@@ -103,14 +103,14 @@ describe('ASCII file data source', function() {
             return dp.save().then(saved => {
                 testHelper.assertDataPoint(saved, local, assertPointLocator);
 
-                saved.dataType = 'NUMERIC';
-                saved.pointIdentifier = 'id2';
-                saved.pointIdentifierIndex = 2;
-                saved.valueIndex = 3;
-                saved.valueRegex = '(test.*)';
-                saved.hasTimestamp = false;
-                saved.timestampIndex = 2;
-                saved.timestampFormat = 'yyyy-dd-MM';
+                saved.pointLocator.dataType = 'NUMERIC';
+                saved.pointLocator.pointIdentifier = 'id2';
+                saved.pointLocator.pointIdentifierIndex = 2;
+                saved.pointLocator.valueIndex = 3;
+                saved.pointLocator.valueRegex = '(test.*)';
+                saved.pointLocator.hasTimestamp = false;
+                saved.pointLocator.timestampIndex = 2;
+                saved.pointLocator.timestampFormat = 'yyyy-dd-MM';
                 
                 const localUpdate = Object.assign({}, saved);
                 return saved.save().then(updated => {
