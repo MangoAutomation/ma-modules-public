@@ -67,26 +67,26 @@ import net.sf.mbus4j.master.MBusMaster;
 public class MBusDataSourceRestController {
 
     private static final String RESOURCE_TYPE_MBUS = "MBUS";
-    
-    private final DataSourceService<?> service;
+
+    private final DataSourceService service;
     private final TemporaryResourceManager<MBusScanResult, AbstractRestV2Exception> temporaryResourceManager;
     private final ExecutorService executor;
-    
+
     @Autowired
-    public MBusDataSourceRestController(DataSourceService<?> service, TemporaryResourceWebSocketHandler handler, ExecutorService executor) {
+    public MBusDataSourceRestController(DataSourceService service, TemporaryResourceWebSocketHandler handler, ExecutorService executor) {
         this.service = service;
-        this.temporaryResourceManager = new MangoTaskTemporaryResourceManager<MBusScanResult>(handler);
+        this.temporaryResourceManager = new MangoTaskTemporaryResourceManager<MBusScanResult>(service.getPermissionService(), handler);
         this.executor = executor;
     }
-    
+
     @PreAuthorize("hasDataSourcePermission()")
     @ApiOperation(value = "Start an MBus scan")
     @RequestMapping(method = RequestMethod.POST, value= {"/scan"})
     public ResponseEntity<TemporaryResource<MBusScanResult, AbstractRestV2Exception>> operation(
             @ApiParam(value = "Resource expiry milliseconds", required = false,
             allowMultiple = false) @RequestParam(value = "expiry",
-                    required = false) Long expiry,
-            @ApiParam(value = "Listener timeout milliseconds", required = false, allowMultiple = false) 
+            required = false) Long expiry,
+            @ApiParam(value = "Listener timeout milliseconds", required = false, allowMultiple = false)
             @RequestParam(value = "timeout", required = false) Long timeout,
 
             @RequestBody MBusScanRequest requestBody,
@@ -94,15 +94,15 @@ public class MBusDataSourceRestController {
             @AuthenticationPrincipal User user,
 
             UriComponentsBuilder builder) {
-        
+
         requestBody.ensureValid();
-        
+
         if(requestBody.getDataSourceXid() != null)
             ensureNotRunning(requestBody.getDataSourceXid(), user);
-        
+
         TemporaryResource<MBusScanResult, AbstractRestV2Exception> responseBody = temporaryResourceManager.newTemporaryResource(
                 RESOURCE_TYPE_MBUS, null, user.getId(), expiry, timeout, (resource, taskUser)-> {
-                    
+
                     //Start the discovery
                     MBusScan scan = new MBusScan(requestBody, taskUser, resource);
                     Future<?> future = this.executor.submit(scan);
@@ -112,7 +112,7 @@ public class MBusDataSourceRestController {
                             scan.cancelled = true;
                             future.cancel(true);
                         }
-                            
+
                     };
                 });
 
@@ -121,7 +121,7 @@ public class MBusDataSourceRestController {
         return new ResponseEntity<TemporaryResource<MBusScanResult, AbstractRestV2Exception>>(responseBody, headers, HttpStatus.CREATED);
 
     }
-    
+
     class MBusScan implements Runnable {
 
         private volatile boolean cancelled;
@@ -150,10 +150,10 @@ public class MBusDataSourceRestController {
                 } else {
                     master.setConnection(connection);
                 }
-                
+
                 //Open the connection
                 master.open();
-                
+
                 if(requestBody instanceof MBusAddressScanRequest) {
                     MBusAddressScanRequest asr = (MBusAddressScanRequest)requestBody;
                     int position = 0;
@@ -181,7 +181,7 @@ public class MBusDataSourceRestController {
                     Collection<GenericDevice> genericDevices = master.widcardSearch(
                             sasd.createMaskedId(),
                             sasd.createMaskedManufacturer(),
-                            sasd.createMaskedVersion(), 
+                            sasd.createMaskedVersion(),
                             sasd.createMaskedMedium());
                     for(GenericDevice c : genericDevices)
                         devices.add(new MBusDeviceScanResult(c));
@@ -195,14 +195,14 @@ public class MBusDataSourceRestController {
             }
         }
     }
-    
+
     @ApiOperation(value = "Get a list of current MBus scans", notes = "User can only get their own operations unless they are an admin")
     @RequestMapping(method = RequestMethod.GET, value="/scan")
     public List<TemporaryResource<MBusScanResult, AbstractRestV2Exception>> getOperations(
             @AuthenticationPrincipal User user) {
 
         return this.temporaryResourceManager.list().stream()
-                .filter((tr) -> user.hasAdminPermission() || user.getId() == tr.getUserId())
+                .filter((tr) -> user.hasAdminRole() || user.getId() == tr.getUserId())
                 .collect(Collectors.toList());
     }
 
@@ -215,7 +215,7 @@ public class MBusDataSourceRestController {
 
         TemporaryResource<MBusScanResult, AbstractRestV2Exception> resource = temporaryResourceManager.get(id);
 
-        if (!user.hasAdminPermission() && user.getId() != resource.getUserId()) {
+        if (!user.hasAdminRole() && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
 
@@ -238,7 +238,7 @@ public class MBusDataSourceRestController {
 
         TemporaryResource<MBusScanResult, AbstractRestV2Exception> resource = temporaryResourceManager.get(id);
 
-        if (!user.hasAdminPermission() && user.getId() != resource.getUserId()) {
+        if (!user.hasAdminRole() && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
 
@@ -263,7 +263,7 @@ public class MBusDataSourceRestController {
 
         TemporaryResource<MBusScanResult, AbstractRestV2Exception> resource = temporaryResourceManager.get(id);
 
-        if (!user.hasAdminPermission() && user.getId() != resource.getUserId()) {
+        if (!user.hasAdminRole() && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
 
@@ -271,20 +271,20 @@ public class MBusDataSourceRestController {
 
         return resource;
     }
-    
+
     /**
      * Utility to ensure source is not running
-     * 
+     *
      * @param dataSourceXid
      */
     private void ensureNotRunning(String dataSourceXid, User user) throws PermissionException {
         try {
-            DataSourceVO ds = service.get(dataSourceXid, user);
-            if (Common.runtimeManager.isDataSourceRunning(ds.getId())) 
+            DataSourceVO ds = service.get(dataSourceXid);
+            if (Common.runtimeManager.isDataSourceRunning(ds.getId()))
                 throw new BadRequestException(new TranslatableMessage("dsEdit.mbus.noSearchWhileDataSourceRunning"));
         }catch(NotFoundException e) {
             //Don't care its not running
         }
     }
-    
+
 }
