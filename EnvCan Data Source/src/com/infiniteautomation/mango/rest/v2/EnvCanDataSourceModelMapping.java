@@ -10,7 +10,7 @@ import com.infiniteautomation.mango.rest.v2.model.RestModelJacksonMapping;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.serotonin.m2m2.envcan.EnvCanDataSourceDefinition;
 import com.serotonin.m2m2.envcan.EnvCanDataSourceVO;
-import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 /**
  * @author Terry Packer
@@ -30,7 +30,7 @@ public class EnvCanDataSourceModelMapping implements RestModelJacksonMapping<Env
     }
 
     @Override
-    public EnvCanDataSourceModel map(Object from, User user, RestModelMapper mapper) {
+    public EnvCanDataSourceModel map(Object from, PermissionHolder user, RestModelMapper mapper) {
         return new EnvCanDataSourceModel((EnvCanDataSourceVO)from);
     }
 

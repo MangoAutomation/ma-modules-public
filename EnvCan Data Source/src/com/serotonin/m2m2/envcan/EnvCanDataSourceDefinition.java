@@ -1,12 +1,15 @@
 package com.serotonin.m2m2.envcan;
 
-import com.serotonin.m2m2.module.DataSourceDefinition;
+import com.serotonin.m2m2.i18n.ProcessResult;
+import com.serotonin.m2m2.module.PollingDataSourceDefinition;
+import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
-public class EnvCanDataSourceDefinition extends DataSourceDefinition {
+public class EnvCanDataSourceDefinition extends PollingDataSourceDefinition<EnvCanDataSourceVO> {
     public static final String DATA_SOURCE_TYPE = "EnvCan";
-	
-	@Override
+
+    @Override
     public String getDataSourceTypeName() {
         return DATA_SOURCE_TYPE;
     }
@@ -17,7 +20,26 @@ public class EnvCanDataSourceDefinition extends DataSourceDefinition {
     }
 
     @Override
-    protected DataSourceVO createDataSourceVO() {
+    protected EnvCanDataSourceVO createDataSourceVO() {
         return new EnvCanDataSourceVO();
+    }
+
+    @Override
+    public void validate(ProcessResult response, EnvCanDataSourceVO ds, PermissionHolder user) {
+        super.validate(response, ds, user);
+        if (ds.getStationId() < 1)
+            response.addContextualMessage("stationId", "validate.greaterThanZero", ds.getStationId());
+    }
+
+    @Override
+    public void validate(ProcessResult response, DataPointVO dpvo, DataSourceVO dsvo,
+            PermissionHolder user) {
+        if (!(dsvo instanceof EnvCanDataSourceVO))
+            response.addContextualMessage("dataSourceId", "dpEdit.validate.invalidDataSourceType");
+
+        EnvCanPointLocatorVO pl = dpvo.getPointLocator();
+
+        if (!EnvCanPointLocatorVO.ATTRIBUTE_CODES.isValidId(pl.getAttributeId()))
+            response.addContextualMessage("attributeId", "validate.invalidValue");
     }
 }
