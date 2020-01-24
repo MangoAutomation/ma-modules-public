@@ -7,14 +7,9 @@ package com.serotonin.m2m2.internal;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
-
-import org.apache.commons.lang3.StringUtils;
 
 import com.serotonin.json.spi.JsonProperty;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.util.ExportCodes;
 import com.serotonin.m2m2.vo.dataSource.PollingDataSourceVO;
@@ -23,16 +18,16 @@ import com.serotonin.util.SerializationHelper;
 /**
  * @author Matthew Lohbihler
  */
-public class InternalDataSourceVO extends PollingDataSourceVO<InternalDataSourceVO> {
+public class InternalDataSourceVO extends PollingDataSourceVO {
 
-	@Override
-	public int getPollAbortedExceptionEventId() {
-		return InternalDataSourceRT.POLL_ABORTED_EVENT;
-	}
-	
+    @Override
+    public int getPollAbortedExceptionEventId() {
+        return InternalDataSourceRT.POLL_ABORTED_EVENT;
+    }
+
     private static ExportCodes EVENT_CODES = new ExportCodes();
     static{
-    	EVENT_CODES.addElement(InternalDataSourceRT.POLL_ABORTED_EVENT, "POLL_ABORTED");
+        EVENT_CODES.addElement(InternalDataSourceRT.POLL_ABORTED_EVENT, "POLL_ABORTED");
     }
     @Override
     public ExportCodes getEventCodes() {
@@ -56,25 +51,13 @@ public class InternalDataSourceVO extends PollingDataSourceVO<InternalDataSource
 
     @JsonProperty
     private String createPointsPattern;
-    
+
     public String getCreatePointsPattern() {
         return createPointsPattern;
     }
-    
+
     public void setCreatePointsPattern(String createPointsPattern) {
         this.createPointsPattern = createPointsPattern;
-    }
-
-    @Override
-    public void validate(ProcessResult response) {
-        super.validate(response);
-        if (!StringUtils.isEmpty(createPointsPattern)) {
-            try {
-                Pattern.compile(createPointsPattern);
-            } catch(PatternSyntaxException e) {
-                response.addContextualMessage("createPointsPattern", "validate.invalidRegex");
-            }
-        }
     }
 
     //
@@ -97,7 +80,7 @@ public class InternalDataSourceVO extends PollingDataSourceVO<InternalDataSource
             updatePeriodType = in.readInt();
             updatePeriods = in.readInt();
             createPointsPattern = null;
-        } 
+        }
         else if (ver == 2) {
             updatePeriodType = in.readInt();
             updatePeriods = in.readInt();

@@ -21,12 +21,9 @@ import com.serotonin.json.spi.JsonSerializable;
 import com.serotonin.json.type.JsonObject;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
-import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.dataSource.AbstractPointLocatorVO;
-import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.util.SerializationHelper;
 
 /**
@@ -34,6 +31,7 @@ import com.serotonin.util.SerializationHelper;
  */
 @JsonEntity
 public class InternalPointLocatorVO extends AbstractPointLocatorVO<InternalPointLocatorVO> implements JsonSerializable {
+
     public static String[] MONITOR_NAMES = { "", //
             "com.serotonin.m2m2.db.dao.PointValueDao$BatchWriteBehind.ENTRIES_MONITOR", //
             "com.serotonin.m2m2.db.dao.PointValueDao$BatchWriteBehind.INSTANCES_MONITOR", //
@@ -50,35 +48,35 @@ public class InternalPointLocatorVO extends AbstractPointLocatorVO<InternalPoint
             "java.lang.Runtime.maxMemory",
             "java.lang.Runtime.availableProcessors"
     };
-    
+
     private static Map<String, String> LEGACY_ID_MAP = new HashMap<String, String>();
     static {
-    	LEGACY_ID_MAP.put("BATCH_ENTRIES", MONITOR_NAMES[1]);
-    	LEGACY_ID_MAP.put("BATCH_INSTANCES", MONITOR_NAMES[2]);
-    	LEGACY_ID_MAP.put("MONITOR_HIGH", MONITOR_NAMES[3]);
-    	LEGACY_ID_MAP.put("MONITOR_MEDIUM", MONITOR_NAMES[4]);
-    	LEGACY_ID_MAP.put("MONITOR_SCHEDULED", MONITOR_NAMES[5]);
-    	LEGACY_ID_MAP.put("MONITOR_STACK_HEIGHT", MONITOR_NAMES[6]);
-    	LEGACY_ID_MAP.put("MONITOR_THREAD_COUNT", MONITOR_NAMES[7]);
-    	LEGACY_ID_MAP.put("DB_ACTIVE_CONNECTIONS", MONITOR_NAMES[8]);
-    	LEGACY_ID_MAP.put("DB_IDLE_CONNECTIONS", MONITOR_NAMES[9]);
-    	LEGACY_ID_MAP.put("BATCH_WRITE_SPEED_MONITOR", MONITOR_NAMES[10]);
-    	LEGACY_ID_MAP.put("JAVA_FREE_MEMORY", MONITOR_NAMES[11]);
-    	LEGACY_ID_MAP.put("JAVA_USED_MEMORY", MONITOR_NAMES[12]);
-    	LEGACY_ID_MAP.put("JAVA_MAX_MEMORY", MONITOR_NAMES[13]);
-    	LEGACY_ID_MAP.put("JAVA_PROCESSORS", MONITOR_NAMES[14]);
+        LEGACY_ID_MAP.put("BATCH_ENTRIES", MONITOR_NAMES[1]);
+        LEGACY_ID_MAP.put("BATCH_INSTANCES", MONITOR_NAMES[2]);
+        LEGACY_ID_MAP.put("MONITOR_HIGH", MONITOR_NAMES[3]);
+        LEGACY_ID_MAP.put("MONITOR_MEDIUM", MONITOR_NAMES[4]);
+        LEGACY_ID_MAP.put("MONITOR_SCHEDULED", MONITOR_NAMES[5]);
+        LEGACY_ID_MAP.put("MONITOR_STACK_HEIGHT", MONITOR_NAMES[6]);
+        LEGACY_ID_MAP.put("MONITOR_THREAD_COUNT", MONITOR_NAMES[7]);
+        LEGACY_ID_MAP.put("DB_ACTIVE_CONNECTIONS", MONITOR_NAMES[8]);
+        LEGACY_ID_MAP.put("DB_IDLE_CONNECTIONS", MONITOR_NAMES[9]);
+        LEGACY_ID_MAP.put("BATCH_WRITE_SPEED_MONITOR", MONITOR_NAMES[10]);
+        LEGACY_ID_MAP.put("JAVA_FREE_MEMORY", MONITOR_NAMES[11]);
+        LEGACY_ID_MAP.put("JAVA_USED_MEMORY", MONITOR_NAMES[12]);
+        LEGACY_ID_MAP.put("JAVA_MAX_MEMORY", MONITOR_NAMES[13]);
+        LEGACY_ID_MAP.put("JAVA_PROCESSORS", MONITOR_NAMES[14]);
     }
 
     private List<String> getCurrentMonitorIdList() {
-    	List<String> validKeys = new ArrayList<String>();
-    	for(ValueMonitor<?> monitor : Common.MONITORED_VALUES.getMonitors()) {
-    		validKeys.add(monitor.getId());
-    	}
-    	return validKeys;
+        List<String> validKeys = new ArrayList<String>();
+        for(ValueMonitor<?> monitor : Common.MONITORED_VALUES.getMonitors()) {
+            validKeys.add(monitor.getId());
+        }
+        return validKeys;
     }
-    
+
     private String monitorId = MONITOR_NAMES[1];
-    
+
     @Override
     public boolean isSettable() {
         return false;
@@ -91,40 +89,37 @@ public class InternalPointLocatorVO extends AbstractPointLocatorVO<InternalPoint
 
     @Override
     public TranslatableMessage getConfigurationDescription() {
-    	ValueMonitor<?> monitor = Common.MONITORED_VALUES.getMonitor(monitorId);
-    	if(monitor != null)
-    		return monitor.getName();
-    	else
-    		return new TranslatableMessage("internal.missingMonitor", monitorId);
+        try {
+            ValueMonitor<?> monitor = Common.MONITORED_VALUES.getMonitor(monitorId);
+            return monitor.getName();
+        }catch(Exception e) {
+            return new TranslatableMessage("internal.missingMonitor", monitorId);
+        }
     }
 
     @Override
     public int getDataTypeId() {
         return DataTypes.NUMERIC;
     }
-    
-    /**
-	 * @return the monitorId
-	 */
-	public String getMonitorId() {
-		return monitorId;
-	}
-	
-	/**
-	 * @param monitorId the monitorId to set
-	 */
-	public void setMonitorId(String monitorId) {
-		this.monitorId = monitorId;
-	}
 
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.vo.dataSource.PointLocatorVO#validate(com.serotonin.m2m2.i18n.ProcessResult, com.serotonin.m2m2.vo.DataPointVO, com.serotonin.m2m2.vo.dataSource.DataSourceVO)
-	 */
-	@Override
-	public void validate(ProcessResult response, DataPointVO dpvo, DataSourceVO dsvo) {
-        if (!(dsvo instanceof InternalDataSourceVO))
-            response.addContextualMessage("dataSourceId", "dpEdit.validate.invalidDataSourceType");
-	}
+    @Override
+    public String getDataSourceType() {
+        return InternalDataSourceDefinition.DATA_SOURCE_TYPE;
+    }
+
+    /**
+     * @return the monitorId
+     */
+    public String getMonitorId() {
+        return monitorId;
+    }
+
+    /**
+     * @param monitorId the monitorId to set
+     */
+    public void setMonitorId(String monitorId) {
+        this.monitorId = monitorId;
+    }
 
     //
     //
@@ -146,7 +141,7 @@ public class InternalPointLocatorVO extends AbstractPointLocatorVO<InternalPoint
             int attributeId = in.readInt();
             monitorId = MONITOR_NAMES[attributeId];
         }else if (ver == 2){
-        	monitorId = SerializationHelper.readSafeUTF(in);
+            monitorId = SerializationHelper.readSafeUTF(in);
         }
     }
 
@@ -160,16 +155,16 @@ public class InternalPointLocatorVO extends AbstractPointLocatorVO<InternalPoint
         String text = jsonObject.getString("attributeId");
         if (text == null){
             text = jsonObject.getString("monitorId");
-        	if(text == null)
-        		throw new TranslatableJsonException("emport.error.missing", "monitorId", getCurrentMonitorIdList());
-        	else
-        		monitorId = text;
-        	
+            if(text == null)
+                throw new TranslatableJsonException("emport.error.missing", "monitorId", getCurrentMonitorIdList());
+            else
+                monitorId = text;
+
         }else{
-        	if(!LEGACY_ID_MAP.containsKey(text))
-        		throw new TranslatableJsonException("emport.error.invalid", "attributeId", text,
+            if(!LEGACY_ID_MAP.containsKey(text))
+                throw new TranslatableJsonException("emport.error.invalid", "attributeId", text,
                         LEGACY_ID_MAP.keySet());
-        	monitorId = LEGACY_ID_MAP.get(text);
+            monitorId = LEGACY_ID_MAP.get(text);
         }
     }
 }
