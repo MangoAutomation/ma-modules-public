@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-const testHelper = require('@infinite-automation/mango-client/test/testHelper');
+const testHelper = require('@infinite-automation/mango-module-tools/test-helper/testHelper');;
 const {createClient, assertValidationErrors, assertPermissions, uuid, login} = testHelper;
 
 const client = createClient();
