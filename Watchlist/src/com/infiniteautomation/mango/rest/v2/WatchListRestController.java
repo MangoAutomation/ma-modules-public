@@ -101,7 +101,7 @@ public class WatchListRestController {
 
         //Setup any exposed special query aliases to map model fields to db columns
         this.fieldMap = new HashMap<>();
-        this.fieldMap.put("username", userTable.getAlias("u.username"));
+        this.fieldMap.put("username", userTable.getXidAlias());
     }
 
     @ApiOperation(

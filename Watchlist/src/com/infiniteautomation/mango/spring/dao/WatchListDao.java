@@ -30,6 +30,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.infiniteautomation.mango.db.query.ConditionSortLimit;
 import com.infiniteautomation.mango.spring.MangoRuntimeContextConfiguration;
 import com.infiniteautomation.mango.spring.db.UserTableDefinition;
 import com.infiniteautomation.mango.spring.events.DaoEvent;
@@ -110,6 +111,12 @@ public class WatchListDao extends AbstractDao<WatchListVO, WatchListTableDefinit
 
         });
     }
+    @Override
+    public void loadRelationalData(WatchListVO vo) {
+        //Populate permissions
+        vo.setReadRoles(RoleDao.getInstance().getRoles(vo, PermissionService.READ));
+        vo.setEditRoles(RoleDao.getInstance().getRoles(vo, PermissionService.EDIT));
+    }
 
     @Override
     public void saveRelationalData(WatchListVO vo, boolean insert) {
@@ -177,7 +184,8 @@ public class WatchListDao extends AbstractDao<WatchListVO, WatchListTableDefinit
     }
 
     @Override
-    public <R extends Record> SelectJoinStep<R> joinTables(SelectJoinStep<R> select) {
+    public <R extends Record> SelectJoinStep<R> joinTables(SelectJoinStep<R> select,
+            ConditionSortLimit conditions) {
         return select = select.leftJoin(userTable.getTableAsAlias()).on(userTable.getAlias("id").eq(table.getAlias("userId")));
     }
 

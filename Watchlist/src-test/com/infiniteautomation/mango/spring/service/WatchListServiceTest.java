@@ -14,6 +14,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.junit.BeforeClass;
+import org.junit.Test;
 
 import com.infiniteautomation.mango.spring.dao.WatchListDao;
 import com.infiniteautomation.mango.spring.dao.WatchListTableDefinition;
@@ -21,6 +22,8 @@ import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.module.ModuleElementDefinition;
 import com.serotonin.m2m2.vo.IDataPoint;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionException;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.vo.role.Role;
 import com.serotonin.m2m2.watchlist.WatchListCreatePermission;
 import com.serotonin.m2m2.watchlist.WatchListSchemaDefinition;
@@ -86,7 +89,7 @@ public class WatchListServiceTest extends AbstractVOServiceWithPermissionsTest<W
         vo.setName(UUID.randomUUID().toString());
         vo.setType(WatchListVO.STATIC_TYPE);
         vo.setUserId(owner.getId());
-        for(IDataPoint point : createMockDataPoints(5)) {
+        for(IDataPoint point : createMockDataPoints(5, false, owner.getRoles(), owner.getRoles())) {
             vo.getPointList().add(point);
         }
         Map<String, Object> randomData = new HashMap<>();
@@ -116,4 +119,13 @@ public class WatchListServiceTest extends AbstractVOServiceWithPermissionsTest<W
         vo.getEditRoles().add(role);
     }
 
+    @Test(expected = PermissionException.class)
+    @Override
+    public void testCreatePrivilegeFails() {
+        WatchListVO vo = newVO(editUser);
+        addRoleToCreatePermission(PermissionHolder.SUPERADMIN_ROLE.get());
+        getService().permissionService.runAs(editUser, () -> {
+            service.insert(vo);
+        });
+    }
 }

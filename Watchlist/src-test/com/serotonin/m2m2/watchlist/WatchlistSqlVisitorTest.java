@@ -13,10 +13,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.jooq.Field;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.infiniteautomation.mango.db.query.ConditionSortLimit;
 import com.infiniteautomation.mango.spring.dao.WatchListDao;
+import com.infiniteautomation.mango.spring.db.UserTableDefinition;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.spring.service.WatchListService;
 import com.serotonin.m2m2.Common;
@@ -71,22 +74,26 @@ public class WatchlistSqlVisitorTest extends MangoTestBase {
         }
 
 
-        String rql = "eq(username,admin)&limit(3,0)";
+        String rql = "eq(username," + users.get(0).getUsername() + ")&limit(3)";
         RQLParser parser = new RQLParser();
         ASTNode query = parser.parse(rql);
 
         final AtomicLong selectCounter = new AtomicLong();
-        final AtomicLong countValue = new AtomicLong();
+
+        Map<String, Field<?>> fieldMap = new HashMap<>();
+        fieldMap.put("username", Common.getBean(UserTableDefinition.class).getXidAlias());
+
+        ConditionSortLimit condition = service.getDao().rqlToCondition(query, fieldMap, new HashMap<>());
         Common.getBean(PermissionService.class).runAsSystemAdmin(() -> {
-            service.customizedQuery(query, (wl,index) -> {
+
+            service.customizedQuery(condition, (wl,index) -> {
                 selectCounter.incrementAndGet();
+                assertEquals(users.get(0).getId(), wl.getUserId());
                 assertEquals(2, wl.getReadRoles().size());
             });
-            assertEquals(5, service.customizedCount(query));
+            assertEquals(5, service.customizedCount(condition));
         });
-
-        assertEquals(5L, selectCounter.get());
-        assertEquals(120L, countValue.get());
+        assertEquals(3, selectCounter.get());
     }
 
 }
