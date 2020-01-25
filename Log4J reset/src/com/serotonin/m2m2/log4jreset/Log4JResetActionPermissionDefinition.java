@@ -4,6 +4,7 @@
  */
 package com.serotonin.m2m2.log4jreset;
 
+import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.PermissionDefinition;
 
 /**
@@ -15,8 +16,8 @@ public class Log4JResetActionPermissionDefinition extends PermissionDefinition {
     public static final String PERMISSION = "action.log4jUtil";
 
     @Override
-    public String getPermissionKey() {
-        return "log4JReset.settings.header";
+    public TranslatableMessage getDescription() {
+        return new TranslatableMessage("log4JReset.settings.header");
     }
 
     @Override

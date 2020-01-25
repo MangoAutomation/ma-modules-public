@@ -12,6 +12,25 @@ public class FileModel {
 
     boolean directory;
 
+    /**
+     * @param folderPath
+     * @param filename
+     * @param mimeType
+     * @param lastModified
+     * @param size
+     * @param directory
+     */
+    public FileModel(String folderPath, String filename, String mimeType, Date lastModified,
+            Long size, boolean directory) {
+        super();
+        this.folderPath = folderPath;
+        this.filename = filename;
+        this.mimeType = mimeType;
+        this.lastModified = lastModified;
+        this.size = size;
+        this.directory = directory;
+    }
+
     public FileModel() {
     }
 

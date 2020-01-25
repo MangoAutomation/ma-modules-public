@@ -17,7 +17,7 @@ import com.infiniteautomation.mango.rest.v2.model.time.TimePeriodType;
  *
  */
 @JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.PROPERTY, property=AbstractDataSourceModel.MODEL_TYPE)
-public abstract class AbstractPollingDataSourceModel<T extends PollingDataSourceVO<T>> extends AbstractDataSourceModel<T> {
+public abstract class AbstractPollingDataSourceModel<T extends PollingDataSourceVO> extends AbstractDataSourceModel<T> {
 
     @ApiModelProperty("Period to poll for data, unless using CRON")
     @JsonInclude(JsonInclude.Include.NON_NULL)

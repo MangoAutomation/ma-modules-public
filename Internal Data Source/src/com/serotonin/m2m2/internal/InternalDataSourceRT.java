@@ -49,7 +49,7 @@ public class InternalDataSourceRT extends PollingDataSource<InternalDataSourceVO
             try {
                 createPointsPattern = Pattern.compile(vo.getCreatePointsPattern());
                 monitorMap = new HashMap<String, Boolean>();
-                for(DataPointVO dpvo : DataPointDao.getInstance().getDataPoints(vo.getId(), null)) {
+                for(DataPointVO dpvo : DataPointDao.getInstance().getDataPoints(vo.getId())) {
                     InternalPointLocatorVO plvo = dpvo.getPointLocator();
                     monitorMap.put(plvo.getMonitorId(), true);
                 }
@@ -119,7 +119,7 @@ public class InternalDataSourceRT extends PollingDataSource<InternalDataSourceVO
         dpvo.setPointLocator(plvo);
         dpvo.setDataSourceId(vo.getId());
         dpvo.setDataSourceTypeName(vo.getDefinition().getDataSourceTypeName());
-        dpvo.setEventDetectors(new ArrayList<AbstractPointEventDetectorVO<?>>(0));
+        dpvo.setEventDetectors(new ArrayList<AbstractPointEventDetectorVO>(0));
         dpvo.setEnabled(true);
         dpvo.setDeviceName(vo.getName());
         //Logging types are usually going to be ON_CHANGE, INTERVAL (MAXIMUM), INTERVAL (INSTANT) AND INTERVAL (MINIMUM)
@@ -203,11 +203,11 @@ public class InternalDataSourceRT extends PollingDataSource<InternalDataSourceVO
         dpvo.defaultTextRenderer();
         dpvo.setXid(Common.generateXid("DP_In_"));
         monitorMap.put(monitor.getId(), true);
-        Common.runtimeManager.saveDataPoint(dpvo); //Won't appear until next poll, but that's fine.
+        Common.runtimeManager.insertDataPoint(dpvo); //Won't appear until next poll, but that's fine.
     }
 
     private void defaultNewPointToDataSource(DataPointVO dpvo, String dsXid) {
-        DataSourceVO<?> dsvo = DataSourceDao.getInstance().getDataSource(dsXid);
+        DataSourceVO dsvo = DataSourceDao.getInstance().getByXid(dsXid);
         if(dsvo == null)
             throw new ShouldNeverHappenException("Error creating point, unknown data source: "+dsXid);
         dpvo.setDeviceName(dsvo.getName());

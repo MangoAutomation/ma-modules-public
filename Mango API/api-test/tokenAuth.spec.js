@@ -31,7 +31,7 @@ describe('JSON Web Token authentication', function() {
             username,
             email: `${username}@example.com`,
             name: `${username}`,
-            permissions: '',
+            permissions: [],
             password: this.testUserPassword
         });
         return this.testUser.save();
@@ -316,14 +316,14 @@ describe('JSON Web Token authentication', function() {
                 username: username1,
                 email: `${username1}@example.com`,
                 name: 'This is a name',
-                permissions: '',
+                permissions: [],
                 password: uuid()
             });
             this.secondUser = new User({
                 username: username2,
                 email: `${username2}@example.com`,
                 name: 'This is a name',
-                permissions: '',
+                permissions: [],
                 password: uuid()
             });
             return Promise.all([this.firstUser.save(), this.secondUser.save()]);
@@ -366,7 +366,7 @@ describe('JSON Web Token authentication', function() {
             jwtClient.setBearerAuthentication(token);
             
             return jwtClient.restRequest({
-                path: '/rest/v1/users/current'
+                path: '/rest/v2/users/current'
             });
         }).then(response => {
             assert.notProperty(response.headers, 'set-cookie');
@@ -484,7 +484,6 @@ describe('JSON Web Token authentication', function() {
         }).then(user => {
             assert.strictEqual(user.username, this.testUser.username);
             user.name = 'Joe';
-            //Fix permissions to be a set (v1 users use a string)
             user.permissions = ['permissions'];
             return jwtClient.restRequest({
                 path: `/rest/v2/users/${user.username}`,
@@ -507,7 +506,6 @@ describe('JSON Web Token authentication', function() {
         }).then(user => {
             assert.strictEqual(user.username, config.username);
             user.name = 'Joe';
-            //Fix permissions to be a set (v1 users use a string)
             user.permissions = ['superamdin'];
             return jwtClient.restRequest({
                 path: `/rest/v2/users/${user.username}`,

@@ -11,16 +11,16 @@ import com.serotonin.m2m2.vo.event.detector.AbstractPointEventDetectorVO;
  *
  * @author Terry Packer
  */
-public abstract class AbstractPointEventDetectorModel<T extends AbstractPointEventDetectorVO<T>> extends AbstractEventDetectorModel<T> {
+public abstract class AbstractPointEventDetectorModel<T extends AbstractPointEventDetectorVO> extends AbstractEventDetectorModel<T> {
 
     public AbstractPointEventDetectorModel(T data) {
         fromVO(data);
     }
-    
+
     public AbstractPointEventDetectorModel() { }
 
     protected DataPointModel dataPoint;
-    
+
     @Override
     public void fromVO(T vo) {
         super.fromVO(vo);

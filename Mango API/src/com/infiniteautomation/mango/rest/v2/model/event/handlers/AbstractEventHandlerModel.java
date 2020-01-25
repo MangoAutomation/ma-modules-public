@@ -17,28 +17,28 @@ import com.serotonin.m2m2.vo.event.AbstractEventHandlerVO;
  *
  */
 @JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.EXISTING_PROPERTY, property=AbstractEventHandlerModel.HANDLER_TYPE)
-public abstract class AbstractEventHandlerModel<T extends AbstractEventHandlerVO<T>> extends AbstractVoModel<T> {
+public abstract class AbstractEventHandlerModel<T extends AbstractEventHandlerVO> extends AbstractVoModel<T> {
 
     public static final String HANDLER_TYPE = "handlerType";
-    
+
     private boolean disabled;
     private List<AbstractEventTypeModel<?,?, ?>> eventTypes;
-    
+
     public AbstractEventHandlerModel() { }
-    
+
     /**
      * The type info for the model
      * @return
      */
     public abstract String getHandlerType();
-    
+
     /**
      * @return the disabled
      */
     public boolean isDisabled() {
         return disabled;
     }
-    
+
     /**
      * @param disabled the disabled to set
      */
@@ -58,14 +58,14 @@ public abstract class AbstractEventHandlerModel<T extends AbstractEventHandlerVO
     public void setEventTypes(List<AbstractEventTypeModel<?,?, ?>> eventTypes) {
         this.eventTypes = eventTypes;
     }
-    
+
 
     @Override
     public void fromVO(T vo) {
         super.fromVO(vo);
         this.disabled = vo.isDisabled();
     }
-    
+
     @Override
     public T toVO() {
         T vo = super.toVO();

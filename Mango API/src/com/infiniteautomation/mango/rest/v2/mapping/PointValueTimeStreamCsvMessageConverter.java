@@ -37,6 +37,7 @@ import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeCsvWr
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream.StreamContentType;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeWriter;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.RollupEnum;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.XidPointValueTimeModel;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.MultiDataPointDefaultRollupStatisticsQuantizerStream;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.MultiDataPointStatisticsQuantizerStream;
@@ -45,15 +46,15 @@ import com.infiniteautomation.mango.rest.v2.model.pointValue.query.MultiPointLat
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.MultiPointTimeRangeDatabaseStream;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.web.MediaTypes;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
+
 
 /**
  * Message convert to read/write CSV point value data in a streaming way
- * 
+ *
  * @author Jared Wiltshire, Terry Packer
  */
 public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2HttpMessageConverter {
-    
+
     public PointValueTimeStreamCsvMessageConverter(CsvMapper csvMapper) {
         super(csvMapper, MediaTypes.CSV_V1);
     }
@@ -106,7 +107,7 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
         //TODO detect type/schema for the callback
         // could use the type if we add generics to PointValueTimeImportStream
         reader = reader.forType(XidPointValueTimeModel.class);
-        
+
         CsvSchema schema = CsvSchema.emptySchema().withHeader().withStrictHeaders(false);
         ObjectReader csvReader = reader.with(schema);
         try {
@@ -120,7 +121,7 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
                 throw new IOException("Missing required column " + PointValueField.TIMESTAMP.getFieldName());
             }
             fullSchema.column("xid");
-            Stream<XidPointValueTimeModel> stream = StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED), false); 
+            Stream<XidPointValueTimeModel> stream = StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED), false);
             return stream;
         }catch (IOException ex) {
             throw new HttpMessageNotReadableException("Could not read document: " + ex.getMessage(), ex, inputMessage);

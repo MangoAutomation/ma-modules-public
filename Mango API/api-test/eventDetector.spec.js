@@ -15,756 +15,873 @@
  * limitations under the License.
  */
 
-const {createClient, login, defer, delay} = require('@infinite-automation/mango-module-tools/test-helper/testHelper');
+const {createClient, assertValidationErrors, login, defer, delay} = require('@infinite-automation/mango-module-tools/test-helper/testHelper');;
 const client = createClient();
-const DataPoint = client.DataPoint;
+const EventDetector = client.EventDetector;
 const DataSource = client.DataSource;
+const DataPoint = client.DataPoint;
 
 describe('Event detector service', function() {
     this.timeout(5000);
     
-    // create a context object to replace global which was previously used throughout this suite
-    const testContext = {};
-    
     before('Login', function() { return login.call(this, client); });
-    before('Create data source and points', function() {
-      testContext.ds = new DataSource({
-          xid: 'mango_client_test',
-          name: 'Mango client test',
-          enabled: true,
-          modelType: 'VIRTUAL',
-          pollPeriod: { periods: 5, type: 'SECONDS' },
-          purgeSettings: { override: false, frequency: { periods: 1, type: 'YEARS' } },
-          alarmLevels: { POLL_ABORTED: 'URGENT' },
-          editPermission: null
-      });
-
-      return testContext.ds.save().then((savedDs) => {
-          assert.strictEqual(savedDs, testContext.ds);
-          assert.equal(savedDs.xid, 'mango_client_test');
-          assert.equal(savedDs.name, 'Mango client test');
-          assert.isNumber(savedDs.id);
-          testContext.ds.id = savedDs.id;
-
-          let promises = [];
-          testContext.dp = new DataPoint({
-                xid : "dp_mango_client_test",
-                deviceName : "_",
-                name : "Virtual Test Point 1",
-                enabled : false,
-                templateXid : "Binary_Default",
-                loggingProperties : {
-                  tolerance : 0.0,
-                  discardExtremeValues : false,
-                  discardLowLimit : -1.7976931348623157E308,
-                  discardHighLimit : 1.7976931348623157E308,
-                  loggingType : "ON_CHANGE",
-                  intervalLoggingType: "INSTANT",
-                  intervalLoggingPeriod : {
-                    periods : 15,
-                    type : "MINUTES"
-                  },
-                  overrideIntervalLoggingSamples : false,
-                  intervalLoggingSampleWindowSize : 0,
-                  cacheSize : 1
-                },
-                textRenderer : {
-                  zeroLabel : "zero",
-                  zeroColour : "blue",
-                  oneLabel : "one",
-                  oneColour : "black",
-                  type : "textRendererBinary"
-                },
-                chartRenderer : {
-                  limit : 10,
-                  type : "chartRendererTable"
-                },
-                dataSourceXid : "mango_client_test",
-                useIntegralUnit : false,
-                useRenderedUnit : false,
-                readPermission : "read",
-                setPermission : "write",
-                chartColour : "",
-                rollup : "NONE",
-                plotType : "STEP",
-                purgeOverride : false,
-                purgePeriod : {
-                  periods : 1,
-                  type : "YEARS"
-                },
-                unit : "",
-                pointFolderId : 0,
-                integralUnit : "s",
-                renderedUnit : "",
-                modelType : "DATA_POINT",
+    
+    it('Delete a binary state event detector', () => {
+        const ds = new DataSource({ modelType: 'MOCK' });
+        return ds.save().then(savedDs => {
+            ds.id = savedDs.id;
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
                 pointLocator : {
-                  startValue : "true",
-                  modelType : "PL.VIRTUAL",
-                  dataType : "BINARY",
-                  settable : true,
-                  changeType : "ALTERNATE_BOOLEAN",
-                  relinquishable : false
-                }
-              });
-
-          promises.push(testContext.dp.save().then((savedDp) => {
-            assert.equal(savedDp.xid, 'dp_mango_client_test');
-            assert.equal(savedDp.name, 'Virtual Test Point 1');
-            assert.equal(savedDp.enabled, false);
-            assert.isNumber(savedDp.id);
-            testContext.dp.id = savedDp.id; //Save the ID for later
-          }));
-
-          testContext.numDp = new DataPoint({
-              xid : "dp_mango_client_test_num",
-              deviceName : "_",
-              name : "Virtual Test Point 3",
-              enabled : false,
-              templateXid : "Numeric_Default",
-              loggingProperties : {
-                tolerance : 0.0,
-                discardExtremeValues : false,
-                discardLowLimit : -1.7976931348623157E308,
-                discardHighLimit : 1.7976931348623157E308,
-                loggingType : "ON_CHANGE",
-                intervalLoggingType: "INSTANT",
-                intervalLoggingPeriod : {
-                  periods : 15,
-                  type : "MINUTES"
-                },
-                overrideIntervalLoggingSamples : false,
-                intervalLoggingSampleWindowSize : 0,
-                cacheSize : 1
-              },
-              textRenderer : {
-                  unit : "",
-                  renderedUnit:"",
-                  suffix:"",
-                  type : "textRendererPlain"
-              },
-              chartRenderer : {
-                limit : 10,
-                type : "chartRendererTable"
-              },
-              dataSourceXid : "mango_client_test",
-              useIntegralUnit : false,
-              useRenderedUnit : false,
-              readPermission : "read",
-              setPermission : "write",
-              chartColour : "",
-              rollup : "NONE",
-              plotType : "STEP",
-              purgeOverride : false,
-              purgePeriod : {
-                periods : 1,
-                type : "YEARS"
-              },
-              unit : "",
-              pointFolderId : 0,
-              integralUnit : "s",
-              renderedUnit : "",
-              modelType : "DATA_POINT",
-              pointLocator : {
-                startValue : "true",
-                modelType : "PL.VIRTUAL",
-                dataType : "NUMERIC",
-                settable : true,
-                changeType : "NO_CHANGE",
-                relinquishable : false
-              }
+                dataType: 'BINARY',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
             });
-
-          promises.push(testContext.numDp.save().then((savedDp) => {
-          assert.equal(savedDp.xid, 'dp_mango_client_test_num');
-          assert.equal(savedDp.name, 'Virtual Test Point 3');
-          assert.equal(savedDp.enabled, false);
-          assert.isNumber(savedDp.id);
-          testContext.numDp.id = savedDp.id; //Save the ID for later
-        }));
-
-        testContext.mulDp = new DataPoint({
-            xid : "dp_mango_client_test_mul",
-            deviceName : "_",
-            name : "Virtual Test Point 4",
-            enabled : false,
-            templateXid : "Multistate_Default",
-            loggingProperties : {
-              tolerance : 0.0,
-              discardExtremeValues : false,
-              discardLowLimit : -1.7976931348623157E308,
-              discardHighLimit : 1.7976931348623157E308,
-              loggingType : "ON_CHANGE",
-              intervalLoggingType: "INSTANT",
-              intervalLoggingPeriod : {
-                periods : 15,
-                type : "MINUTES"
-              },
-              overrideIntervalLoggingSamples : false,
-              intervalLoggingSampleWindowSize : 0,
-              cacheSize : 1
-            },
-            textRenderer : {
-                unit : "",
-                renderedUnit:"",
-                suffix:"",
-                type : "textRendererPlain"
-            },
-            chartRenderer : {
-              limit : 10,
-              type : "chartRendererTable"
-            },
-            dataSourceXid : "mango_client_test",
-            useIntegralUnit : false,
-            useRenderedUnit : false,
-            readPermission : "read",
-            setPermission : "write",
-            chartColour : "",
-            rollup : "NONE",
-            plotType : "STEP",
-            purgeOverride : false,
-            purgePeriod : {
-              periods : 1,
-              type : "YEARS"
-            },
-            unit : "",
-            pointFolderId : 0,
-            integralUnit : "s",
-            renderedUnit : "",
-            modelType : "DATA_POINT",
-            pointLocator : {
-              startValue : "3",
-              modelType : "PL.VIRTUAL",
-              dataType : "MULTISTATE",
-              settable : true,
-              changeType : "NO_CHANGE",
-              relinquishable : false
-            }
-          });
-
-    promises.push(testContext.mulDp.save().then((savedDp) => {
-        assert.equal(savedDp.xid, 'dp_mango_client_test_mul');
-        assert.equal(savedDp.name, 'Virtual Test Point 4');
-        assert.equal(savedDp.enabled, false);
-        assert.isNumber(savedDp.id);
-        testContext.mulDp.id = savedDp.id; //Save the ID for later
-      }));
-
-          testContext.alphaDp = new DataPoint({
-              xid : "dp_mango_client_test_alpha",
-              deviceName : "_",
-              name : "Virtual Test Point 2",
-              enabled : false,
-              templateXid : "Alphanumeric_Default",
-              loggingProperties : {
-                tolerance : 0.0,
-                discardExtremeValues : false,
-                discardLowLimit : -1.7976931348623157E308,
-                discardHighLimit : 1.7976931348623157E308,
-                loggingType : "ON_CHANGE",
-                intervalLoggingType: "INSTANT",
-                intervalLoggingPeriod : {
-                  periods : 15,
-                  type : "MINUTES"
-                },
-                overrideIntervalLoggingSamples : false,
-                intervalLoggingSampleWindowSize : 0,
-                cacheSize : 1
-              },
-              textRenderer : {
-                unit : "",
-                renderedUnit:"",
-                suffix:"",
-                type : "textRendererPlain"
-              },
-              chartRenderer : {
-                limit : 10,
-                type : "chartRendererTable"
-              },
-              dataSourceXid : "mango_client_test",
-              useIntegralUnit : false,
-              useRenderedUnit : false,
-              readPermission : "read",
-              setPermission : "write",
-              chartColour : "",
-              rollup : "NONE",
-              plotType : "STEP",
-              purgeOverride : false,
-              purgePeriod : {
-                periods : 1,
-                type : "YEARS"
-              },
-              unit : "",
-              pointFolderId : 0,
-              integralUnit : "s",
-              renderedUnit : "",
-              modelType : "DATA_POINT",
-              pointLocator : {
-                startValue : "",
-                modelType : "PL.VIRTUAL",
-                dataType : "ALPHANUMERIC",
-                settable : true,
-                changeType : "NO_CHANGE",
-                relinquishable : false
-              }
+            return dp.save().then(savedDp => {
+                const ed = EventDetector.createEventDetector(savedDp.id, 'BINARY_STATE');
+                return ed.save().then(savedEd => {
+                    return savedEd.delete().then(deletedEd => {
+                        return EventDetector.get(deletedEd.xid).then(ed => {
+                            assert.fail('Should not have found detector ' + ed.xid);
+                        }, error => {
+                            assert.strictEqual(error.status, 404);
+                        });
+                    });
+                });
+            })
+        }).finally(() => {
+            ds.delete();
+        });
+    });
+    
+    it('Can query for a binary state event detector', () => {
+        const ds = new DataSource({ modelType: 'MOCK' });
+        return ds.save().then(savedDs => {
+            ds.id = savedDs.id;
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
+                pointLocator : {
+                dataType: 'BINARY',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
             });
-
-      promises.push(testContext.alphaDp.save().then((savedDp) => {
-          assert.equal(savedDp.xid, 'dp_mango_client_test_alpha');
-          assert.equal(savedDp.name, 'Virtual Test Point 2');
-          assert.equal(savedDp.enabled, false);
-          assert.isNumber(savedDp.id);
-          testContext.alphaDp.id = savedDp.id; //Save the ID for later
-        }));
-      return Promise.all(promises);
-      });
+            return dp.save().then(savedDp => {
+                const ed = EventDetector.createEventDetector(savedDp.id, 'BINARY_STATE');
+                return ed.save().then(savedEd => {
+                    return EventDetector.query(`xid=${savedEd.xid}`).then(result => {
+                        assert.strictEqual(1, result.total);
+                        assert.strictEqual(savedEd.xid, result[0].xid);
+                    });
+                });
+            })
+        }).finally(() => {
+            ds.delete();
+        });
+    });
+    
+    it('Creates a binary state event detector', () => {
+        const ds = new DataSource({ modelType: 'MOCK' });
+        return ds.save().then(savedDs => {
+            ds.id = savedDs.id;
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
+                pointLocator : {
+                dataType: 'BINARY',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
+            });
+            return dp.save().then(savedDp => {
+                const ed = EventDetector.createEventDetector(savedDp.id, 'BINARY_STATE');
+                return ed.save().then(savedEd => {
+                    assert.isNumber(savedEd.id);
+                    assert.strictEqual(ed.xid, savedEd.xid);
+                    assert.strictEqual(ed.name, savedEd.name);
+                    assert.strictEqual(ed.duration.periods, savedEd.duration.periods);
+                    assert.strictEqual(ed.duration.periodType, savedEd.duration.periodType);
+                    assert.strictEqual(ed.alarmLevel, savedEd.alarmLevel);
+                    assert.strictEqual(ed.state, savedEd.state);
+                    assert.strictEqual(ed.detectorSourceType, savedEd.detectorSourceType);
+                    assert.strictEqual(ed.sourceId, savedEd.sourceId);
+                    assert.strictEqual(ed.detectorType, savedEd.detectorType);
+                });
+            })
+        }).finally(() => {
+            ds.delete();
+        });
+    });
+    
+    it('Fails to create a binary state event detector', () => {
+        const ds = new DataSource({ modelType: 'MOCK' });
+        return ds.save().then(savedDs => {
+            ds.id = savedDs.id;
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
+                pointLocator : {
+                dataType: 'BINARY',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
+            });
+            return dp.save().then(savedDp => {
+                const ed = EventDetector.createEventDetector(savedDp.id, 'BINARY_STATE');
+                ed.duration = null;
+                return ed.save().then(savedEd => {
+                    assert.fail('Should not have saved detector ' + savedEd.xid);
+                }, error => {
+                    assertValidationErrors(['duration','durationType'], error);
+                });
+            })
+        }).finally(() => {
+            ds.delete();
+        });
+    });
+    
+    it('Creates a no update event detector', () => {
+        const ds = new DataSource({ modelType: 'MOCK' });
+        return ds.save().then(savedDs => {
+            ds.id = savedDs.id;
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
+                pointLocator : {
+                dataType: 'BINARY',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
+            });
+            return dp.save().then(savedDp => {
+                const ed = EventDetector.createEventDetector(savedDp.id, 'NO_UPDATE');
+                return ed.save().then(savedEd => {
+                    assert.isNumber(savedEd.id);
+                    assert.strictEqual(ed.xid, savedEd.xid);
+                    assert.strictEqual(ed.name, savedEd.name);
+                    assert.strictEqual(ed.duration.periods, savedEd.duration.periods);
+                    assert.strictEqual(ed.duration.periodType, savedEd.duration.periodType);
+                    assert.strictEqual(ed.alarmLevel, savedEd.alarmLevel);
+                    assert.strictEqual(ed.detectorSourceType, savedEd.detectorSourceType);
+                    assert.strictEqual(ed.sourceId, savedEd.sourceId);
+                    assert.strictEqual(ed.detectorType, savedEd.detectorType);
+                });
+            })
+        }).finally(() => {
+            ds.delete();
+        });
+    });
+    
+    it('Fails to create a no update event detector', () => {
+        const ds = new DataSource({ modelType: 'MOCK' });
+        return ds.save().then(savedDs => {
+            ds.id = savedDs.id;
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
+                pointLocator : {
+                dataType: 'BINARY',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
+            });
+            return dp.save().then(savedDp => {
+                const ed = EventDetector.createEventDetector(savedDp.id, 'BINARY_STATE');
+                ed.duration = null;
+                return ed.save().then(savedEd => {
+                    assert.fail('Should not have saved detector ' + savedEd.xid);
+                }, error => {
+                    assertValidationErrors(['duration','durationType'], error);
+                });
+            })
+        }).finally(() => {
+            ds.delete();
+        });
     });
 
-    it('Creates an event detector', () => {
-      testContext.ped = {
-        xid : "PED_mango_client_test",
-        name : "When true.",
-        duration : 10,
-        durationType : "SECONDS",
-        alarmLevel : "NONE",
-        alias : "When true.",
-        rtnApplicable : true,
-        state: true,
-        detectorSourceType : "DATA_POINT",
-        sourceId : testContext.dp.id,
-        detectorType : "BINARY_STATE",
-      };
-      return client.restRequest({
-          path: '/rest/v2/event-detectors',
-          method: 'POST',
-          data: testContext.ped
-      }).then(response => {
-          testContext.ped.id = response.data.id;
-      });
+    it('Creates a no change event detector', () => {
+        const ds = new DataSource({ modelType: 'MOCK' });
+        return ds.save().then(savedDs => {
+            ds.id = savedDs.id;
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
+                pointLocator : {
+                dataType: 'BINARY',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
+            });
+            return dp.save().then(savedDp => {
+                const ed = EventDetector.createEventDetector(savedDp.id, 'NO_CHANGE');
+                return ed.save().then(savedEd => {
+                    assert.isNumber(savedEd.id);
+                    assert.strictEqual(ed.xid, savedEd.xid);
+                    assert.strictEqual(ed.name, savedEd.name);
+                    assert.strictEqual(ed.duration.periods, savedEd.duration.periods);
+                    assert.strictEqual(ed.duration.periodType, savedEd.duration.periodType);
+                    assert.strictEqual(ed.alarmLevel, savedEd.alarmLevel);
+                    assert.strictEqual(ed.detectorSourceType, savedEd.detectorSourceType);
+                    assert.strictEqual(ed.sourceId, savedEd.sourceId);
+                    assert.strictEqual(ed.detectorType, savedEd.detectorType);
+                });
+            })
+        }).finally(() => {
+            ds.delete();
+        });
+    });
+    
+    it('Fails to create a no change event detector', () => {
+        const ds = new DataSource({ modelType: 'MOCK' });
+        return ds.save().then(savedDs => {
+            ds.id = savedDs.id;
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
+                pointLocator : {
+                dataType: 'BINARY',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
+            });
+            return dp.save().then(savedDp => {
+                const ed = EventDetector.createEventDetector(savedDp.id, 'NO_CHANGE');
+                ed.duration = null;
+                return ed.save().then(savedEd => {
+                    assert.fail('Should not have saved detector ' + savedEd.xid);
+                }, error => {
+                    assertValidationErrors(['duration','durationType'], error);
+                });
+            })
+        }).finally(() => {
+            ds.delete();
+        });
+    });
+    
+    it('Creates a state change event detector', () => {
+        const ds = new DataSource({ modelType: 'MOCK' });
+        return ds.save().then(savedDs => {
+            ds.id = savedDs.id;
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
+                pointLocator : {
+                dataType: 'BINARY',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
+            });
+            return dp.save().then(savedDp => {
+                const ed = EventDetector.createEventDetector(savedDp.id, 'STATE_CHANGE_COUNT');
+                return ed.save().then(savedEd => {
+                    assert.isNumber(savedEd.id);
+                    assert.strictEqual(ed.xid, savedEd.xid);
+                    assert.strictEqual(ed.name, savedEd.name);
+                    assert.strictEqual(ed.changeCount, savedEd.changeCount);
+                    assert.strictEqual(ed.duration.periods, savedEd.duration.periods);
+                    assert.strictEqual(ed.duration.periodType, savedEd.duration.periodType);
+                    assert.strictEqual(ed.alarmLevel, savedEd.alarmLevel);
+                    assert.strictEqual(ed.detectorSourceType, savedEd.detectorSourceType);
+                    assert.strictEqual(ed.sourceId, savedEd.sourceId);
+                    assert.strictEqual(ed.detectorType, savedEd.detectorType);
+                });
+            })
+        }).finally(() => {
+            ds.delete();
+        });
+    });
+    
+    it('Fails to create a state change event detector', () => {
+        const ds = new DataSource({ modelType: 'MOCK' });
+        return ds.save().then(savedDs => {
+            ds.id = savedDs.id;
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
+                pointLocator : {
+                dataType: 'BINARY',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
+            });
+            return dp.save().then(savedDp => {
+                const ed = EventDetector.createEventDetector(savedDp.id, 'STATE_CHANGE_COUNT');
+                ed.duration = null;
+                ed.changeCount = -1;
+                return ed.save().then(savedEd => {
+                    assert.fail('Should not have saved detector ' + savedEd.xid);
+                }, error => {
+                    assertValidationErrors(['changeCount', 'duration','durationType'], error);
+                });
+            })
+        }).finally(() => {
+            ds.delete();
+        });
+    });
+    
+    it('Creates a alphanumeric regex state change event detector', () => {
+        const ds = new DataSource({ modelType: 'MOCK' });
+        return ds.save().then(savedDs => {
+            ds.id = savedDs.id;
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
+                pointLocator : {
+                dataType: 'ALPHANUMERIC',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
+            });
+            return dp.save().then(savedDp => {
+                const ed = EventDetector.createEventDetector(savedDp.id, 'ALPHANUMERIC_REGEX_STATE');
+                return ed.save().then(savedEd => {
+                    assert.isNumber(savedEd.id);
+                    assert.strictEqual(ed.xid, savedEd.xid);
+                    assert.strictEqual(ed.name, savedEd.name);
+                    assert.strictEqual(ed.state, savedEd.state);
+                    assert.strictEqual(ed.duration.periods, savedEd.duration.periods);
+                    assert.strictEqual(ed.duration.periodType, savedEd.duration.periodType);
+                    assert.strictEqual(ed.alarmLevel, savedEd.alarmLevel);
+                    assert.strictEqual(ed.detectorSourceType, savedEd.detectorSourceType);
+                    assert.strictEqual(ed.sourceId, savedEd.sourceId);
+                    assert.strictEqual(ed.detectorType, savedEd.detectorType);
+                });
+            })
+        }).finally(() => {
+            ds.delete();
+        });
+    });
+    
+    it('Fails to create an alphanumeric regex state change event detector', () => {
+        const ds = new DataSource({ modelType: 'MOCK' });
+        return ds.save().then(savedDs => {
+            ds.id = savedDs.id;
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
+                pointLocator : {
+                dataType: 'ALPHANUMERIC',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
+            });
+            return dp.save().then(savedDp => {
+                const ed = EventDetector.createEventDetector(savedDp.id, 'ALPHANUMERIC_REGEX_STATE');
+                ed.duration = null;
+                ed.state = null;
+                return ed.save().then(savedEd => {
+                    assert.fail('Should not have saved detector ' + savedEd.xid);
+                }, error => {
+                    assertValidationErrors(['state', 'duration','durationType'], error);
+                });
+            })
+        }).finally(() => {
+            ds.delete();
+        });
     });
 
-    it('Updates an event detector', () => {
-      testContext.ped.state = false;
-      return client.restRequest({
-          path: `/rest/v2/event-detectors/${testContext.ped.xid}`,
-          method: 'PUT',
-          data: testContext.ped
-      }).then(response => {
-        assert.equal(response.data.state, false);
-      });
+    it('Creates a analog change event detector', () => {
+        const ds = new DataSource({ modelType: 'MOCK' });
+        return ds.save().then(savedDs => {
+            ds.id = savedDs.id;
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
+                pointLocator : {
+                dataType: 'NUMERIC',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
+            });
+            return dp.save().then(savedDp => {
+                const ed = EventDetector.createEventDetector(savedDp.id, 'ANALOG_CHANGE');
+                return ed.save().then(savedEd => {
+                    assert.isNumber(savedEd.id);
+                    assert.strictEqual(ed.xid, savedEd.xid);
+                    assert.strictEqual(ed.name, savedEd.name);
+                    assert.strictEqual(ed.checkIncrease, savedEd.checkIncrease);
+                    assert.strictEqual(ed.checkDecrease, savedEd.checkDecrease);                   
+                    assert.strictEqual(ed.limit, savedEd.limit);                    
+                    assert.strictEqual(ed.duration.periods, savedEd.duration.periods);
+                    assert.strictEqual(ed.duration.periodType, savedEd.duration.periodType);
+                    assert.strictEqual(ed.alarmLevel, savedEd.alarmLevel);
+                    assert.strictEqual(ed.detectorSourceType, savedEd.detectorSourceType);
+                    assert.strictEqual(ed.sourceId, savedEd.sourceId);
+                    assert.strictEqual(ed.detectorType, savedEd.detectorType);
+                });
+            })
+        }).finally(() => {
+            ds.delete();
+        });
     });
-
-    /* Validation Testing */
-    it('Fails to create a no update detector', () => {
-    	testContext.ped = {
-    	        xid : "PED_mango_client_test_zsnu",
-    	        name : "No update for zero seconds.",
-    	        duration : 0,
-    	        durationType : "SECONDS",
-    	        alarmLevel : "NONE",
-    	        alias : "No update for zero seconds.",
-    	        rtnApplicable : true,
-    	        detectorSourceType : "DATA_POINT",
-    	        sourceId : testContext.dp.id,
-    	        detectorType : "NO_UPDATE",
-    	      };
-    	return client.restRequest({
-    		path: '/rest/v2/event-detectors',
-            method: 'POST',
-            data: testContext.ped
-    	}).then(response => {
-    		throw new Error('No update detector created despite having a duration of zero.');
-    	}).catch(response => {
-    		if(typeof response.response.statusMessage !== 'string' || response.response.statusMessage.indexOf("Unprocessable Entity") === -1)
-    			throw "Received non-string or non 422 response: " + response.response.statusMessage;
-    		assert.equal(response.response.statusCode, 422);
-    	});
+    
+    it('Fails to create an analog change event detector', () => {
+        const ds = new DataSource({ modelType: 'MOCK' });
+        return ds.save().then(savedDs => {
+            ds.id = savedDs.id;
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
+                pointLocator : {
+                dataType: 'NUMERIC',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
+            });
+            return dp.save().then(savedDp => {
+                const ed = EventDetector.createEventDetector(savedDp.id, 'ANALOG_CHANGE');
+                ed.duration = null;
+                ed.checkIncrease = false;
+                ed.checkDecrease = false;
+                return ed.save().then(savedEd => {
+                    assert.fail('Should not have saved detector ' + savedEd.xid);
+                }, error => {
+                    assertValidationErrors(['checkDecrease', 'checkIncrease', 'duration','durationType'], error);
+                });
+            })
+        }).finally(() => {
+            ds.delete();
+        });
     });
-
-    it('Fails to create a no change detector', () => {
-    	testContext.ped = {
-    	        xid : "PED_mango_client_test_zsnc",
-    	        name : "No change for zero seconds.",
-    	        duration : 0,
-    	        durationType : "SECONDS",
-    	        alarmLevel : "NONE",
-    	        alias : "No change for zero seconds.",
-    	        rtnApplicable : true,
-    	        detectorSourceType : "DATA_POINT",
-    	        sourceId : testContext.dp.id,
-    	        detectorType : "NO_CHANGE",
-    	      };
-    	return client.restRequest({
-    		path: '/rest/v2/event-detectors',
-            method: 'POST',
-            data: testContext.ped
-    	}).then(response => {
-    		throw new Error('No change detector created despite having a duration of zero.');
-    	}).catch(response => {
-    		if(typeof response.response.statusMessage !== 'string' || response.response.statusMessage.indexOf("Unprocessable Entity")=== -1)
-    			throw "Received non-string or non 422 response: " + response.response.statusMessage;
-    		assert.equal(response.response.statusCode, 422);
-    	});
+    
+    it('Creates a high limit event detector', () => {
+        const ds = new DataSource({ modelType: 'MOCK' });
+        return ds.save().then(savedDs => {
+            ds.id = savedDs.id;
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
+                pointLocator : {
+                dataType: 'NUMERIC',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
+            });
+            return dp.save().then(savedDp => {
+                const ed = EventDetector.createEventDetector(savedDp.id, 'HIGH_LIMIT', client);
+                return ed.save().then(savedEd => {
+                    assert.isNumber(savedEd.id);
+                    assert.strictEqual(ed.xid, savedEd.xid);
+                    assert.strictEqual(ed.name, savedEd.name);
+                    assert.strictEqual(ed.resetLimit, savedEd.resetLimit);
+                    assert.strictEqual(ed.useResetLimit, savedEd.useResetLimit);                   
+                    assert.strictEqual(ed.notHigher, savedEd.notHigher);
+                    assert.strictEqual(ed.limit, savedEd.limit);
+                    assert.strictEqual(ed.duration.periods, savedEd.duration.periods);
+                    assert.strictEqual(ed.duration.periodType, savedEd.duration.periodType);
+                    assert.strictEqual(ed.alarmLevel, savedEd.alarmLevel);
+                    assert.strictEqual(ed.detectorSourceType, savedEd.detectorSourceType);
+                    assert.strictEqual(ed.sourceId, savedEd.sourceId);
+                    assert.strictEqual(ed.detectorType, savedEd.detectorType);
+                });
+            })
+        }).finally(() => {
+            ds.delete();
+        });
     });
-
-    it('Fails to create a state change count detector', () => {
-    	testContext.ped = {
-    	        xid : "PED_mango_client_test_sccd",
-    	        name : "No change for zero seconds.",
-    	        count : 1,
-    	        duration : 0,
-    	        durationType : "SECONDS",
-    	        alarmLevel : "NONE",
-    	        alias : "State changes once in zero seconds",
-    	        rtnApplicable : true,
-    	        detectorSourceType : "DATA_POINT",
-    	        sourceId : testContext.dp.id,
-    	        detectorType : "STATE_CHANGE_COUNT",
-    	      };
-    	return client.restRequest({
-    		path: '/rest/v2/event-detectors',
-            method: 'POST',
-            data: testContext.ped
-    	}).then(response => {
-    		throw new Error('State change count detector created despite 1 change in 0s');
-    	}).catch(response => {
-    		if(typeof response.response.statusMessage !== 'string' || response.response.statusMessage.indexOf("Unprocessable Entity")=== -1)
-    			throw "Received non-string or non 422 response: " + response.response.statusMessage;
-    		assert.equal(response.response.statusCode, 422);
-    	});
+    
+    it('Fails to create a high limit event detector', () => {
+        const ds = new DataSource({ modelType: 'MOCK' });
+        return ds.save().then(savedDs => {
+            ds.id = savedDs.id;
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
+                pointLocator : {
+                dataType: 'NUMERIC',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
+            });
+            return dp.save().then(savedDp => {
+                const ed = EventDetector.createEventDetector(savedDp.id, 'HIGH_LIMIT');
+                ed.duration = null;
+                ed.useResetLimit = true;
+                ed.notHigher = true;
+                ed.resetLimit = 4;
+                ed.limit = 4;
+                return ed.save().then(savedEd => {
+                    assert.fail('Should not have saved detector ' + savedEd.xid);
+                }, error => {
+                    assertValidationErrors(['resetLimit', 'duration','durationType'], error);
+                });
+            })
+        }).finally(() => {
+            ds.delete();
+        });
     });
-
-    it('Creates an alphanumeric regex detector', () => {
-    	testContext.ped = {
-    	        xid : "PED_mango_client_test_arsd",
-    	        name : "Alphanumeric Regex detector.",
-    	        state : ".*",
-    	        duration : 10,
-    	        durationType : "SECONDS",
-    	        alarmLevel : "NONE",
-    	        alias : "Any alphanumeric state for ten or more seconds",
-    	        rtnApplicable : true,
-    	        detectorSourceType : "DATA_POINT",
-    	        sourceId : testContext.alphaDp.id,
-    	        detectorType : "ALPHANUMERIC_REGEX_STATE",
-    	      };
-    	return client.restRequest({
-    		path: '/rest/v2/event-detectors',
-            method: 'POST',
-            data: testContext.ped
-    	}).then(response => {
-    		testContext.ped.id = response.data.id;
-    	});
+    
+    it('Creates a low limit event detector', () => {
+        const ds = new DataSource({ modelType: 'MOCK' });
+        return ds.save().then(savedDs => {
+            ds.id = savedDs.id;
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
+                pointLocator : {
+                dataType: 'NUMERIC',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
+            });
+            return dp.save().then(savedDp => {
+                const ed = EventDetector.createEventDetector(savedDp.id, 'LOW_LIMIT');
+                return ed.save().then(savedEd => {
+                    assert.isNumber(savedEd.id);
+                    assert.strictEqual(ed.xid, savedEd.xid);
+                    assert.strictEqual(ed.name, savedEd.name);
+                    assert.strictEqual(ed.resetLimit, savedEd.resetLimit);
+                    assert.strictEqual(ed.useResetLimit, savedEd.useResetLimit);                   
+                    assert.strictEqual(ed.notLower, savedEd.notLower);
+                    assert.strictEqual(ed.limit, savedEd.limit);
+                    assert.strictEqual(ed.duration.periods, savedEd.duration.periods);
+                    assert.strictEqual(ed.duration.periodType, savedEd.duration.periodType);
+                    assert.strictEqual(ed.alarmLevel, savedEd.alarmLevel);
+                    assert.strictEqual(ed.detectorSourceType, savedEd.detectorSourceType);
+                    assert.strictEqual(ed.sourceId, savedEd.sourceId);
+                    assert.strictEqual(ed.detectorType, savedEd.detectorType);
+                });
+            })
+        }).finally(() => {
+            ds.delete();
+        });
     });
-
-    it('Fails to create an alphanumeric regex detector', () => {
-    	testContext.ped = {
-    	        xid : "PED_mango_client_test_arsd2",
-    	        name : "Alphanumeric Regex detector.",
-    	        state : "(.*{}",
-    	        duration : 10,
-    	        durationType : "SECONDS",
-    	        alarmLevel : "NONE",
-    	        alias : "Illegal state",
-    	        rtnApplicable : true,
-    	        detectorSourceType : "DATA_POINT",
-    	        sourceId : testContext.alphaDp.id,
-    	        detectorType : "ALPHANUMERIC_REGEX_STATE",
-    	      };
-    	return client.restRequest({
-    		path: '/rest/v2/event-detectors',
-            method: 'POST',
-            data: testContext.ped
-    	}).then(response => {
-    		throw new Error('Alphanumeric regex event detector created even without a valid regex.');
-    	}).catch(response => {
-    		if(typeof response.response === 'undefined')
-    			throw response;
-    		if(typeof response.response.statusMessage !== 'string' || response.response.statusMessage.indexOf("Unprocessable Entity")=== -1)
-    			throw "Received non-string or non 422 response: " + response.response.statusMessage;
-    		assert.equal(response.response.statusCode, 422);
-    	});
+    
+    it('Fails to create a low limit event detector', () => {
+        const ds = new DataSource({ modelType: 'MOCK' });
+        return ds.save().then(savedDs => {
+            ds.id = savedDs.id;
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
+                pointLocator : {
+                dataType: 'NUMERIC',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
+            });
+            return dp.save().then(savedDp => {
+                const ed = EventDetector.createEventDetector(savedDp.id, 'LOW_LIMIT');
+                ed.duration = null;
+                ed.useResetLimit = true;
+                ed.notLower = true;
+                ed.resetLimit = 4;
+                ed.limit = 4;
+                return ed.save().then(savedEd => {
+                    assert.fail('Should not have saved detector ' + savedEd.xid);
+                }, error => {
+                    assertValidationErrors(['resetLimit', 'duration','durationType'], error);
+                });
+            })
+        }).finally(() => {
+            ds.delete();
+        });
     });
-
-    it('Fails to create an analog change detector', () => {
-    	testContext.ped = {
-    	        xid : "PED_mango_client_test_acd",
-    	        name : "Analog change detector.",
-    	        checkIncrease : false,
-    	        checkDecrease : false,
-    	        limit : 15,
-    	        duration : 10,
-    	        durationType : "SECONDS",
-    	        alarmLevel : "NONE",
-    	        alias : "UNCHECKED CHANGE",
-    	        rtnApplicable : true,
-    	        detectorSourceType : "DATA_POINT",
-    	        sourceId : testContext.numDp.id,
-    	        detectorType : "ANALOG_CHANGE",
-    	      };
-    	return client.restRequest({
-    		path: '/rest/v2/event-detectors',
-            method: 'POST',
-            data: testContext.ped
-    	}).then(response => {
-    		throw new Error('Analog change detector created that doesn\'t check for analog changes');
-    	}).catch(response => {
-    		if(typeof response.response === 'undefined')
-    			throw response;
-    		if(typeof response.response.statusMessage !== 'string' || response.response.statusMessage.indexOf("Unprocessable Entity")=== -1)
-    			throw "Received non-string or non 422 response: " + response.response.statusMessage;
-    		assert.equal(response.response.statusCode, 422);
-    	});
+    
+    it('Creates a range event detector', () => {
+        const ds = new DataSource({ modelType: 'MOCK' });
+        return ds.save().then(savedDs => {
+            ds.id = savedDs.id;
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
+                pointLocator : {
+                dataType: 'NUMERIC',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
+            });
+            return dp.save().then(savedDp => {
+                const ed = EventDetector.createEventDetector(savedDp.id, 'RANGE');
+                return ed.save().then(savedEd => {
+                    assert.isNumber(savedEd.id);
+                    assert.strictEqual(ed.xid, savedEd.xid);
+                    assert.strictEqual(ed.name, savedEd.name);
+                    assert.strictEqual(ed.high, savedEd.high);
+                    assert.strictEqual(ed.low, savedEd.low);                   
+                    assert.strictEqual(ed.withinRange, savedEd.withinRange);
+                    assert.strictEqual(ed.duration.periods, savedEd.duration.periods);
+                    assert.strictEqual(ed.duration.periodType, savedEd.duration.periodType);
+                    assert.strictEqual(ed.alarmLevel, savedEd.alarmLevel);
+                    assert.strictEqual(ed.detectorSourceType, savedEd.detectorSourceType);
+                    assert.strictEqual(ed.sourceId, savedEd.sourceId);
+                    assert.strictEqual(ed.detectorType, savedEd.detectorType);
+                });
+            })
+        }).finally(() => {
+            ds.delete();
+        });
     });
-
-    it('Fails to create an analog high limit detector', () => {
-    	testContext.ped = {
-    	        xid : "PED_mango_client_test_hld",
-    	        name : "High limit detector.",
-    	        resetLimit : 10, //Cannot be below the limit if notHigher
-    	        useResetLimit : true,
-    	        notHigher : true,
-    	        limit : 15,
-    	        duration : 10,
-    	        durationType : "SECONDS",
-    	        alarmLevel : "NONE",
-    	        alias : "Infinite Resets",
-    	        rtnApplicable : true,
-    	        detectorSourceType : "DATA_POINT",
-    	        sourceId : testContext.numDp.id,
-    	        detectorType : "HIGH_LIMIT",
-    	      };
-    	return client.restRequest({
-    		path: '/rest/v2/event-detectors',
-            method: 'POST',
-            data: testContext.ped
-    	}).then(response => {
-    		throw new Error('High limit with invalid reset configuration created');
-    	}).catch(response => {
-    		if(typeof response.response === 'undefined')
-    			throw response;
-    		if(typeof response.response.statusMessage !== 'string' || response.response.statusMessage.indexOf("Unprocessable Entity")=== -1)
-    			throw "Received non-string or non 422 response: " + response.response.statusMessage;
-    		assert.equal(response.response.statusCode, 422);
-    	});
+    
+    it('Fails to create a range event detector', () => {
+        const ds = new DataSource({ modelType: 'MOCK' });
+        return ds.save().then(savedDs => {
+            ds.id = savedDs.id;
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
+                pointLocator : {
+                dataType: 'NUMERIC',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
+            });
+            return dp.save().then(savedDp => {
+                const ed = EventDetector.createEventDetector(savedDp.id, 'RANGE');
+                ed.duration = null;
+                ed.high = 10;
+                ed.low = 11;
+                return ed.save().then(savedEd => {
+                    assert.fail('Should not have saved detector ' + savedEd.xid);
+                }, error => {
+                    assertValidationErrors(['high', 'duration','durationType'], error);
+                });
+            })
+        }).finally(() => {
+            ds.delete();
+        });
     });
-
-    it('Fails to create an analog low limit detector', () => {
-    	testContext.ped = {
-    	        xid : "PED_mango_client_test_lld",
-    	        name : "Low limit detector.",
-    	        resetLimit : 10, //Cannot be below the limit if !notLower
-    	        useResetLimit : true,
-    	        notLower : false,
-    	        limit : 15,
-    	        duration : 10,
-    	        durationType : "SECONDS",
-    	        alarmLevel : "NONE",
-    	        alias : "Infinite Resets",
-    	        rtnApplicable : true,
-    	        detectorSourceType : "DATA_POINT",
-    	        sourceId : testContext.numDp.id,
-    	        detectorType : "LOW_LIMIT",
-    	      };
-    	return client.restRequest({
-    		path: '/rest/v2/event-detectors',
-            method: 'POST',
-            data: testContext.ped
-    	}).then(response => {
-    		throw new Error('Low limit with invalid reset configuration created');
-    	}).catch(response => {
-    		if(typeof response.response === 'undefined')
-    			throw response;
-    		if(typeof response.response.statusMessage !== 'string' || response.response.statusMessage.indexOf("Unprocessable Entity")=== -1)
-    			throw "Received non-string or non 422 response: " + response.response.statusMessage;
-    		assert.equal(response.response.statusCode, 422);
-    	});
+    
+    it('Creates a negative cusum event detector', () => {
+        const ds = new DataSource({ modelType: 'MOCK' });
+        return ds.save().then(savedDs => {
+            ds.id = savedDs.id;
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
+                pointLocator : {
+                dataType: 'NUMERIC',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
+            });
+            return dp.save().then(savedDp => {
+                const ed = EventDetector.createEventDetector(savedDp.id, 'NEGATIVE_CUSUM');
+                return ed.save().then(savedEd => {
+                    assert.isNumber(savedEd.id);
+                    assert.strictEqual(ed.xid, savedEd.xid);
+                    assert.strictEqual(ed.name, savedEd.name);
+                    assert.strictEqual(ed.limit, savedEd.limit);
+                    assert.strictEqual(ed.weight, savedEd.weight);                   
+                    assert.strictEqual(ed.duration.periods, savedEd.duration.periods);
+                    assert.strictEqual(ed.duration.periodType, savedEd.duration.periodType);
+                    assert.strictEqual(ed.alarmLevel, savedEd.alarmLevel);
+                    assert.strictEqual(ed.detectorSourceType, savedEd.detectorSourceType);
+                    assert.strictEqual(ed.sourceId, savedEd.sourceId);
+                    assert.strictEqual(ed.detectorType, savedEd.detectorType);
+                });
+            })
+        }).finally(() => {
+            ds.delete();
+        });
     });
-
-    it('Fails to create an analog range detector', () => {
-    	testContext.ped = {
-    	        xid : "PED_mango_client_test_range",
-    	        name : "Range detector.",
-    	        high : 10,
-    	        low : 50,
-    	        withinRange : true,
-    	        duration : 10,
-    	        durationType : "SECONDS",
-    	        alarmLevel : "NONE",
-    	        alias : "Lower high than low",
-    	        rtnApplicable : true,
-    	        detectorSourceType : "DATA_POINT",
-    	        sourceId : testContext.numDp.id,
-    	        detectorType : "RANGE",
-    	      };
-    	return client.restRequest({
-    		path: '/rest/v2/event-detectors',
-            method: 'POST',
-            data: testContext.ped
-    	}).then(response => {
-    		throw new Error('Analog range detector created with invalid range');
-    	}).catch(response => {
-    		if(typeof response.response === 'undefined')
-    			throw response;
-    		if(typeof response.response.statusMessage !== 'string' || response.response.statusMessage.indexOf("Unprocessable Entity")=== -1)
-    			throw "Received non-string or non 422 response: " + response.response.statusMessage;
-    		assert.equal(response.response.statusCode, 422);
-    	});
+    
+    it('Fails to create a negative cusum event detector', () => {
+        const ds = new DataSource({ modelType: 'MOCK' });
+        return ds.save().then(savedDs => {
+            ds.id = savedDs.id;
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
+                pointLocator : {
+                dataType: 'NUMERIC',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
+            });
+            return dp.save().then(savedDp => {
+                const ed = EventDetector.createEventDetector(savedDp.id, 'NEGATIVE_CUSUM');
+                ed.duration = null;
+                ed.limit = "NaN";
+                ed.weight = "NaN";
+                return ed.save().then(savedEd => {
+                    assert.fail('Should not have saved detector ' + savedEd.xid);
+                }, error => {
+                    assertValidationErrors(['limit', 'weight', 'duration','durationType'], error);
+                });
+            })
+        }).finally(() => {
+            ds.delete();
+        });
     });
-
-    it('Fails to create an analog negative cusum detector', () => {
-    	testContext.ped = {
-    	        xid : "PED_mango_client_test_ncu",
-    	        name : "Range detector.",
-    	        limit : 50,
-    	        weight : "NaN",
-    	        duration : 10,
-    	        durationType : "SECONDS",
-    	        alarmLevel : "NONE",
-    	        alias : "NaN weight",
-    	        rtnApplicable : true,
-    	        detectorSourceType : "DATA_POINT",
-    	        sourceId : testContext.numDp.id,
-    	        detectorType : "NEGATIVE_CUSUM",
-    	      };
-    	return client.restRequest({
-    		path: '/rest/v2/event-detectors',
-            method: 'POST',
-            data: testContext.ped
-    	}).then(response => {
-    		throw new Error('Analog negative cusum detector created with invalid weight');
-    	}).catch(response => {
-    		if(typeof response.response === 'undefined')
-    			throw response;
-    		if(typeof response.response.statusMessage !== 'string' || response.response.statusMessage.indexOf("Unprocessable Entity")=== -1)
-    			throw "Received non-string or non 422 response: " + response.response.statusMessage;
-    		assert.equal(response.response.statusCode, 422);
-    	});
+    
+    it('Creates a positive cusum event detector', () => {
+        const ds = new DataSource({ modelType: 'MOCK' });
+        return ds.save().then(savedDs => {
+            ds.id = savedDs.id;
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
+                pointLocator : {
+                dataType: 'NUMERIC',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
+            });
+            return dp.save().then(savedDp => {
+                const ed = EventDetector.createEventDetector(savedDp.id, 'POSITIVE_CUSUM');
+                return ed.save().then(savedEd => {
+                    assert.isNumber(savedEd.id);
+                    assert.strictEqual(ed.xid, savedEd.xid);
+                    assert.strictEqual(ed.name, savedEd.name);
+                    assert.strictEqual(ed.limit, savedEd.limit);
+                    assert.strictEqual(ed.weight, savedEd.weight);                   
+                    assert.strictEqual(ed.duration.periods, savedEd.duration.periods);
+                    assert.strictEqual(ed.duration.periodType, savedEd.duration.periodType);
+                    assert.strictEqual(ed.alarmLevel, savedEd.alarmLevel);
+                    assert.strictEqual(ed.detectorSourceType, savedEd.detectorSourceType);
+                    assert.strictEqual(ed.sourceId, savedEd.sourceId);
+                    assert.strictEqual(ed.detectorType, savedEd.detectorType);
+                });
+            })
+        }).finally(() => {
+            ds.delete();
+        });
     });
-
-    it('Fails to create an analog positive cusum detector', () => {
-    	testContext.ped = {
-    	        xid : "PED_mango_client_test_pcu",
-    	        name : "Range detector.",
-    	        limit : "NaN",
-    	        weight : 50,
-    	        duration : 10,
-    	        durationType : "SECONDS",
-    	        alarmLevel : "NONE",
-    	        alias : "NaN limit",
-    	        rtnApplicable : true,
-    	        detectorSourceType : "DATA_POINT",
-    	        sourceId : testContext.numDp.id,
-    	        detectorType : "POSITIVE_CUSUM",
-    	      };
-    	return client.restRequest({
-    		path: '/rest/v2/event-detectors',
-            method: 'POST',
-            data: testContext.ped
-    	}).then(response => {
-    		throw new Error('Analog positive cusum detector created with invalid limit');
-    	}).catch(response => {
-    		if(typeof response.response === 'undefined')
-    			throw response;
-    		if(typeof response.response.statusMessage !== 'string' || response.response.statusMessage.indexOf("Unprocessable Entity")=== -1)
-    			throw "Received non-string or non 422 response: " + response.response.statusMessage;
-    		assert.equal(response.response.statusCode, 422);
-    	});
+    
+    it('Fails to create a positive cusum event detector', () => {
+        const ds = new DataSource({ modelType: 'MOCK' });
+        return ds.save().then(savedDs => {
+            ds.id = savedDs.id;
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
+                pointLocator : {
+                dataType: 'NUMERIC',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
+            });
+            return dp.save().then(savedDp => {
+                const ed = EventDetector.createEventDetector(savedDp.id, 'POSITIVE_CUSUM');
+                ed.duration = null;
+                ed.limit = "NaN";
+                ed.weight = "NaN";
+                return ed.save().then(savedEd => {
+                    assert.fail('Should not have saved detector ' + savedEd.xid);
+                }, error => {
+                    assertValidationErrors(['limit', 'weight', 'duration','durationType'], error);
+                });
+            })
+        }).finally(() => {
+            ds.delete();
+        });
     });
-
-    it('Fails to create an analog smoothness detector', () => {
-    	testContext.ped = {
-    	        xid : "PED_mango_client_test_smooth",
-    	        name : "Range detector.",
-    	        limit : "NaN",
-    	        boxcar : 1,
-    	        duration : 10,
-    	        durationType : "SECONDS",
-    	        alarmLevel : "NONE",
-    	        alias : "Not a short boxcar",
-    	        rtnApplicable : true,
-    	        detectorSourceType : "DATA_POINT",
-    	        sourceId : testContext.numDp.id,
-    	        detectorType : "SMOOTHNESS",
-    	      };
-    	return client.restRequest({
-    		path: '/rest/v2/event-detectors',
-            method: 'POST',
-            data: testContext.ped
-    	}).then(response => {
-    		throw new Error('Analog positive cusum detector created with invalid limit');
-    	}).catch(response => {
-    		if(typeof response.response === 'undefined')
-    			throw response;
-    		if(typeof response.response.statusMessage !== 'string' || response.response.statusMessage.indexOf("Unprocessable Entity")=== -1)
-    			throw "Received non-string or non 422 response: " + response.response.statusMessage;
-    		assert.equal(response.response.statusCode, 422);
-    	});
+    
+    it('Creates a smoothness event detector', () => {
+        const ds = new DataSource({ modelType: 'MOCK' });
+        return ds.save().then(savedDs => {
+            ds.id = savedDs.id;
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
+                pointLocator : {
+                dataType: 'NUMERIC',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
+            });
+            return dp.save().then(savedDp => {
+                const ed = EventDetector.createEventDetector(savedDp.id, 'SMOOTHNESS');
+                return ed.save().then(savedEd => {
+                    assert.isNumber(savedEd.id);
+                    assert.strictEqual(ed.xid, savedEd.xid);
+                    assert.strictEqual(ed.name, savedEd.name);
+                    assert.strictEqual(ed.limit, savedEd.limit);
+                    assert.strictEqual(ed.boxcar, savedEd.boxcar);                   
+                    assert.strictEqual(ed.duration.periods, savedEd.duration.periods);
+                    assert.strictEqual(ed.duration.periodType, savedEd.duration.periodType);
+                    assert.strictEqual(ed.alarmLevel, savedEd.alarmLevel);
+                    assert.strictEqual(ed.detectorSourceType, savedEd.detectorSourceType);
+                    assert.strictEqual(ed.sourceId, savedEd.sourceId);
+                    assert.strictEqual(ed.detectorType, savedEd.detectorType);
+                });
+            })
+        }).finally(() => {
+            ds.delete();
+        });
     });
-
-    it('Fails to create a multistate state detector', () => {
-    	testContext.ped = {
-    	        xid : "PED_mango_client_test_multi",
-    	        name : "Range detector.",
-    	        state : 1,
-    	        duration : 0,
-    	        durationType : "MICROSECONDS",
-    	        alarmLevel : "NONE",
-    	        alias : "Not a valid duration",
-    	        rtnApplicable : true,
-    	        detectorSourceType : "DATA_POINT",
-    	        sourceId : testContext.mulDp.id,
-    	        detectorType : "MULTISTATE_STATE",
-    	      };
-    	return client.restRequest({
-    		path: '/rest/v2/event-detectors',
-            method: 'POST',
-            data: testContext.ped
-    	}).then(response => {
-    		throw new Error('Multistate state detector created with invalid duration');
-    	}).catch(response => {
-    		if(typeof response.response === 'undefined')
-    			throw response;
-    		if(typeof response.response.statusMessage !== 'string' || response.response.statusMessage.indexOf("Unprocessable Entity")=== -1)
-    			throw "Received non-string or non 422 response: " + response.response.statusMessage;
-    		assert.equal(response.response.statusCode, 422);
-    	});
+    
+    it('Fails to create a smoothness event detector', () => {
+        const ds = new DataSource({ modelType: 'MOCK' });
+        return ds.save().then(savedDs => {
+            ds.id = savedDs.id;
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
+                pointLocator : {
+                dataType: 'NUMERIC',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
+            });
+            return dp.save().then(savedDp => {
+                const ed = EventDetector.createEventDetector(savedDp.id, 'SMOOTHNESS');
+                ed.duration = null;
+                ed.limit = "NaN";
+                ed.boxcar = "NaN";
+                return ed.save().then(savedEd => {
+                    assert.fail('Should not have saved detector ' + savedEd.xid);
+                }, error => {
+                    assertValidationErrors(['limit', 'boxcar', 'duration','durationType'], error);
+                });
+            })
+        }).finally(() => {
+            ds.delete();
+        });
     });
-
-    //TODO Get that detector
-    //TODO Get the detectors for that point
-    //TODO Get the detectors for the data source
-
-    it('Query event detectors', () => {
-      return client.restRequest({
-          path: '/rest/v2/event-detectors',
-          method: 'GET'
-      }).then(response => {
-        //TODO Confirm length of 1?
-      });
+    
+    it('Creates a multistate state event detector', () => {
+        const ds = new DataSource({ modelType: 'MOCK' });
+        return ds.save().then(savedDs => {
+            ds.id = savedDs.id;
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
+                pointLocator : {
+                dataType: 'MULTISTATE',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
+            });
+            return dp.save().then(savedDp => {
+                const ed = EventDetector.createEventDetector(savedDp.id, 'MULTISTATE_STATE');
+                return ed.save().then(savedEd => {
+                    assert.isNumber(savedEd.id);
+                    assert.strictEqual(ed.xid, savedEd.xid);
+                    assert.strictEqual(ed.name, savedEd.name);
+                    assert.strictEqual(ed.state, savedEd.state);    
+                    assert.strictEqual(ed.duration.periods, savedEd.duration.periods);
+                    assert.strictEqual(ed.duration.periodType, savedEd.duration.periodType);
+                    assert.strictEqual(ed.alarmLevel, savedEd.alarmLevel);
+                    assert.strictEqual(ed.detectorSourceType, savedEd.detectorSourceType);
+                    assert.strictEqual(ed.sourceId, savedEd.sourceId);
+                    assert.strictEqual(ed.detectorType, savedEd.detectorType);
+                });
+            })
+        }).finally(() => {
+            ds.delete();
+        });
     });
-
-    it('Deletes an event detector', () => {
-      return client.restRequest({
-          path: `/rest/v2/event-detectors/PED_mango_client_test`,
-          method: 'DELETE',
-          data: {}
-      }).then(response => {
-          assert.equal(response.data.xid, 'PED_mango_client_test');
-      });
+    
+    it('Fails to create a multistate state event detector', () => {
+        const ds = new DataSource({ modelType: 'MOCK' });
+        return ds.save().then(savedDs => {
+            ds.id = savedDs.id;
+            const dp = new DataPoint({
+                dataSourceXid: savedDs.xid,
+                pointLocator : {
+                dataType: 'MULTISTATE',
+                settable: false,
+                modelType: 'PL.MOCK'
+                    }
+            });
+            return dp.save().then(savedDp => {
+                const ed = EventDetector.createEventDetector(savedDp.id, 'MULTISTATE_STATE');
+                ed.duration = null;
+                return ed.save().then(savedEd => {
+                    assert.fail('Should not have saved detector ' + savedEd.xid);
+                }, error => {
+                    assertValidationErrors(['duration','durationType'], error);
+                });
+            })
+        }).finally(() => {
+            ds.delete();
+        });
     });
-
-    //Tests for websockets
+    
+  //Tests for websockets
     it('Gets websocket notifications for event detectors', function() {
       this.timeout(5000);
-      
+
       const socketOpenDeferred = defer();
       const gotAddEventDeferred = defer();
       const gotUpdateEventDeferred = defer();
       const gotDeleteEventDeferred = defer();
-
+      
+      //Create the event detector for add message
+      const ds = new DataSource({ modelType: 'MOCK' });
+      let ed,originalXid;
+      
       return Promise.resolve().then(() => {
           const ws = client.openWebSocket({
-              path: '/rest/v1/websocket/event-detectors'
+              path: '/rest/v2//websocket/full-event-detectors'
           });
 
           ws.on('open', () => {
@@ -794,75 +911,48 @@ describe('Event detector service', function() {
               //console.log(msg.payload);
               assert.strictEqual(msg.status, 'OK');
               if(msg.payload.action === 'add'){
-                assert.strictEqual(msg.payload.object.xid, 'PED_mango_client_test');
+                assert.strictEqual(msg.payload.object.xid, ed.xid);
                 assert.strictEqual(msg.payload.originalXid, null);
                 gotAddEventDeferred.resolve();
               }else if(msg.payload.action === 'update'){
-                assert.strictEqual(msg.payload.object.xid, 'PED_mango_client_test_update');
-                assert.strictEqual(msg.payload.originalXid, 'PED_mango_client_test');
+                assert.strictEqual(msg.payload.object.xid, ed.xid);
+                assert.strictEqual(msg.payload.object.name, ed.name);
+                assert.strictEqual(msg.payload.originalXid, originalXid);
                 gotUpdateEventDeferred.resolve();
               }else if(msg.payload.action === 'delete'){
-                assert.strictEqual(msg.payload.object.xid, 'PED_mango_client_test_update');
+                assert.strictEqual(msg.payload.object.xid, ed.xid);
                 assert.strictEqual(msg.payload.originalXid, null);
                 ws.close();
                 gotDeleteEventDeferred.resolve();
               }
           });
-          
+
           return socketOpenDeferred.promise;
         }).then(() => delay(500)).then(() => {
-            //Create the event detector for add message
-            //console.log('adding');
-            return client.restRequest({
-                path: '/rest/v2/event-detectors',
-                method: 'POST',
-                data: {
-                  xid : "PED_mango_client_test",
-                  name : "When true.",
-                  duration : 10,
-                  durationType : "SECONDS",
-                  alarmLevel : "NONE",
-                  alias : "When true.",
-                  rtnApplicable : true,
-                  state: true,
-                  detectorSourceType : "DATA_POINT",
-                  sourceId : testContext.dp.id,
-                  detectorType : "BINARY_STATE",
-                }
+            return ds.save().then(savedDs => {
+                ds.id = savedDs.id;
+                const dp = new DataPoint({
+                    dataSourceXid: savedDs.xid,
+                    pointLocator : {
+                    dataType: 'BINARY',
+                    settable: false,
+                    modelType: 'PL.MOCK'
+                        }
+                });
+                return dp.save().then(savedDp => {
+                    ed = EventDetector.createEventDetector(savedDp.id, 'BINARY_STATE');
+                    return ed.save().then(savedEd => {
+                        originalXid = savedEd.xid;
+                    });
+                })
             });
         }).then(() => gotAddEventDeferred.promise).then(()=>{
-          //Update the detector for update statusMessage
-          //console.log('updating');
-          return client.restRequest({
-              path: '/rest/v2/event-detectors/PED_mango_client_test',
-              method: 'PUT',
-              data: {
-                xid : "PED_mango_client_test_update",
-                name : "When true.",
-                duration : 10,
-                durationType : "SECONDS",
-                alarmLevel : "NONE",
-                alias : "When true.",
-                rtnApplicable : true,
-                state: true,
-                detectorSourceType : "DATA_POINT",
-                sourceId : testContext.dp.id,
-                detectorType : "BINARY_STATE",
-              }
-          });
+          ed.name = 'new name';
+          ed.xid = ed.xid + '_UPDATE';
+          return ed.save();
         }).then(() => gotUpdateEventDeferred.promise).then(()=>{
-          //Update the detector for update statusMessage
-          //console.log('deleting');
-          return client.restRequest({
-              path: '/rest/v2/event-detectors/PED_mango_client_test_update',
-              method: 'DELETE',
-              data: {}
-          });
+          return ed.delete();
         }).then(() => gotDeleteEventDeferred.promise);
     });
-
-    //Clean up when done
-    after('Deletes the new virtual data source and its points to clean up', () => {
-        return DataSource.delete('mango_client_test');
-    });
+    
 });

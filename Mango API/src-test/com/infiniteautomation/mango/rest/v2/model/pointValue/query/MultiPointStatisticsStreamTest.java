@@ -1081,7 +1081,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
         MockDataSourceVO vo = new MockDataSourceVO();
         vo.setXid(DataSourceDao.getInstance().generateUniqueXid());
         vo.setName("Test DS");
-        DataSourceDao.getInstance().save(vo);
+        DataSourceDao.getInstance().insert(vo);
         return vo;
     }
 
@@ -1094,7 +1094,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
         vo.setDataSourceId(dataSourceId);
         vo.setDefaultCacheSize(defaultCacheSize);
         //TODO initial cache size
-        DataPointDao.getInstance().save(vo);
+        DataPointDao.getInstance().insert(vo);
         return vo;
     }
 

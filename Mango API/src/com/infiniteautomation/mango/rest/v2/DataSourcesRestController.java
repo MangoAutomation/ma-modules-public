@@ -58,13 +58,13 @@ import net.jazdw.rql.parser.ASTNode;
 @Api(value="Data source controller")
 @RestController
 @RequestMapping("/data-sources")
-public class DataSourcesRestController<T extends DataSourceVO<T>> {
+public class DataSourcesRestController {
 
-    private final DataSourceService<T> service;
-    private final BiFunction<DataSourceVO<?>, User, AbstractDataSourceModel<?>> map;
+    private final DataSourceService service;
+    private final BiFunction<DataSourceVO, User, AbstractDataSourceModel<?>> map;
 
     @Autowired
-    public DataSourcesRestController(final DataSourceService<T> service, final RestModelMapper modelMapper) {
+    public DataSourcesRestController(final DataSourceService service, final RestModelMapper modelMapper) {
         this.service = service;
         this.map = (vo, user) -> {
             return modelMapper.map(vo, AbstractDataSourceModel.class, user);
@@ -96,7 +96,7 @@ public class DataSourcesRestController<T extends DataSourceVO<T>> {
             @PathVariable String xid,
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
-        return map.apply(service.getFull(xid, user), user);
+        return map.apply(service.get(xid), user);
     }
 
     @ApiOperation(
@@ -109,18 +109,18 @@ public class DataSourcesRestController<T extends DataSourceVO<T>> {
             @PathVariable int id,
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
-        return map.apply(service.getFull(id, user), user);
+        return map.apply(service.get(id), user);
     }
 
     @ApiOperation(value = "Create data source")
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<AbstractDataSourceModel<?>> save(
-            @RequestBody(required=true) AbstractDataSourceModel<T> model,
+            @RequestBody(required=true) AbstractDataSourceModel<? extends DataSourceVO> model,
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder,
             HttpServletRequest request) {
 
-        DataSourceVO<?> vo = this.service.insertFull(model.toVO(), user);
+        DataSourceVO vo = this.service.insert(model.toVO());
         URI location = builder.path("/data-sources/{xid}").buildAndExpand(new Object[]{vo.getXid()}).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
@@ -131,12 +131,12 @@ public class DataSourcesRestController<T extends DataSourceVO<T>> {
     @RequestMapping(method = RequestMethod.PUT, value = "/{xid}")
     public ResponseEntity<AbstractDataSourceModel<?>> update(
             @PathVariable String xid,
-            @RequestBody(required=true) AbstractDataSourceModel<T> model,
+            @RequestBody(required=true) AbstractDataSourceModel<? extends DataSourceVO> model,
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder,
             HttpServletRequest request) {
 
-        DataSourceVO<?> vo = this.service.update(xid, model.toVO(), user);
+        DataSourceVO vo = this.service.update(xid, model.toVO());
         URI location = builder.path("/data-sources/{xid}").buildAndExpand(new Object[]{vo.getXid()}).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
@@ -155,11 +155,11 @@ public class DataSourcesRestController<T extends DataSourceVO<T>> {
             @PatchVORequestBody(
                     service=DataSourceService.class,
                     modelClass=AbstractDataSourceModel.class)
-            AbstractDataSourceModel<T> model,
+            AbstractDataSourceModel<? extends DataSourceVO> model,
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
 
-        DataSourceVO<?> vo = service.updateFull(xid, model.toVO(), user);
+        DataSourceVO vo = service.update(xid, model.toVO());
 
         URI location = builder.path("/data-sources/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
@@ -179,7 +179,7 @@ public class DataSourcesRestController<T extends DataSourceVO<T>> {
             @PathVariable String xid,
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
-        return map.apply(service.delete(xid, user), user);
+        return map.apply(service.delete(xid), user);
     }
 
     @ApiOperation(value = "Enable/disable/restart a data source")
@@ -194,7 +194,7 @@ public class DataSourcesRestController<T extends DataSourceVO<T>> {
             @RequestParam(required=false, defaultValue="false") boolean restart,
 
             @AuthenticationPrincipal User user) {
-        service.restart(xid, enabled, restart, user);
+        service.restart(xid, enabled, restart);
     }
 
 
@@ -207,7 +207,7 @@ public class DataSourcesRestController<T extends DataSourceVO<T>> {
             @ApiParam(value = "Valid Data Source XID", required = true, allowMultiple = false)
             @PathVariable String xid,
             @AuthenticationPrincipal User user) {
-        DataSourceVO<?> vo = service.get(xid, user);
+        DataSourceVO vo = service.get(xid);
         RuntimeStatusModel model = new RuntimeStatusModel();
         DataSourceRT<?> ds = Common.runtimeManager.getRunningDataSource(vo.getId());
 
@@ -241,12 +241,12 @@ public class DataSourcesRestController<T extends DataSourceVO<T>> {
             Boolean includePoints,
             @AuthenticationPrincipal User user) {
 
-        DataSourceVO<?> vo = service.get(xid, user);
+        DataSourceVO vo = service.get(xid);
         Map<String,Object> export = new LinkedHashMap<>();
         export.put("dataSources", Collections.singletonList(vo));
 
         if(includePoints) {
-            export.put("dataPoints", DataPointDao.getInstance().getDataPoints(vo.getId(), null, true));
+            export.put("dataPoints", DataPointDao.getInstance().getDataPoints(vo.getId()));
         }
         return export;
     }
@@ -268,16 +268,16 @@ public class DataSourcesRestController<T extends DataSourceVO<T>> {
 
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
-        
-        T copy = service.copy(xid, copyXid, copyName, copyDeviceName, enabled, copyPoints, user);
-        
+
+        DataSourceVO copy = service.copy(xid, copyXid, copyName, copyDeviceName, enabled, copyPoints);
+
         URI location = builder.path("/data-sources/{xid}").buildAndExpand(copy.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
 
         return new ResponseEntity<>(map.apply(copy, user), headers, HttpStatus.OK);
     }
-    
+
     /**
      * Perform a query
      * @param rql
@@ -286,10 +286,10 @@ public class DataSourcesRestController<T extends DataSourceVO<T>> {
      */
     private StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
         //If we are admin or have overall data source permission we can view all
-        if (user.hasAdminPermission()) {
-            return new StreamedVORqlQueryWithTotal<>(service, rql, vo -> map.apply(vo, user), true);
+        if (user.hasAdminRole()) {
+            return new StreamedVORqlQueryWithTotal<>(service, rql, vo -> map.apply(vo, user));
         } else {
-            return new StreamedVORqlQueryWithTotal<>(service, rql, user, vo -> map.apply(vo, user), true);
+            return new StreamedVORqlQueryWithTotal<>(service, rql, user, vo -> map.apply(vo, user));
         }
     }
 }

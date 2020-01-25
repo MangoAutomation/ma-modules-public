@@ -9,14 +9,11 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
 import com.infiniteautomation.mango.rest.v2.JsonEmportV2Controller.ImportStatusProvider;
+import com.infiniteautomation.mango.rest.v2.model.emport.JsonEmportControlModel;
 import com.infiniteautomation.mango.rest.v2.util.MangoRestTemporaryResourceContainer;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.User;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.emport.JsonEmportControlModel;
-import com.infiniteautomation.mango.rest.v2.websocket.MangoWebSocketErrorType;
-import com.infiniteautomation.mango.rest.v2.websocket.MangoWebSocketHandler;
-import com.infiniteautomation.mango.rest.v2.websocket.MultiSessionWebSocketHandler;
-import com.infiniteautomation.mango.rest.v2.websocket.WebSocketSendException;
+
 
 @Component("jsonConfigImportWebSocketHandlerV2")
 @WebSocketMapping("/websocket/json-import")
@@ -36,7 +33,7 @@ public class JsonConfigImportWebSocketHandler extends MultiSessionWebSocketHandl
         User user = this.getUser(session);
         if (user == null) {
             return;
-        } else if (!user.hasAdminPermission()) {
+        } else if (!user.hasAdminRole()) {
             if (session.isOpen()) {
                 session.close(MangoWebSocketHandler.NOT_AUTHORIZED);
             }
@@ -52,7 +49,7 @@ public class JsonConfigImportWebSocketHandler extends MultiSessionWebSocketHandl
             User user = this.getUser(session);
             if (user == null) {
                 return;
-            } else if (!user.hasAdminPermission()) {
+            } else if (!user.hasAdminRole()) {
                 if (session.isOpen()) {
                     session.close(MangoWebSocketHandler.NOT_AUTHORIZED);
                 }

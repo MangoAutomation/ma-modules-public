@@ -10,13 +10,13 @@ import java.time.ZonedDateTime;
 
 import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueField;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.RollupEnum;
 import com.infiniteautomation.mango.rest.v2.model.time.TimePeriod;
 import com.infiniteautomation.mango.rest.v2.model.time.TimePeriodType;
 import com.infiniteautomation.mango.util.datetime.ExpandTimePeriodAdjuster;
 import com.infiniteautomation.mango.util.datetime.TruncateTimePeriodAdjuster;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
 
 /**
  *
@@ -34,11 +34,11 @@ public class ZonedDateTimeRangeQueryInfo extends LatestQueryInfo {
      * This class with use an optional timzone to ensure that the to/from dates are correct and
      * attempt to determine the timezone to use for rendering and rollup edges using the following
      * rules:
-     * 
+     *
      * if 'timezone' is supplied use that for all timezones if 'timezone' is not supplied the rules
      * are applied in this order: use timezone of from if not null use timezone of to if not null
-     * use server timezone 
-     * 
+     * use server timezone
+     *
      * @param from
      * @param to
      * @param dateTimeFormat
@@ -57,11 +57,11 @@ public class ZonedDateTimeRangeQueryInfo extends LatestQueryInfo {
      */
     public ZonedDateTimeRangeQueryInfo(ZonedDateTime from, ZonedDateTime to,
             String dateTimeFormat, String timezone, RollupEnum rollup, TimePeriod timePeriod,
-            Integer limit, boolean bookend, boolean multiplePointsPerArray, 
-            boolean singleArray, PointValueTimeCacheControl useCache, 
+            Integer limit, boolean bookend, boolean multiplePointsPerArray,
+            boolean singleArray, PointValueTimeCacheControl useCache,
             Double simplifyTolerance, Integer simplifyTarget, boolean truncate, PointValueField[] fields) {
         super(from, dateTimeFormat, timezone,
-                limit, multiplePointsPerArray, 
+                limit, multiplePointsPerArray,
                 singleArray, useCache, simplifyTolerance, simplifyTarget, fields);
 
 
@@ -69,7 +69,7 @@ public class ZonedDateTimeRangeQueryInfo extends LatestQueryInfo {
         if (timezone == null) {
             if (to != null)
                 this.zoneId = to.getZone();
-        } 
+        }
 
         // Set the timezone on the from and to dates
         long current = Common.timer.currentTimeMillis();
@@ -81,11 +81,11 @@ public class ZonedDateTimeRangeQueryInfo extends LatestQueryInfo {
         // Validate time
         if (!this.to.isAfter(this.from))
             throw new BadRequestException(new TranslatableMessage("rest.validate.timeRange.invalid"));
-        
+
         this.rollup = rollup;
         this.timePeriod = timePeriod;
         this.bookend = bookend;
-        
+
         if(truncate)
             setupDates();
     }
@@ -114,7 +114,7 @@ public class ZonedDateTimeRangeQueryInfo extends LatestQueryInfo {
     public ZonedDateTime getTo() {
         return to;
     }
-    
+
     @Override
     public RollupEnum getRollup() {
         return rollup;

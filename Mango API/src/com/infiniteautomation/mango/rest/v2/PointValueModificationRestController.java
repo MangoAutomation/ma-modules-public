@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.XidPointValueTimeModel;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.emport.PointValueTimeDeleteResult;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.emport.PointValueTimeImportResult;
+import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.DataPointDao;
@@ -43,16 +44,15 @@ import com.serotonin.m2m2.rt.dataImage.types.MultistateValue;
 import com.serotonin.m2m2.rt.dataImage.types.NumericValue;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
-import com.serotonin.m2m2.vo.permission.Permissions;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 
 /**
- * 
+ *
  * Import point values in bulk for data uploads
- * 
+ *
  * @author Terry Packer
  *
  */
@@ -62,10 +62,12 @@ import io.swagger.annotations.ApiParam;
 public class PointValueModificationRestController {
 
     private final DataPointDao dataPointDao;
+    private final PermissionService permissionService;
 
     @Autowired
-    public PointValueModificationRestController(DataPointDao dataPointDao) {
+    public PointValueModificationRestController(DataPointDao dataPointDao, PermissionService permissionService) {
         this.dataPointDao = dataPointDao;
+        this.permissionService = permissionService;
     }
 
     @ApiOperation(
@@ -84,7 +86,7 @@ public class PointValueModificationRestController {
                 PointValueDao pointValueDao = Common.databaseProxy.newPointValueDao();
                 Map<String, PointValueTimeImport> results = new LinkedHashMap<>();
                 stream.forEach((pvt) -> {
-        
+
                     results.compute(pvt.getXid(), (xidKey, entry) ->{
                         if(entry == null) {
                             entry = new PointValueTimeImport(pvt.getXid(), pointValueDao, dataPointDao, fireEvents, user);
@@ -92,33 +94,33 @@ public class PointValueModificationRestController {
                         entry.saveValue(pvt.getValue(), pvt.getTimestamp(), pvt.getAnnotation());
                         return entry;
                     });
-                    
+
                 });
-                
-                return results.values().stream().map((v) -> { 
+
+                return results.values().stream().map((v) -> {
                     return new PointValueTimeImportResult(v.xid, v.totalProcessed, v.totalSkipped, v.result);
                 }).collect(Collectors.toList());
-            
+
             }catch(Exception e) {
                 throw new CompletionException(e);
             }
         });
     }
-    
+
     class PointValueTimeImport {
-        
+
         protected String xid;
         protected int totalProcessed;
         protected int totalSkipped;
-        protected ProcessResult result; 
-        
+        protected ProcessResult result;
+
         protected final boolean valid;
         protected final PointValueDao dao;
         protected final FireEvents fireEvents;
         protected DataPointRT rt;
         protected final DataPointVO vo;
         protected final int dataTypeId;
-        
+
         public PointValueTimeImport(String xid, PointValueDao dao, DataPointDao dataPointDao, FireEvents fireEvents, User user) {
             this.xid = xid;
             this.result = new ProcessResult();
@@ -130,7 +132,7 @@ public class PointValueModificationRestController {
                 dataTypeId = DataTypes.UNKNOWN;
                 result.addContextualMessage("xid", "emport.error.missingPoint", xid);
             }else {
-                if (Permissions.hasDataPointSetPermission(user, vo)){
+                if (permissionService.hasDataPointSetPermission(user, vo)){
                     valid = true;
                     rt = Common.runtimeManager.getDataPoint(vo.getId());
                     dataTypeId = vo.getPointLocator().getDataTypeId();
@@ -141,21 +143,21 @@ public class PointValueModificationRestController {
                 }
             }
         }
- 
+
         /**
-         * 
+         *
          * @param value
          * @param date
          * @param annotation
          */
         private void saveValue(Object value, ZonedDateTime date, String annotation) {
-            
+
             if(valid && value != null) {
-                
+
                 //Validate the model against our point
                 long timestamp;
                 if(date == null || date.toInstant().toEpochMilli() == 0) {
-                    totalSkipped++; 
+                    totalSkipped++;
                     return;
                 }else {
                     timestamp = date.toInstant().toEpochMilli();
@@ -184,7 +186,7 @@ public class PointValueModificationRestController {
                                     } catch (Exception e) {
                                         // Lots can go wrong here so let the user know
                                         result.addContextualMessage("value", "event.valueParse.textParse", e.getMessage());
-                                        totalSkipped++; 
+                                        totalSkipped++;
                                         return;
                                     }
                                 }
@@ -206,10 +208,10 @@ public class PointValueModificationRestController {
                     }
                 }catch(Exception e) {
                     result.addContextualMessage("value", "rest.error.serverError", e.getMessage());
-                    totalSkipped++; 
+                    totalSkipped++;
                     return;
                 }
-                
+
                 PointValueTime pvt;
                 if(StringUtils.isEmpty(annotation)) {
                     pvt = new PointValueTime(dataValue, timestamp);
@@ -225,11 +227,11 @@ public class PointValueModificationRestController {
                 }
                 totalProcessed++;
             }else {
-               totalSkipped++; 
+                totalSkipped++;
             }
         }
     }
-    
+
     @ApiOperation(
             value = "Delete Point Values for one or many Data Points",
             notes = "Data Point must exist and user must have write access"
@@ -243,9 +245,9 @@ public class PointValueModificationRestController {
             try {
                 PointValueDao pointValueDao = Common.databaseProxy.newPointValueDao();
                 Map<String, PointValueTimeDelete> results = new HashMap<>();
-        
+
                 stream.forEach((pvt) ->{
-        
+
                     results.compute(pvt.getXid(), (xidKey, entry) ->{
                         if(entry == null) {
                             entry = new PointValueTimeDelete(pvt.getXid(), pointValueDao, dataPointDao, user);
@@ -253,31 +255,31 @@ public class PointValueModificationRestController {
                         entry.deleteValue(pvt.getTimestamp());
                         return entry;
                     });
-                    
+
                 });
-                
-                return results.values().stream().map((v) -> { 
+
+                return results.values().stream().map((v) -> {
                     return new PointValueTimeDeleteResult(v.xid, v.totalProcessed, v.totalSkipped, v.result);
                 }).collect(Collectors.toList());
             } catch(Exception e) {
                 throw new CompletionException(e);
             }
         });
-        
+
     }
-    
+
     class PointValueTimeDelete extends PointValueTimeImport {
-        
+
         public PointValueTimeDelete(String xid, PointValueDao dao, DataPointDao dataPointDao, User user) {
-           super(xid, dao, dataPointDao, null, user);
+            super(xid, dao, dataPointDao, null, user);
         }
-        
+
         public void deleteValue(ZonedDateTime timestamp) {
             if(valid && timestamp != null) {
                 totalProcessed += Common.runtimeManager.purgeDataPointValue(vo.getId(), timestamp.toInstant().toEpochMilli(), dao);
             }else {
                 totalSkipped++;
             }
-        }     
+        }
     }
 }

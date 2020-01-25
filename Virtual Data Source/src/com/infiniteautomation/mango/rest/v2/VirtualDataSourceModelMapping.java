@@ -10,7 +10,7 @@ import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.model.VirtualDataSourceModel;
 import com.serotonin.m2m2.virtual.VirtualDataSourceDefinition;
 import com.serotonin.m2m2.virtual.vo.VirtualDataSourceVO;
-import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 /**
  * @author Terry Packer
@@ -30,7 +30,7 @@ public class VirtualDataSourceModelMapping implements RestModelJacksonMapping<Vi
     }
 
     @Override
-    public VirtualDataSourceModel map(Object from, User user, RestModelMapper mapper) {
+    public VirtualDataSourceModel map(Object from, PermissionHolder user, RestModelMapper mapper) {
         return new VirtualDataSourceModel((VirtualDataSourceVO)from);
     }
 

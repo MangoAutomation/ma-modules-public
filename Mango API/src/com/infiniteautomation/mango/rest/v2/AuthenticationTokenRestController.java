@@ -77,11 +77,11 @@ public class AuthenticationTokenRestController {
 
         User user = currentUser;
         if (username != null && !username.equals(currentUser.getUsername())) {
-            if (!currentUser.hasAdminPermission()) {
+            if (!currentUser.hasAdminRole()) {
                 throw new AccessDeniedException(new TranslatableMessage("rest.error.onlyAdminsCanCreateTokens"));
             }
 
-            user = UserDao.getInstance().getUser(username);
+            user = UserDao.getInstance().getByXid(username);
             if (user == null) {
                 throw new BadRequestException(new TranslatableMessage("rest.error.unknownUser", username));
             }
@@ -113,7 +113,7 @@ public class AuthenticationTokenRestController {
 
             HttpServletRequest request) {
 
-        User user = UserDao.getInstance().getUser(username);
+        User user = UserDao.getInstance().getByXid(username);
         if (user == null) {
             throw new NotFoundRestException();
         }

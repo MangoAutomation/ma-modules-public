@@ -15,6 +15,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.exception.ValidationFailedRestException;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueField;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.RollupEnum;
 import com.infiniteautomation.mango.util.Functions;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.SystemSettingsDao;
@@ -23,14 +24,14 @@ import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.view.text.TextRenderer;
 import com.serotonin.m2m2.vo.DataPointVO;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
+
 
 /**
  *
  * @author Terry Packer
  */
 public class LatestQueryInfo {
-    
+
     protected ZoneId zoneId;
     protected ZonedDateTime from;
 
@@ -49,17 +50,17 @@ public class LatestQueryInfo {
     protected final Integer simplifyTarget;
     protected final boolean simplifyHighQuality = true; //Currently not in api
     protected final boolean simplifyPrePostProcess = true; //Not in api
-    
+
     protected final PointValueField[] fields;
-    
-    public LatestQueryInfo(ZonedDateTime from, String dateTimeFormat, String timezone, 
-            Integer limit, boolean multiplePointsPerArray, boolean singleArray, PointValueTimeCacheControl useCache, 
+
+    public LatestQueryInfo(ZonedDateTime from, String dateTimeFormat, String timezone,
+            Integer limit, boolean multiplePointsPerArray, boolean singleArray, PointValueTimeCacheControl useCache,
             Double simplifyTolerance, Integer simplifyTarget, PointValueField[] fields) {
-        
+
         // Quick validation
         ensureTimezone(timezone);
         ensureDateTimeFormat(dateTimeFormat);
-        
+
         // Determine the timezone to use
         if (timezone == null) {
             if (from != null)
@@ -69,17 +70,17 @@ public class LatestQueryInfo {
         } else {
             this.zoneId = ZoneId.of(timezone);
         }
-        
+
         if (from != null)
             this.from = from.withZoneSameInstant(zoneId);
         else {
             long current = Common.timer.currentTimeMillis() + SystemSettingsDao.instance.getFutureDateLimit();
             this.from = ZonedDateTime.ofInstant(Instant.ofEpochMilli(current), zoneId);
         }
-        
+
 
         this.limit = limit;
-        
+
         this.noDataMessage = new TranslatableMessage("common.stats.noDataForPeriod")
                 .translate(Common.getTranslations());
 
@@ -94,18 +95,18 @@ public class LatestQueryInfo {
         this.multiplePointsPerArray = multiplePointsPerArray;
         this.singleArray = singleArray;
         this.useCache = useCache;
-        
+
         this.simplifyTolerance = simplifyTolerance;
         this.simplifyTarget = simplifyTarget;
-        
+
         if(fields != null)
             this.fields = fields;
         else {
             this.fields = new PointValueField[]{ PointValueField.TIMESTAMP, PointValueField.VALUE};
         }
     }
-    
-    
+
+
     public ZoneId getZoneId() {
         return zoneId;
     }
@@ -125,11 +126,11 @@ public class LatestQueryInfo {
     public boolean isSingleArray() {
         return singleArray;
     }
-    
+
     public PointValueTimeCacheControl isUseCache() {
         return useCache;
     }
-    
+
     public long getFromMillis() {
         return from.toInstant().toEpochMilli();
     }
@@ -137,30 +138,30 @@ public class LatestQueryInfo {
     public ZonedDateTime getFrom() {
         return from;
     }
-    
+
     public RollupEnum getRollup() {
         return RollupEnum.NONE;
     }
-    
+
     public PointValueField[] getFields() {
         return this.fields;
     }
-    
+
     public String getNoDataMessage() {
         return noDataMessage;
     }
-    
+
     public DateTimeFormatter getDateTimeFormatter() {
         return dateTimeFormatter;
     }
-    
+
     public boolean isUseSimplify() {
         return simplifyTolerance != null || simplifyTarget != null;
     }
-    
+
     /**
      * Write a link to an image based on data point id and timestamp
-     * 
+     *
      * @param timestamp
      * @param id
      * @return
@@ -174,7 +175,7 @@ public class LatestQueryInfo {
 
     /**
      * Return an rendered string representation of the value
-     * 
+     *
      * @param vo
      * @param pvt
      * @return
@@ -208,10 +209,10 @@ public class LatestQueryInfo {
         else
             return vo.getTextRenderer().getText(value, TextRenderer.HINT_FULL);
     }
-    
+
     /**
      * Return an rendered string representation of the integral
-     * 
+     *
      * @param vo
      * @param integral
      * @return
@@ -222,7 +223,7 @@ public class LatestQueryInfo {
 
     /**
      * Generate a Date Time String using our time zone
-     * 
+     *
      * @param timestamp
      * @return
      */
@@ -230,7 +231,7 @@ public class LatestQueryInfo {
         return dateTimeFormatter
                 .format(ZonedDateTime.ofInstant(Instant.ofEpochMilli(timestamp), zoneId));
     }
-    
+
     public static void ensureTimezone(String timezone) throws ValidationFailedRestException {
         if (timezone != null) {
             try {

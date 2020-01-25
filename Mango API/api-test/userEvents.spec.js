@@ -23,12 +23,12 @@ describe('User Event query tests', function(){
 
     before('Insert a User Event', function(){
         return client.restRequest({
-            path: '/rest/v2/example/raise-event',
+            path: '/rest/v2/testing/raise-event',
             method: 'POST',
             data: {
                 event: {
-                    typeName: "SYSTEM",
-                    systemEventType: 'Test event',
+                    eventType: "SYSTEM",
+                    subType: 'TestEvent',
                     ref1: -1,
                 },
                 level: 'URGENT',
@@ -42,110 +42,15 @@ describe('User Event query tests', function(){
         });
     });
 
-    it('Describe event query', () => {
-      return client.restRequest({
-          path: '/rest/v2/user-events/explain-query',
-          method: 'GET'
-      }).then(response => {
-        //console.log(response.data);
-      });
-    });
-
     it('Query inserted event', () => {
       return client.restRequest({
-          path: '/rest/v2/user-events?sort(-activeTimestamp)&limit(1)',
+          path: `/rest/v2/user-events?eq(eventType.eventType,SYSTEM)&eq(eventType.eventSubtype,TestEvent)&sort(-activeTimestamp)&limit(1)`,
           method: 'GET'
       }).then(response => {
           assert.isAbove(response.data.total, 0);
           assert.equal(response.data.items.length, 1);
           assert.equal(response.data.items[0].eventType.eventType, 'SYSTEM');
-          assert.equal(response.data.items[0].eventType.eventSubtype, 'Test event');
+          assert.equal(response.data.items[0].eventType.subType, 'TestEvent');
       });
-    });
-    
-    it('Gets websocket notifications for raised events', function() {
-        this.timeout(5000);
-        
-        let ws;
-        const subscription = {
-            eventTypes: ['RAISED'],
-            levels: ['NONE']
-        };
-        
-        const socketOpenDeferred = defer();
-        const gotEventDeferred = defer();
-        
-        const testId = uuid();
-
-        return Promise.resolve().then(() => {
-            ws = client.openWebSocket({
-                path: '/rest/v1/websocket/events'
-            });
-
-            ws.on('open', () => {
-                socketOpenDeferred.resolve();
-            });
-            
-            ws.on('error', error => {
-                const msg = new Error(`WebSocket error, error: ${error}`);
-                socketOpenDeferred.reject(msg);
-                gotEventDeferred.reject(msg);
-            });
-            
-            ws.on('close', (code, reason) => {
-                const msg = new Error(`WebSocket closed, code: ${code}, reason: ${reason}`);
-                socketOpenDeferred.reject(msg);
-                gotEventDeferred.reject(msg);
-            });
-
-            ws.on('message', msgStr => {
-                assert.isString(msgStr);
-                const msg = JSON.parse(msgStr);
-                assert.strictEqual(msg.status, 'OK');
-                assert.strictEqual(msg.payload.type, 'RAISED');
-                assert.strictEqual(msg.payload.event.alarmLevel, 'NONE');
-                assert.property(msg.payload.event, 'eventType');
-
-                if (msg.payload.event.message === 'test id ' + testId) {
-                    assert.strictEqual(msg.payload.event.eventType.eventType, 'SYSTEM');
-                    assert.strictEqual(msg.payload.event.eventType.eventSubtype, 'Test event');
-
-                    gotEventDeferred.resolve();
-                }
-            });
-
-            return socketOpenDeferred.promise;
-        }).then(() => {
-            const send = defer();
-            ws.send(JSON.stringify(subscription), error => {
-                if (error != null) {
-                    send.reject(error);
-                } else {
-                    send.resolve();
-                }
-            });
-            return send.promise;
-            
-            // wait a second after sending subscription, test fails otherwise on a cold start
-        }).then(() => delay(1000)).then(() => {
-            return client.restRequest({
-                path: '/rest/v2/example/raise-event',
-                method: 'POST',
-                data: {
-                    event: {
-                        typeName: 'SYSTEM',
-                        systemEventType: 'Test event'
-                    },
-                    level: 'NONE',
-                    message: 'test id ' + testId
-                }
-            });
-        }).then(() => gotEventDeferred.promise).then(result => {
-            if (ws) ws.close();
-            return result;
-        }, error => {
-            if (ws) ws.close();
-            return Promise.reject(error);
-        });
     });
 });

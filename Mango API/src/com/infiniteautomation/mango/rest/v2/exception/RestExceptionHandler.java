@@ -25,6 +25,7 @@ import org.springframework.security.web.WebAttributes;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.HandlerMethod;
@@ -33,6 +34,8 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import com.infiniteautomation.mango.db.query.RQLToCondition.RQLVisitException;
+import com.infiniteautomation.mango.rest.v2.advice.MangoRequestBodyAdvice;
+import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.views.AdminView;
 import com.infiniteautomation.mango.spring.components.EmailAddressVerificationService.EmailAddressInUseException;
 import com.infiniteautomation.mango.util.exception.FeatureDisabledException;
@@ -43,10 +46,12 @@ import com.infiniteautomation.mango.util.exception.TranslatableIllegalStateExcep
 import com.infiniteautomation.mango.util.exception.TranslatableRuntimeException;
 import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableException;
 import com.serotonin.m2m2.module.DefaultPagesDefinition;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.PermissionException;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.web.mvc.spring.security.authentication.MangoPasswordAuthenticationProvider.AuthenticationRateException;
 
 /**
@@ -60,11 +65,17 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
     final RequestMatcher browserHtmlRequestMatcher;
     final HandlerExceptionResolver handlerExceptionResolver;
+    final RestModelMapper mapper;
 
     @Autowired
-    public RestExceptionHandler(@Qualifier("browserHtmlRequestMatcher") RequestMatcher browserHtmlRequestMatcher, HandlerExceptionResolver handlerExceptionResolver) {
+    public RestExceptionHandler(
+            @Qualifier("browserHtmlRequestMatcher")
+            RequestMatcher browserHtmlRequestMatcher,
+            HandlerExceptionResolver handlerExceptionResolver,
+            RestModelMapper mapper) {
         this.browserHtmlRequestMatcher = browserHtmlRequestMatcher;
         this.handlerExceptionResolver = handlerExceptionResolver;
+        this.mapper = mapper;
     }
 
     /**
@@ -103,7 +114,16 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     })
     public ResponseEntity<Object> handleValidationException(HttpServletRequest request, HttpServletResponse response, Exception ex, WebRequest req) {
         ValidationException validationException = (ValidationException) ex;
-        return handleExceptionInternal(ex, new ValidationFailedRestException(validationException.getValidationResult()), new HttpHeaders(), HttpStatus.UNPROCESSABLE_ENTITY, req);
+
+        ProcessResult result = validationException.getValidationResult();
+
+        //Do any potential mapping of VO property names to model property names
+        Class<?> modelClass = (Class<?>) req.getAttribute(MangoRequestBodyAdvice.MODEL_CLASS, RequestAttributes.SCOPE_REQUEST);
+        if(validationException.getValidatedClass() != null && modelClass != null) {
+            result = mapper.mapValidationErrors(modelClass, validationException.getValidatedClass(), result);
+        }
+
+        return handleExceptionInternal(ex, new ValidationFailedRestException(result), new HttpHeaders(), HttpStatus.UNPROCESSABLE_ENTITY, req);
     }
 
     @ExceptionHandler({
@@ -202,7 +222,13 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
             String uri;
             if (status == HttpStatus.FORBIDDEN) {
                 // browser HTML request
-                User user = Common.getHttpUser();
+                PermissionHolder holder = Common.getUser();
+                User user;
+                if(!(holder instanceof User)) {
+                    user = null;
+                }else {
+                    user = (User)holder;
+                }
                 uri = DefaultPagesDefinition.getUnauthorizedUri(servletRequest, servletResponse, user);
 
                 // Put exception into request scope (perhaps of use to a view)
@@ -231,9 +257,9 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
                 body = new GenericRestException(status, ex);
 
             //Add admin view if necessary
-            User user = Common.getHttpUser();
+            PermissionHolder user = Common.getUser();
             MappingJacksonValue value = new MappingJacksonValue(body);
-            if(user != null && user.hasAdminPermission())
+            if(user != null && user.hasAdminRole())
                 value.setSerializationView(AdminView.class);
             else
                 value.setSerializationView(Object.class);

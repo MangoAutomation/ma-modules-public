@@ -15,116 +15,176 @@
  * limitations under the License.
  */
 
-const {createClient, login} = require('@infinite-automation/mango-module-tools/test-helper/testHelper');
+const testHelper = require('@infinite-automation/mango-module-tools/test-helper/testHelper');;
+const {createClient, uuid, assertValidationErrors, login} = testHelper;
+
 const client = createClient();
-const {DataSource, DataPoint} = client;
+const DataSource = client.DataSource;
+const DataPoint = client.DataPoint;
 
-describe('Virtual data source v2', function() {
+describe('Virtual data source', function() {
     before('Login', function() { return login.call(this, client); });
+     
+    it('Create data source', () => {
+        const ds = newDataSource();
+        const local = Object.assign({}, ds);
+        return ds.save().then(saved => {
+            testHelper.assertDataSource(saved, local, assertDataSourceAttributes);
+        }, error => {
+            assertValidationErrors([''], error);
+        }).finally(() => {
+            ds.delete();
+        });
+    });
 
-    const vrtDs = {
-            xid: 'DS_VIRT_TEST',
-            name: 'Virtual Test',
-            enabled: false,
-            eventAlarmLevels: [
-                {
-                    eventType: 'POLL_ABORTED',
-                    duplicateHandling: 'IGNORE',
-                    level: 'INFORMATION',
-                    description: 'Poll aborted'
-                 }
-            ],
-            purgeSettings: {
-                override: true,
-                frequency: {
-                    periods: 7,
-                    type: 'DAYS'
-                }
-            },
-            editPermission: ['superadmin', 'test'],
+    it('Update data source', () => {
+        const ds = newDataSource();
+        const local = Object.assign({}, ds);
+        return ds.save().then(saved => {
+            testHelper.assertDataSource(saved, local, assertDataSourceAttributes);
+            //Make changes
+            saved.name = uuid();
+            saved.polling = true;
+            const localUpdate = Object.assign({}, saved);
+            return saved.save().then(updated => {
+                testHelper.assertDataSource(updated, localUpdate, assertDataSourceAttributes); 
+            });
+        }, error => {
+            assertValidationErrors([''], error);
+        }).finally(() => {
+            ds.delete();
+        });
+    });
+    
+    it('Delete data source', () => {
+        const ds = newDataSource();
+        return ds.save().then(saved => {
+            testHelper.assertDataSource(ds, saved, assertDataSourceAttributes);
+            return ds.delete().then(() => {
+               return DataSource.get(saved.xid).then(notFound => {
+                   assert.fail('Should not have found ds ' + notFound.xid);
+               }, error => {
+                   assert.strictEqual(404, error.status);
+               }); 
+            });
+        });
+    });
+    
+    it('Create data point', () => {
+        const ds = newDataSource();
+        return ds.save().then(saved => {
+            testHelper.assertDataSource(ds, saved, assertDataSourceAttributes);
+            const dp = newDataPoint(ds.xid);
+            return dp.save().then(saved => {
+                testHelper.assertDataPoint(saved, dp, assertPointLocator);
+            }, error => {
+                assertValidationErrors([''], error);
+            });
+        }).finally(() => {
+            ds.delete();
+        });
+    });
+    
+    it('Update data point', () => {
+        const ds = newDataSource();
+        return ds.save().then(saved => {
+            testHelper.assertDataSource(ds, saved, assertDataSourceAttributes);
+            const dp = newDataPoint(ds.xid);
+            const local = Object.assign({}, dp);
+            return dp.save().then(saved => {
+                testHelper.assertDataPoint(saved, local, assertPointLocator);
+                saved.pointLocator.startValue = 'true';
+                saved.pointLocator.changeType = 'ALTERNATE_BOOLEAN';
+                
+                const localUpdate = Object.assign({}, saved);
+                return saved.save().then(updated => {
+                    return DataPoint.get(updated.xid).then(found => {
+                        testHelper.assertDataPoint(found, localUpdate, assertPointLocator);
+                    });
+                });
+            });
+        }).finally(() => {
+            ds.delete();
+        });
+    });
+    
+    it('Delete data point', () => {
+        const ds = newDataSource();
+        return ds.save().then(saved => {
+            testHelper.assertDataSource(ds, saved, assertDataSourceAttributes);
+            const dp = newDataPoint(ds.xid);
+            return dp.save().then(saved => {
+                testHelper.assertDataPoint(saved, dp, assertPointLocator);
+                return saved.delete().then(() => {
+                    return DataPoint.get(saved.xid).then(notFound => {
+                        assert.fail('Should not have found point ' + notFound.xid);
+                    }, error => {
+                        assert.strictEqual(404, error.status);
+                    }); 
+                });
+            });
+        }).finally(() => {
+            ds.delete();
+        });
+    });
+    
+    function newDataPoint(dsXid) {
+        return new DataPoint({
+            dataSourceXid: dsXid,
+            pointLocator: {
+                startValue: 'false',
+                changeType: 'NO_CHANGE',
+                dataType: 'BINARY',
+                settable: true,
+                modelType: 'PL.VIRTUAL'
+            }
+        });
+    }
+    function newDataSource() {
+        return new DataSource({
             pollPeriod: {
                 periods: 5,
                 type: 'SECONDS'
             },
-            polling: true,
+            quantize: true,
+            useCron: false,
+            editPermission: [],
+            eventAlarmLevels: [
+                {
+                    eventType: 'POLL_ABORTED',
+                    level: 'INFORMATION',
+                 }
+            ],
+            pollPeriod: {
+                periods: 5,
+                type: 'SECONDS'
+            },
+            quantize: false,
+            useCron: false,
+            polling: false,
             modelType: 'VIRTUAL'
-    };
-    
-    it('Create virtual data source', () => {
-      return client.restRequest({
-          path: '/rest/v2/data-sources',
-          method: 'POST',
-          data: vrtDs
-      }).then((response) => {
-          assert.isNumber(response.data.id);
-          assert.strictEqual(response.data.xid, vrtDs.xid);
-          assert.strictEqual(response.data.name, vrtDs.name);
-          assert.strictEqual(response.data.enabled, vrtDs.enabled);
-          assert.strictEqual(response.data.polling, vrtDs.polling);
-          assert.strictEqual(response.data.pollPeriod.periods, vrtDs.pollPeriod.periods);
-          assert.strictEqual(response.data.pollPeriod.type, vrtDs.pollPeriod.type);
-          assertPermissions(response.data.editPermission, vrtDs.editPermission);
-          assertAlarmLevels(response.data.eventAlarmLevels, vrtDs.eventAlarmLevels);
-      });
-    });
-
-    it('Update virtual data source', () => {
-        vrtDs.name='Test again';
-        return client.restRequest({
-            path:  `/rest/v2/data-sources/${vrtDs.xid}`,
-            method: 'PUT',
-            data: vrtDs
-        }).then((response) => {
-            assert.isNumber(response.data.id);
-            assert.strictEqual(response.data.xid, vrtDs.xid);
-            assert.strictEqual(response.data.name, vrtDs.name);
-            assert.strictEqual(response.data.enabled, vrtDs.enabled);
-            assert.strictEqual(response.data.polling, vrtDs.polling);
-            assert.strictEqual(response.data.pollPeriod.periods, vrtDs.pollPeriod.periods);
-            assert.strictEqual(response.data.pollPeriod.type, vrtDs.pollPeriod.type);
-            assertPermissions(response.data.editPermission, vrtDs.editPermission);
-            assertAlarmLevels(response.data.eventAlarmLevels, vrtDs.eventAlarmLevels);
         });
-      });
-    
-    it('Delete virtual data source', () => {
-        return client.restRequest({
-            path: `/rest/v2/data-sources/${vrtDs.xid}`,
-            method: 'DELETE',
-            data: {}
-        }).then(response => {
-            assert.strictEqual(response.data.xid, vrtDs.xid);
-            assert.strictEqual(response.data.name, vrtDs.name);
-            assert.strictEqual(response.data.enabled, vrtDs.enabled);
-            assert.strictEqual(response.data.polling, vrtDs.polling);
-            assert.strictEqual(response.data.pollPeriod.periods, vrtDs.pollPeriod.periods);
-            assert.strictEqual(response.data.pollPeriod.type, vrtDs.pollPeriod.type);
-            assertPermissions(response.data.editPermission, vrtDs.editPermission);
-            assertAlarmLevels(response.data.eventAlarmLevels, vrtDs.eventAlarmLevels);
-        });
-    });
-    
-    function assertPermissions(saved, stored) {
-        assert.strictEqual(saved.length, stored.length);
-        for(var i=0; i<stored.length; i++){
-            assert.include(saved, stored[i], stored[i] + ' was not found in permissions')
-        }
     }
-    function assertAlarmLevels(saved, stored){
-        var assertedEventTypes = [];
-        assert.strictEqual(saved.length, stored.length);
-        for(var i=0; i<stored.length; i++){
-            var found = false;
-            for(var j=0; j<saved.length; j++){
-                if(stored[i].eventType === saved[j].eventType){
-                    found = true;
-                    assert.strictEqual(saved.level, stored.level);
-                    assertedEventTypes.push(saved[i].eventType)
-                    break;
-                }
-            }
-            if(found === false)
-                assert.fail('Did not find event type: ' + stored[i].eventType);
+    
+    function assertDataSourceAttributes(saved, local) {
+        assert.strictEqual(saved.polling, local.polling);
+        assert.strictEqual(saved.pollPeriod.periods, local.pollPeriod.periods);
+        assert.strictEqual(saved.pollPeriod.type, local.pollPeriod.type);
+        assert.strictEqual(saved.quantize, local.quantize);
+        assert.strictEqual(saved.useCron, local.useCron);
+    }
+    
+    function assertPointLocator(saved, local) {
+        assert.strictEqual(saved.dataType, local.dataType);
+        
+        assert.strictEqual(saved.changeType, local.changeType);
+        switch(saved.changeType) {
+            case 'ALTERNATE_BOOLEAN':
+                assert.strictEqual(saved.startValue, local.startValue);
+            break;
+            case 'NO_CHANGE':
+                assert.strictEqual(saved.startValue, local.startValue);
+            break;
         }
     }
 });

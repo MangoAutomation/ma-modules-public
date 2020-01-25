@@ -7,8 +7,8 @@ import org.springframework.stereotype.Component;
 
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.serotonin.m2m2.module.definitions.event.detectors.AnalogLowLimitEventDetectorDefinition;
-import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.detector.AnalogLowLimitDetectorVO;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 /**
  * @author Terry Packer
@@ -28,7 +28,7 @@ public class AnalogLowLimitEventDetectorModelMapping extends AbstractPointEventD
     }
 
     @Override
-    public AnalogLowLimitEventDetectorModel map(Object from, User user, RestModelMapper mapper) {
+    public AnalogLowLimitEventDetectorModel map(Object from, PermissionHolder user, RestModelMapper mapper) {
         AnalogLowLimitDetectorVO detector = (AnalogLowLimitDetectorVO)from;
         return loadDataPoint(detector, new AnalogLowLimitEventDetectorModel(detector), user, mapper);
     }

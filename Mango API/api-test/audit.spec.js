@@ -23,7 +23,7 @@ describe('Audit endpoint tests', function(){
 
     it('Gets entire audit table', () => {
       return client.restRequest({
-          path: '/rest/v1/audit',
+          path: '/rest/v2/audit',
           method: 'GET'
       }).then(response => {
         assert.isAbove(response.data.items.length, 0);
@@ -32,7 +32,7 @@ describe('Audit endpoint tests', function(){
 
     it('Performs simple audit query', () => {
       return client.restRequest({
-          path: '/rest/v1/audit?limit(1)',
+          path: '/rest/v2/audit?limit(1)',
           method: 'GET'
       }).then(response => {
         assert.equal(response.data.items.length, 1);
@@ -41,10 +41,10 @@ describe('Audit endpoint tests', function(){
 
     it('Performs audit query with alarmLevel filtering', () => {
       return client.restRequest({
-          path: '/rest/v1/audit?alarmLevel=INFORMATION&limit(10)',
+          path: '/rest/v2/audit?alarmLevel=INFORMATION&limit(4)',
           method: 'GET'
       }).then(response => {
-        assert.equal(response.data.items.length, 10);
+        assert.equal(response.data.items.length, 4);
         for(var i=0; i<response.data.items.length; i++){
           assert.equal(response.data.items[i].alarmLevel, 'INFORMATION');
         }
@@ -53,7 +53,7 @@ describe('Audit endpoint tests', function(){
 
     it('Performs audit query with changeType filtering', () => {
       return client.restRequest({
-          path: '/rest/v1/audit?changeType=CREATE&limit(10)',
+          path: '/rest/v2/audit?changeType=CREATE&limit(10)',
           method: 'GET'
       }).then(response => {
         assert.equal(response.data.items.length, 10);

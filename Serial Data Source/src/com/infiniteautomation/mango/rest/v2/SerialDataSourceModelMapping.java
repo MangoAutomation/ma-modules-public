@@ -10,7 +10,7 @@ import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.model.SerialDataSourceModel;
 import com.infiniteautomation.serial.SerialDataSourceDefinition;
 import com.infiniteautomation.serial.vo.SerialDataSourceVO;
-import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 /**
  * @author Terry Packer
@@ -30,7 +30,7 @@ public class SerialDataSourceModelMapping implements RestModelJacksonMapping<Ser
     }
 
     @Override
-    public SerialDataSourceModel map(Object from, User user, RestModelMapper mapper) {
+    public SerialDataSourceModel map(Object from, PermissionHolder user, RestModelMapper mapper) {
         return new SerialDataSourceModel((SerialDataSourceVO)from);
     }
     @Override

@@ -72,7 +72,7 @@ public class EmailVerificationController {
             @RequestBody PublicEmailVerificationRequest body) throws AddressException, TemplateException, IOException {
 
         body.ensureValid();
-        emailVerificationService.sendVerificationEmail(body.getEmailAddress(), null, null, null);
+        emailVerificationService.sendVerificationEmail(body.getEmailAddress(), null, null);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
@@ -89,10 +89,10 @@ public class EmailVerificationController {
         User userToUpdate = null;
         String username = body.getUsername();
         if (username != null && !username.isEmpty()) {
-            userToUpdate = this.service.get(username, user);
+            userToUpdate = this.service.get(username);
         }
 
-        emailVerificationService.sendVerificationEmail(body.getEmailAddress(), userToUpdate, null, user);
+        emailVerificationService.sendVerificationEmail(body.getEmailAddress(), userToUpdate, null);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
@@ -109,14 +109,14 @@ public class EmailVerificationController {
         User userToUpdate = null;
         String username = body.getUsername();
         if (username != null && !username.isEmpty()) {
-            userToUpdate = this.service.get(username, user);
+            userToUpdate = this.service.get(username);
         }
 
         String token;
         if (body.isSendEmail()) {
-            token = emailVerificationService.sendVerificationEmail(body.getEmailAddress(), userToUpdate, body.getExpiry(), user);
+            token = emailVerificationService.sendVerificationEmail(body.getEmailAddress(), userToUpdate, body.getExpiry());
         } else {
-            token = emailVerificationService.generateToken(body.getEmailAddress(), userToUpdate, body.getExpiry(), user);
+            token = emailVerificationService.generateToken(body.getEmailAddress(), userToUpdate, body.getExpiry());
         }
 
         CreateTokenResponse response = new CreateTokenResponse();

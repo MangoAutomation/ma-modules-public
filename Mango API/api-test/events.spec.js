@@ -54,7 +54,7 @@ describe('Events v2 tests', function(){
     const raiseDelay = 1000; //Delay to raise alarm
     const testPointXid1 = uuid();
     
-    before('Create a virtual data source, points, raise event', function() {
+    beforeEach('Create a virtual data source, points, raise event', function() {
         this.timeout(raiseDelay * 200);
 
         this.ds = new DataSource({
@@ -79,13 +79,13 @@ describe('Events v2 tests', function(){
             });
         }).then(() => {
             return client.restRequest({
-                path: '/rest/v2/example/raise-event',
+                path: '/rest/v2/testing/raise-event',
                 method: 'POST',
                 data: {
                     event: {
-                        typeName: 'DATA_POINT',
+                        eventType: 'DATA_POINT',
                         dataSourceId: this.ds.id,
-                        dataPointId: this.testPoint1.id,
+                        referenceId1: this.testPoint1.id,
                         duplicateHandling: 'ALLOW'
                     },
                     level: 'INFORMATION',
@@ -95,7 +95,7 @@ describe('Events v2 tests', function(){
         }).then(() => delay(raiseDelay));
     });
 
-    after('Deletes the new virtual data source and its points', function() {
+    afterEach('Deletes the new virtual data source and its points', function() {
         return this.ds.delete();
     });
     
@@ -141,7 +141,6 @@ describe('Events v2 tests', function(){
             });
 
             ws.on('message', msgStr => {
-                assert.isString(msgStr);
                 const msg = JSON.parse(msgStr);
                 if(msg.messageType === 'RESPONSE') {
                     assert.strictEqual(msg.sequenceNumber, 0);
@@ -171,12 +170,12 @@ describe('Events v2 tests', function(){
             return send.promise;
         }).then(() => gotAlarmSummaries.promise).then(function() {
             return client.restRequest({
-                path: '/rest/v2/example/raise-event',
+                path: '/rest/v2/testing/raise-event',
                 method: 'POST',
                 data: {
                     event: {
-                        typeName: 'SYSTEM',
-                        systemEventType: 'Test event'
+                        eventType: 'SYSTEM',
+                        subType: 'Test event'
                     },
                     level: 'NONE',
                     message: 'test id ' + testId
@@ -197,7 +196,7 @@ describe('Events v2 tests', function(){
         let ws;
         const subscription = {
             actions: ['RAISED'],
-            levels: ['NONE'],
+            levels: ['NONE','INFORMATION'],
             sendEventLevelSummaries: true,
             messageType: 'REQUEST',
             requestType: 'SUBSCRIPTION'

@@ -1,6 +1,6 @@
 /**
  * Copyright (C) 2015 Infinite Automation Software. All rights reserved.
- * 
+ *
  * @author Terry Packer
  */
 package com.infiniteautomation.mango.rest.v2.model.mailingList;
@@ -53,9 +53,8 @@ public class UserEntryModel extends EmailRecipientModel {
 
     @Override
     public EmailRecipient fromModel() {
-
         UserEntry entry = new UserEntry();
-        User user = UserDao.getInstance().getUser(username);
+        User user = UserDao.getInstance().getByXid(username);
         if (user != null) {
             entry.setUser(user);
             entry.setUserId(user.getId());
@@ -67,7 +66,7 @@ public class UserEntryModel extends EmailRecipientModel {
     public RecipientListEntryBean toBean() {
         RecipientListEntryBean bean = new RecipientListEntryBean();
         bean.setRecipientType(EmailRecipient.TYPE_USER);
-        User u = UserDao.getInstance().getUser(username);
+        User u = UserDao.getInstance().getByXid(username);
         if(u != null)
             bean.setReferenceId(u.getId());
         return bean;

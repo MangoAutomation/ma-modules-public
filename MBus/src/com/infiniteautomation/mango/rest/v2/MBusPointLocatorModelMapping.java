@@ -5,15 +5,15 @@ package com.infiniteautomation.mango.rest.v2;
 
 import org.springframework.stereotype.Component;
 
+import com.infiniteautomation.mango.rest.v2.model.MBusPointLocatorModel;
 import com.infiniteautomation.mango.rest.v2.model.RestModelJacksonMapping;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
-import com.serotonin.m2m2.mbus.MBusPointLocatorModel;
 import com.serotonin.m2m2.mbus.MBusPointLocatorVO;
-import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 
 /**
- * This class is used for the v2 Model Mapper but replicates the 
+ * This class is used for the v2 Model Mapper but replicates the
  * functionality of the v1 mapper exactly
  * @author Terry Packer
  *
@@ -32,7 +32,7 @@ public class MBusPointLocatorModelMapping implements RestModelJacksonMapping<MBu
     }
 
     @Override
-    public MBusPointLocatorModel map(Object from, User user, RestModelMapper mapper) {
+    public MBusPointLocatorModel map(Object from, PermissionHolder user, RestModelMapper mapper) {
         return new MBusPointLocatorModel((MBusPointLocatorVO)from);
     }
 

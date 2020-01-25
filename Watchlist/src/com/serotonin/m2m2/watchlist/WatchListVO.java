@@ -6,6 +6,7 @@ package com.serotonin.m2m2.watchlist;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -20,104 +21,72 @@ import com.serotonin.json.spi.JsonProperty;
 import com.serotonin.json.type.JsonArray;
 import com.serotonin.json.type.JsonObject;
 import com.serotonin.json.type.JsonValue;
-import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.db.dao.AbstractDao;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.UserDao;
-import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.vo.AbstractVO;
-import com.serotonin.m2m2.vo.DataPointVO;
-import com.serotonin.m2m2.vo.User;
-import com.serotonin.m2m2.vo.permission.PermissionException;
-import com.serotonin.m2m2.vo.permission.PermissionHolder;
-import com.serotonin.m2m2.vo.permission.Permissions;
+import com.serotonin.m2m2.vo.DataPointSummary;
+import com.serotonin.m2m2.vo.IDataPoint;
+import com.serotonin.m2m2.vo.role.Role;
 
 /**
  * @author Matthew Lohbihler
  * @author Terry Packer
  *
  */
-public class WatchListVO extends AbstractVO<WatchListVO>{
+public class WatchListVO extends AbstractVO {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	public static final String XID_PREFIX = "WL_";
+    public static final String XID_PREFIX = "WL_";
     public static final String STATIC_TYPE = "static"; //current types also include hierarchy, query, and tags
     public static final String QUERY_TYPE = "query";
-    public static final String HIERARCHY_TYPE = "hierarchy";
     public static final String TAGS_TYPE = "tags";
 
     private int userId;
-    //TODO When we remove the legacy code reduce these objects to summaries only
-    private final List<DataPointVO> pointList = new CopyOnWriteArrayList<>();
+    private final List<IDataPoint> pointList = new CopyOnWriteArrayList<>();
     @JsonProperty
-    private String readPermission;
+    private Set<Role> readRoles = Collections.emptySet();
     @JsonProperty
-    private String editPermission;
+    private Set<Role> editRoles = Collections.emptySet();
     @JsonProperty
     private String type;
     @JsonProperty
     private String query;
     @JsonProperty
-    private List<Integer> folderIds;
-    @JsonProperty
     List<WatchListParameter> params;
     private Map<String, Object> data;
-    
-    //non-persistent members
-    private String username;
-    
+
     public WatchListVO() {
         type = STATIC_TYPE;
     }
 
-    public boolean isOwner(User user) {
-        return user.getId() == userId;
-    }
-
-    public boolean isEditor(User user) {
-        if (isOwner(user))
-            return true;
-        if (Permissions.hasAdminPermission(user)) // Admin
-            return true;
-        return Permissions.hasPermission(user, editPermission); // Edit group
-    }
-
-    public boolean isReader(User user) {
-        if (isEditor(user))
-            return true;
-        return Permissions.hasPermission(user, readPermission); // Read group
-    }
-
-    public String getUserAccess(User user) {
-        if (isEditor(user))
-            return "edit";
-        if (isReader(user))
-            return "read";
-        return null;
-    }
-
+    @Override
     public int getId() {
         return id;
     }
 
+    @Override
     public void setId(int id) {
         this.id = id;
     }
 
+    @Override
     public String getXid() {
         return xid;
     }
 
+    @Override
     public void setXid(String xid) {
         this.xid = xid;
     }
 
+    @Override
     public String getName() {
         return name;
     }
 
+    @Override
     public void setName(String name) {
         if (name == null)
             this.name = "";
@@ -125,7 +94,7 @@ public class WatchListVO extends AbstractVO<WatchListVO>{
             this.name = name;
     }
 
-    public List<DataPointVO> getPointList() {
+    public List<IDataPoint> getPointList() {
         return pointList;
     }
 
@@ -137,114 +106,52 @@ public class WatchListVO extends AbstractVO<WatchListVO>{
         this.userId = userId;
     }
 
-    public String getReadPermission() {
-        return readPermission;
+    public Set<Role> getReadRoles() {
+        return readRoles;
     }
 
-    public void setReadPermission(String readPermission) {
-        this.readPermission = readPermission;
+    public void setReadRoles(Set<Role> readRoles) {
+        this.readRoles = readRoles;
     }
 
-    public String getEditPermission() {
-        return editPermission;
+    public Set<Role> getEditRoles() {
+        return editRoles;
     }
 
-    public void setEditPermission(String editPermission) {
-        this.editPermission = editPermission;
+    public void setEditRoles(Set<Role> editRoles) {
+        this.editRoles = editRoles;
     }
 
     public String getType() {
-		return type;
-	}
+        return type;
+    }
 
-	public void setType(String type) {
-		this.type = type;
-	}
+    public void setType(String type) {
+        this.type = type;
+    }
 
-	public String getQuery() {
-		return query;
-	}
+    public String getQuery() {
+        return query;
+    }
 
-	public void setQuery(String query) {
-		this.query = query;
-	}
+    public void setQuery(String query) {
+        this.query = query;
+    }
 
-	public List<Integer> getFolderIds() {
-		return folderIds;
-	}
+    public List<WatchListParameter> getParams() {
+        return params;
+    }
 
-	public void setFolderIds(List<Integer> folderIds) {
-		this.folderIds = folderIds;
-	}
+    public void setParams(List<WatchListParameter> params) {
+        this.params = params;
+    }
 
-	public List<WatchListParameter> getParams() {
-		return params;
-	}
+    public Map<String, Object> getData() {
+        return data;
+    }
 
-	public void setParams(List<WatchListParameter> params) {
-		this.params = params;
-	}
-
-	public Map<String, Object> getData() {
-		return data;
-	}
-
-	public void setData(Map<String, Object> data) {
-		this.data = data;
-	}
-
-	public void validate(ProcessResult response) {
-        super.validate(response);
-
-        //Validate the points
-        UserDao dao = UserDao.getInstance();
-        User user = dao.getUser(userId);
-        if(user == null){
-            response.addContextualMessage("userId", "watchlists.validate.userDNE");
-        }
-        
-        boolean savedByOwner = false;
-        User savingUser = Common.getUser();
-        PermissionHolder savingPermissionHolder = savingUser;
-        if(savingUser == null) {
-            savingPermissionHolder = Common.getBackgroundContextPermissionHolder();
-        }
-        if(user != null && savingPermissionHolder != null && StringUtils.equals(savingPermissionHolder.getPermissionHolderName(), user.getUsername())) {
-            savedByOwner = true;
-        }
-        
-        //Validate Points
-        for(DataPointVO vo : pointList)
-        	try{
-        		Permissions.ensureDataPointReadPermission(user, vo);
-        	}catch(PermissionException e){
-        		response.addContextualMessage("points", "watchlist.vaildate.pointNoReadPermission", vo.getXid());
-        	}
-        
-        //Validate the permissions
-        Set<String> existingReadPermission;
-        Set<String> existingEditPermission;
-        if(this.id != Common.NEW_ID) {
-            WatchListVO vo = WatchListDao.getInstance().get(id);
-            if(vo != null) {
-                existingReadPermission = Permissions.explodePermissionGroups(vo.getReadPermission());
-                existingEditPermission = Permissions.explodePermissionGroups(vo.getEditPermission());
-            }else {
-                existingReadPermission = null;
-                existingEditPermission = null;
-            }
-        }else {
-            existingReadPermission = null;
-            existingEditPermission = null;
-        }
-        Permissions.validatePermissions(response, "readPermission", savingPermissionHolder, savedByOwner, existingReadPermission, Permissions.explodePermissionGroups(readPermission));
-        Permissions.validatePermissions(response, "editPermission", savingPermissionHolder, savedByOwner, existingEditPermission, Permissions.explodePermissionGroups(editPermission));
-
-        if(!savedByOwner && !Permissions.hasPermission(savingPermissionHolder, editPermission))
-            response.addContextualMessage("editPermission", "validate.mustHaveEditPermission");
-
-		
-		//TODO Validate new members
+    public void setData(Map<String, Object> data) {
+        this.data = data;
     }
 
     //
@@ -254,10 +161,10 @@ public class WatchListVO extends AbstractVO<WatchListVO>{
     @Override
     public void jsonWrite(ObjectWriter writer) throws IOException, JsonException {
         super.jsonWrite(writer);
-    	writer.writeEntry("user", UserDao.getInstance().getUser(userId).getUsername());
+        writer.writeEntry("user", UserDao.getInstance().getXidById(userId));
 
         List<String> dpXids = new ArrayList<>();
-        for (DataPointVO dpVO : pointList)
+        for (IDataPoint dpVO : pointList)
             dpXids.add(dpVO.getXid());
         writer.writeEntry("dataPoints", dpXids);
         writer.writeEntry("data", this.data);
@@ -266,13 +173,13 @@ public class WatchListVO extends AbstractVO<WatchListVO>{
     @Override
     public void jsonRead(JsonReader reader, JsonObject jsonObject) throws JsonException {
         super.jsonRead(reader, jsonObject);
-    	String username = jsonObject.getString("user");
+        String username = jsonObject.getString("user");
         if (StringUtils.isBlank(username))
             throw new TranslatableJsonException("emport.error.missingValue", "user");
-        User user = UserDao.getInstance().getUser(username);
+        Integer user = UserDao.getInstance().getIdByXid(username);
         if (user == null)
             throw new TranslatableJsonException("emport.error.missingUser", username);
-        userId = user.getId();
+        userId = user;
 
         JsonArray jsonDataPoints = jsonObject.getJsonArray("dataPoints");
         if (jsonDataPoints != null) {
@@ -280,39 +187,20 @@ public class WatchListVO extends AbstractVO<WatchListVO>{
             DataPointDao dataPointDao = DataPointDao.getInstance();
             for (JsonValue jv : jsonDataPoints) {
                 String xid = jv.toString();
-                DataPointVO dpVO = dataPointDao.getDataPoint(xid);
+                DataPointSummary dpVO = dataPointDao.getSummary(xid);
                 if (dpVO == null)
                     throw new TranslatableJsonException("emport.error.missingPoint", xid);
                 pointList.add(dpVO);
             }
         }
-        
+
         JsonObject o = jsonObject.getJsonObject("data");
-		if(o != null)
-			this.data = o.toMap();
+        if(o != null)
+            this.data = o.toMap();
     }
-	
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.util.ChangeComparable#getTypeKey()
-	 */
-	@Override
-	public String getTypeKey() {
-		return "event.audit.watchlist";
-	}
 
-	public String getUsername() {
-		return username;
-	}
-	public void setUsername(String username) {
-		this.username = username;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.serotonin.m2m2.vo.AbstractVO#getDao()
-	 */
-	@Override
-	protected AbstractDao<WatchListVO> getDao() {
-		return WatchListDao.getInstance();
-	}
-
+    @Override
+    public String getTypeKey() {
+        return "event.audit.watchlist";
+    }
 }

@@ -15,18 +15,15 @@
  * limitations under the License.
  */
 
-const {createClient, login, defer, delay} = require('@infinite-automation/mango-module-tools/test-helper/testHelper');
+const {createClient, login, defer, uuid, delay} = require('@infinite-automation/mango-module-tools/test-helper/testHelper');;
 const client = createClient();
 
 describe('Mailing lists', function() {
     before('Login', function() { return login.call(this, client); });
-    
-    // create a context object to replace global which was previously used throughout this suite
-    const testContext = {};
 
-    it('Creates a mailing list of type address', () => {
-      testContext.addressMailingList = {
-        xid: 'ML_TEST_ADDRESS',
+    beforeEach('Creates a mailing list of type address', () => {
+      const addressMailingList = {
+        xid: uuid(),
         name: 'Test address mailing list',
         recipients: [{
           recipientType: 'USER',
@@ -49,36 +46,41 @@ describe('Mailing lists', function() {
       return client.restRequest({
           path: '/rest/v2/mailing-lists',
           method: 'POST',
-          data: testContext.addressMailingList
+          data: addressMailingList
       }).then(response => {
-          testContext.addressMailingList.id = response.data.id;
-          assert.equal(response.data.xid, testContext.addressMailingList.xid);
-          assert.equal(response.data.name, testContext.addressMailingList.name);
+          addressMailingList.id = response.data.id;
+          assert.equal(response.data.xid, addressMailingList.xid);
+          assert.equal(response.data.name, addressMailingList.name);
           
-          assert.equal(response.data.recipients.length, testContext.addressMailingList.recipients.length);
-          assert.strictEqual(response.data.recipients[0].recipientType, testContext.addressMailingList.recipients[0].recipientType);
-          assert.strictEqual(response.data.recipients[0].username, testContext.addressMailingList.recipients[0].username);
+          assert.equal(response.data.recipients.length, addressMailingList.recipients.length);
+          assert.strictEqual(response.data.recipients[0].recipientType, addressMailingList.recipients[0].recipientType);
+          assert.strictEqual(response.data.recipients[0].username, addressMailingList.recipients[0].username);
           
-          assert.equal(response.data.receiveAlarmEmails, testContext.addressMailingList.receiveAlarmEmails);
+          assert.equal(response.data.receiveAlarmEmails, addressMailingList.receiveAlarmEmails);
           
-          assert.lengthOf(response.data.readPermissions, testContext.addressMailingList.readPermissions.length);
+          assert.lengthOf(response.data.readPermissions, addressMailingList.readPermissions.length);
           for(let i=0; i<response.data.readPermissions.length; i++)
-              assert.include(testContext.addressMailingList.readPermissions, response.data.readPermissions[i]);
+              assert.include(addressMailingList.readPermissions, response.data.readPermissions[i]);
           
-          assert.lengthOf(response.data.editPermissions, testContext.addressMailingList.editPermissions.length);
+          assert.lengthOf(response.data.editPermissions, addressMailingList.editPermissions.length);
           for(let i=0; i<response.data.editPermissions.length; i++)
-              assert.include(testContext.addressMailingList.editPermissions, response.data.editPermissions[i]);
+              assert.include(addressMailingList.editPermissions, response.data.editPermissions[i]);
           
-          assert.equal(response.data.inactiveSchedule.length, testContext.addressMailingList.inactiveSchedule.length);
+          assert.equal(response.data.inactiveSchedule.length, addressMailingList.inactiveSchedule.length);
           for(let i=0; i<response.data.inactiveSchedule.length; i++){
               let responseSched = response.data.inactiveSchedule[i];
-              let testContextSched = testContext.addressMailingList.inactiveSchedule[i];
+              let testContextSched = addressMailingList.inactiveSchedule[i];
               assert.lengthOf(responseSched, testContextSched.length);
               for(let j=0; j<responseSched.length; j++)
                   assert.equal(responseSched[j], testContextSched[j]);
           }
           
-          testContext.addressMailingList = response.data;
+          addressMailingList.id = response.data.id;
+      }).finally(() => {
+          return client.restRequest({
+              path: `/rest/v2/mailing-lists/${addressMailingList.xid}`,
+              method: 'DELETE'
+          });
       });
     });
     
@@ -104,15 +106,15 @@ describe('Mailing lists', function() {
                 ]
               }
         }).then(response => {
-            assert.fail();
+            assert.fail('Should not have created mailing list ' + response.data.xid);
         }, error => {
             assert.strictEqual(error.response.statusCode, 422);
         });
       });
 
     it('Updates a mailing list of type address', () => {
-        testContext.addressMailingList = {
-          xid: 'ML_TEST_ADDRESS',
+        const addressMailingList = {
+          xid: uuid(),
           name: 'Test address mailing list updated',
           recipients: [{
             recipientType: 'USER',
@@ -134,114 +136,195 @@ describe('Mailing lists', function() {
             ['08:00', '17:00']
           ]
         };
-
         return client.restRequest({
-            path: '/rest/v2/mailing-lists/ML_TEST_ADDRESS',
-            method: 'PUT',
-            data: testContext.addressMailingList
+            path: '/rest/v2/mailing-lists',
+            method: 'POST',
+            data: addressMailingList
         }).then(response => {
-            testContext.addressMailingList.id = response.data.id;
-            assert.equal(response.data.xid, testContext.addressMailingList.xid);
-            assert.equal(response.data.name, testContext.addressMailingList.name);
+            addressMailingList.id = response.data.id;
+            addressMailingList.name = 'updated';
             
-            assert.equal(response.data.recipients.length, testContext.addressMailingList.recipients.length);
-            assert.strictEqual(response.data.recipients[0].recipientType, testContext.addressMailingList.recipients[0].recipientType);
-            assert.strictEqual(response.data.recipients[0].username, testContext.addressMailingList.recipients[0].username);
-            
-            assert.equal(response.data.receiveAlarmEmails, testContext.addressMailingList.receiveAlarmEmails);
-            
-            assert.lengthOf(response.data.readPermissions, testContext.addressMailingList.readPermissions.length);
-            for(let i=0; i<response.data.readPermissions.length; i++)
-                assert.include(testContext.addressMailingList.readPermissions, response.data.readPermissions[i]);
-            
-            assert.lengthOf(response.data.editPermissions, testContext.addressMailingList.editPermissions.length);
-            for(let i=0; i<response.data.editPermissions.length; i++)
-                assert.include(testContext.addressMailingList.editPermissions, response.data.editPermissions[i]);
-            
-            assert.equal(response.data.inactiveSchedule.length, testContext.addressMailingList.inactiveSchedule.length);
-            for(let i=0; i<response.data.inactiveSchedule.length; i++){
-                let responseSched = response.data.inactiveSchedule[i];
-                let testContextSched = testContext.addressMailingList.inactiveSchedule[i];
-                assert.lengthOf(responseSched, testContextSched.length);
-                for(let j=0; j<responseSched.length; j++)
-                    assert.equal(responseSched[j], testContextSched[j]);
-            }
+            return client.restRequest({
+                path: `/rest/v2/mailing-lists/${addressMailingList.xid}`,
+                method: 'PUT',
+                data: addressMailingList
+            }).then(response => {
+                addressMailingList.id = response.data.id;
+                assert.equal(response.data.xid, addressMailingList.xid);
+                assert.equal(response.data.name, addressMailingList.name);
+                
+                assert.equal(response.data.recipients.length, addressMailingList.recipients.length);
+                assert.strictEqual(response.data.recipients[0].recipientType, addressMailingList.recipients[0].recipientType);
+                assert.strictEqual(response.data.recipients[0].username, addressMailingList.recipients[0].username);
+                
+                assert.equal(response.data.receiveAlarmEmails, addressMailingList.receiveAlarmEmails);
+                
+                assert.lengthOf(response.data.readPermissions, addressMailingList.readPermissions.length);
+                for(let i=0; i<response.data.readPermissions.length; i++)
+                    assert.include(addressMailingList.readPermissions, response.data.readPermissions[i]);
+                
+                assert.lengthOf(response.data.editPermissions, addressMailingList.editPermissions.length);
+                for(let i=0; i<response.data.editPermissions.length; i++)
+                    assert.include(addressMailingList.editPermissions, response.data.editPermissions[i]);
+                
+                assert.equal(response.data.inactiveSchedule.length, addressMailingList.inactiveSchedule.length);
+                for(let i=0; i<response.data.inactiveSchedule.length; i++){
+                    let responseSched = response.data.inactiveSchedule[i];
+                    let testContextSched = addressMailingList.inactiveSchedule[i];
+                    assert.lengthOf(responseSched, testContextSched.length);
+                    for(let j=0; j<responseSched.length; j++)
+                        assert.equal(responseSched[j], testContextSched[j]);
+                }
+            })
+        }).finally(() => {
+            return client.restRequest({
+                path: `/rest/v2/mailing-lists/${addressMailingList.xid}`,
+                method: 'DELETE'
+            });
         });
       });
 
     it('Patch a mailing list of type address', () => {
-        testContext.addressMailingList.readPermission = ['user', 'admin'];
-
+        const addressMailingList = {
+                xid: uuid(),
+                name: 'Test address mailing list updated',
+                recipients: [{
+                  recipientType: 'USER',
+                  username: 'admin'
+                },{
+                    recipientType: 'ADDRESS',
+                    address: 'test@test.com'
+                }],
+                receiveAlarmEmails: 'URGENT',
+                readPermissions: ['user'],
+                editPermissions: ['superadmin'],
+                inactiveSchedule: [
+                  ['08:00','10:00','13:00'],
+                  ['09:00','12:00'],
+                  [],
+                  [],
+                  ['07:00', '14:00', '15:00'],
+                  [],
+                  ['08:00', '17:00']
+                ]
+        };
         return client.restRequest({
-            path: '/rest/v2/mailing-lists/ML_TEST_ADDRESS',
-            method: 'PATCH',
-            data: {
-                readPermission: ['user', 'admin']
-            }
+            path: '/rest/v2/mailing-lists/',
+            method: 'POST',
+            data: addressMailingList
         }).then(response => {
-            testContext.addressMailingList.id = response.data.id;
-            assert.equal(response.data.xid, testContext.addressMailingList.xid);
-            assert.equal(response.data.name, testContext.addressMailingList.name);
-            
-            assert.equal(response.data.recipients.length, testContext.addressMailingList.recipients.length);
-            assert.strictEqual(response.data.recipients[0].recipientType, testContext.addressMailingList.recipients[0].recipientType);
-            assert.strictEqual(response.data.recipients[0].username, testContext.addressMailingList.recipients[0].username);
-            
-            assert.equal(response.data.receiveAlarmEmails, testContext.addressMailingList.receiveAlarmEmails);
-            
-            assert.lengthOf(response.data.readPermissions, testContext.addressMailingList.readPermissions.length);
-            for(let i=0; i<response.data.readPermissions.length; i++)
-                assert.include(testContext.addressMailingList.readPermissions, response.data.readPermissions[i]);
-            
-            assert.lengthOf(response.data.editPermissions, testContext.addressMailingList.editPermissions.length);
-            for(let i=0; i<response.data.editPermissions.length; i++)
-                assert.include(testContext.addressMailingList.editPermissions, response.data.editPermissions[i]);
-            
-            assert.equal(response.data.inactiveSchedule.length, testContext.addressMailingList.inactiveSchedule.length);
-            for(let i=0; i<response.data.inactiveSchedule.length; i++){
-                let responseSched = response.data.inactiveSchedule[i];
-                let testContextSched = testContext.addressMailingList.inactiveSchedule[i];
-                assert.lengthOf(responseSched, testContextSched.length);
-                for(let j=0; j<responseSched.length; j++)
-                    assert.equal(responseSched[j], testContextSched[j]);
-            }
-            
-            testContext.addressMailingList = response.data;
+            //Update to confirm patch worked
+            addressMailingList.id = response.data.id;
+            addressMailingList.readPermission = ['user', 'superadmin'];
+            return client.restRequest({
+                path: `/rest/v2/mailing-lists/${addressMailingList.xid}`,
+                method: 'PATCH',
+                data: {
+                    readPermission: ['user', 'superadmin']
+                }
+            }).then(response => {
+                addressMailingList.id = response.data.id;
+                assert.equal(response.data.xid, addressMailingList.xid);
+                assert.equal(response.data.name, addressMailingList.name);
+                
+                assert.equal(response.data.recipients.length, addressMailingList.recipients.length);
+                assert.strictEqual(response.data.recipients[0].recipientType, addressMailingList.recipients[0].recipientType);
+                assert.strictEqual(response.data.recipients[0].username, addressMailingList.recipients[0].username);
+                
+                assert.equal(response.data.receiveAlarmEmails, addressMailingList.receiveAlarmEmails);
+                
+                assert.lengthOf(response.data.readPermissions, addressMailingList.readPermissions.length);
+                for(let i=0; i<response.data.readPermissions.length; i++)
+                    assert.include(addressMailingList.readPermissions, response.data.readPermissions[i]);
+                
+                assert.lengthOf(response.data.editPermissions, addressMailingList.editPermissions.length);
+                for(let i=0; i<response.data.editPermissions.length; i++)
+                    assert.include(addressMailingList.editPermissions, response.data.editPermissions[i]);
+                
+                assert.equal(response.data.inactiveSchedule.length, addressMailingList.inactiveSchedule.length);
+                for(let i=0; i<response.data.inactiveSchedule.length; i++){
+                    let responseSched = response.data.inactiveSchedule[i];
+                    let testContextSched = addressMailingList.inactiveSchedule[i];
+                    assert.lengthOf(responseSched, testContextSched.length);
+                    for(let j=0; j<responseSched.length; j++)
+                        assert.equal(responseSched[j], testContextSched[j]);
+                }
+            }).finally(() => {
+                return client.restRequest({
+                    path: `/rest/v2/mailing-lists/${addressMailingList.xid}`,
+                    method: 'DELETE'
+                });
+            });            
         });
       });
 
     it('Query mailing lists', () => {
+        const addressMailingList = {
+                xid: uuid(),
+                name: 'Test address mailing list updated',
+                recipients: [{
+                  recipientType: 'USER',
+                  username: 'admin'
+                },{
+                    recipientType: 'ADDRESS',
+                    address: 'test@test.com'
+                }],
+                receiveAlarmEmails: 'URGENT',
+                readPermissions: ['user'],
+                editPermissions: ['superadmin'],
+                inactiveSchedule: [
+                  ['08:00','10:00','13:00'],
+                  ['09:00','12:00'],
+                  [],
+                  [],
+                  ['07:00', '14:00', '15:00'],
+                  [],
+                  ['08:00', '17:00']
+                ]
+        };
         return client.restRequest({
-            path: '/rest/v2/mailing-lists?xid=ML_TEST_ADDRESS',
-            method: 'GET',
-            data: testContext.addressMailingList
+            path: '/rest/v2/mailing-lists/',
+            method: 'POST',
+            data: addressMailingList
         }).then(response => {
-            assert.equal(response.data.total, 1);
-            assert.equal(response.data.items[0].xid, testContext.addressMailingList.xid);
-            assert.equal(response.data.items[0].name, testContext.addressMailingList.name);
-            
-            assert.equal(response.data.items[0].recipients.length, testContext.addressMailingList.recipients.length);
-            assert.strictEqual(response.data.items[0].recipients[0].recipientType, testContext.addressMailingList.recipients[0].recipientType);
-            assert.strictEqual(response.data.items[0].recipients[0].username, testContext.addressMailingList.recipients[0].username);
-            
-            assert.equal(response.data.items[0].receiveAlarmEmails, testContext.addressMailingList.receiveAlarmEmails);
-            
-            assert.lengthOf(response.data.items[0].readPermissions, testContext.addressMailingList.readPermissions.length);
-            for(let i=0; i<response.data.items[0].readPermissions.length; i++)
-                assert.include(testContext.addressMailingList.readPermissions, response.data.items[0].readPermissions[i]);
-            
-            assert.lengthOf(response.data.items[0].editPermissions, testContext.addressMailingList.editPermissions.length);
-            for(let i=0; i<response.data.items[0].editPermissions.length; i++)
-                assert.include(testContext.addressMailingList.editPermissions, response.data.items[0].editPermissions[i]);
-            
-            assert.equal(response.data.items[0].inactiveSchedule.length, testContext.addressMailingList.inactiveSchedule.length);
-            for(let i=0; i<response.data.items[0].inactiveSchedule.length; i++){
-                let responseSched = response.data.items[0].inactiveSchedule[i];
-                let testContextSched = testContext.addressMailingList.inactiveSchedule[i];
-                assert.lengthOf(responseSched, testContextSched.length);
-                for(let j=0; j<responseSched.length; j++)
-                    assert.equal(responseSched[j], testContextSched[j]);
-            }
+            addressMailingList.id = response.data.id;
+            return client.restRequest({
+                path: `/rest/v2/mailing-lists?xid=${addressMailingList.xid}`,
+                method: 'GET',
+                data: addressMailingList
+            }).then(response => {
+                assert.equal(response.data.total, 1);
+                assert.equal(response.data.items[0].xid, addressMailingList.xid);
+                assert.equal(response.data.items[0].name, addressMailingList.name);
+                
+                assert.equal(response.data.items[0].recipients.length, addressMailingList.recipients.length);
+                assert.strictEqual(response.data.items[0].recipients[0].recipientType, addressMailingList.recipients[0].recipientType);
+                assert.strictEqual(response.data.items[0].recipients[0].username, addressMailingList.recipients[0].username);
+                
+                assert.equal(response.data.items[0].receiveAlarmEmails, addressMailingList.receiveAlarmEmails);
+                
+                assert.lengthOf(response.data.items[0].readPermissions, addressMailingList.readPermissions.length);
+                for(let i=0; i<response.data.items[0].readPermissions.length; i++)
+                    assert.include(addressMailingList.readPermissions, response.data.items[0].readPermissions[i]);
+                
+                assert.lengthOf(response.data.items[0].editPermissions, addressMailingList.editPermissions.length);
+                for(let i=0; i<response.data.items[0].editPermissions.length; i++)
+                    assert.include(addressMailingList.editPermissions, response.data.items[0].editPermissions[i]);
+                
+                assert.equal(response.data.items[0].inactiveSchedule.length, addressMailingList.inactiveSchedule.length);
+                for(let i=0; i<response.data.items[0].inactiveSchedule.length; i++){
+                    let responseSched = response.data.items[0].inactiveSchedule[i];
+                    let testContextSched = addressMailingList.inactiveSchedule[i];
+                    assert.lengthOf(responseSched, testContextSched.length);
+                    for(let j=0; j<responseSched.length; j++)
+                        assert.equal(responseSched[j], testContextSched[j]);
+                }
+            });
+        }).finally(() => {
+            return client.restRequest({
+                path: `/rest/v2/mailing-lists/${addressMailingList.xid}`,
+                method: 'DELETE'
+            });
         });
       });
     
@@ -254,6 +337,30 @@ describe('Mailing lists', function() {
         
         const socketOpenDeferred = defer();
         const listUpdatedDeferred = defer();
+        
+        const addressMailingList = {
+                xid: uuid(),
+                name: 'Test address mailing list updated',
+                recipients: [{
+                  recipientType: 'USER',
+                  username: 'admin'
+                },{
+                    recipientType: 'ADDRESS',
+                    address: 'test@test.com'
+                }],
+                receiveAlarmEmails: 'URGENT',
+                readPermissions: ['user'],
+                editPermissions: ['superadmin'],
+                inactiveSchedule: [
+                  ['08:00','10:00','13:00'],
+                  ['09:00','12:00'],
+                  [],
+                  [],
+                  ['07:00', '14:00', '15:00'],
+                  [],
+                  ['08:00', '17:00']
+                ]
+        };
 
         return Promise.resolve().then(() => {
             ws = client.openWebSocket({
@@ -280,10 +387,11 @@ describe('Mailing lists', function() {
                 try{
                     assert.isString(msgStr);
                     const msg = JSON.parse(msgStr);
-                    assert.strictEqual(msg.status, 'OK');
-                    assert.strictEqual(msg.payload.action, 'update');
-                    assert.strictEqual(msg.payload.object.xid, testContext.addressMailingList.xid);
-                    listUpdatedDeferred.resolve();   
+                    if(msg.payload.action === 'update') {
+                        assert.strictEqual(msg.status, 'OK');
+                        assert.strictEqual(msg.payload.object.xid, addressMailingList.xid);
+                        listUpdatedDeferred.resolve();   
+                    }
                 }catch(e){
                     listUpdatedDeferred.reject(e);
                 }
@@ -304,9 +412,16 @@ describe('Mailing lists', function() {
         }).then(() => delay(1000)).then(() => {
             //TODO Fix DaoNotificationWebSocketHandler so we can remove this delay, only required for cold start
             return client.restRequest({
-                path: '/rest/v2/mailing-lists/ML_TEST_ADDRESS',
-                method: 'PUT',
-                data: testContext.addressMailingList
+                path: `/rest/v2/mailing-lists`,
+                method: 'POST',
+                data: addressMailingList
+            }).then(response => {
+                addressMailingList.id = response.data.id;
+                return client.restRequest({
+                    path: `/rest/v2/mailing-lists/${addressMailingList.xid}`,
+                    method: 'PUT',
+                    data: addressMailingList
+                });
             });
         }).then(() => listUpdatedDeferred.promise).then((r)=>{
             ws.close();
@@ -328,6 +443,30 @@ describe('Mailing lists', function() {
         const socketOpenDeferred = defer();
         const listUpdatedDeferred = defer();
 
+        const addressMailingList = {
+                xid: uuid(),
+                name: 'Test address mailing list updated',
+                recipients: [{
+                  recipientType: 'USER',
+                  username: 'admin'
+                },{
+                    recipientType: 'ADDRESS',
+                    address: 'test@test.com'
+                }],
+                receiveAlarmEmails: 'URGENT',
+                readPermissions: ['user'],
+                editPermissions: ['superadmin'],
+                inactiveSchedule: [
+                  ['08:00','10:00','13:00'],
+                  ['09:00','12:00'],
+                  [],
+                  [],
+                  ['07:00', '14:00', '15:00'],
+                  [],
+                  ['08:00', '17:00']
+                ]
+        };
+        
         return Promise.resolve().then(() => {
             ws = client.openWebSocket({
                 path: '/rest/v2/websocket/mailing-lists'
@@ -353,10 +492,11 @@ describe('Mailing lists', function() {
                 try{
                     assert.isString(msgStr);
                     const msg = JSON.parse(msgStr);
-                    assert.strictEqual(msg.status, 'OK');
-                    assert.strictEqual(msg.payload.action, 'delete');
-                    assert.strictEqual(msg.payload.object.xid, testContext.addressMailingList.xid);
-                    listUpdatedDeferred.resolve();   
+                    if(msg.payload.action === 'delete') {
+                        assert.strictEqual(msg.status, 'OK');
+                        assert.strictEqual(msg.payload.object.xid, addressMailingList.xid);
+                        listUpdatedDeferred.resolve();   
+                    }
                 }catch(e){
                     listUpdatedDeferred.reject(e);
                 }
@@ -376,11 +516,18 @@ describe('Mailing lists', function() {
             
         }).then(() => delay(1000)).then(() => {
             return client.restRequest({
-                path: `/rest/v2/mailing-lists/${testContext.addressMailingList.xid}`,
-                method: 'DELETE',
-                data: {}
+                path: `/rest/v2/mailing-lists`,
+                method: 'POST',
+                data: addressMailingList
             }).then(response => {
-                assert.equal(response.data.id, testContext.addressMailingList.id);
+                addressMailingList.id = response.data.id;
+                return client.restRequest({
+                    path: `/rest/v2/mailing-lists/${addressMailingList.xid}`,
+                    method: 'DELETE',
+                    data: {}
+                }).then(response => {
+                    assert.equal(response.data.id, addressMailingList.id);
+                });
             });
         }).then(() => listUpdatedDeferred.promise).then((r)=>{
             ws.close();

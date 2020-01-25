@@ -25,7 +25,6 @@ import com.serotonin.m2m2.db.dao.EventDetectorDao;
 import com.serotonin.m2m2.db.dao.EventHandlerDao;
 import com.serotonin.m2m2.db.dao.MailingListDao;
 import com.serotonin.m2m2.db.dao.PublisherDao;
-import com.serotonin.m2m2.db.dao.TemplateDao;
 import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.i18n.ProcessMessage;
 import com.serotonin.m2m2.module.DataSourceDefinition;
@@ -37,7 +36,6 @@ import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.DataPointVO.LoggingTypes;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.event.detector.AbstractPointEventDetectorVO;
-import com.serotonin.m2m2.vo.template.DataPointPropertiesTemplateVO;
 
 /**
  *
@@ -140,10 +138,10 @@ public class InternalLifecycle extends LifecycleDefinition {
      *
      */
     private void maybeInstallSystemMonitor(boolean safe) {
-        DataSourceVO<?> ds = DataSourceDao.getInstance().getByXid(SYSTEM_DATASOURCE_XID);
+        DataSourceVO ds = DataSourceDao.getInstance().getByXid(SYSTEM_DATASOURCE_XID);
         if(ds == null){
             //Create Data Source
-            DataSourceDefinition def = ModuleRegistry.getDataSourceDefinition(InternalDataSourceDefinition.DATA_SOURCE_TYPE);
+            DataSourceDefinition<InternalDataSourceVO> def = ModuleRegistry.getDataSourceDefinition(InternalDataSourceDefinition.DATA_SOURCE_TYPE);
             ds = def.baseCreateDataSourceVO();
             InternalDataSourceVO vo = (InternalDataSourceVO)ds;
             vo.setXid(SYSTEM_DATASOURCE_XID);
@@ -153,15 +151,16 @@ public class InternalLifecycle extends LifecycleDefinition {
             vo.setUpdatePeriodType(TimePeriods.SECONDS);
 
             try {
-                DataSourceDao.getInstance().saveDataSource(vo);
+                DataSourceDao.getInstance().insert(vo);
 
                 // Setup the Points
                 maybeCreatePoints(safe, ds);
 
                 // Enable the data source
+                InternalDataSourceVO existing = (InternalDataSourceVO) ds.copy();
                 if (!safe) {
                     vo.setEnabled(true);
-                    Common.runtimeManager.saveDataSource(vo);
+                    Common.runtimeManager.updateDataSource(existing, vo);
                 }
             }catch(ValidationException e) {
                 for(ProcessMessage message : e.getValidationResult().getMessages()){
@@ -177,7 +176,7 @@ public class InternalLifecycle extends LifecycleDefinition {
     /**
      *
      */
-    private void maybeCreatePoints(boolean safe, DataSourceVO<?> vo) {
+    private void maybeCreatePoints(boolean safe, DataSourceVO vo) {
         Map<String, ValueMonitor<?>> monitors = getAllHomePageMonitors();
         Iterator<String> it = monitors.keySet().iterator();
         while(it.hasNext()){
@@ -194,19 +193,12 @@ public class InternalLifecycle extends LifecycleDefinition {
                     dp.setName(monitor.getName().translate(Common.getTranslations()));
                     dp.setDataSourceId(vo.getId());
                     dp.setDeviceName(vo.getName());
-                    dp.setEventDetectors(new ArrayList<AbstractPointEventDetectorVO<?>>(0));
+                    dp.setEventDetectors(new ArrayList<AbstractPointEventDetectorVO>(0));
                     dp.defaultTextRenderer();
                     dp.setEnabled(true);
                     dp.setChartColour("");
 
                     dp.setPointLocator(pl);
-
-                    //Use default template
-                    DataPointPropertiesTemplateVO template = TemplateDao.getInstance().getDefaultDataPointTemplate(pl.getDataTypeId());
-                    if(template != null){
-                        template.updateDataPointVO(dp);
-                        dp.setTemplateId(template.getId());
-                    }
 
                     //If we are numeric then we want to log on change
                     switch(pl.getDataTypeId()){
@@ -225,16 +217,13 @@ public class InternalLifecycle extends LifecycleDefinition {
                                 // This are count points, no need for decimals.
                                 ((AnalogRenderer)dp.getTextRenderer()).setFormat("0");
                             }
-
-                            //No template in use here
-                            dp.setTemplateId(null);
                             break;
                     }
 
                     if(safe)
-                        DataPointDao.getInstance().saveDataPoint(dp);
+                        DataPointDao.getInstance().insert(dp);
                     else
-                        Common.runtimeManager.saveDataPoint(dp);
+                        Common.runtimeManager.insertDataPoint(dp);
                 }
             }
         }

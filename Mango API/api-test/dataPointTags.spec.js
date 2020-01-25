@@ -41,7 +41,7 @@ describe('Data point tags', function() {
         };
 
         this.ds = new DataSource({
-            xid: 'data_point_tags_test',
+            xid: uuid(),
             name: 'Data point tags test',
             enabled: true,
             modelType: 'VIRTUAL',

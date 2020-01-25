@@ -15,14 +15,14 @@ import com.infiniteautomation.mango.statistics.ValueChangeCounter;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.view.stats.StatisticsGenerator;
 import com.serotonin.m2m2.vo.DataPointVO;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
+
 
 /**
  *
  * @author Terry Packer
  */
 public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter {
-    
+
     protected final int pointCount;
     /**
      * @param info
@@ -32,7 +32,7 @@ public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter {
         super(info, jgen);
         this.pointCount = pointCount;
     }
-    
+
     @Override
     public void writeDataPointValue(DataPointValueTime value) throws IOException {
         this.jgen.writeStartObject();
@@ -44,7 +44,7 @@ public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter {
         }
         this.jgen.writeEndObject();
     }
-    
+
     /**
      * @param currentValues
      */
@@ -62,7 +62,7 @@ public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter {
         }
         this.jgen.writeEndObject();
     }
-    
+
     @Override
     public void writeAllStatistics(StatisticsGenerator statisticsGenerator, DataPointVO vo, boolean rendered)
             throws IOException {
@@ -93,7 +93,7 @@ public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter {
                 writeAnalogStatistic(vo.getXid() + DOT + RollupEnum.LAST.name(), vo, stats.getLastValue(), rendered);
                 writeIntegral(vo.getXid() + DOT + RollupEnum.INTEGRAL.name(), vo, stats.getIntegral(), rendered);
                 writeIntegerField(vo.getXid() + DOT + RollupEnum.COUNT.name(), stats.getCount());
-            }            
+            }
         }else {
             if (statisticsGenerator instanceof ValueChangeCounter) {
                 //We only need the timestamp here for image links
@@ -123,7 +123,7 @@ public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter {
                 writeIntegerField(RollupEnum.COUNT.name(), stats.getCount());
             }
         }
-    }   
+    }
 
     @Override
     public void writeStartArray(String name) throws IOException {

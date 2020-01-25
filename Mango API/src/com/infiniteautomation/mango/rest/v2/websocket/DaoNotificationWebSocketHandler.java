@@ -13,6 +13,7 @@ import com.infiniteautomation.mango.spring.events.DaoEventType;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.AbstractBasicVO;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 /**
  * @author Jared Wiltshire
@@ -22,16 +23,15 @@ public abstract class DaoNotificationWebSocketHandler<T extends AbstractBasicVO>
     /**
      * @param action add, update or delete
      * @param vo
-     * @param initiatorId random string to identify who initiated the event
      */
-    public void notify(String action, T vo, String initiatorId, String originalXid) {
+    public void notify(String action, T vo, String originalXid) {
         if (sessions.isEmpty()) return;
 
         Object message = null;
         String jsonMessage = null;
 
         if (!this.isModelPerUser()) {
-            message = createNotification(action, vo, initiatorId, originalXid, null);
+            message = createNotification(action, vo, originalXid, null);
 
             if (!this.isViewPerUser()) {
                 ObjectWriter writer;
@@ -58,7 +58,7 @@ public abstract class DaoNotificationWebSocketHandler<T extends AbstractBasicVO>
                 String userJsonMessage = jsonMessage;
 
                 if (userMessage == null) {
-                    userMessage = createNotification(action, vo, initiatorId, originalXid, user);
+                    userMessage = createNotification(action, vo, originalXid, user);
                     if (userMessage == null) {
                         continue;
                     }
@@ -85,12 +85,8 @@ public abstract class DaoNotificationWebSocketHandler<T extends AbstractBasicVO>
         }
     }
 
-    abstract protected boolean hasPermission(User user, T vo);
-    abstract protected Object createModel(T vo);
-
-    protected Object createModel(T vo, User user) {
-        return createModel(vo);
-    }
+    abstract protected boolean hasPermission(PermissionHolder user, T vo);
+    abstract protected Object createModel(T vo, PermissionHolder user);
 
     protected boolean isModelPerUser() {
         return false;
@@ -126,7 +122,7 @@ public abstract class DaoNotificationWebSocketHandler<T extends AbstractBasicVO>
             case DELETE: action = "delete"; break;
             case UPDATE: action = "update"; break;
         }
-        this.notify(action, event.getVo(), event.getInitiatorId(), event.getOriginalXid());
+        this.notify(action, event.getVo(), event.getOriginalXid());
     }
 
     protected void notify(WebSocketSession session, String jsonMessage) {
@@ -143,13 +139,13 @@ public abstract class DaoNotificationWebSocketHandler<T extends AbstractBasicVO>
         }
     }
 
-    protected Object createNotification(String action, T vo, String initiatorId, String originalXid, User user) {
+    protected Object createNotification(String action, T vo, String originalXid, User user) {
         Object model = createModel(vo, user);
         if (model == null) {
             return null;
         }
 
-        DaoNotificationModel payload = new DaoNotificationModel("create".equals(action) ? "add" : action, model, initiatorId, originalXid);
+        DaoNotificationModel payload = new DaoNotificationModel("create".equals(action) ? "add" : action, model, originalXid);
         return new MangoWebSocketResponseModel(MangoWebSocketResponseStatus.OK, payload);
     }
 }

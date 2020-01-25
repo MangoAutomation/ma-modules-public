@@ -13,8 +13,8 @@ import com.infiniteautomation.mango.rest.v2.websocket.DaoNotificationWebSocketHa
 import com.infiniteautomation.mango.rest.v2.websocket.WebSocketMapping;
 import com.infiniteautomation.mango.spring.events.DaoEvent;
 import com.infiniteautomation.mango.spring.service.DataSourceService;
-import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 /**
  * @author Terry Packer
@@ -22,29 +22,24 @@ import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
  */
 @Component("DataSourceWebSocketHandlerV2")
 @WebSocketMapping("/websocket/data-sources")
-public class DataSourceWebSocketHandler<T extends DataSourceVO<T>> extends DaoNotificationWebSocketHandler<T>{
+public class DataSourceWebSocketHandler<T extends DataSourceVO> extends DaoNotificationWebSocketHandler<T>{
 
-    private final DataSourceService<T> service;
+    private final DataSourceService service;
     private final RestModelMapper modelMapper;
 
     @Autowired
-    public DataSourceWebSocketHandler(DataSourceService<T> service, RestModelMapper modelMapper) {
+    public DataSourceWebSocketHandler(DataSourceService service, RestModelMapper modelMapper) {
         this.service = service;
         this.modelMapper = modelMapper;
     }
 
     @Override
-    protected boolean hasPermission(User user, T vo) {
+    protected boolean hasPermission(PermissionHolder user, T vo) {
         return service.hasReadPermission(user, vo);
     }
 
     @Override
-    protected Object createModel(T vo) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    protected Object createModel(T vo, User user) {
+    protected Object createModel(T vo, PermissionHolder user) {
         return modelMapper.map(vo, AbstractDataSourceModel.class, user);
     }
 

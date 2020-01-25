@@ -46,10 +46,10 @@ import io.swagger.annotations.ApiParam;
 public class SerialDataSourceRestController {
 
     private final Log LOG = LogFactory.getLog(SerialDataSourceRestController.class);
-    private final DataSourceService<?> service;
+    private final DataSourceService service;
 
     @Autowired
-    public SerialDataSourceRestController(DataSourceService<?> service) {
+    public SerialDataSourceRestController(DataSourceService service) {
         this.service = service;
     }
 
@@ -60,22 +60,22 @@ public class SerialDataSourceRestController {
             @ApiParam(value = "Valid Serial data source XID", required = true, allowMultiple = false)
             @PathVariable String xid,
             @AuthenticationPrincipal User user) {
-        
+
         List<SerialTestResultModel> results = new ArrayList<>();
-        
-        DataSourceVO<?> ds = service.get(xid, user);
+
+        DataSourceVO ds = service.get(xid);
         if(!(ds instanceof SerialDataSourceVO))
             throw new BadRequestException(new TranslatableMessage("validate.incompatibleDataSourceType"));
 
         //Are we a hex string
         if(model.isHex()){
-             if(!model.getMessage().matches("[0-9A-Fa-f]+")){
-                 throw new BadRequestException(new TranslatableMessage("serial.validate.notHex"));
-             }
+            if(!model.getMessage().matches("[0-9A-Fa-f]+")){
+                throw new BadRequestException(new TranslatableMessage("serial.validate.notHex"));
+            }
         }
-        List<DataPointVO> points = DataPointDao.getInstance().getDataPoints(ds.getId(), null);
-        
-        if(model.isUseTerminator()) { 
+        List<DataPointVO> points = DataPointDao.getInstance().getDataPoints(ds.getId());
+
+        if(model.isUseTerminator()) {
             //Convert the message
             String[] messages = SerialDataSourceRT.splitMessages(model.getMessage(), model.getMessageTerminator());
 
@@ -108,7 +108,7 @@ public class SerialDataSourceRestController {
                                 result.setPointXid(vo.getXid());
                                 result.setError(new TranslatableMessage("serial.test.noPointRegexMatch"));
                             }
-                            
+
                             @Override
                             public void messagePatternMismatch(String message, String messageRegex) {
                                 SerialTestResultModel result = new SerialTestResultModel();
@@ -118,7 +118,7 @@ public class SerialDataSourceRestController {
                                 result.setPointXid(vo.getXid());
                                 result.setError(new TranslatableMessage("serial.test.noMessageMatch"));
                             }
-                            
+
                             @Override
                             public void pointNotIdentified(String message, String messageRegex, int pointIdentifierIndex) {
                                 SerialTestResultModel result = new SerialTestResultModel();
@@ -128,7 +128,7 @@ public class SerialDataSourceRestController {
                                 result.setPointXid(vo.getXid());
                                 result.setError( new TranslatableMessage("serial.test.noIdentifierFound"));
                             }
-                            
+
                             @Override
                             public void matchGeneralFailure(Exception e) {
                                 SerialTestResultModel result = new SerialTestResultModel();
@@ -138,17 +138,17 @@ public class SerialDataSourceRestController {
                                 result.setPointXid(vo.getXid());
                                 result.setError(new TranslatableMessage("common.default", e.getMessage()));                            }
                         };
-                        
+
                         try{
-                            SerialDataSourceRT.matchPointValue(message, 
-                                model.getMessageRegex(), 
-                                model.getPointIdentifierIndex(),
-                                (SerialPointLocatorVO)vo.getPointLocator(),
-                                model.isHex(), LOG, callback);
+                            SerialDataSourceRT.matchPointValue(message,
+                                    model.getMessageRegex(),
+                                    model.getPointIdentifierIndex(),
+                                    (SerialPointLocatorVO)vo.getPointLocator(),
+                                    model.isHex(), LOG, callback);
                         }catch(Exception e){
                             callback.matchGeneralFailure(e);
                         }
-                    }   
+                    }
                 }else{
                     SerialTestResultModel result = new SerialTestResultModel();
                     results.add(result);
@@ -185,7 +185,7 @@ public class SerialDataSourceRestController {
                         result.setPointXid(vo.getXid());
                         result.setError(new TranslatableMessage("serial.test.noPointRegexMatch"));
                     }
-                    
+
                     @Override
                     public void messagePatternMismatch(String message, String messageRegex) {
                         SerialTestResultModel result = new SerialTestResultModel();
@@ -195,7 +195,7 @@ public class SerialDataSourceRestController {
                         result.setPointXid(vo.getXid());
                         result.setError(new TranslatableMessage("serial.test.noMessageMatch"));
                     }
-                    
+
                     @Override
                     public void pointNotIdentified(String message, String messageRegex, int pointIdentifierIndex) {
                         SerialTestResultModel result = new SerialTestResultModel();
@@ -205,7 +205,7 @@ public class SerialDataSourceRestController {
                         result.setPointXid(vo.getXid());
                         result.setError( new TranslatableMessage("serial.test.noIdentifierFound"));
                     }
-                    
+
                     @Override
                     public void matchGeneralFailure(Exception e) {
                         SerialTestResultModel result = new SerialTestResultModel();
@@ -215,20 +215,20 @@ public class SerialDataSourceRestController {
                         result.setPointXid(vo.getXid());
                         result.setError(new TranslatableMessage("common.default", e.getMessage()));                            }
                 };
-                
+
                 try{
-                    SerialDataSourceRT.matchPointValue(model.getMessage(), 
-                        model.getMessageRegex(), 
-                        model.getPointIdentifierIndex(),
-                        (SerialPointLocatorVO)vo.getPointLocator(),
-                        model.isHex(), LOG, callback);
+                    SerialDataSourceRT.matchPointValue(model.getMessage(),
+                            model.getMessageRegex(),
+                            model.getPointIdentifierIndex(),
+                            (SerialPointLocatorVO)vo.getPointLocator(),
+                            model.isHex(), LOG, callback);
                 }catch(Exception e){
                     callback.matchGeneralFailure(e);
                 }
-            }   
-        }    
-        
-        
+            }
+        }
+
+
         return results;
     }
 

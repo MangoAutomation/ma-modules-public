@@ -8,33 +8,34 @@ import java.time.ZonedDateTime;
 
 import com.infiniteautomation.mango.rest.v2.exception.ValidationFailedRestException;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueField;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.RollupEnum;
 import com.infiniteautomation.mango.rest.v2.model.time.TimePeriod;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
+
 
 /**
  *
  * @author Terry Packer
  */
 public class XidRollupTimeRangeQueryModel extends XidQueryInfoModel{
-    
+
     protected ZonedDateTime from;
     protected ZonedDateTime to;
     protected TimePeriod timePeriod;
     protected boolean truncate;
-   
+
     public XidRollupTimeRangeQueryModel() {
 
     }
-    
+
     public XidRollupTimeRangeQueryModel(String[] xids, String dateTimeFormat,
-            String timezone, Integer limit, ZonedDateTime from, ZonedDateTime to, 
+            String timezone, Integer limit, ZonedDateTime from, ZonedDateTime to,
             TimePeriod timePeriod, boolean truncate, PointValueField[] fields) {
         super(xids, dateTimeFormat, timezone, limit, null, null, fields);
         this.from = from;
         this.to = to;
         this.timePeriod = timePeriod;
     }
-    
+
     /**
      * @return the from
      */
@@ -92,7 +93,7 @@ public class XidRollupTimeRangeQueryModel extends XidQueryInfoModel{
     }
 
     /**
-     * 
+     *
      * @param multiplePointsPerArray
      * @param singleArray
      * @param rollup
@@ -102,7 +103,7 @@ public class XidRollupTimeRangeQueryModel extends XidQueryInfoModel{
     public ZonedDateTimeRangeQueryInfo createZonedDateTimeRangeQueryInfo(boolean multiplePointsPerArray,
             boolean singleArray, RollupEnum rollup) throws ValidationFailedRestException {
         return new ZonedDateTimeRangeQueryInfo(from, to, dateTimeFormat, timezone,
-                rollup, timePeriod, limit, true, multiplePointsPerArray, singleArray, 
+                rollup, timePeriod, limit, true, multiplePointsPerArray, singleArray,
                 PointValueTimeCacheControl.NONE, null, null, truncate, fields);
     };
 }

@@ -96,7 +96,7 @@ public class AnalogAttractorChangeVO extends ChangeTypeVO {
     @Override
     public void jsonWrite(ObjectWriter writer) throws IOException, JsonException {
         super.jsonWrite(writer);
-        DataPointVO dp = DataPointDao.getInstance().getDataPoint(attractionPointId, false);
+        DataPointVO dp = DataPointDao.getInstance().get(attractionPointId);
         if (dp == null)
             writer.writeEntry("attractionPointId", null);
         else
@@ -108,7 +108,7 @@ public class AnalogAttractorChangeVO extends ChangeTypeVO {
         super.jsonRead(reader, jsonObject);
         String text = jsonObject.getString("attractionPointId");
         if (text != null) {
-            DataPointVO dp = DataPointDao.getInstance().getDataPoint(text);
+            DataPointVO dp = DataPointDao.getInstance().getByXid(text);
             if (dp == null)
                 throw new TranslatableJsonException("virtual.error.attractor.missingPoint", "attractionPointId", text);
             attractionPointId = dp.getId();

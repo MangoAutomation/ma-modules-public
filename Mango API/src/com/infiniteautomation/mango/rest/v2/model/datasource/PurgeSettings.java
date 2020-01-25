@@ -17,7 +17,7 @@ import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 @JsonPropertyOrder({"override"})
 public class PurgeSettings {
 
-    public PurgeSettings(DataSourceVO<?> vo) {
+    public PurgeSettings(DataSourceVO vo) {
         this(vo.isPurgeOverride(), vo.getPurgePeriod(), vo.getPurgeType());
     }
     
@@ -58,12 +58,12 @@ public class PurgeSettings {
 		this.frequency = frequency;
 	}
 	
-	public void fromVO(DataSourceVO<?> vo) {
+	public void fromVO(DataSourceVO vo) {
         this.override = vo.isPurgeOverride();
         this.frequency = new TimePeriod(vo.getPurgePeriod() ,TimePeriodType.convertTo(vo.getPurgeType()));
 	}
 	
-	public void toVO(DataSourceVO<?> vo) {
+	public void toVO(DataSourceVO vo) {
 	    vo.setPurgeOverride(override);
 	    if(frequency != null) {
 	        vo.setPurgeType(TimePeriodType.convertFrom(frequency.getType()));

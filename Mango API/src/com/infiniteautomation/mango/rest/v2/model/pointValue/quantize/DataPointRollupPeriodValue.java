@@ -9,6 +9,7 @@ import com.goebl.simplify.Point;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.DataPointValueTime;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueField;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeWriter;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.RollupEnum;
 import com.infiniteautomation.mango.statistics.AnalogStatistics;
 import com.infiniteautomation.mango.statistics.NoStatisticsGenerator;
 import com.infiniteautomation.mango.statistics.StartsAndRuntimeList;
@@ -17,7 +18,6 @@ import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.view.stats.StatisticsGenerator;
 import com.serotonin.m2m2.vo.DataPointVO;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
 
 /**
  *
@@ -186,15 +186,15 @@ public class DataPointRollupPeriodValue implements DataPointValueTime {
     public long getTime() {
         return generator.getGenerator().getPeriodStartTime();
     }
-    
+
     @Override
     public void writeEntry(PointValueTimeWriter writer, boolean useXid, boolean allowTimestamp)
-            throws IOException {        
+            throws IOException {
         for(PointValueField field : writer.getInfo().getFields()) {
             if(!allowTimestamp && field == PointValueField.TIMESTAMP)
                 continue;
             field.writeValue(generator, writer.getInfo(), writer.getTranslations(), useXid, writer);
-        } 
+        }
     }
 
     @Override
@@ -210,7 +210,7 @@ public class DataPointRollupPeriodValue implements DataPointValueTime {
     public DataPointVO getVo() {
         return generator.getVo();
     }
-    
+
     @Override
     public String toString() {
         return "XID: " + generator.getVo().getXid();

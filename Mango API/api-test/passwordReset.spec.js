@@ -31,7 +31,7 @@ describe('Password reset', function() {
             username,
             email: `${username}@example.com`,
             name: `${username}`,
-            permissions: '',
+            permissions: [],
             password: this.testUserPassword
         });
         return this.testUser.save();

@@ -7,7 +7,6 @@ package com.infiniteautomation.mango.rest.v2.model.event;
 import java.util.Map;
 
 import com.serotonin.m2m2.rt.event.AlarmLevels;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.eventType.EventTypeModel;
 
 /**
  *
@@ -15,7 +14,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.eventType.EventTypeModel;
  * @author Terry Packer
  */
 public class RaiseEventModel {
-    private EventTypeModel event;
+    private AbstractEventTypeModel<?,?,?> event;
     private AlarmLevels level;
     private String message;
     private Map<String, Object> context;
@@ -23,13 +22,13 @@ public class RaiseEventModel {
     /**
      * @return the event
      */
-    public EventTypeModel getEvent() {
+    public AbstractEventTypeModel<?,?,?> getEvent() {
         return event;
     }
     /**
      * @param event the event to set
      */
-    public void setEvent(EventTypeModel event) {
+    public void setEvent(AbstractEventTypeModel<?,?,?> event) {
         this.event = event;
     }
     /**

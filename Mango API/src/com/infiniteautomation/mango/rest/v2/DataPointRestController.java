@@ -8,12 +8,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.jooq.Field;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -38,11 +40,11 @@ import com.infiniteautomation.mango.rest.v2.bulk.VoIndividualResponse;
 import com.infiniteautomation.mango.rest.v2.exception.AbstractRestV2Exception;
 import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
-import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.model.ActionAndModel;
+import com.infiniteautomation.mango.rest.v2.model.ListWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
-import com.infiniteautomation.mango.rest.v2.model.StreamedVOQueryWithTotal;
+import com.infiniteautomation.mango.rest.v2.model.StreamedVORqlQueryWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.dataPoint.DataPointModel;
 import com.infiniteautomation.mango.rest.v2.model.datasource.RuntimeStatusModel;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.MangoTaskTemporaryResourceManager;
@@ -51,20 +53,20 @@ import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource.
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceManager;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceStatusUpdate;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceWebSocketHandler;
+import com.infiniteautomation.mango.spring.db.DataSourceTableDefinition;
+import com.infiniteautomation.mango.spring.service.DataPointService;
+import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.RQLUtils;
-import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
-import com.serotonin.m2m2.db.dao.TemplateDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
+import com.serotonin.m2m2.vo.DataPointSummary;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
-import com.serotonin.m2m2.vo.permission.Permissions;
-import com.serotonin.m2m2.vo.template.DataPointPropertiesTemplateVO;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
+import com.serotonin.m2m2.vo.role.Role;
 import com.serotonin.m2m2.web.MediaTypes;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.PageQueryResultModel;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.DataPointFilter;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -96,13 +98,26 @@ public class DataPointRestController {
     private TemporaryResourceManager<DataPointBulkResponse, AbstractRestV2Exception> bulkResourceManager;
 
     private final BiFunction<DataPointVO, User, DataPointModel> map;
+    private final Map<String, Function<Object, Object>> valueConverters;
+    private final Map<String, Field<?>> fieldMap;
+    private final DataPointService service;
+    private final PermissionService permissionService;
 
     @Autowired
-    public DataPointRestController(TemporaryResourceWebSocketHandler websocket, final RestModelMapper modelMapper) {
-        this.bulkResourceManager = new MangoTaskTemporaryResourceManager<DataPointBulkResponse>(websocket);
+    public DataPointRestController(TemporaryResourceWebSocketHandler websocket, final RestModelMapper modelMapper,
+            DataPointService service, DataSourceTableDefinition dataSourceTable, PermissionService permissionService) {
+        this.bulkResourceManager = new MangoTaskTemporaryResourceManager<DataPointBulkResponse>(permissionService, websocket);
+        this.service = service;
+        this.permissionService = permissionService;
         this.map = (vo, user) -> {
             return modelMapper.map(vo, DataPointModel.class, user);
         };
+        this.valueConverters = new HashMap<>();
+        //Setup any exposed special query aliases to map model fields to db columns
+        this.fieldMap = new HashMap<>();
+        this.fieldMap.put("dataSourceName", dataSourceTable.getAlias("name"));
+        this.fieldMap.put("dataSourceTypeName", dataSourceTable.getAlias("typeName"));
+        this.fieldMap.put("dataSourceXid", dataSourceTable.getAlias("xid"));
     }
 
     @ApiOperation(
@@ -114,15 +129,7 @@ public class DataPointRestController {
             @ApiParam(value = "Valid Data Point XID", required = true, allowMultiple = false)
             @PathVariable String xid,
             @AuthenticationPrincipal User user) {
-
-        DataPointVO dataPoint = DataPointDao.getInstance().getByXid(xid);
-        if (dataPoint == null) {
-            throw new NotFoundRestException();
-        }
-        DataPointDao.getInstance().loadPartialRelationalData(dataPoint);
-
-        Permissions.ensureDataPointReadPermission(user, dataPoint);
-        return map.apply(dataPoint, user);
+        return map.apply(service.get(xid), user);
     }
 
     @ApiOperation(
@@ -134,15 +141,7 @@ public class DataPointRestController {
             @ApiParam(value = "Valid Data Point ID", required = true, allowMultiple = false)
             @PathVariable int id,
             @AuthenticationPrincipal User user) {
-
-        DataPointVO dataPoint = DataPointDao.getInstance().get(id);
-        if (dataPoint == null) {
-            throw new NotFoundRestException();
-        }
-        DataPointDao.getInstance().loadPartialRelationalData(dataPoint);
-
-        Permissions.ensureDataPointReadPermission(user, dataPoint);
-        return map.apply(dataPoint, user);
+        return map.apply(service.get(id), user);
     }
 
     @ApiOperation(value = "Enable/disable/restart a data point")
@@ -158,19 +157,7 @@ public class DataPointRestController {
             @ApiParam(value = "Restart the data point, enabled must equal true", required = false, defaultValue="false", allowMultiple = false)
             @RequestParam(required=false, defaultValue="false") boolean restart) {
 
-        DataPointVO dataPoint = DataPointDao.getInstance().getByXid(xid);
-        if (dataPoint == null) {
-            throw new NotFoundRestException();
-        }
-
-        Permissions.ensureDataSourcePermission(user, dataPoint.getDataSourceId());
-
-        if (enabled && restart) {
-            Common.runtimeManager.restartDataPoint(dataPoint);
-        } else {
-            Common.runtimeManager.enableDataPoint(dataPoint, enabled);
-        }
-
+        service.enableDisable(xid, enabled, restart);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -242,50 +229,13 @@ public class DataPointRestController {
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
 
-        DataPointVO dataPoint = DataPointDao.getInstance().getByXid(xid);
-        if (dataPoint == null) {
-            throw new NotFoundRestException();
-        }
+        DataPointVO vo = service.update(xid, model.toVO());
 
-        Permissions.ensureDataSourcePermission(user, dataPoint.getDataSourceId());
-
-        // check if they are trying to move it to another data source
-        String newDataSourceXid = model.getDataSourceXid();
-        if (newDataSourceXid != null && !newDataSourceXid.isEmpty() && !newDataSourceXid.equals(dataPoint.getDataSourceXid())) {
-            throw new BadRequestException(new TranslatableMessage("rest.error.pointChangeDataSource"));
-        }
-
-        DataPointPropertiesTemplateVO template = null;
-        if (model.isTemplateXidWasSet()) {
-            if (model.getTemplateXid() != null) {
-                template = (DataPointPropertiesTemplateVO) TemplateDao.getInstance().getByXid(model.getTemplateXid());
-                if (template == null) {
-                    throw new BadRequestException(new TranslatableMessage("invalidTemplateXid"));
-                }
-            }
-        } else if (dataPoint.getTemplateId() != null) {
-            template = (DataPointPropertiesTemplateVO) TemplateDao.getInstance().get(dataPoint.getTemplateId());
-        }
-
-        DataPointDao.getInstance().loadPartialRelationalData(dataPoint);
-        model.copyPropertiesTo(dataPoint);
-
-        // load the template after copying the properties, template properties override the ones in the data point
-        if (template != null) {
-            dataPoint.withTemplate(template);
-        }
-
-        dataPoint.ensureValid();
-
-        // have to load any existing event detectors for the data point as we are about to replace the VO in the runtime manager
-        DataPointDao.getInstance().setEventDetectors(dataPoint);
-        Common.runtimeManager.saveDataPoint(dataPoint);
-
-        URI location = builder.path("/data-points/{xid}").buildAndExpand(dataPoint.getXid()).toUri();
+        URI location = builder.path("/data-points/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
 
-        return new ResponseEntity<>(map.apply(dataPoint, user), headers, HttpStatus.OK);
+        return new ResponseEntity<>(map.apply(vo, user), headers, HttpStatus.OK);
     }
 
     @ApiOperation(value = "Create a new data point")
@@ -297,32 +247,13 @@ public class DataPointRestController {
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
 
-        DataSourceVO<?> dataSource = DataSourceDao.getInstance().getByXid(model.getDataSourceXid());
-        if (dataSource == null) {
-            throw new BadRequestException(new TranslatableMessage("rest.error.invalidDataSourceXid"));
-        }
+        DataPointVO vo = service.insert(model.toVO());
 
-        Permissions.ensureDataSourcePermission(user, dataSource);
-
-        DataPointVO dataPoint = new DataPointVO(dataSource);
-        model.copyPropertiesTo(dataPoint);
-
-        if (model.getTemplateXid() != null) {
-            DataPointPropertiesTemplateVO template = (DataPointPropertiesTemplateVO) TemplateDao.getInstance().getByXid(model.getTemplateXid());
-            if (template == null) {
-                throw new BadRequestException(new TranslatableMessage("rest.error.invalidTemplateXid"));
-            }
-            dataPoint.withTemplate(template);
-        }
-
-        dataPoint.ensureValid();
-        Common.runtimeManager.saveDataPoint(dataPoint);
-
-        URI location = builder.path("/data-points/{xid}").buildAndExpand(dataPoint.getXid()).toUri();
+        URI location = builder.path("/data-points/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
 
-        return new ResponseEntity<>(map.apply(dataPoint, user), headers, HttpStatus.CREATED);
+        return new ResponseEntity<>(map.apply(vo, user), headers, HttpStatus.CREATED);
     }
 
     @ApiOperation(value = "Delete a data point")
@@ -332,15 +263,8 @@ public class DataPointRestController {
             @PathVariable String xid,
             @AuthenticationPrincipal User user) {
 
-        DataPointVO dataPoint = DataPointDao.getInstance().getByXid(xid);
-        if (dataPoint == null) {
-            throw new NotFoundRestException();
-        }
-
-        Permissions.ensureDataSourcePermission(user, dataPoint.getDataSourceId());
-
-        Common.runtimeManager.deleteDataPoint(dataPoint);
-        return map.apply(dataPoint, user);
+        DataPointVO vo = service.delete(xid);
+        return map.apply(vo, user);
     }
 
     @ApiOperation(value = "Bulk get/create/update/delete data points",
@@ -437,17 +361,30 @@ public class DataPointRestController {
 
         List<TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception>> preFiltered =
                 this.bulkResourceManager.list().stream()
-                .filter((tr) -> user.hasAdminPermission() || user.getId() == tr.getUserId())
+                .filter((tr) -> user.hasAdminRole() || user.getId() == tr.getUserId())
                 .collect(Collectors.toList());
 
-        List<TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception>> results = preFiltered;
+        List<TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception>> results;
         ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
         if (query != null) {
             results = query.accept(new RQLToObjectListQuery<TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception>>(), preFiltered);
+        }else {
+            results = preFiltered;
         }
 
-        PageQueryResultModel<TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception>> result =
-                new PageQueryResultModel<>(results, preFiltered.size());
+        ListWithTotal<TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception>> result =
+                new ListWithTotal<TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception>>() {
+
+            @Override
+            public List<TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception>> getItems() {
+                return results;
+            }
+
+            @Override
+            public int getTotal() {
+                return results.size();
+            }
+        };
 
         // hide result property by setting a view
         MappingJacksonValue resultWithView = new MappingJacksonValue(result);
@@ -470,7 +407,7 @@ public class DataPointRestController {
 
         TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception> resource = bulkResourceManager.get(id);
 
-        if (!user.hasAdminPermission() && user.getId() != resource.getUserId()) {
+        if (!user.hasAdminRole() && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
 
@@ -494,7 +431,7 @@ public class DataPointRestController {
 
         TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception> resource = bulkResourceManager.get(id);
 
-        if (!user.hasAdminPermission() && user.getId() != resource.getUserId()) {
+        if (!user.hasAdminRole() && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
 
@@ -514,7 +451,7 @@ public class DataPointRestController {
 
         TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception> resource = bulkResourceManager.get(id);
 
-        if (!user.hasAdminPermission() && user.getId() != resource.getUserId()) {
+        if (!user.hasAdminRole() && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
 
@@ -587,13 +524,8 @@ public class DataPointRestController {
         Map<String,Object> export = new HashMap<>();
         List<DataPointVO> points = new ArrayList<>();
         for(String xid : xids) {
-            DataPointVO dataPoint = DataPointDao.getInstance().getByXid(xid);
-            if (dataPoint == null) {
-                throw new NotFoundRestException();
-            }
-            DataPointDao.getInstance().loadPartialRelationalData(dataPoint);
+            DataPointVO dataPoint = service.get(xid);
             points.add(dataPoint);
-            Permissions.ensureDataPointReadPermission(user, dataPoint);
         }
         export.put("dataPoints", points);
         return export;
@@ -606,7 +538,6 @@ public class DataPointRestController {
     private StreamedArrayWithTotal doQuery(ASTNode rql, User user, Function<DataPointModel, ?> toModel) {
 
         final Function<DataPointVO, Object> transformPoint = item -> {
-            DataPointDao.getInstance().loadPartialRelationalData(item);
             DataPointModel pointModel = map.apply(item, user);
 
             // option to apply a further transformation
@@ -617,16 +548,16 @@ public class DataPointRestController {
             return pointModel;
         };
 
-        if (user.hasAdminPermission()) {
-            return new StreamedVOQueryWithTotal<>(DataPointDao.getInstance(), rql, transformPoint);
+        if (user.hasAdminRole()) {
+            return new StreamedVORqlQueryWithTotal<>(service, rql, this.fieldMap, this.valueConverters, item -> true, transformPoint);
         } else {
             // Add some conditions to restrict based on user permissions
-            ConditionSortLimitWithTagKeys conditions = DataPointDao.getInstance().rqlToCondition(rql);
+            ConditionSortLimitWithTagKeys conditions = (ConditionSortLimitWithTagKeys) DataPointDao.getInstance().rqlToCondition(rql, this.fieldMap, this.valueConverters);
             conditions.addCondition(DataPointDao.getInstance().userHasPermission(user));
 
             DataPointFilter dataPointFilter = new DataPointFilter(user);
 
-            return new StreamedVOQueryWithTotal<>(DataPointDao.getInstance(), conditions, item -> {
+            return new StreamedVORqlQueryWithTotal<>(service, conditions, item -> {
                 boolean oldFilterMatches = dataPointFilter.hasDataPointReadPermission(item);
 
                 // this is just a double check, permissions should be accounted for via SQL restrictions added by DataPointDao.userHasPermission()
@@ -637,6 +568,80 @@ public class DataPointRestController {
                 return true;
             }, transformPoint);
         }
+    }
+
+    public class DataPointFilter {
+
+        protected PermissionHolder user;
+        protected Map<Integer, DataSourceSummary> dsIdMap;
+
+        public DataPointFilter(PermissionHolder user){
+            this.user = user;
+
+            this.dsIdMap = new HashMap<Integer, DataSourceSummary>();
+            for(DataSourceVO ds : DataSourceDao.getInstance().getAll()){
+                dsIdMap.put(ds.getId(), new DataSourceSummary(ds.getId(), ds.getXid(), ds.getEditRoles()));
+            }
+        }
+
+        public boolean hasDataPointReadPermission(Set<Role> userRoles, Set<Role> dataPointReadRoles, Set<Role> dataPointSetRoles, Set<Role> dataSourceEditRoles){
+            //Is the user superadmin
+            if(user.hasAdminRole())
+                return true;
+
+            //Check point read permissions
+            else if(permissionService.hasAnyRole(user, dataPointReadRoles))
+                return true;
+
+            //Check set permissions
+            else if(permissionService.hasAnyRole(user, dataPointSetRoles))
+                return true;
+
+            //Check data source edit permissions
+            else if(permissionService.hasAnyRole(user, dataSourceEditRoles))
+                return true;
+            else
+                return false;
+        }
+
+        public boolean hasDataPointReadPermission(DataPointSummary dp){
+            return hasDataPointReadPermission(user.getRoles(), dp.getReadRoles(), dp.getSetRoles(), this.dsIdMap.get(dp.getDataSourceId()).getEditRoles());
+        }
+
+        public boolean hasDataPointReadPermission(DataPointSummary dp, DataSourceSummary ds){
+            return hasDataPointReadPermission(user.getRoles(), dp.getReadRoles(), dp.getSetRoles(), ds.getEditRoles());
+        }
+
+        public boolean hasDataPointReadPermission(DataPointVO vo){
+            return hasDataPointReadPermission(user.getRoles(), vo.getReadRoles(),
+                    vo.getSetRoles(), this.dsIdMap.get(vo.getDataSourceId()).getEditRoles());
+        }
+    }
+
+    public class DataSourceSummary {
+
+        private int id;
+        private String xid;
+        private Set<Role> editRoles;
+
+        public DataSourceSummary(int id, String xid, Set<Role> editRoles){
+            this.id = id;
+            this.xid = xid;
+            this.editRoles = editRoles;
+        }
+
+        public int getId() {
+            return id;
+        }
+
+        public String getXid() {
+            return xid;
+        }
+
+        public Set<Role> getEditRoles() {
+            return editRoles;
+        }
+
     }
 
 }

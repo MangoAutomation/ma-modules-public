@@ -15,38 +15,29 @@ public class DaoNotificationModel {
      */
     @JsonProperty
     String action;
-    
+
     /**
      * The vo object
      */
     @JsonProperty
     Object object;
-    
-    /**
-     * A random string which identifies the initiator of the notification,
-     * may be null if none was given. Used to filter out events which the initiator
-     * of the WebSocket already knows about 
-     */
-    @JsonProperty
-    String initiatorId;
-    
+
     /**
      * Contains the xid of the object prior to an update (XIDs can be changed)
      */
     @JsonProperty
     String originalXid;
-    
+
     public DaoNotificationModel() {
     }
-    
-    public DaoNotificationModel(String action, Object object, String initiatorId) {
-        this(action, object, initiatorId, null);
+
+    public DaoNotificationModel(String action, Object object) {
+        this(action, object, null);
     }
-    
-    public DaoNotificationModel(String action, Object object, String initiatorId, String originalXid) {
+
+    public DaoNotificationModel(String action, Object object, String originalXid) {
         this.action = action;
         this.object = object;
-        this.initiatorId = initiatorId;
         this.originalXid = originalXid;
     }
 
@@ -64,14 +55,6 @@ public class DaoNotificationModel {
 
     public void setObject(Object object) {
         this.object = object;
-    }
-
-    public String getInitiatorId() {
-        return initiatorId;
-    }
-
-    public void setInitiatorId(String initiatorId) {
-        this.initiatorId = initiatorId;
     }
 
     public String getOriginalXid() {

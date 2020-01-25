@@ -51,18 +51,10 @@ describe('Data source service', function() {
         });
     };
     
-    it('Gets the internal data source', () => {
-        return DataSource.get('internal_mango_monitoring_ds').then(ds => {
-            assert.equal(ds.xid, 'internal_mango_monitoring_ds');
-            assert.equal(ds.name, 'Mango Internal');
-            assert.isTrue(ds.enabled);
-        });
-    });
-
-    it('Creates a new virtual data source', () => {
-        const ds = new DataSource({
-            xid: 'mango_client_test',
-            name: 'Mango client test',
+    beforeEach('Creates a new virtual data source', function() {
+        this.ds = new DataSource({
+            xid: uuid(),
+            name: uuid(),
             enabled: true,
             modelType: 'VIRTUAL',
             pollPeriod: { periods: 5, type: 'SECONDS' },
@@ -71,18 +63,31 @@ describe('Data source service', function() {
             editPermission: null
         });
 
-        return ds.save().then((savedDs) => {
-            assert.strictEqual(savedDs, ds);
-            assert.equal(savedDs.xid, 'mango_client_test');
-            assert.equal(savedDs.name, 'Mango client test');
+        return this.ds.save().then((savedDs) => {
+            assert.strictEqual(savedDs, this.ds);
+            assert.equal(savedDs.xid, this.ds.xid);
+            assert.equal(savedDs.name, this.ds.name);
             assert.isNumber(savedDs.id);
+            this.ds.id = savedDs.id;
+        });
+    });
+    
+    afterEach('Deletes the virtual data source and its points', function() {
+        return this.ds.delete();
+    });
+    
+    it('Gets the data source', function() {
+        return DataSource.get(this.ds.xid).then(ds => {
+            assert.equal(ds.xid, this.ds.xid);
+            assert.equal(ds.name, this.ds.name);
+            assert.equal(ds.enabled, this.ds.enabled);
         });
     });
 
-    it('Modifies the new virtual data source', () => {
-        return DataSource.get('mango_client_test').then(ds => {
-            assert.equal(ds.xid, 'mango_client_test');
-            assert.equal(ds.name, 'Mango client test');
+    it('Modifies a virtual data source', function() {
+        return DataSource.get(this.ds.xid).then(ds => {
+            assert.equal(ds.xid, this.ds.xid);
+            assert.equal(ds.name, this.ds.name);
             ds.name = 'xyz';
             return ds.save().then((savedDs) => {
                 assert.equal(savedDs.name, 'xyz');
@@ -90,11 +95,9 @@ describe('Data source service', function() {
         });
     });
 
-    it('Deletes the new virtual data source', () => {
-        return DataSource.delete('mango_client_test');
-    });
 
-    it('Lists all data sources', () => {
+
+    it('Lists all data sources', function() {
         return DataSource.list().then((dsList) => {
             assert.isArray(dsList);
             assert.isNumber(dsList.total);
@@ -102,66 +105,51 @@ describe('Data source service', function() {
         });
     });
 
-    it('Queries for the internal data source', () => {
-        return DataSource.query('xid=internal_mango_monitoring_ds').then((dsList) => {
+    it('Queries for the data source', function() {
+        return DataSource.query(`xid=${this.ds.xid}`).then((dsList) => {
             assert.isArray(dsList);
             assert.isNumber(dsList.total);
             assert.equal(dsList.length, dsList.total);
             assert.equal(dsList.length, 1);
-            assert.equal(dsList[0].name, 'Mango Internal');
+            assert.equal(dsList[0].name, this.ds.name);
         });
     });
     
     it('Copies a data source and points', function() {
-        this.ds = new DataSource({
-            xid: uuid(),
-            name: 'Mango client test',
-            enabled: true,
-            modelType: 'VIRTUAL',
-            pollPeriod: { periods: 5, type: 'HOURS' },
-            purgeSettings: { override: false, frequency: { periods: 1, type: 'YEARS' } },
-            alarmLevels: { POLL_ABORTED: 'URGENT' },
-            editPermission: null
-        });
 
-        return this.ds.save().then((savedDs) => {
-            assert.strictEqual(savedDs.name, 'Mango client test');
-            assert.isNumber(savedDs.id);
-        }).then(() => {
-            this.testPoint1 = newDataPoint(uuid(), this.ds.xid, 'FIRST', 'NONE', 0);
-            this.testPoint2 = newDataPoint(uuid(), this.ds.xid, 'FIRST', 'NONE', 0);
-            this.testPoint3 = newDataPoint(uuid(), this.ds.xid, 'COUNT', 'TOLERANCE', 10.0);
-            this.testPoint4 = newDataPoint(uuid(), this.ds.xid, 'COUNT', 'NONE', 0);
-            return Promise.all([this.testPoint1.save(), this.testPoint2.save(), this.testPoint3.save(), this.testPoint4.save()]);
-        }).then(() => {
-            return client.restRequest({
-                path: `/rest/v2/data-sources/copy/${this.ds.xid}`,
-                params: {
-                    copyName: this.ds.name + '-copy',
-                    copyXid: this.ds.xid + '-copy',
-                    copyDeviceName: 'Mango client copy device name',
-                    copyPoints: true,
-                    enabled: false
-                },
-                method: 'PUT'
-            }).then(response => {
-               assert.strictEqual(response.data.xid, this.ds.xid + '-copy');
-               assert.strictEqual(response.data.name, this.ds.name + '-copy');
-               assert.strictEqual(response.data.enabled, false);
-               return  client.restRequest({
-                   path: `/rest/v2/data-points?dataSourceXid=${this.ds.xid}-copy`,
-                   method: 'GET'
-               }).then(response => {
-                   assert.strictEqual(response.data.total, 4);
-                   response.data.items.forEach((dp, i) => {
-                       assert.strictEqual(dp.deviceName, 'Mango client copy device name');
+        this.testPoint1 = newDataPoint(uuid(), this.ds.xid, 'FIRST', 'NONE', 0);
+        this.testPoint2 = newDataPoint(uuid(), this.ds.xid, 'FIRST', 'NONE', 0);
+        this.testPoint3 = newDataPoint(uuid(), this.ds.xid, 'COUNT', 'TOLERANCE', 10.0);
+        this.testPoint4 = newDataPoint(uuid(), this.ds.xid, 'COUNT', 'NONE', 0);
+        return Promise.all([this.testPoint1.save(),
+            this.testPoint2.save(),
+            this.testPoint3.save(),
+            this.testPoint4.save()]).then(() => {
+                
+                return client.restRequest({
+                    path: `/rest/v2/data-sources/copy/${this.ds.xid}`,
+                    params: {
+                        copyName: this.ds.name + '-copy',
+                        copyXid: this.ds.xid + '-copy',
+                        copyDeviceName: 'Mango client copy device name',
+                        copyPoints: true,
+                        enabled: false
+                    },
+                    method: 'PUT'
+                }).then(response => {
+                   assert.strictEqual(response.data.xid, this.ds.xid + '-copy');
+                   assert.strictEqual(response.data.name, this.ds.name + '-copy');
+                   assert.strictEqual(response.data.enabled, false);
+                   return  client.restRequest({
+                       path: `/rest/v2/data-points?dataSourceXid=${this.ds.xid}-copy`,
+                       method: 'GET'
+                   }).then(response => {
+                       assert.strictEqual(response.data.total, 4);
+                       response.data.items.forEach((dp, i) => {
+                           assert.strictEqual(dp.deviceName, 'Mango client copy device name');
+                       });
                    });
-               });
+                });
             });
-        });
-    });
-    
-    after('Deletes the copied virtual data source and its points', function() {
-        return this.ds.delete();
     });
 });

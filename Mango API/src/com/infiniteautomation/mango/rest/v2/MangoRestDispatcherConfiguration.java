@@ -3,8 +3,11 @@
  */
 package com.infiniteautomation.mango.rest.v2;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.TimeZone;
+
+import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -36,25 +39,20 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.infiniteautomation.mango.rest.v2.JsonEmportV2Controller.ImportStatusProvider;
 import com.infiniteautomation.mango.rest.v2.genericcsv.CsvJacksonModule;
 import com.infiniteautomation.mango.rest.v2.genericcsv.GenericCSVMessageConverter;
+import com.infiniteautomation.mango.rest.v2.mapping.HtmlHttpMessageConverter;
+import com.infiniteautomation.mango.rest.v2.mapping.JScienceModule;
 import com.infiniteautomation.mango.rest.v2.mapping.JsonStreamMessageConverter;
 import com.infiniteautomation.mango.rest.v2.mapping.MangoRestV2JacksonModule;
 import com.infiniteautomation.mango.rest.v2.mapping.PointValueTimeStreamCsvMessageConverter;
+import com.infiniteautomation.mango.rest.v2.mapping.SerotoninJsonMessageConverter;
+import com.infiniteautomation.mango.rest.v2.mapping.SqlMessageConverter;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
-import com.infiniteautomation.mango.rest.v2.patch.PartialUpdateArgumentResolver;
+import com.infiniteautomation.mango.rest.v2.resolver.PartialUpdateArgumentResolver;
 import com.infiniteautomation.mango.rest.v2.util.MangoRestTemporaryResourceContainer;
 import com.infiniteautomation.mango.spring.MangoCommonConfiguration;
 import com.infiniteautomation.mango.spring.MangoRuntimeContextConfiguration;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.util.AbstractRestModelConverter;
 import com.serotonin.m2m2.web.MediaTypes;
-import com.serotonin.m2m2.web.mvc.rest.v1.CsvObjectStreamMessageConverter;
-import com.serotonin.m2m2.web.mvc.rest.v1.converter.CsvMessageConverter;
-import com.serotonin.m2m2.web.mvc.rest.v1.converter.CsvQueryArrayStreamMessageConverter;
-import com.serotonin.m2m2.web.mvc.rest.v1.converter.CsvRowMessageConverter;
-import com.serotonin.m2m2.web.mvc.rest.v1.converter.HtmlHttpMessageConverter;
-import com.serotonin.m2m2.web.mvc.rest.v1.converter.SerotoninJsonMessageConverter;
-import com.serotonin.m2m2.web.mvc.rest.v1.converter.SqlMessageConverter;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.AbstractRestModel;
 import com.serotonin.m2m2.web.mvc.spring.security.MangoMethodSecurityConfiguration;
 
 /**
@@ -71,6 +69,7 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
 
     final ObjectMapper mapper;
     final PartialUpdateArgumentResolver resolver;
+    final List<HttpMessageConverter<?>> converters;
 
     @Autowired
     public MangoRestDispatcherConfiguration(
@@ -80,15 +79,31 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
             RestModelMapper modelMapper) {
         this.mapper = mapper;
         this.resolver = resolver;
+        this.converters = new ArrayList<>();
 
         mapper
         .registerModule(new MangoRestV2JacksonModule())
-        .registerModule(new Jdk8Module());
+        .registerModule(new Jdk8Module())
+        .registerModule(new JScienceModule());
 
         modelMapper.addMappings(mapper);
     }
 
-
+    @PostConstruct
+    public void init() {
+        //Setup our message converter list
+        converters.add(new ResourceHttpMessageConverter());
+        converters.add(new ResourceRegionHttpMessageConverter());
+        converters.add(new JsonStreamMessageConverter(mapper));
+        converters.add(new MappingJackson2HttpMessageConverter(mapper));
+        converters.add(new ByteArrayHttpMessageConverter());
+        converters.add(new HtmlHttpMessageConverter());
+        converters.add(new SerotoninJsonMessageConverter());
+        converters.add(new SqlMessageConverter());
+        converters.add(new PointValueTimeStreamCsvMessageConverter(csvMapper()));
+        converters.add(new GenericCSVMessageConverter(csvObjectMapper()));
+        converters.add(new StringHttpMessageConverter(Common.UTF8_CS));
+    }
 
     /**
      * Create a Path helper that will not URL Decode
@@ -118,7 +133,6 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
         // dont set defaultContentType to text/html, we dont want this for REST
         // it causes Accept: */* headers to map to Accept: text/html
         // which causes hell for finding acceptable content types
-
         configurer
         .favorPathExtension(false)
         .ignoreAcceptHeader(false)
@@ -127,8 +141,7 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
         .mediaType("xml", MediaType.APPLICATION_XML)
         .mediaType("json", MediaType.APPLICATION_JSON_UTF8)
         .mediaType("sjson", MediaTypes.SEROTONIN_JSON)
-        .mediaType("csv", MediaTypes.CSV_V1)
-        .mediaType("csv1", MediaTypes.CSV_V1)
+        .mediaType("csv", MediaTypes.CSV_V2)
         .mediaType("csv2", MediaTypes.CSV_V2)
         .mediaType("txt", MediaType.TEXT_PLAIN);
     }
@@ -153,31 +166,12 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
     }
 
     /**
-     * Configure the Message Converters for the API
+     * Configure the Message Converters for the API, this will override any defaults
+     *  added by Spring.
      */
     @Override
     public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
-
-        // see WebMvcConfigurationSupport.addDefaultHttpMessageConverters()
-        converters.add(new ResourceHttpMessageConverter());
-        converters.add(new ResourceRegionHttpMessageConverter());
-        converters.add(new JsonStreamMessageConverter(mapper));
-        converters.add(new MappingJackson2HttpMessageConverter(mapper));
-        converters.add(new CsvMessageConverter());
-        converters.add(new CsvRowMessageConverter());
-        converters.add(new CsvQueryArrayStreamMessageConverter());
-        converters.add(new ByteArrayHttpMessageConverter());
-        converters.add(new HtmlHttpMessageConverter());
-        converters.add(new SerotoninJsonMessageConverter());
-        converters.add(new SqlMessageConverter());
-        converters.add(new PointValueTimeStreamCsvMessageConverter(csvMapper()));
-        converters.add(new CsvObjectStreamMessageConverter());
-        converters.add(new GenericCSVMessageConverter(csvObjectMapper()));
-        converters.add(new StringHttpMessageConverter(Common.UTF8_CS));
-
-        //Now is a good time to register our Sero Json Converter
-        Common.JSON_CONTEXT.addConverter(new AbstractRestModelConverter(), AbstractRestModel.class);
-
+        converters.addAll(this.converters);
     }
 
     /**
@@ -188,7 +182,6 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
     public MangoRestTemporaryResourceContainer<ImportStatusProvider> importStatusResources() {
         return new MangoRestTemporaryResourceContainer<ImportStatusProvider>("IMPORT_");
     }
-
 
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {

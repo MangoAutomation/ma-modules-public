@@ -32,7 +32,6 @@ import com.infiniteautomation.mango.rest.v2.patch.PatchVORequestBody;
 import com.infiniteautomation.mango.spring.service.PublisherService;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.vo.User;
-import com.serotonin.m2m2.vo.publish.PublishedPointVO;
 import com.serotonin.m2m2.vo.publish.PublisherVO;
 import com.serotonin.m2m2.web.MediaTypes;
 
@@ -48,20 +47,20 @@ import net.jazdw.rql.parser.ASTNode;
 @Api(value="Mango Publishers")
 @RestController
 @RequestMapping("/publishers-v2")
-public class PublishersRestController<POINT extends PublishedPointVO, PUBLISHER extends PublisherVO<POINT>> {
+public class PublishersRestController {
 
-    private final PublisherService<POINT> service;
+    private final PublisherService service;
     private final BiFunction<PublisherVO<?>, User, AbstractPublisherModel<?,?>> map;
 
     @Autowired
-    public PublishersRestController(final PublisherService<POINT> service, final RestModelMapper modelMapper) {
+    public PublishersRestController(final PublisherService service, final RestModelMapper modelMapper) {
         this.service = service;
         this.map = (vo, user) -> {
             return modelMapper.map(vo, AbstractPublisherModel.class, user);
         };
     }
 
-    
+
     @ApiOperation(
             value = "Query Publishers Sources",
             notes = "RQL Formatted Query",
@@ -87,7 +86,7 @@ public class PublishersRestController<POINT extends PublishedPointVO, PUBLISHER 
             @PathVariable String xid,
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
-        return map.apply(service.getFull(xid, user), user);
+        return map.apply(service.get(xid), user);
     }
 
     @ApiOperation(
@@ -100,18 +99,18 @@ public class PublishersRestController<POINT extends PublishedPointVO, PUBLISHER 
             @PathVariable int id,
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
-        return map.apply(service.getFull(id, user), user);
+        return map.apply(service.get(id), user);
     }
 
     @ApiOperation(value = "Save publisher")
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<AbstractPublisherModel<?,?>> save(
-            @RequestBody(required=true) AbstractPublisherModel<POINT, PUBLISHER> model,
+            @RequestBody(required=true) AbstractPublisherModel<?, ?> model,
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder,
             HttpServletRequest request) {
 
-        PublisherVO<?> vo = this.service.insertFull(model.toVO(), user);
+        PublisherVO<?> vo = this.service.insert(model.toVO());
         URI location = builder.path("/publishers-v2/{xid}").buildAndExpand(new Object[]{vo.getXid()}).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
@@ -122,12 +121,12 @@ public class PublishersRestController<POINT extends PublishedPointVO, PUBLISHER 
     @RequestMapping(method = RequestMethod.PUT, value = "/{xid}")
     public ResponseEntity<AbstractPublisherModel<?,?>> update(
             @PathVariable String xid,
-            @RequestBody(required=true) AbstractPublisherModel<POINT, PUBLISHER> model,
+            @RequestBody(required=true) AbstractPublisherModel<?, ?> model,
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder,
             HttpServletRequest request) {
 
-        PublisherVO<?> vo = this.service.update(xid, model.toVO(), user);
+        PublisherVO<?> vo = this.service.update(xid, model.toVO());
         URI location = builder.path("/publishers-v2/{xid}").buildAndExpand(new Object[]{vo.getXid()}).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
@@ -146,11 +145,11 @@ public class PublishersRestController<POINT extends PublishedPointVO, PUBLISHER 
             @PatchVORequestBody(
                     service=PublisherService.class,
                     modelClass=AbstractPublisherModel.class)
-            AbstractPublisherModel<POINT, PUBLISHER> model,
+            AbstractPublisherModel<?, ?> model,
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
 
-        PublisherVO<?> vo = service.updateFull(xid, model.toVO(), user);
+        PublisherVO<?> vo = service.update(xid, model.toVO());
 
         URI location = builder.path("/publishers-v2/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
@@ -170,7 +169,7 @@ public class PublishersRestController<POINT extends PublishedPointVO, PUBLISHER 
             @PathVariable String xid,
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
-        return map.apply(service.delete(xid, user), user);
+        return map.apply(service.delete(xid), user);
     }
 
     @ApiOperation(value = "Enable/disable/restart a publisher")
@@ -185,7 +184,7 @@ public class PublishersRestController<POINT extends PublishedPointVO, PUBLISHER 
             @RequestParam(required=false, defaultValue="false") boolean restart,
 
             @AuthenticationPrincipal User user) {
-        service.restart(xid, enabled, restart, user);
+        service.restart(xid, enabled, restart);
     }
 
 
@@ -198,7 +197,7 @@ public class PublishersRestController<POINT extends PublishedPointVO, PUBLISHER 
             @PathVariable String xid,
             @AuthenticationPrincipal User user) {
 
-        PublisherVO<?> vo = service.get(xid, user);
+        PublisherVO<?> vo = service.get(xid);
         Map<String,Object> export = new LinkedHashMap<>();
         export.put("publishers", Collections.singletonList(vo));
         return export;
@@ -212,11 +211,11 @@ public class PublishersRestController<POINT extends PublishedPointVO, PUBLISHER 
      */
     private StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
         //If we are admin or have overall data source permission we can view all
-        if (user.hasAdminPermission()) {
-            return new StreamedVORqlQueryWithTotal<>(service, rql, vo -> map.apply(vo, user), true);
+        if (user.hasAdminRole()) {
+            return new StreamedVORqlQueryWithTotal<>(service, rql, vo -> map.apply(vo, user));
         } else {
-            return new StreamedVORqlQueryWithTotal<>(service, rql, user, vo -> map.apply(vo, user), true);
+            return new StreamedVORqlQueryWithTotal<>(service, rql, user, vo -> map.apply(vo, user));
         }
     }
-    
+
 }

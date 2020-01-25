@@ -1,3 +1,9 @@
+*Version 4.0.0*
+* Upgraded to work with core version 4.0.x
+* Drop support for Point Hierarchy type watchlists, they will be deleted
+* Add WatchList create permission, default to all users allowed to create lists
+* Drop v1 REST support
+
 *Version 3.7.0*
 * Upgraded to work with core version 3.7.x
 

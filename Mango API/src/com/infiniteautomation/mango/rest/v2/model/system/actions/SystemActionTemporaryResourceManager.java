@@ -17,15 +17,17 @@ import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceManager;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceManager.ResourceTask;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceWebSocketHandler;
-import com.serotonin.m2m2.db.dao.SystemSettingsDao;
+import com.infiniteautomation.mango.spring.service.PermissionService;
+import com.infiniteautomation.mango.util.exception.NotFoundException;
+import com.serotonin.m2m2.module.ModuleRegistry;
+import com.serotonin.m2m2.module.PermissionDefinition;
 import com.serotonin.m2m2.vo.User;
-import com.serotonin.m2m2.vo.permission.Permissions;
 
 /**
  * Class to manage system action results/feedback
- * 
+ *
  * Autowire into System action controllers as necessary
- * 
+ *
  * @author Terry Packer
  *
  */
@@ -33,13 +35,15 @@ import com.serotonin.m2m2.vo.permission.Permissions;
 public class SystemActionTemporaryResourceManager {
 
     protected final TemporaryResourceManager<SystemActionResult, AbstractRestV2Exception> resourceManager;
+    protected final PermissionService service;
 
     @Autowired
-    public SystemActionTemporaryResourceManager(TemporaryResourceWebSocketHandler websocket) {
-        this.resourceManager = new MangoTaskTemporaryResourceManager<>(websocket);
+    public SystemActionTemporaryResourceManager(TemporaryResourceWebSocketHandler websocket, PermissionService service) {
+        this.resourceManager = new MangoTaskTemporaryResourceManager<>(service);
+        this.service = service;
     }
-    
-    
+
+
     /**
      * Create the task
      * @param requestBody
@@ -51,22 +55,28 @@ public class SystemActionTemporaryResourceManager {
      * @return
      */
     public <T extends SystemActionResult> ResponseEntity<TemporaryResource<T, AbstractRestV2Exception>> create(
-            SystemActionModel requestBody, 
+            SystemActionModel requestBody,
             User user,
-            UriComponentsBuilder builder, 
+            UriComponentsBuilder builder,
             String permissionTypeName,
-            String resourceType, 
+            String resourceType,
             ResourceTask<SystemActionResult, AbstractRestV2Exception> task){
         requestBody.ensureValid();
 
         Long expiration = requestBody.getExpiration();
         Long timeout = requestBody.getTimeout();
 
-        if(permissionTypeName != null)
-            Permissions.ensureHasAnyPermission(user, Permissions.explodePermissionGroups(SystemSettingsDao.instance.getValue(permissionTypeName, "")));
-        else
-            user.ensureHasAdminPermission();
-        
+        if(permissionTypeName != null) {
+            PermissionDefinition def = ModuleRegistry.getPermissionDefinition(permissionTypeName);
+            if(def == null) {
+                throw new NotFoundException();
+            }else {
+                service.ensurePermission(user, def.getPermission());
+            }
+        }else {
+            user.ensureHasAdminRole();
+        }
+
         @SuppressWarnings("unchecked")
         TemporaryResource<T, AbstractRestV2Exception> responseBody = (TemporaryResource<T, AbstractRestV2Exception>) resourceManager.newTemporaryResource(
                 resourceType, null, user.getId(), expiration, timeout, task);
@@ -75,7 +85,7 @@ public class SystemActionTemporaryResourceManager {
         headers.setLocation(builder.path("/system-actions/status/{id}").buildAndExpand(responseBody.getId()).toUri());
         return new ResponseEntity<TemporaryResource<T, AbstractRestV2Exception>>(responseBody, headers, HttpStatus.CREATED);
     }
-    
+
     /**
      * Get the status for a result
      * @param id
@@ -85,13 +95,13 @@ public class SystemActionTemporaryResourceManager {
     public TemporaryResource<SystemActionResult, AbstractRestV2Exception> getStatus(String id, User user) {
         TemporaryResource<SystemActionResult, AbstractRestV2Exception> resource = resourceManager.get(id);
 
-        if (!user.hasAdminPermission() && user.getId() != resource.getUserId()) {
+        if (!user.hasAdminRole() && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
-        
+
         return resource;
     }
-    
+
     /**
      * Cancel/Delete a temporary resource for a system action
      * @param id
@@ -101,10 +111,10 @@ public class SystemActionTemporaryResourceManager {
     public TemporaryResource<SystemActionResult, AbstractRestV2Exception> cancel(String id, User user) {
         TemporaryResource<SystemActionResult, AbstractRestV2Exception> resource = resourceManager.get(id);
 
-        if (!user.hasAdminPermission() && user.getId() != resource.getUserId()) {
+        if (!user.hasAdminRole() && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
-        
+
         if(!resource.isComplete())
             resource.cancel();
         resource.remove();

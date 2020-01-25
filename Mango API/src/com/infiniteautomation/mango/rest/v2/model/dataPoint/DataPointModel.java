@@ -4,23 +4,24 @@
 package com.infiniteautomation.mango.rest.v2.model.dataPoint;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.apache.commons.lang3.StringUtils;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.infiniteautomation.mango.rest.v2.model.AbstractVoModel;
+import com.infiniteautomation.mango.rest.v2.model.dataPoint.textRenderer.BaseTextRendererModel;
+import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.util.UnitUtil;
 import com.serotonin.m2m2.vo.DataPointVO;
-import com.serotonin.m2m2.web.mvc.rest.v1.mapping.SuperclassModelDeserializer;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.PointLocatorModel;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.TimePeriodModel;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.chartRenderer.BaseChartRendererModel;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.chartRenderer.ChartRendererFactory;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.textRenderer.BaseTextRendererModel;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.textRenderer.TextRendererFactory;
+import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
+import com.serotonin.m2m2.vo.role.Role;
+
 
 /**
  * Data point REST model v2
@@ -28,7 +29,7 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.dataPoint.textRenderer.TextRende
  * @author Jared Wiltshire
  *
  */
-public class DataPointModel {
+public class DataPointModel extends AbstractVoModel<DataPointVO> {
 
     Integer id;
     String xid;
@@ -38,7 +39,6 @@ public class DataPointModel {
     String deviceName;
     String readPermission;
     String setPermission;
-    Integer pointFolderId;
     Boolean purgeOverride;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     TimePeriodModel purgePeriod;
@@ -49,14 +49,11 @@ public class DataPointModel {
     Boolean useRenderedUnit;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     String renderedUnit;
-    PointLocatorModel<?> pointLocator;
+    AbstractPointLocatorModel<?> pointLocator;
     String chartColour;
     String plotType;
     LoggingPropertiesModel loggingProperties;
-    @JsonDeserialize(using = SuperclassModelDeserializer.class)
     BaseTextRendererModel<?> textRenderer;
-    @JsonDeserialize(using = SuperclassModelDeserializer.class)
-    BaseChartRendererModel<?> chartRenderer;
     String rollup;
     String simplifyType;
     Double simplifyTolerance;
@@ -66,16 +63,6 @@ public class DataPointModel {
     Double setExtremeLowLimit;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     Double setExtremeHighLimit;
-
-    /**
-     * Used to indicate that the templateXid was explicitly set to null in the JSON as opposed to
-     * initialized to null by Java.
-     */
-    @JsonIgnore
-    boolean templateXidWasSet = false;
-    String templateXid;
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    String templateName;
 
     Integer dataSourceId;
     String dataSourceXid;
@@ -94,15 +81,19 @@ public class DataPointModel {
      * @param point
      */
     public DataPointModel(DataPointVO point) {
+        fromVO(point);
+    }
+
+    @Override
+    public void fromVO(DataPointVO point) {
         this.id = point.getId();
         this.xid = point.getXid();
         this.name = point.getName();
         this.enabled = point.isEnabled();
 
         this.deviceName = point.getDeviceName();
-        this.readPermission = point.getReadPermission();
-        this.setPermission = point.getSetPermission();
-        this.pointFolderId = point.getPointFolderId();
+        this.readPermission = PermissionService.implodeRoles(point.getReadRoles());
+        this.setPermission = PermissionService.implodeRoles(point.getSetRoles());
         this.purgeOverride = point.isPurgeOverride();
         if (this.purgeOverride) {
             this.purgePeriod = new TimePeriodModel(point.getPurgePeriod(), point.getPurgeType());
@@ -122,16 +113,11 @@ public class DataPointModel {
         this.tags = point.getTags();
 
         this.loggingProperties = new LoggingPropertiesModel(point);
-        this.textRenderer = TextRendererFactory.createModel(point);
-        this.chartRenderer = ChartRendererFactory.createModel(point);
 
         this.dataSourceId = point.getDataSourceId();
         this.dataSourceXid = point.getDataSourceXid();
         this.dataSourceName = point.getDataSourceName();
         this.dataSourceTypeName = point.getDataSourceTypeName();
-
-        this.templateXid = point.getTemplateXid();
-        this.templateName = point.getTemplateName();
 
         this.rollup = Common.ROLLUP_CODES.getCode(point.getRollup());
         this.simplifyType = DataPointVO.SIMPLIFY_TYPE_CODES.getCode(point.getSimplifyType());
@@ -143,10 +129,19 @@ public class DataPointModel {
             this.setExtremeLowLimit = point.getSetExtremeLowLimit();
             this.setExtremeHighLimit = point.getSetExtremeHighLimit();
         }
-        this.dataSourceEditRoles = point.getDataSourceEditRoles();
+        if(point.getDataSourceEditRoles() != null) {
+            this.dataSourceEditRoles = new HashSet<>();
+            for(Role role : point.getDataSourceEditRoles()) {
+                this.dataSourceEditRoles.add(role.getXid());
+            }
+        }
     }
 
-    public void copyPropertiesTo(DataPointVO point) {
+    @Override
+    public DataPointVO toVO() {
+        DataPointVO point = new DataPointVO();
+        PermissionService service = Common.getBean(PermissionService.class);
+
         if (xid != null) {
             point.setXid(xid);
         }
@@ -159,15 +154,29 @@ public class DataPointModel {
         if (deviceName != null) {
             point.setDeviceName(deviceName);
         }
+        //TODO Mango 4.0 Use ModelMapper.unmap
         if (readPermission != null) {
-            point.setReadPermission(readPermission);
+            point.setReadRoles(service.explodeLegacyPermissionGroupsToRoles(readPermission));
         }
+        //TODO Mango 4.0 Use ModelMapper.unmap
         if (setPermission != null) {
-            point.setSetPermission(setPermission);
+            point.setSetRoles(service.explodeLegacyPermissionGroupsToRoles(setPermission));
         }
-        if (pointFolderId != null) {
-            point.setPointFolderId(pointFolderId);
+        //TODO Mango 4.0 Use ModelMapper.unmap
+        if(StringUtils.isNotEmpty(dataSourceXid)) {
+            DataSourceVO ds = DataSourceDao.getInstance().getByXid(dataSourceXid);
+            if(ds!= null) {
+                point.setDataSourceId(ds.getId());
+                point.setDataSourceName(ds.getName());
+                point.setDataSourceXid(ds.getXid());
+                point.setDataSourceTypeName(ds.getTypeKey());
+            }
         }
+        //TODO Mango 4.0 Use ModelMapper.unmap
+        if(point.getDataSourceId() <= 0 && dataSourceId != null && dataSourceId > 0) {
+            point.setDataSourceId(dataSourceId);
+        }
+
         if (purgeOverride != null) {
             point.setPurgeOverride(purgeOverride);
             //Ensure that a purge period must be supplied
@@ -186,7 +195,6 @@ public class DataPointModel {
                 point.setUnit(UnitUtil.parseLocal(unit));
             } catch(IllegalArgumentException e) {
                 point.setUnit(null); //Signal to use the unit string
-                point.setUnitString(unit);
             }
         }
         if (useIntegralUnit != null) {
@@ -196,8 +204,7 @@ public class DataPointModel {
             try {
                 point.setIntegralUnit(UnitUtil.parseLocal(integralUnit));
             } catch(IllegalArgumentException e) {
-                point.setIntegralUnit(null); //Signal to use the unit string
-                point.setIntegralUnitString(integralUnit);
+                point.setIntegralUnit(null);
             }
         }
         if (useRenderedUnit != null) {
@@ -207,8 +214,7 @@ public class DataPointModel {
             try {
                 point.setRenderedUnit(UnitUtil.parseLocal(renderedUnit));
             } catch(IllegalArgumentException e) {
-                point.setRenderedUnit(null); //Signal to use the unit string
-                point.setRenderedUnitString(renderedUnit);
+                point.setRenderedUnit(null);
             }
         }
         if (chartColour != null) {
@@ -241,20 +247,11 @@ public class DataPointModel {
             loggingProperties.copyPropertiesTo(point);
         }
         if (this.textRenderer != null) {
-            TextRendererFactory.updateDataPoint(point, textRenderer);
-        }
-        if (this.chartRenderer != null) {
-            ChartRendererFactory.updateDataPoint(point, chartRenderer);
-        }
-        if (pointLocator != null) {
-            point.setPointLocator(pointLocator.getData());
+            point.setTextRenderer(textRenderer.toVO());
         }
 
-        // template XID is allowed to be null, if it is then clear the template properties on the point
-        if (templateXidWasSet && templateXid == null) {
-            point.setTemplateId(null);
-            point.setTemplateXid(null);
-            point.setTemplateName(null);
+        if (pointLocator != null) {
+            point.setPointLocator(pointLocator.toVO());
         }
 
         if (this.rollup != null) {
@@ -278,8 +275,10 @@ public class DataPointModel {
         if (this.setExtremeHighLimit != null) {
             point.setSetExtremeHighLimit(this.setExtremeHighLimit);
         }
+        return point;
     }
 
+    @Override
     public Integer getId() {
         return id;
     }
@@ -288,18 +287,22 @@ public class DataPointModel {
         this.id = id;
     }
 
+    @Override
     public String getXid() {
         return xid;
     }
 
+    @Override
     public void setXid(String xid) {
         this.xid = xid;
     }
 
+    @Override
     public String getName() {
         return name;
     }
 
+    @Override
     public void setName(String name) {
         this.name = name;
     }
@@ -334,14 +337,6 @@ public class DataPointModel {
 
     public void setSetPermission(String setPermission) {
         this.setPermission = setPermission;
-    }
-
-    public Integer getPointFolderId() {
-        return pointFolderId;
-    }
-
-    public void setPointFolderId(Integer pointFolderId) {
-        this.pointFolderId = pointFolderId;
     }
 
     public Boolean getPurgeOverride() {
@@ -400,11 +395,11 @@ public class DataPointModel {
         this.renderedUnit = renderedUnit;
     }
 
-    public PointLocatorModel<?> getPointLocator() {
+    public AbstractPointLocatorModel<?> getPointLocator() {
         return pointLocator;
     }
 
-    public void setPointLocator(PointLocatorModel<?> pointLocator) {
+    public void setPointLocator(AbstractPointLocatorModel<?> pointLocator) {
         this.pointLocator = pointLocator;
     }
 
@@ -448,31 +443,6 @@ public class DataPointModel {
         this.textRenderer = textRenderer;
     }
 
-    public BaseChartRendererModel<?> getChartRenderer() {
-        return chartRenderer;
-    }
-
-    public void setChartRenderer(BaseChartRendererModel<?> chartRenderer) {
-        this.chartRenderer = chartRenderer;
-    }
-
-    public String getTemplateXid() {
-        return templateXid;
-    }
-
-    public void setTemplateXid(String templateXid) {
-        this.templateXid = templateXid;
-        this.templateXidWasSet = true;
-    }
-
-    public String getTemplateName() {
-        return templateName;
-    }
-
-    public void setTemplateName(String templateName) {
-        this.templateName = templateName;
-    }
-
     public Integer getDataSourceId() {
         return dataSourceId;
     }
@@ -503,10 +473,6 @@ public class DataPointModel {
 
     public void setDataSourceTypeName(String dataSourceTypeName) {
         this.dataSourceTypeName = dataSourceTypeName;
-    }
-
-    public boolean isTemplateXidWasSet() {
-        return templateXidWasSet;
     }
 
     public String getRollup() {
@@ -568,12 +534,17 @@ public class DataPointModel {
     public void setSetExtremeHighLimit(Double setExtremeHighLimit) {
         this.setExtremeHighLimit = setExtremeHighLimit;
     }
-    
+
     public Set<String> getDataSourceEditRoles() {
         return dataSourceEditRoles;
     }
 
     public void setDataSourceEditRoles(Set<String> dataSourceEditRoles) {
         //No-op
+    }
+
+    @Override
+    protected DataPointVO newVO() {
+        return new DataPointVO();
     }
 }

@@ -27,7 +27,7 @@ import io.swagger.annotations.ApiOperation;
 
 /**
  * Access to the Alarm Levels defined for data sources
- * 
+ *
  * @author Terry Packer
  *
  */
@@ -36,29 +36,29 @@ import io.swagger.annotations.ApiOperation;
 @RequestMapping("/data-source-event-types")
 public class DataSourceEventTypesController {
 
-    private final DataSourceService<?> service;
-    
+    private final DataSourceService service;
+
     @Autowired
-    public DataSourceEventTypesController(DataSourceService<?> service) {
+    public DataSourceEventTypesController(DataSourceService service) {
         this.service = service;
     }
-    
+
     @ApiOperation(
-            value = "Get Default Event Types defined for a data source", 
+            value = "Get Default Event Types defined for a data source",
             notes = "User must have data source create permission"
             )
     @RequestMapping(method = RequestMethod.GET, value="/{dataSourceType}")
     public List<DataSourceDefaultEventTypeModel> getAlarmLevelsForType(
             @PathVariable String dataSourceType,
             @AuthenticationPrincipal User user){
-        
-        DataSourceDefinition def = service.getDefinition(dataSourceType, user);
-        DataSourceVO<?> vo = def.baseCreateDataSourceVO();
+
+        DataSourceDefinition<?> def = service.getDefinition(dataSourceType, user);
+        DataSourceVO vo = def.baseCreateDataSourceVO();
         List<EventTypeVO> eventTypes = vo.getEventTypes();
         ExportCodes codes = vo.getEventCodes();
-        
+
         List<DataSourceDefaultEventTypeModel> defaultTypes = new ArrayList<>();
-        
+
         for(EventTypeVO type : eventTypes) {
             DataSourceDefaultEventTypeModel model = new DataSourceDefaultEventTypeModel();
             int referenceId2 = type.getEventType().getReferenceId2();
@@ -74,9 +74,9 @@ public class DataSourceEventTypesController {
             model.setDefaultAlarmLevel(type.getAlarmLevel());
             defaultTypes.add(model);
         }
-        
+
         return defaultTypes;
     }
 
-    
+
 }

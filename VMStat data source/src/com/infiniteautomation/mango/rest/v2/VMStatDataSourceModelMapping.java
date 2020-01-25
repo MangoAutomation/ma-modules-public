@@ -10,7 +10,7 @@ import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.model.VMStatDataSourceModel;
 import com.serotonin.m2m2.vmstat.VMStatDataSourceDefinition;
 import com.serotonin.m2m2.vmstat.VMStatDataSourceVO;
-import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 /**
  * @author Terry Packer
@@ -30,10 +30,10 @@ public class VMStatDataSourceModelMapping implements RestModelJacksonMapping<VMS
     }
 
     @Override
-    public VMStatDataSourceModel map(Object from, User user, RestModelMapper mapper) {
+    public VMStatDataSourceModel map(Object from, PermissionHolder user, RestModelMapper mapper) {
         return new VMStatDataSourceModel((VMStatDataSourceVO)from);
-    }   
-    
+    }
+
     @Override
     public String getTypeName() {
         return VMStatDataSourceDefinition.DATA_SOURCE_TYPE;

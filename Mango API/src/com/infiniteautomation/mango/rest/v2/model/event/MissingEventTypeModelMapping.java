@@ -9,7 +9,7 @@ import com.infiniteautomation.mango.rest.v2.model.RestModelJacksonMapping;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.serotonin.m2m2.rt.event.type.EventType;
 import com.serotonin.m2m2.rt.event.type.MissingEventType;
-import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 /**
  * @author Terry Packer
@@ -29,7 +29,7 @@ public class MissingEventTypeModelMapping implements RestModelJacksonMapping<Mis
     }
 
     @Override
-    public MissingEventTypeModel map(Object from, User user, RestModelMapper mapper) {
+    public MissingEventTypeModel map(Object from, PermissionHolder user, RestModelMapper mapper) {
         return new MissingEventTypeModel((MissingEventType) from);
     }
 

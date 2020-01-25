@@ -11,7 +11,6 @@ import java.util.List;
 
 import com.serotonin.json.spi.JsonProperty;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.rt.event.type.DuplicateHandling;
@@ -22,7 +21,7 @@ import com.serotonin.m2m2.vo.event.EventTypeVO;
 /**
  * @author Matthew Lohbihler
  */
-public class EnvCanDataSourceVO extends PollingDataSourceVO<EnvCanDataSourceVO> {
+public class EnvCanDataSourceVO extends PollingDataSourceVO {
     @Override
     protected void addEventTypes(List<EventTypeVO> ets) {
         super.addEventTypes(ets);
@@ -30,14 +29,14 @@ public class EnvCanDataSourceVO extends PollingDataSourceVO<EnvCanDataSourceVO> 
                 "event.ds.dataSource"), DuplicateHandling.IGNORE_SAME_MESSAGE, AlarmLevels.URGENT));
         ets.add(createEventType(EnvCanDataSourceRT.PARSE_EXCEPTION_EVENT, new TranslatableMessage("event.ds.dataParse")));
         ets.add(createEventType(EnvCanDataSourceRT.NO_DATA_RETRIEVED_EVENT, new TranslatableMessage("envcands.event.noTemperatureData"),
-        		DuplicateHandling.IGNORE_SAME_MESSAGE, AlarmLevels.INFORMATION));
+                DuplicateHandling.IGNORE_SAME_MESSAGE, AlarmLevels.INFORMATION));
     }
 
     @Override
-	public int getPollAbortedExceptionEventId() {
-		return EnvCanDataSourceRT.POLL_ABORTED_EVENT;
-	}
-	
+    public int getPollAbortedExceptionEventId() {
+        return EnvCanDataSourceRT.POLL_ABORTED_EVENT;
+    }
+
     private static final ExportCodes EVENT_CODES = new ExportCodes();
     static {
         EVENT_CODES.addElement(EnvCanDataSourceRT.DATA_RETRIEVAL_FAILURE_EVENT, "DATA_RETRIEVAL_FAILURE_EVENT");
@@ -78,21 +77,13 @@ public class EnvCanDataSourceVO extends PollingDataSourceVO<EnvCanDataSourceVO> 
     public void setStationId(int stationId) {
         this.stationId = stationId;
     }
-    
+
     public long getDataStartTime() {
-    	return dataStartTime;
+        return dataStartTime;
     }
-    
+
     public void setDataStartTime(long dataStartTime) {
-    	this.dataStartTime = dataStartTime;
-    }
-
-    @Override
-    public void validate(ProcessResult response) {
-        super.validate(response);
-
-        if (stationId < 1)
-            response.addContextualMessage("stationId", "validate.greaterThanZero", stationId);
+        this.dataStartTime = dataStartTime;
     }
 
     //

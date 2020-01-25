@@ -5,17 +5,17 @@ package com.infiniteautomation.mango.rest.v2.model.javascript;
 
 import java.util.List;
 
+import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeModel;
 import com.infiniteautomation.mango.util.script.MangoJavaScriptAction;
 import com.infiniteautomation.mango.util.script.MangoJavaScriptError;
 import com.infiniteautomation.mango.util.script.MangoJavaScriptResult;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeModel;
 
 import io.swagger.annotations.ApiModelProperty;
 
 /**
  * Results of validating/running a Mango JavaScript
- * 
+ *
  * @author Terry Packer
  *
  */
@@ -29,11 +29,11 @@ public class MangoJavaScriptResultModel {
     private String scriptOutput;
     @ApiModelProperty("Returned value from script, can be null")
     private Object result;
-    
+
     public MangoJavaScriptResultModel() {
-        
+
     }
-    
+
     public MangoJavaScriptResultModel(MangoJavaScriptResult script) {
         this.actions = script.getActions();
         this.errors = script.getErrors();
@@ -44,7 +44,7 @@ public class MangoJavaScriptResultModel {
         else
             this.result = result;
     }
-    
+
     /**
      * @return the actions
      */

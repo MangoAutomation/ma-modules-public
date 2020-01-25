@@ -1,5 +1,5 @@
 /**
- * Copyright 2017 Infinite Automation Systems Inc.
+ * Copyright 2020 Infinite Automation Systems Inc.
  * http://infiniteautomation.com/
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,200 +15,159 @@
  * limitations under the License.
  */
 
-const {createClient, login} = require('@infinite-automation/mango-module-tools/test-helper/testHelper');
+const testHelper = require('@infinite-automation/mango-module-tools/test-helper/testHelper');;
+const {createClient, assertValidationErrors, uuid, login} = testHelper;
+
 const client = createClient();
+const DataSource = client.DataSource;
+const DataPoint = client.DataPoint;
 
 describe('VMStat data source', function() {
     before('Login', function() { return login.call(this, client); });
+     
+    it('Create data source', () => {
+        const ds = newDataSource();
+        const local = Object.assign({}, ds);
+        return ds.save().then(saved => {
+            testHelper.assertDataSource(saved, local, assertDataSourceAttributes);
+        }, error => {
+            assertValidationErrors([''], error);
+        }).finally(() => {
+            ds.delete();
+        });
+    });
 
-    const dsv1 = {
-            xid: 'DS_TEST',
-            name: 'Test',
-            enabled: false,
-            alarmLevels: {
-                DATA_SOURCE_EXCEPTION: 'INFORMATION',
-            },
-            purgeSettings: {
-                override: true,
-                frequency: {
-                    periods: 7,
-                    type: 'DAYS'
-                }
-            },
-            editPermission: '"superadmin","test"',
-            pollSeconds: 20,
-            outputScale: 'LOWER_K',
-            modelType: 'VMSTAT'
-    };
+    it('Update data source', () => {
+        const ds = newDataSource();
+        const local = Object.assign({}, ds);
+        return ds.save().then(saved => {
+            testHelper.assertDataSource(saved, local, assertDataSourceAttributes);
+            //Make changes
+            saved.name = uuid();
+            saved.outputScale = 'LOWER_K';
+            saved.pollSeconds = 4;
+            
+            const localUpdate = Object.assign({}, saved);
+            return saved.save().then(updated => {
+                testHelper.assertDataSource(updated, localUpdate, assertDataSourceAttributes); 
+            }, error => {
+                assertValidationErrors([''], error);
+            });
+        }, error => {
+            assertValidationErrors([''], error);
+        }).finally(() => {
+            ds.delete();
+        });
+    });
     
-    const dsv2 = {
-            xid: 'DS_TEST',
-            name: 'Test',
-            enabled: false,
+    it('Delete data source', () => {
+        const ds = newDataSource();
+        return ds.save().then(saved => {
+            testHelper.assertDataSource(ds, saved, assertDataSourceAttributes);
+            return ds.delete().then(() => {
+               return DataSource.get(saved.xid).then(notFound => {
+                   assert.fail('Should not have found ds ' + notFound.xid);
+               }, error => {
+                   assert.strictEqual(404, error.status);
+               }); 
+            });
+        });
+    });
+    
+    it('Create data point', () => {
+        const ds = newDataSource();
+        return ds.save().then(saved => {
+            testHelper.assertDataSource(ds, saved, assertDataSourceAttributes);
+            const dp = newDataPoint(ds.xid);
+            return dp.save().then(saved => {
+                testHelper.assertDataPoint(saved, dp, assertPointLocator);
+            }, error => {
+                assertValidationErrors([''], error);
+            });
+        }).finally(() => {
+            ds.delete();
+        });
+    });
+    
+    it('Update data point', () => {
+        const ds = newDataSource();
+        return ds.save().then(saved => {
+            testHelper.assertDataSource(ds, saved, assertDataSourceAttributes);
+            const dp = newDataPoint(ds.xid);
+            const local = Object.assign({}, dp);
+            return dp.save().then(saved => {
+                testHelper.assertDataPoint(saved, local, assertPointLocator);
+                saved.pointLocator.attribute = 'PROCS_R';
+                
+                const localUpdate = Object.assign({}, saved);
+                return saved.save().then(updated => {
+                    return DataPoint.get(updated.xid).then(found => {
+                        testHelper.assertDataPoint(found, localUpdate, assertPointLocator);
+                    });
+                });
+            });
+        }).finally(() => {
+            ds.delete();
+        });
+    });
+    
+    it('Delete data point', () => {
+        const ds = newDataSource();
+        return ds.save().then(saved => {
+            testHelper.assertDataSource(ds, saved, assertDataSourceAttributes);
+            const dp = newDataPoint(ds.xid);
+            return dp.save().then(saved => {
+                testHelper.assertDataPoint(saved, dp, assertPointLocator);
+                return saved.delete().then(() => {
+                    return DataPoint.get(saved.xid).then(notFound => {
+                        assert.fail('Should not have found point ' + notFound.xid);
+                    }, error => {
+                        assert.strictEqual(404, error.status);
+                    }); 
+                });
+            });
+        }).finally(() => {
+            ds.delete();
+        });
+    });
+    
+    function newDataPoint(dsXid) {
+        return new DataPoint({
+            dataSourceXid: dsXid,
+            pointLocator: { 
+                attribute: 'MEMORY_FREE',
+                dataType: 'NUMERIC',
+                settable: false,
+                modelType: 'PL.VMSTAT'
+            }
+        });
+    }
+    function newDataSource() {
+        return new DataSource({
             eventAlarmLevels: [
                 {
                     eventType: 'DATA_SOURCE_EXCEPTION',
-                    level: 'INFORMATION',
+                    level: 'INFORMATION'
+                 },{
+                     eventType: 'PARSE_EXCEPTION',
+                     level: 'INFORMATION'
                  }
             ],
-            purgeSettings: {
-                override: true,
-                frequency: {
-                    periods: 7,
-                    type: 'DAYS'
-                }
-            },
-            editPermission: ['superadmin', 'test'],
-            pollSeconds: 20,
+            editPermission: [],
+            pollSeconds: 1,
             outputScale: 'LOWER_K',
             modelType: 'VMSTAT'
-    };
-    
-    it('Create data source v1', () => {
-        return client.restRequest({
-            path: '/rest/v1/data-sources',
-            method: 'POST',
-            data: dsv1
-        }).then((response) => {
-            assertV1(response);
-        }, (error) => {
-            if(error.status === 422){
-                var msg = 'Validation Failed: \n';
-                for(var m in error.data.result.messages)
-                    msg += error.data.result.messages[m].property + '-->' + error.data.result.messages[m].message.key;
-                assert.fail(msg);
-            }else{
-                assert.fail(error)
-            }
         });
-      });
-
-      it('Update data source v1', () => {
-          dsv1.name='Test again';
-          dsv1.pollSeconds = 25;
-          dsv1.outputScale = 'UPPER_K';
-          return client.restRequest({
-              path:  `/rest/v1/data-sources/${dsv1.xid}`,
-              method: 'PUT',
-              data: dsv1
-          }).then((response) => {
-              assertV1(response);
-          });
-        });
-      
-      it('Delete data source v1', () => {
-          return client.restRequest({
-              path: `/rest/v1/data-sources/${dsv1.xid}`,
-              method: 'DELETE',
-              data: {}
-          }).then(response => {
-              assertV1(response);
-          });
-      });
-    
-    it('Create data source v2', () => {
-      return client.restRequest({
-          path: '/rest/v2/data-sources',
-          method: 'POST',
-          data: dsv2
-      }).then((response) => {
-          assertV2(response);
-      }, (error) => {
-          if(error.status === 422){
-              var msg = 'Validation Failed: \n';
-              for(var m in error.data.result.messages)
-                  msg += error.data.result.messages[m].property + '-->' + error.data.result.messages[m].message.key;
-              assert.fail(msg);
-          }else{
-              assert.fail(error)
-          }
-      });
-    });
-
-    it('Update data source v2', () => {
-        dsv2.name='Test again';
-        dsv2.pollSeconds = 25;
-        dsv2.outputScale = 'UPPER_K';
-        return client.restRequest({
-            path:  `/rest/v2/data-sources/${dsv2.xid}`,
-            method: 'PUT',
-            data: dsv2
-        }).then((response) => {
-            assertV2(response);
-        });
-      });
-    
-    it('Delete data source v2', () => {
-        return client.restRequest({
-            path: `/rest/v2/data-sources/${dsv2.xid}`,
-            method: 'DELETE',
-            data: {}
-        }).then(response => {
-            assertV2(response);
-        });
-    });
-    
-    function assertV1(response){
-        assert.isNumber(response.data.id);
-        assert.strictEqual(response.data.xid, dsv1.xid);
-        assert.strictEqual(response.data.name, dsv1.name);
-        assert.strictEqual(response.data.enabled, dsv1.enabled);
-        assertPermissions(response.data.editPermission, dsv1.editPermission);
-        assertAlarmLevels(response.data.alarmLevels, dsv1.alarmLevels);
-
-        assert.strictEqual(response.data.pollSeconds, dsv1.pollSeconds);
-        assert.strictEqual(response.data.outputScale, dsv1.outputScale);
     }
     
-    function assertV2(response){
-        assert.isNumber(response.data.id);
-        assert.strictEqual(response.data.xid, dsv2.xid);
-        assert.strictEqual(response.data.name, dsv2.name);
-        assert.strictEqual(response.data.enabled, dsv2.enabled);
-        assertPermissions(response.data.editPermission, dsv2.editPermission);
-        assertAlarmLevels(response.data.alarmLevels, dsv2.alarmLevels);
-
-        assert.strictEqual(response.data.pollSeconds, dsv2.pollSeconds);
-        assert.strictEqual(response.data.outputScale, dsv2.outputScale);
-
+    function assertDataSourceAttributes(saved, local) {
+        assert.strictEqual(saved.pollSeconds, local.pollSeconds);
+        assert.strictEqual(saved.outputScale, local.outputScale);
     }
     
-    function assertPermissions(saved, stored) {
-        if(Array.isArray(saved)){
-            assert.strictEqual(saved.length, stored.length);
-            for(var i=0; i<stored.length; i++){
-                assert.include(saved, stored[i], stored[i] + ' was not found in permissions')
-            }
-        }else{
-            assert.strictEqual(saved, stored);
-        }
-
-    }
-    
-    function assertAlarmLevels(saved, stored){
-        if(Array.isArray(saved)) {
-            
-            var assertedEventTypes = [];
-            for(var i=0; i<stored.length; i++){
-                var found = false;
-                for(var j=0; j<saved.length; j++){
-                    if(stored[i].eventType === saved[j].eventType){
-                        found = true;
-                        assert.strictEqual(saved.level, stored.level);
-                        assertedEventTypes.push(saved[i].eventType)
-                        break;
-                    }
-                }
-                if(found === false)
-                    assert.fail('Did not find event type: ' + stored[i].eventType);
-                if(assertedEventTypes.length === stored.length)
-                    break;
-            }
-        }else{
-            for(var i in stored){
-                assert.strictEqual(saved[i], stored[i]);
-            }
-        }
-        
+    function assertPointLocator(saved, local) {
+        assert.strictEqual(saved.dataType, local.dataType);
+        assert.strictEqual(saved.settable, local.settable);
+        assert.strictEqual(saved.attribute, local.attribute);
     }
 });

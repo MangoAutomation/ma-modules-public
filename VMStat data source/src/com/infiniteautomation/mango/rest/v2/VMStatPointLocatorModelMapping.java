@@ -7,13 +7,13 @@ import org.springframework.stereotype.Component;
 
 import com.infiniteautomation.mango.rest.v2.model.RestModelJacksonMapping;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
-import com.serotonin.m2m2.vmstat.VMStatPointLocatorModel;
+import com.infiniteautomation.mango.rest.v2.model.VMStatPointLocatorModel;
 import com.serotonin.m2m2.vmstat.VMStatPointLocatorVO;
-import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 
 /**
- * This class is used for the v2 Model Mapper but replicates the 
+ * This class is used for the v2 Model Mapper but replicates the
  * functionality of the v1 mapper exactly
  * @author Terry Packer
  *
@@ -32,7 +32,7 @@ public class VMStatPointLocatorModelMapping implements RestModelJacksonMapping<V
     }
 
     @Override
-    public VMStatPointLocatorModel map(Object from, User user, RestModelMapper mapper) {
+    public VMStatPointLocatorModel map(Object from, PermissionHolder user, RestModelMapper mapper) {
         return new VMStatPointLocatorModel((VMStatPointLocatorVO)from);
     }
 

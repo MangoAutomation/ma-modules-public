@@ -18,6 +18,7 @@
 const {createClient, login, uuid, noop, defer, delay} = require('@infinite-automation/mango-module-tools/test-helper/testHelper');
 const client = createClient();
 const User = client.User;
+const Role = client.Role;
 
 const noCookieConfig = {
     enableCookies: false
@@ -41,7 +42,7 @@ describe('Websocket authentication', function() {
             username,
             email: `${username}@example.com`,
             name: `${username}`,
-            permissions: '',
+            permissions: [],
             password: this.testUserPassword
         });
     });
@@ -69,7 +70,7 @@ describe('Websocket authentication', function() {
         
         this.testUser.password = this.testUserPassword;
         this.testUser.disabled = false;
-        this.testUser.permissions = '';
+        this.testUser.permissions = [];
         return this.testUser.save();
     });
     
@@ -190,6 +191,9 @@ describe('Websocket authentication', function() {
                 return this.testUser.delete();
             }, ({code, reason}) => {
                 assert.strictEqual(code, USER_UPDATED);
+            }).finally(() => {
+                this.testUser.id = null;
+                delete this.testUser.originalId;
             });
         });
         
@@ -215,8 +219,14 @@ describe('Websocket authentication', function() {
         
         it(`Terminates ${clientName} authentication websockets when user's permissions are changed`, function() {
             return testWebSocketTermination.call(this, this.clients[clientName], () => {
-                this.testUser.permissions = 'abcd';
-                return this.testUser.save();
+                const role = new Role({
+                    xid: uuid(),
+                    name: 'websocket auth test role'
+                });
+                return role.save().then(newRole => {
+                    this.testUser.permissions = [newRole.xid];
+                    return this.testUser.save();
+                });
             }, ({code, reason}) => {
                 assert.strictEqual(code, USER_UPDATED);
             });

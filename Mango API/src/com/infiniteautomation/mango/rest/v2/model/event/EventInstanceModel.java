@@ -24,9 +24,9 @@ public class EventInstanceModel {
     private ReturnCause rtnCause;
     private AlarmLevels alarmLevel;
     private TranslatableMessage message;
-    
+
     //TODO We also have access to comments and handlers if necessary/desired
-    
+
     public EventInstanceModel() { }
 
     /**

@@ -15,36 +15,30 @@ import com.serotonin.m2m2.rt.event.type.DataPointEventType;
 public class DataPointEventTypeModel extends AbstractEventTypeModel<DataPointEventType, DataPointModel, AbstractPointEventDetectorModel<?>> {
 
     private Integer dataSourceId;
-    
+
     public DataPointEventTypeModel() {
         super(new DataPointEventType());
     }
-    
+
     public DataPointEventTypeModel(DataPointEventType type) {
         super(type);
         this.dataSourceId = type.getDataSourceId();
     }
-    
+
     public DataPointEventTypeModel(DataPointEventType type, DataPointModel reference1) {
         super(type, reference1);
         this.dataSourceId = type.getDataSourceId();
     }
-    
+
     public DataPointEventTypeModel(DataPointEventType type, DataPointModel reference1, AbstractPointEventDetectorModel<?> reference2) {
         super(type, reference1, reference2);
         this.dataSourceId = type.getDataSourceId();
     }
 
-    /**
-     * @return the dataSourceId
-     */
     public Integer getDataSourceId() {
         return dataSourceId;
     }
 
-    /**
-     * @param dataSourceId the dataSourceId to set
-     */
     public void setDataSourceId(Integer dataSourceId) {
         this.dataSourceId = dataSourceId;
     }
@@ -54,5 +48,5 @@ public class DataPointEventTypeModel extends AbstractEventTypeModel<DataPointEve
         return new DataPointEventType(dataSourceId, referenceId1, referenceId2, duplicateHandling);
     }
 
-    
+
 }

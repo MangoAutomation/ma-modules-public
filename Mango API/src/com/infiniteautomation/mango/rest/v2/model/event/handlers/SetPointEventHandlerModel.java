@@ -4,12 +4,14 @@
 package com.infiniteautomation.mango.rest.v2.model.event.handlers;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.infiniteautomation.mango.rest.v2.model.javascript.MangoJavaScriptModel.ScriptContextVariableModel;
+import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.script.ScriptPermissions;
 import com.serotonin.db.pair.IntStringPair;
 import com.serotonin.m2m2.Common;
@@ -19,6 +21,7 @@ import com.serotonin.m2m2.module.definitions.event.handlers.SetPointEventHandler
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.event.SetPointEventHandlerVO;
+import com.serotonin.m2m2.vo.role.Role;
 
 import io.swagger.annotations.ApiModel;
 
@@ -31,7 +34,7 @@ import io.swagger.annotations.ApiModel;
 public class SetPointEventHandlerModel extends AbstractEventHandlerModel<SetPointEventHandlerVO> {
 
     private String targetPointXid;
-    
+
     private String activeAction;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Object activeValueToSet;
@@ -39,7 +42,7 @@ public class SetPointEventHandlerModel extends AbstractEventHandlerModel<SetPoin
     private String activePointXid;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String activeScript;
-    
+
     private String inactiveAction;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Object inactiveValueToSet;
@@ -47,23 +50,23 @@ public class SetPointEventHandlerModel extends AbstractEventHandlerModel<SetPoin
     private String inactivePointXid;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String inactiveScript;
-    
+
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Set<String> scriptPermissions;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private List<ScriptContextVariableModel> scriptContext;
-    
+
     public SetPointEventHandlerModel() { }
 
     public SetPointEventHandlerModel(SetPointEventHandlerVO vo) {
         fromVO(vo);
     }
-    
+
     @Override
     public String getHandlerType() {
         return SetPointEventHandlerDefinition.TYPE_NAME;
     }
-    
+
     /**
      * @return the targetPointXid
      */
@@ -220,7 +223,7 @@ public class SetPointEventHandlerModel extends AbstractEventHandlerModel<SetPoin
 
     @Override
     public SetPointEventHandlerVO toVO() {
-        SetPointEventHandlerVO vo = (SetPointEventHandlerVO)super.toVO();
+        SetPointEventHandlerVO vo = super.toVO();
         Integer targetId = DataPointDao.getInstance().getIdByXid(targetPointXid);
         if(targetId != null)
             vo.setTargetPointId(targetId);
@@ -233,7 +236,7 @@ public class SetPointEventHandlerModel extends AbstractEventHandlerModel<SetPoin
                 vo.setActivePointId(activePointId);
         }
         vo.setActiveScript(activeScript);
-        
+
         vo.setInactiveAction(SetPointEventHandlerVO.SET_ACTION_CODES.getId(inactiveAction));
         if(inactiveValueToSet != null)
             vo.setInactiveValueToSet(inactiveValueToSet.toString());
@@ -243,9 +246,9 @@ public class SetPointEventHandlerModel extends AbstractEventHandlerModel<SetPoin
                 vo.setInactivePointId(inactivePointId);
         }
         vo.setInactiveScript(inactiveScript);
-        ScriptPermissions permissions = new ScriptPermissions(scriptPermissions);
-        vo.setScriptPermissions(permissions);
-        
+        PermissionService service = Common.getBean(PermissionService.class);
+        vo.setScriptRoles(new ScriptPermissions(service.explodeLegacyPermissionGroupsToRoles(scriptPermissions)));
+
         if(scriptContext != null) {
             List<IntStringPair> additionalContext = new ArrayList<>();
             for(ScriptContextVariableModel var : scriptContext) {
@@ -260,41 +263,44 @@ public class SetPointEventHandlerModel extends AbstractEventHandlerModel<SetPoin
         }
         return vo;
     }
-    
+
     @Override
     public void fromVO(SetPointEventHandlerVO vo) {
         super.fromVO(vo);
-        SetPointEventHandlerVO handler = (SetPointEventHandlerVO)vo;
-        DataPointVO target = DataPointDao.getInstance().get(handler.getTargetPointId());
-        this.activeAction = SetPointEventHandlerVO.SET_ACTION_CODES.getCode(handler.getActiveAction());
+        DataPointVO target = DataPointDao.getInstance().get(vo.getTargetPointId());
+        this.activeAction = SetPointEventHandlerVO.SET_ACTION_CODES.getCode(vo.getActiveAction());
 
         if(target != null) {
             this.targetPointXid = target.getXid();
-            if(handler.getActiveAction() == SetPointEventHandlerVO.SET_ACTION_STATIC_VALUE) {
-                DataValue value = DataValue.stringToValue(handler.getActiveValueToSet(), target.getPointLocator().getDataTypeId());
+            if(vo.getActiveAction() == SetPointEventHandlerVO.SET_ACTION_STATIC_VALUE) {
+                DataValue value = DataValue.stringToValue(vo.getActiveValueToSet(), target.getPointLocator().getDataTypeId());
                 this.activeValueToSet = value.getObjectValue();
             }
-            if(handler.getInactiveAction() == SetPointEventHandlerVO.SET_ACTION_STATIC_VALUE) {
-                DataValue value = DataValue.stringToValue(handler.getInactiveValueToSet(), target.getPointLocator().getDataTypeId());
+            if(vo.getInactiveAction() == SetPointEventHandlerVO.SET_ACTION_STATIC_VALUE) {
+                DataValue value = DataValue.stringToValue(vo.getInactiveValueToSet(), target.getPointLocator().getDataTypeId());
                 this.inactiveValueToSet = value.getObjectValue();
             }
         }
-        
-        if(handler.getActiveAction() == SetPointEventHandlerVO.SET_ACTION_POINT_VALUE)
-            this.activePointXid = DataPointDao.getInstance().getXidById(handler.getActivePointId());
-        if(handler.getInactiveAction() == SetPointEventHandlerVO.SET_ACTION_POINT_VALUE)
-            this.inactivePointXid = DataPointDao.getInstance().getXidById(handler.getInactivePointId());
-        
-        this.inactiveAction = SetPointEventHandlerVO.SET_ACTION_CODES.getCode(handler.getInactiveAction());
-        this.activeScript = handler.getActiveScript();
-        this.inactiveScript = handler.getInactiveScript();
 
-        if(handler.getScriptPermissions() != null) {
-            this.scriptPermissions = handler.getScriptPermissions().getPermissionsSet();
+        if(vo.getActiveAction() == SetPointEventHandlerVO.SET_ACTION_POINT_VALUE)
+            this.activePointXid = DataPointDao.getInstance().getXidById(vo.getActivePointId());
+        if(vo.getInactiveAction() == SetPointEventHandlerVO.SET_ACTION_POINT_VALUE)
+            this.inactivePointXid = DataPointDao.getInstance().getXidById(vo.getInactivePointId());
+
+        this.inactiveAction = SetPointEventHandlerVO.SET_ACTION_CODES.getCode(vo.getInactiveAction());
+        this.activeScript = vo.getActiveScript();
+        this.inactiveScript = vo.getInactiveScript();
+
+        if(vo.getScriptRoles() != null) {
+            this.scriptPermissions = new HashSet<>();
+            for(Role role : vo.getScriptRoles().getRoles()) {
+                this.scriptPermissions.add(role.getXid());
+            }
         }
-        if(handler.getAdditionalContext() != null) {
+
+        if(vo.getAdditionalContext() != null) {
             this.scriptContext = new ArrayList<>();
-            for(IntStringPair var : handler.getAdditionalContext()) {
+            for(IntStringPair var : vo.getAdditionalContext()) {
                 String xid = DataPointDao.getInstance().getXidById(var.getKey());
                 if(xid != null) {
                     this.scriptContext.add(new ScriptContextVariableModel(xid, var.getValue()));
@@ -302,7 +308,7 @@ public class SetPointEventHandlerModel extends AbstractEventHandlerModel<SetPoin
             }
         }
     }
-    
+
     @Override
     protected SetPointEventHandlerVO newVO() {
         SetPointEventHandlerVO handler = new SetPointEventHandlerVO();

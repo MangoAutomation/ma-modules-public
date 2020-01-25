@@ -17,38 +17,12 @@
 
 const {createClient, login, defer, delay} = require('@infinite-automation/mango-module-tools/test-helper/testHelper');
 const client = createClient();
+const Publisher = client.Publisher;
 
 describe('Publishers v2 service', function() {
     before('Login', function() { return login.call(this, client); });
-
-    const httpPublisher = {
-            enabled : false,
-            dateFormat : "DATE_FORMAT_BASIC",
-            url : "http://www.terrypacker.com",
-            usePost : false,
-            useJSON : false,
-            staticHeaders : [ {
-              key : "test",
-              value : "value"
-            } ],
-            staticParameters : [ {
-              key : "test",
-              value : "value"
-            } ],
-            raiseResultWarning : true,
-            points : [],
-            publishType : "ALL",
-            cacheWarningSize : 100,
-            cacheDiscardSize : 1000,
-            sendSnapshot : false,
-            snapshotSendPeriodType : "MINUTES",
-            snapshotSendPeriods : 5,
-            validationMessages : [ ],
-            name : "HTTP",
-            modelType : "HTTP_SENDER"
-    };
     
-    before('Gets websocket notifications for publisher create', function() {
+    it('Gets websocket notifications for publisher create', function() {
 
         let ws;
         const subscription = {
@@ -58,6 +32,10 @@ describe('Publishers v2 service', function() {
         const socketOpenDeferred = defer();
         const listUpdatedDeferred = defer();
 
+        const pub = new Publisher({
+            modelType: 'MOCK'
+        });
+        
         return Promise.resolve().then(() => {
             ws = client.openWebSocket({
                 path: '/rest/v2/websocket/publishers'
@@ -85,13 +63,12 @@ describe('Publishers v2 service', function() {
                     const msg = JSON.parse(msgStr);
                     assert.strictEqual(msg.status, 'OK');
                     assert.strictEqual(msg.payload.action, 'add');
-                    assert.strictEqual(msg.payload.object.name, httpPublisher.name);
+                    assert.strictEqual(msg.payload.object.name, pub.name);
                     listUpdatedDeferred.resolve();   
                 }catch(e){
                     listUpdatedDeferred.reject(e);
                 }
             });
-
             return socketOpenDeferred.promise;
         }).then(() => {
             const send = defer();
@@ -106,14 +83,10 @@ describe('Publishers v2 service', function() {
             
         }).then(() => delay(1000)).then(() => {
             //TODO Fix DaoNotificationWebSocketHandler so we can remove this delay, only required for cold start
-            return client.restRequest({
-                path: `/rest/v2/publishers-v2`,
-                method: 'POST',
-                data: httpPublisher
-            }).then(response => {
-                assert.isNumber(response.data.id);
-                httpPublisher.id = response.data.id;
-                httpPublisher.xid = response.data.xid;
+            return pub.save().then(saved => {
+                assert.isNumber(saved.id);
+                saved.id = saved.id;
+                assert.strictEqual(pub.xid, saved.xid);
             });
         }).then(() => listUpdatedDeferred.promise).then((r)=>{
             ws.close();
@@ -121,6 +94,8 @@ describe('Publishers v2 service', function() {
         },e => {
             ws.close();
             return Promise.reject(e);
+        }).finally(() => {
+            pub.delete();
         });
     });
 
@@ -133,6 +108,10 @@ describe('Publishers v2 service', function() {
         
         const socketOpenDeferred = defer();
         const listUpdatedDeferred = defer();
+        
+        const pub = new Publisher({
+            modelType: 'MOCK'
+        });
 
         return Promise.resolve().then(() => {
             ws = client.openWebSocket({
@@ -159,10 +138,11 @@ describe('Publishers v2 service', function() {
                 try{
                     assert.isString(msgStr);
                     const msg = JSON.parse(msgStr);
-                    assert.strictEqual(msg.status, 'OK');
-                    assert.strictEqual(msg.payload.action, 'update');
-                    assert.strictEqual(msg.payload.object.id, httpPublisher.id);
-                    listUpdatedDeferred.resolve();   
+                    if(msg.payload.action === 'update') {
+                        assert.strictEqual(msg.status, 'OK');
+                        assert.strictEqual(msg.payload.object.id, pub.id);
+                        listUpdatedDeferred.resolve();                           
+                    }
                 }catch(e){
                     listUpdatedDeferred.reject(e);
                 }
@@ -182,14 +162,15 @@ describe('Publishers v2 service', function() {
             
         }).then(() => delay(1000)).then(() => {
             //TODO Fix DaoNotificationWebSocketHandler so we can remove this delay, only required for cold start
-            httpPublisher.name = "new name";
-            return client.restRequest({
-                path: `/rest/v2/publishers-v2/${httpPublisher.xid}`,
-                method: 'PUT',
-                data: httpPublisher
-            }).then(response => {
-                assert.isNumber(response.data.id);
-                assert.strictEqual(response.data.name, httpPublisher.name);
+            return pub.save().then(saved => {
+                assert.isNumber(saved.id);
+                saved.id = saved.id;
+                pub.name = 'new name';
+                assert.strictEqual(pub.xid, saved.xid);
+                return pub.save().then(updated =>{
+                    assert.strictEqual(pub.xid, updated.xid);
+                    assert.strictEqual(pub.name, updated.name);
+                });
             });
         }).then(() => listUpdatedDeferred.promise).then((r)=>{
             ws.close();
@@ -197,10 +178,12 @@ describe('Publishers v2 service', function() {
         },e => {
             ws.close();
             return Promise.reject(e);
+        }).finally(() => {
+            pub.delete();
         });
     });
     
-    after('Gets websocket notifications for publisher delete', function() {
+    it('Gets websocket notifications for publisher delete', function() {
 
         let ws;
         const subscription = {
@@ -210,6 +193,10 @@ describe('Publishers v2 service', function() {
         const socketOpenDeferred = defer();
         const listUpdatedDeferred = defer();
 
+        const pub = new Publisher({
+            modelType: 'MOCK'
+        });
+        
         return Promise.resolve().then(() => {
             ws = client.openWebSocket({
                 path: '/rest/v2/websocket/publishers'
@@ -235,9 +222,10 @@ describe('Publishers v2 service', function() {
                 try{
                     assert.isString(msgStr);
                     const msg = JSON.parse(msgStr);
-                    assert.strictEqual(msg.status, 'OK');
-                    assert.strictEqual(msg.payload.action, 'delete');
-                    assert.strictEqual(msg.payload.object.id, httpPublisher.id);
+                    if(msg.payload.action === 'delete') {
+                        assert.strictEqual(msg.status, 'OK');
+                        assert.strictEqual(msg.payload.object.id, pub.id);
+                    }
                     listUpdatedDeferred.resolve();   
                 }catch(e){
                     listUpdatedDeferred.reject(e);
@@ -258,14 +246,12 @@ describe('Publishers v2 service', function() {
             
         }).then(() => delay(1000)).then(() => {
             //TODO Fix DaoNotificationWebSocketHandler so we can remove this delay, only required for cold start
-            httpPublisher.name = "new name";
-            return client.restRequest({
-                path: `/rest/v2/publishers-v2/${httpPublisher.xid}`,
-                method: 'DELETE',
-                data: {}
-            }).then(response => {
-                assert.isNumber(response.data.id);
-                assert.strictEqual(response.data.name, httpPublisher.name);
+            return pub.save().then(saved => {
+                assert.isNumber(saved.id);
+                saved.id = saved.id;
+                pub.name = 'new name';
+                assert.strictEqual(pub.xid, saved.xid);
+                return pub.delete();
             });
         }).then(() => listUpdatedDeferred.promise).then((r)=>{
             ws.close();
@@ -273,6 +259,6 @@ describe('Publishers v2 service', function() {
         },e => {
             ws.close();
             return Promise.reject(e);
-        });
+        })
     });
 });

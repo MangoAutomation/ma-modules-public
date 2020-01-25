@@ -25,15 +25,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.serotonin.json.JsonException;
 import com.serotonin.json.JsonReader;
 import com.serotonin.json.ObjectWriter;
 import com.serotonin.json.spi.JsonEntity;
 import com.serotonin.json.type.JsonObject;
-import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
@@ -50,9 +46,9 @@ import net.sf.mbus4j.dataframes.MBusMedium;
 import net.sf.mbus4j.dataframes.datablocks.vif.SiPrefix;
 
 @JsonEntity
-public class MBusDataSourceVO extends PollingDataSourceVO<MBusDataSourceVO> {
+public class MBusDataSourceVO extends PollingDataSourceVO {
 
-//    private final static Log LOG = LogFactory.getLog(MBusDataSourceVO.class);
+    //    private final static Log LOG = LogFactory.getLog(MBusDataSourceVO.class);
 
     public static MBusDataSourceVO createNewDataSource() {
         MBusDataSourceVO result = new MBusDataSourceVO();
@@ -107,34 +103,6 @@ public class MBusDataSourceVO extends PollingDataSourceVO<MBusDataSourceVO> {
         return EVENT_CODES;
     }
 
-    @Override
-    public void validate(ProcessResult response) {
-        super.validate(response);
-
-        if (connection == null) {
-            response.addContextualMessage("connection", "validate.required");
-        }else{
-        	//Validate the connections pieces
-        	 if (connection instanceof TcpIpConnection) {
-        		 TcpIpConnection cnxn =  ((TcpIpConnection) connection);
-        		 if(StringUtils.isEmpty(cnxn.getHost()))
-        			 response.addContextualMessage("ipAddressOrHostname", "validate.required");
-        		 if(cnxn.getPort() < 1)
-        			 response.addContextualMessage("tcpPort", "validate.greaterThanZero");
-             } else if (connection instanceof SerialPortConnection) {
-            	 SerialPortConnection cnxn = ((SerialPortConnection) connection);
-                 if(StringUtils.isEmpty(cnxn.getPortName())){
-                	 response.addContextualMessage("commPortId", "validate.required");
-                 }
-             }
-        }
-        if (!Common.TIME_PERIOD_CODES.isValidId(updatePeriodType)) {
-            response.addContextualMessage("updatePeriodType", "validate.invalidValue");
-        }
-        if (updatePeriods <= 0) {
-            response.addContextualMessage("updatePeriods", "validate.greaterThanZero");
-        }
-    }
     //
     // /
     // / Serialization
@@ -168,15 +136,15 @@ public class MBusDataSourceVO extends PollingDataSourceVO<MBusDataSourceVO> {
             updatePeriods = in.readInt();
 
             connection.setBitPerSecond(in.readInt());
-            //flowControlIn = 
+            //flowControlIn =
             in.readInt();
-            //flowControlOut = 
+            //flowControlOut =
             in.readInt();
-            //dataBits = 
+            //dataBits =
             in.readInt();
-            //stopBits = 
+            //stopBits =
             in.readInt();
-            //parity = 
+            //parity =
             in.readInt();
         } else if (ver == 3) {
             String connectionType = in.readUTF();
@@ -193,15 +161,15 @@ public class MBusDataSourceVO extends PollingDataSourceVO<MBusDataSourceVO> {
             updatePeriods = in.readInt();
 
             connection.setBitPerSecond(in.readInt());
-            //flowControlIn = 
+            //flowControlIn =
             in.readInt();
-            //flowControlOut = 
+            //flowControlOut =
             in.readInt();
-            //dataBits = 
+            //dataBits =
             in.readInt();
-            //stopBits = 
+            //stopBits =
             in.readInt();
-            //parity = 
+            //parity =
             in.readInt();
             connection.setResponseTimeOutOffset(in.readInt());
         } else if (ver == 4) {
@@ -266,50 +234,50 @@ public class MBusDataSourceVO extends PollingDataSourceVO<MBusDataSourceVO> {
      */
     @Override
     public void jsonRead(JsonReader reader, JsonObject jsonObject) throws JsonException {
-    	super.jsonRead(reader, jsonObject);
-         String s = jsonObject.getString("connectionType");
-         if(s == null){
-        	 List<String> codes = new ArrayList<String>();
-        	 codes.add("mbusSerial");
-        	 codes.add("mbusTcpIp");
-        	 throw new TranslatableJsonException("emport.error.missing", "connectionType", codes);
-         }else{
-    		 int bitPerSecond = getInt(jsonObject, "bitPerSecond");
-    		 int responseTimeoutOffset = getInt(jsonObject, "responseTimeoutOffset");
-        	 switch(s){
-        	 case "mbusSerial":
-        		 String portName = getString(jsonObject, "portName");
-        		 connection = new SerialPortConnection(portName, bitPerSecond, responseTimeoutOffset);
-        		 break;
-        	 case "mbusTcpIp":
-        		 String host = getString(jsonObject, "host");
-        		 int port = getInt(jsonObject, "port");
-        		 connection = new TcpIpConnection(host, port, bitPerSecond, responseTimeoutOffset);
-        		 break;
-        	 }
-         }
+        super.jsonRead(reader, jsonObject);
+        String s = jsonObject.getString("connectionType");
+        if(s == null){
+            List<String> codes = new ArrayList<String>();
+            codes.add("mbusSerial");
+            codes.add("mbusTcpIp");
+            throw new TranslatableJsonException("emport.error.missing", "connectionType", codes);
+        }else{
+            int bitPerSecond = getInt(jsonObject, "bitPerSecond");
+            int responseTimeoutOffset = getInt(jsonObject, "responseTimeoutOffset");
+            switch(s){
+                case "mbusSerial":
+                    String portName = getString(jsonObject, "portName");
+                    connection = new SerialPortConnection(portName, bitPerSecond, responseTimeoutOffset);
+                    break;
+                case "mbusTcpIp":
+                    String host = getString(jsonObject, "host");
+                    int port = getInt(jsonObject, "port");
+                    connection = new TcpIpConnection(host, port, bitPerSecond, responseTimeoutOffset);
+                    break;
+            }
+        }
     }
-    
+
     /* (non-Javadoc)
      * @see com.serotonin.m2m2.vo.dataSource.DataSourceVO#jsonWrite(com.serotonin.json.ObjectWriter)
      */
     @Override
     public void jsonWrite(ObjectWriter writer) throws IOException, JsonException {
-    	super.jsonWrite(writer);
-    	if(connection instanceof SerialPortConnection){
-    		writer.writeEntry("connectionType", "mbusSerial");
-    		SerialPortConnection conn = (SerialPortConnection)connection;
-    		writer.writeEntry("bitPerSecond", conn.getBitPerSecond());
-    		writer.writeEntry("responseTimeoutOffset", conn.getResponseTimeOutOffset());
-    		writer.writeEntry("portName", conn.getPortName());
-    	}else if(connection instanceof TcpIpConnection){
-    		writer.writeEntry("connectionType", "mbusTcpIp");
-    		TcpIpConnection conn = (TcpIpConnection)connection;
-    		writer.writeEntry("bitPerSecond", conn.getBitPerSecond());
-    		writer.writeEntry("responseTimeoutOffset", conn.getResponseTimeOutOffset());
-    		writer.writeEntry("host", conn.getHost());
-    		writer.writeEntry("port", conn.getPort());
-    	}
+        super.jsonWrite(writer);
+        if(connection instanceof SerialPortConnection){
+            writer.writeEntry("connectionType", "mbusSerial");
+            SerialPortConnection conn = (SerialPortConnection)connection;
+            writer.writeEntry("bitPerSecond", conn.getBitPerSecond());
+            writer.writeEntry("responseTimeoutOffset", conn.getResponseTimeOutOffset());
+            writer.writeEntry("portName", conn.getPortName());
+        }else if(connection instanceof TcpIpConnection){
+            writer.writeEntry("connectionType", "mbusTcpIp");
+            TcpIpConnection conn = (TcpIpConnection)connection;
+            writer.writeEntry("bitPerSecond", conn.getBitPerSecond());
+            writer.writeEntry("responseTimeoutOffset", conn.getResponseTimeOutOffset());
+            writer.writeEntry("host", conn.getHost());
+            writer.writeEntry("port", conn.getPort());
+        }
     }
 
     @Override

@@ -15,6 +15,7 @@ import com.infiniteautomation.mango.rest.v2.exception.ServerErrorException;
 import com.infiniteautomation.mango.rest.v2.model.javascript.MangoJavaScriptModel;
 import com.infiniteautomation.mango.rest.v2.model.javascript.MangoJavaScriptResultModel;
 import com.infiniteautomation.mango.spring.service.MangoJavaScriptService;
+import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.script.ScriptPermissions;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
@@ -40,16 +41,18 @@ public class ScriptUtilRestController {
     private static final Log LOG = LogFactory.getLog(ScriptUtilRestController.class);
 
     private final MangoJavaScriptService service;
-    
+    private final PermissionService permissionService;
+
     @Autowired
-    ScriptUtilRestController(MangoJavaScriptService service) {
+    ScriptUtilRestController(MangoJavaScriptService service, PermissionService permissionService) {
         this.service = service;
+        this.permissionService = permissionService;
     }
-    
+
     @ApiOperation(value = "Validate a script, supplied permissions must already be granted to submitting User.")
     @RequestMapping(method = RequestMethod.POST, value = {"/validate"})
     public MangoJavaScriptResultModel validate(
-            @AuthenticationPrincipal User user, 
+            @AuthenticationPrincipal User user,
             @RequestBody MangoJavaScriptModel model) {
         if(LOG.isDebugEnabled()) LOG.debug("Testing script for: " + user.getName());
         return new MangoJavaScriptResultModel(service.testScript(model.toVO(), user));
@@ -59,10 +62,11 @@ public class ScriptUtilRestController {
     @ApiOperation(value = "Run a script, supplied permissions must already be granted to submitting User. Admin only")
     @RequestMapping(method = RequestMethod.POST, value = {"/run"})
     public MangoJavaScriptResultModel runScript(
-            @AuthenticationPrincipal User user, 
+            @AuthenticationPrincipal User user,
             @RequestBody MangoJavaScriptModel scriptModel) {
         if(LOG.isDebugEnabled()) LOG.debug("Running script for: " + user.getName());
-        return new MangoJavaScriptResultModel(service.executeScript(scriptModel.toVO(), new SetCallback(new ScriptPermissions(scriptModel.getPermissions()), user), user));
+        return new MangoJavaScriptResultModel(service.executeScript(scriptModel.toVO(),
+                new SetCallback(new ScriptPermissions(permissionService.explodeLegacyPermissionGroupsToRoles(scriptModel.getPermissions())), user), user));
     }
 
     class SetCallback extends ScriptPointValueSetter {
@@ -73,7 +77,7 @@ public class ScriptUtilRestController {
             super(permissions);
             this.user = user;
         }
-        
+
         @Override
         public void setImpl(IDataPointValueSource point, Object value, long timestamp, String annotation) {
             DataPointRT dprt = (DataPointRT) point;
@@ -87,7 +91,7 @@ public class ScriptUtilRestController {
                 else
                     source = new OneTimePointAnnotation(user, annotation);
 
-                DataSourceRT<? extends DataSourceVO<?>> dsrt = Common.runtimeManager.getRunningDataSource(dprt.getDataSourceId());
+                DataSourceRT<? extends DataSourceVO> dsrt = Common.runtimeManager.getRunningDataSource(dprt.getDataSourceId());
                 dsrt.setPointValue(dprt, newValue, source);
             }
             catch (ResultTypeException e) {

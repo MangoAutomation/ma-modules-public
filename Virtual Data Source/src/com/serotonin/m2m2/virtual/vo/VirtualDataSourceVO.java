@@ -14,33 +14,28 @@ import com.serotonin.json.ObjectWriter;
 import com.serotonin.json.spi.JsonProperty;
 import com.serotonin.json.type.JsonObject;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataSource.DataSourceRT;
 import com.serotonin.m2m2.util.ExportCodes;
 import com.serotonin.m2m2.virtual.rt.VirtualDataSourceRT;
 import com.serotonin.m2m2.vo.dataSource.PollingDataSourceVO;
 
-public class VirtualDataSourceVO extends PollingDataSourceVO<VirtualDataSourceVO> {
-    
+public class VirtualDataSourceVO extends PollingDataSourceVO {
 
-	private static final ExportCodes EVENT_CODES = new ExportCodes();
+
+    private static final ExportCodes EVENT_CODES = new ExportCodes();
     static {
         EVENT_CODES.addElement(VirtualDataSourceRT.POLL_ABORTED_EVENT, POLL_ABORTED);
     }
-    
-	/*
-	 * (non-Javadoc)
-	 * @see com.serotonin.m2m2.vo.dataSource.DataSourceVO#getPollAbortedExceptionEventId()
-	 */
-	@Override
-	public int getPollAbortedExceptionEventId() {
-		return VirtualDataSourceRT.POLL_ABORTED_EVENT;
-	}
-	
+
+    @Override
+    public int getPollAbortedExceptionEventId() {
+        return VirtualDataSourceRT.POLL_ABORTED_EVENT;
+    }
+
     @Override
     public ExportCodes getEventCodes() {
-		return EVENT_CODES;
+        return EVENT_CODES;
     }
 
     @Override
@@ -63,23 +58,18 @@ public class VirtualDataSourceVO extends PollingDataSourceVO<VirtualDataSourceVO
     private long delay;
 
     public boolean isPolling() {
-    	return polling;
+        return polling;
     }
     public void setPolling(boolean polling) {
-    	this.polling = polling;
+        this.polling = polling;
     }
 
-	public long getDelay(){
-		return delay;
-	}
-	
-	public void setDelay(long delay){
-		this.delay = delay;
-	}
-    
-    @Override
-    public void validate(ProcessResult response) {
-        super.validate(response);
+    public long getDelay(){
+        return delay;
+    }
+
+    public void setDelay(long delay){
+        this.delay = delay;
     }
 
     //
@@ -109,7 +99,7 @@ public class VirtualDataSourceVO extends PollingDataSourceVO<VirtualDataSourceVO
             polling = true;
         }
         else if (ver == 3) {
-        	updatePeriodType = in.readInt();
+            updatePeriodType = in.readInt();
             updatePeriods = in.readInt();
             polling = in.readBoolean();
         }else if(ver == 4) {
@@ -125,8 +115,8 @@ public class VirtualDataSourceVO extends PollingDataSourceVO<VirtualDataSourceVO
     @Override
     public void jsonRead(JsonReader reader, JsonObject jsonObject) throws JsonException {
         super.jsonRead(reader, jsonObject);
-		//Hidden value to allow testing aborted polls by setting delay to longer than poll period
-		if(jsonObject.containsKey("delay"))
-			delay = jsonObject.getLong("delay");
+        //Hidden value to allow testing aborted polls by setting delay to longer than poll period
+        if(jsonObject.containsKey("delay"))
+            delay = jsonObject.getLong("delay");
     }
 }

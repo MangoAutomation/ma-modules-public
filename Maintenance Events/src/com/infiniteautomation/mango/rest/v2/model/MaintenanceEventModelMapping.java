@@ -6,7 +6,7 @@ package com.infiniteautomation.mango.rest.v2.model;
 import org.springframework.stereotype.Component;
 
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventVO;
-import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 /**
  * @author Terry Packer
@@ -16,7 +16,7 @@ import com.serotonin.m2m2.vo.User;
 public class MaintenanceEventModelMapping implements RestModelMapping<MaintenanceEventVO, MaintenanceEventModel>{
 
     @Override
-    public MaintenanceEventModel map(Object o, User user, RestModelMapper mapper) {
+    public MaintenanceEventModel map(Object o, PermissionHolder user, RestModelMapper mapper) {
         return new MaintenanceEventModel((MaintenanceEventVO)o);
     }
 

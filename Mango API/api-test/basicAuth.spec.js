@@ -29,8 +29,10 @@ describe('Basic authentication', function() {
             username,
             email: `${username}@example.com`,
             name: `${username}`,
-            permissions: 'superadmin',
-            password: this.testUserPassword
+            permissions: ['superadmin'],
+            password: this.testUserPassword,
+            locale: '',
+            receiveAlarmEmails: 'IGNORE'
         });
         return this.testUser.save();
     });

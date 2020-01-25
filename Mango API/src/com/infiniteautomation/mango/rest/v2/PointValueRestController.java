@@ -4,6 +4,7 @@
  */
 package com.infiniteautomation.mango.rest.v2;
 
+import java.net.URI;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -18,6 +19,8 @@ import java.util.TimeZone;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
@@ -36,12 +39,19 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.infiniteautomation.mango.rest.v2.exception.AbstractRestV2Exception;
 import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
+import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
+import com.infiniteautomation.mango.rest.v2.exception.ServerErrorException;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.DataTypeEnum;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.LegacyPointValueTimeModel;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.LegacyXidPointValueTimeModel;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueField;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueImportResult;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeModel;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PurgeDataPointValuesModel;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PurgePointValuesResponseModel;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.RollupEnum;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.MultiDataPointDefaultRollupStatisticsQuantizerStream;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.MultiDataPointStatisticsQuantizerStream;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.LatestQueryInfo;
@@ -63,6 +73,8 @@ import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource.TemporaryResourceStatus;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceStatusUpdate;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceWebSocketHandler;
+import com.infiniteautomation.mango.spring.service.DataPointService;
+import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.m2m2.Common;
@@ -70,19 +82,24 @@ import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.db.dao.PointValueDao;
+import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
+import com.serotonin.m2m2.rt.RTException;
+import com.serotonin.m2m2.rt.dataImage.AnnotatedPointValueTime;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
-import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT.FireEvents;
+import com.serotonin.m2m2.rt.dataImage.PointValueTime;
+import com.serotonin.m2m2.rt.dataImage.SetPointSource;
+import com.serotonin.m2m2.rt.dataImage.types.AlphanumericValue;
+import com.serotonin.m2m2.rt.dataImage.types.BinaryValue;
+import com.serotonin.m2m2.rt.dataImage.types.DataValue;
+import com.serotonin.m2m2.rt.dataImage.types.MultistateValue;
+import com.serotonin.m2m2.rt.dataImage.types.NumericValue;
 import com.serotonin.m2m2.util.DateUtils;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.permission.PermissionException;
-import com.serotonin.m2m2.vo.permission.Permissions;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.PointValueTimeModel;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.pointValue.XidPointValueTimeModel;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -97,12 +114,19 @@ import io.swagger.annotations.ApiParam;
 @RequestMapping("/point-values")
 public class PointValueRestController extends AbstractMangoRestV2Controller{
 
+    private static Log LOG = LogFactory.getLog(PointValueRestController.class);
+
     private final PointValueDao dao = Common.databaseProxy.newPointValueDao();
     private final MangoTaskTemporaryResourceManager<PurgePointValuesResponseModel> resourceManager;
+    private final PermissionService permissionService;
+    private final DataPointService dataPointService;
 
     @Autowired
-    public PointValueRestController(TemporaryResourceWebSocketHandler websocket) {
-        this.resourceManager = new MangoTaskTemporaryResourceManager<>(websocket);
+    public PointValueRestController(TemporaryResourceWebSocketHandler websocket,
+            PermissionService permissionService, DataPointService dataPointService) {
+        this.resourceManager = new MangoTaskTemporaryResourceManager<>(permissionService, websocket);
+        this.permissionService = permissionService;
+        this.dataPointService = dataPointService;
     }
 
     @ApiOperation(
@@ -816,25 +840,192 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
         return ResponseEntity.ok(new MultiPointStatisticsStream(info, voMap, this.dao));
     }
 
+    /**
+     * Update a point value in the system
+     *
+     * @param pvt
+     * @param xid
+     * @param builder
+     * @return
+     * @throws RestValidationFailedException
+     */
+    @ApiOperation(value = "Update an existing data point's value",
+            notes = "Data point must exist and be enabled")
+    @RequestMapping(method = RequestMethod.PUT, value = "/{xid}")
+    public ResponseEntity<LegacyPointValueTimeModel> putPointValue(HttpServletRequest request,
+            @RequestBody(required = true) LegacyPointValueTimeModel model, @PathVariable String xid,
+
+            @ApiParam(value = "Return converted value using displayed unit", required = false,
+            defaultValue = "false", allowMultiple = false) @RequestParam(required = false,
+            defaultValue = "false") boolean unitConversion,
+            @AuthenticationPrincipal User user,
+            UriComponentsBuilder builder) {
+
+
+        DataPointVO vo = this.dataPointService.get(xid);
+        this.permissionService.ensureDataPointSetPermission(user, vo);
+        // Set the time to now if it is not present
+        if (model.getTimestamp() == 0) {
+            model.setTimestamp(Common.timer.currentTimeMillis());
+        }
+
+        // Validate the model's data type for compatibility
+        if (DataTypeEnum.convertFrom(model.getDataType()) != vo.getPointLocator()
+                .getDataTypeId()) {
+            throw new GenericRestException(HttpStatus.NOT_ACCEPTABLE,
+                    new TranslatableMessage("event.ds.dataType"));
+        }
+
+        // Validate the timestamp for future dated
+        if (model.getTimestamp() > Common.timer.currentTimeMillis()
+                + SystemSettingsDao.instance.getFutureDateLimit()) {
+            throw new GenericRestException(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage(
+                    "common.default", "Future dated points not acceptable."));
+        }
+
+        // TODO Backdate validation?
+        // boolean backdated = pointValue != null && newValue.getTime() <
+        // pointValue.getTime();
+
+        // Are we converting from the rendered Unit?
+        if (unitConversion) {
+            if ((model.getDataType() == DataTypeEnum.NUMERIC)
+                    && (model.getValue() instanceof Number)) {
+                double value;
+                if (model.getValue() instanceof Integer) {
+                    value = ((Integer) model.getValue());
+                } else {
+                    value = ((Double) model.getValue());
+                }
+                model.setValue(vo.getRenderedUnit()
+                        .getConverterTo(vo.getUnit()).convert(value));
+            } else {
+                throw new GenericRestException(HttpStatus.NOT_ACCEPTABLE,
+                        new TranslatableMessage("common.default", "[" + xid
+                                + "]Cannot perform unit conversion on Non Numeric data types."));
+            }
+        }
+
+        // If we are a multistate point and our value is in string format then we should try
+        // to convert it
+        if ((model.getDataType() == DataTypeEnum.MULTISTATE)
+                && (model.getValue() instanceof String)) {
+            try {
+                DataValue value =
+                        vo.getTextRenderer().parseText((String) model.getValue(),
+                                vo.getPointLocator().getDataTypeId());
+                model.setValue(value.getObjectValue());
+            } catch (Exception e) {
+                // Lots can go wrong here so let the user know
+                throw new GenericRestException(HttpStatus.NOT_ACCEPTABLE,
+                        new TranslatableMessage("common.default", "[" + xid
+                                + "]Unable to convert Multistate String representation to any known value."));
+            }
+        }
+
+        final PointValueTime pvt;
+        try {
+            DataValue dataValue = null;
+            switch(model.getDataType()){
+                case ALPHANUMERIC:
+                    dataValue = new AlphanumericValue((String) model.getValue());
+                    break;
+                case BINARY:
+                    dataValue = new BinaryValue((Boolean)model.getValue());
+                    break;
+                case MULTISTATE:
+                    dataValue = new MultistateValue(((Number)model.getValue()).intValue());
+                    break;
+                case NUMERIC:
+                    dataValue = new NumericValue(((Number)model.getValue()).doubleValue());
+                    break;
+                default:
+                    throw new UnsupportedOperationException("Setting image values not supported");
+
+            }
+
+            if(model.getAnnotation() != null)
+                pvt = new AnnotatedPointValueTime(dataValue, model.getTimestamp(), new TranslatableMessage("common.default", model.getAnnotation()));
+            else
+                pvt = new PointValueTime(dataValue, model.getTimestamp());
+        } catch (Exception e) {
+            throw new GenericRestException(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage(
+                    "common.default", "[" + xid + "]Invalid Format"));
+        }
+
+        // one last check to ensure we are inserting the correct data type
+        if (DataTypes.getDataType(pvt.getValue()) != vo.getPointLocator()
+                .getDataTypeId()) {
+            throw new GenericRestException(HttpStatus.NOT_ACCEPTABLE,
+                    new TranslatableMessage("event.ds.dataType"));
+        }
+
+        final int dataSourceId = vo.getDataSourceId();
+        SetPointSource source = null;
+        if (model.getAnnotation() != null) {
+            source = new SetPointSource() {
+
+                @Override
+                public String getSetPointSourceType() {
+                    return "REST";
+                }
+
+                @Override
+                public int getSetPointSourceId() {
+                    return dataSourceId;
+                }
+
+                @Override
+                public TranslatableMessage getSetPointSourceMessage() {
+                    return ((AnnotatedPointValueTime) pvt).getSourceMessage();
+                }
+
+                @Override
+                public void raiseRecursionFailureEvent() {
+                    LOG.error("Recursive failure while setting point via REST");
+                }
+
+            };
+        }
+        try {
+            Common.runtimeManager.setDataPointValue(vo.getId(), pvt, source);
+            // This URI may not always be accurate if the Data Source doesn't use the
+            // provided time...
+            URI location = builder.path("/point-values/{xid}/{time}")
+                    .buildAndExpand(xid, pvt.getTime()).toUri();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setLocation(location);
+            return new ResponseEntity<>(model, headers, HttpStatus.CREATED);
+
+        } catch (RTException e) {
+            // Ok its probably not enabled or settable
+            throw new GenericRestException(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage(
+                    "common.default", "[" + xid + "]" + e.getMessage()));
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
+            throw new ServerErrorException(e);
+        }
+    }
+
     @ApiOperation(
-            value = "Import Point Values for one or many Data Points",
+            value = "Import Point Values for one or many Data Points, this is deprecated and it is recommended to use the /point-value-modification endpoints",
             notes = "Data Point must exist and user must have write access"
             )
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<Collection<PointValueImportResult>> savePointsValues(HttpServletRequest request,
             @ApiParam(value = "Shall data point listeners be notifified, default is NEVER", required = false, allowMultiple = false)
-            @RequestParam(defaultValue="NEVER") FireEvents fireEvents,
-            @RequestBody(required = true) List<XidPointValueTimeModel> models,
-            @AuthenticationPrincipal User user
+    @RequestParam(defaultValue="NEVER") FireEvents fireEvents,
+    @RequestBody(required = true) List<LegacyXidPointValueTimeModel> models,
+    @AuthenticationPrincipal User user
             ) {
 
         //Map of XIDs to results
         Map<String, PointValueImportResult> results = new HashMap<String, PointValueImportResult>();
 
-        for(XidPointValueTimeModel model : models) {
+        for(LegacyXidPointValueTimeModel model : models) {
             PointValueImportResult result = results.get(model.getXid());
             if(result == null) {
-                result = new PointValueImportResult(model.getXid(), dao, fireEvents, user);
+                result = new PointValueImportResult(model.getXid(), dao, permissionService, fireEvents, user);
                 results.put(model.getXid(), result);
             }
             //Attempt to save it
@@ -879,7 +1070,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
         if (vo == null) {
             throw new NotFoundRestException();
         }else {
-            if(!Permissions.hasDataPointSetPermission(user, vo))
+            if(!permissionService.hasDataPointSetPermission(user, vo))
                 throw new AccessDeniedException();
         }
 
@@ -923,7 +1114,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
         DataPointVO vo = DataPointDao.getInstance().getByXid(xid);
         if(vo == null)
             throw new NotFoundRestException();
-        Permissions.ensureDataPointSetPermission(user, vo);
+        permissionService.ensureDataPointSetPermission(user, vo);
         DataPointRT rt = Common.runtimeManager.getDataPoint(vo.getId());
         if(rt == null)
             throw new NotFoundRestException();
@@ -958,7 +1149,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
                 (resource, taskUser) -> {
                     PurgePointValuesResponseModel result = new PurgePointValuesResponseModel();
 
-                    Map<Integer, DataSourceVO<?>> dataSourceMap = new HashMap<>();
+                    Map<Integer, DataSourceVO> dataSourceMap = new HashMap<>();
                     Map<String, DataPointVO> dataPointsMap = new HashMap<>();
 
                     //Build the list of data point Xids
@@ -974,11 +1165,11 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
                             }
                         }
                     }else {
-                        DataSourceVO<?> ds = DataSourceDao.getInstance().getByXid(model.getDataSourceXid());
+                        DataSourceVO ds = DataSourceDao.getInstance().getByXid(model.getDataSourceXid());
                         xids = new ArrayList<>();
                         if(ds != null) {
                             dataSourceMap.put(ds.getId(), ds);
-                            List<DataPointVO> points = DataPointDao.getInstance().getDataPoints(ds.getId(), null, false);
+                            List<DataPointVO> points = DataPointDao.getInstance().getDataPoints(ds.getId());
                             for(DataPointVO point : points) {
                                 xids.add(point.getXid());
                                 dataPointsMap.put(point.getXid(), point);
@@ -999,12 +1190,12 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
                             if(dp == null)
                                 throw new NotFoundException();
 
-                            DataSourceVO<?> ds = dataSourceMap.get(dp.getDataSourceId());
+                            DataSourceVO ds = dataSourceMap.get(dp.getDataSourceId());
                             if(ds == null)
                                 throw new NotFoundException();
 
                             //Ensure edit permission
-                            Permissions.ensureDataSourcePermission(user, ds);
+                            permissionService.ensureDataSourcePermission(user, ds);
 
                             //Do purge based on settings
                             if(model.isPurgeAll())
@@ -1049,7 +1240,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
 
         TemporaryResource<PurgePointValuesResponseModel, AbstractRestV2Exception> resource = resourceManager.get(id);
 
-        if (!user.hasAdminPermission() && user.getId() != resource.getUserId()) {
+        if (!user.hasAdminRole() && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
 
@@ -1074,7 +1265,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
 
         TemporaryResource<PurgePointValuesResponseModel, AbstractRestV2Exception> resource = resourceManager.get(id);
 
-        if (!user.hasAdminPermission() && user.getId() != resource.getUserId()) {
+        if (!user.hasAdminRole() && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
 
@@ -1094,7 +1285,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
 
         TemporaryResource<PurgePointValuesResponseModel, AbstractRestV2Exception> resource = resourceManager.get(id);
 
-        if (!user.hasAdminPermission() && user.getId() != resource.getUserId()) {
+        if (!user.hasAdminRole() && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
 
@@ -1169,7 +1360,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             if (vo == null) {
                 throw new NotFoundRestException();
             }else {
-                if(!Permissions.hasDataPointReadPermission(user, vo))
+                if(!permissionService.hasDataPointReadPermission(user, vo))
                     throw new AccessDeniedException();
             }
 

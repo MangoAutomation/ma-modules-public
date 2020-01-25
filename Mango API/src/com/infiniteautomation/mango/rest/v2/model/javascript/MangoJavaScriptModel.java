@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.script.MangoJavaScript;
 import com.infiniteautomation.mango.util.script.ScriptPermissions;
 import com.serotonin.m2m2.Common;
@@ -33,15 +34,15 @@ public class MangoJavaScriptModel {
     private Set<String> permissions;
     private LogLevel logLevel;
     @ApiModelProperty("If non-null coerce the result into a PointValueTime with this data type")
-    private String resultDataType; 
-    
+    private String resultDataType;
+
     @ApiModelProperty("Any additional context to be added to the script during exeuction/testing")
     private Map<String, Object> additionalContext;
-    
+
     public MangoJavaScriptModel() {
-        
+
     }
-    
+
     /**
      * @return the wrapInFunction
      */
@@ -104,21 +105,21 @@ public class MangoJavaScriptModel {
     public void setLogLevel(LogLevel logLevel) {
         this.logLevel = logLevel;
     }
-    
+
     /**
      * @return the resultDataTypeId
      */
     public String getResultDataType() {
         return resultDataType;
     }
-    
+
     /**
      * @param resultDataTypeId the resultDataTypeId to set
      */
     public void setResultDataType(String resultDataTypeId) {
         this.resultDataType = resultDataTypeId;
     }
-    
+
     public Map<String, Object> getAdditionalContext() {
         return additionalContext;
     }
@@ -132,14 +133,15 @@ public class MangoJavaScriptModel {
         vo.setWrapInFunction(wrapInFunction);
         vo.setContext(convertContext());
         vo.setLogLevel(logLevel);
-        vo.setPermissions(new ScriptPermissions(permissions));
+        PermissionService service = Common.getBean(PermissionService.class);
+        vo.setPermissions(new ScriptPermissions(service.explodeLegacyPermissionGroupsToRoles(permissions)));
         if(resultDataType != null)
             vo.setResultDataTypeId(DataTypes.CODES.getId(resultDataType));
         vo.setScript(script);
         vo.setAdditionalContext(additionalContext);
         return vo;
     }
-    
+
     private List<ScriptContextVariable> convertContext() {
         List<ScriptContextVariable> result = new ArrayList<>();
         if(context != null)
@@ -155,7 +157,7 @@ public class MangoJavaScriptModel {
             }
         return result;
     }
-    
+
     /**
      * Holder for script context variable info
      * @author Terry Packer
@@ -166,20 +168,20 @@ public class MangoJavaScriptModel {
         private String variableName;
         @JsonInclude(JsonInclude.Include.NON_NULL)
         private Boolean contextUpdate;
-        
+
         public ScriptContextVariableModel() { }
-        
+
         public ScriptContextVariableModel(String xid, String variableName) {
             this.xid = xid;
             this.variableName = variableName;
         }
-        
+
         public ScriptContextVariableModel(String xid, String variableName, Boolean updatesContext) {
             this.xid = xid;
             this.variableName = variableName;
             this.contextUpdate = updatesContext;
         }
-        
+
         public String getXid() {
             return xid;
         }
@@ -198,7 +200,5 @@ public class MangoJavaScriptModel {
         public void setContextUpdate(Boolean contextUpdate) {
             this.contextUpdate = contextUpdate;
         }
-        
-        
     }
 }

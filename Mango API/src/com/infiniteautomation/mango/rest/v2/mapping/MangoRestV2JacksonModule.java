@@ -6,7 +6,11 @@ package com.infiniteautomation.mango.rest.v2.mapping;
 
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.infiniteautomation.mango.io.serial.virtual.VirtualSerialPortConfig;
 import com.infiniteautomation.mango.rest.v2.exception.ExceptionMixin;
+import com.infiniteautomation.mango.rest.v2.model.JSONStreamedArray;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream;
+import com.serotonin.json.type.JsonValue;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 
 /**
@@ -15,17 +19,27 @@ import com.serotonin.m2m2.i18n.TranslatableMessage;
  */
 public class MangoRestV2JacksonModule extends SimpleModule {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	public MangoRestV2JacksonModule() {
-		super("MangoCoreRestV2", new Version(0, 0, 1, "SNAPSHOT", "com.infiniteautomation",
-				"mango"));
+    public MangoRestV2JacksonModule() {
+        super("MangoCoreRestV2", new Version(0, 0, 1, "SNAPSHOT", "com.infiniteautomation",
+                "mango"));
         this.setMixInAnnotation(Exception.class, ExceptionMixin.class);
-	}
-	
-	@Override
-	public void setupModule(SetupContext context) {
-		this.addSerializer(TranslatableMessage.class, new TranslatableMessageSerializer());
-		super.setupModule(context);
-	}
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    @Override
+    public void setupModule(SetupContext context) {
+        this.addSerializer(JSONStreamedArray.class, new JSONStreamedArraySerializer());
+        this.addSerializer(TranslatableMessage.class, new TranslatableMessageSerializer());
+        this.addDeserializer(VirtualSerialPortConfig.class, new VirtualSerialPortConfigDeserializer());
+        this.addSerializer(JsonValue.class, new SerotoninJsonValueSerializer());
+
+        this.addSerializer(PointValueTimeStream.class, new PointValueTimeStreamJsonSerializer());
+
+        //Deserializers
+        this.addDeserializer(JsonValue.class, new SerotoninJsonValueDeserializer());
+
+        super.setupModule(context);
+    }
 }

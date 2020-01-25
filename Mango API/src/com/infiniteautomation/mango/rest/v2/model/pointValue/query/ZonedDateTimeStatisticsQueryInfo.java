@@ -8,7 +8,8 @@ package com.infiniteautomation.mango.rest.v2.model.pointValue.query;
 import java.time.ZonedDateTime;
 
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueField;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.time.RollupEnum;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.RollupEnum;
+
 
 /**
  *
@@ -18,7 +19,7 @@ public class ZonedDateTimeStatisticsQueryInfo extends ZonedDateTimeRangeQueryInf
 
 
     public ZonedDateTimeStatisticsQueryInfo(ZonedDateTime from, ZonedDateTime to,
-            String dateTimeFormat, String timezone, PointValueTimeCacheControl useCache, 
+            String dateTimeFormat, String timezone, PointValueTimeCacheControl useCache,
             PointValueField[] fields) {
         super(from, to, dateTimeFormat, timezone, RollupEnum.ALL, null, null, true, false, false, useCache,
                 null, null, false, fields);

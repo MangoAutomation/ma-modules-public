@@ -7,8 +7,8 @@ import org.springframework.stereotype.Component;
 
 import com.infiniteautomation.mango.rest.v2.model.RestModelJacksonMapping;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
-import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.EmailEventHandlerVO;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 /**
  * @author Terry Packer
@@ -18,7 +18,7 @@ import com.serotonin.m2m2.vo.event.EmailEventHandlerVO;
 public class EmailEventHandlerModelMapping implements RestModelJacksonMapping<EmailEventHandlerVO, EmailEventHandlerModel> {
 
     @Override
-    public EmailEventHandlerModel map(Object o, User user, RestModelMapper mapper) {
+    public EmailEventHandlerModel map(Object o, PermissionHolder user, RestModelMapper mapper) {
         return new EmailEventHandlerModel((EmailEventHandlerVO)o);
     }
 

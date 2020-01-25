@@ -10,7 +10,7 @@ import com.infiniteautomation.mango.rest.v2.model.RestModelJacksonMapping;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.serotonin.m2m2.mbus.MBusDataSourceDefinition;
 import com.serotonin.m2m2.mbus.MBusDataSourceVO;
-import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 /**
  * @author Terry Packer
@@ -30,7 +30,7 @@ public class MBusDataSourceModelMapping implements RestModelJacksonMapping<MBusD
     }
 
     @Override
-    public MBusDataSourceModel map(Object from, User user, RestModelMapper mapper) {
+    public MBusDataSourceModel map(Object from, PermissionHolder user, RestModelMapper mapper) {
         return new MBusDataSourceModel((MBusDataSourceVO)from);
     }
 

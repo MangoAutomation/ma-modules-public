@@ -7,12 +7,13 @@ package com.infiniteautomation.mango.rest.v2.websocket;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
+import com.infiniteautomation.mango.rest.v2.model.jsondata.JsonDataModel;
 import com.infiniteautomation.mango.rest.v2.websocket.dao.SubscriptionDaoWebSocketHandler;
 import com.infiniteautomation.mango.spring.events.DaoEvent;
-import com.serotonin.m2m2.vo.User;
+import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.serotonin.m2m2.vo.json.JsonDataVO;
-import com.serotonin.m2m2.vo.permission.Permissions;
-import com.serotonin.m2m2.web.mvc.rest.v1.model.jsondata.JsonDataModel;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
+
 
 /**
  * @author Terry Packer
@@ -22,13 +23,18 @@ import com.serotonin.m2m2.web.mvc.rest.v1.model.jsondata.JsonDataModel;
 @WebSocketMapping("/websocket/json-data")
 public class JsonDataWebSocketHandlerV2 extends SubscriptionDaoWebSocketHandler<JsonDataVO> {
 
-    @Override
-    protected boolean hasPermission(User user, JsonDataVO vo) {
-        return Permissions.hasPermission(user, vo.getReadPermission());
+    private final PermissionService service;
+    public JsonDataWebSocketHandlerV2(PermissionService service) {
+        this.service = service;
     }
 
     @Override
-    protected Object createModel(JsonDataVO vo) {
+    protected boolean hasPermission(PermissionHolder user, JsonDataVO vo) {
+        return service.hasAnyRole(user, vo.getReadRoles());
+    }
+
+    @Override
+    protected Object createModel(JsonDataVO vo, PermissionHolder user) {
         return new JsonDataModel(vo);
     }
 

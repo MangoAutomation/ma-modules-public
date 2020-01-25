@@ -14,7 +14,7 @@ public class XidPointValueTimeModel {
     private Object value;
     private ZonedDateTime timestamp;
     private String annotation;
-    
+
     public String getXid() {
         return xid;
     }

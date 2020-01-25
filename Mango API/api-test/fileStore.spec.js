@@ -600,7 +600,7 @@ describe('Test File Store endpoints', function() {
         const uploadFile = tmp.fileSync();
         
         return client.restRequest({
-            path: '/rest/v2/example/upload-limit',
+            path: '/rest/v2/testing/upload-limit',
             method: 'GET'
         }).then(response => {
             const uploadLimit = response.data;

@@ -12,10 +12,10 @@ import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource.
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource.TemporaryResourceStatus;
 import com.infiniteautomation.mango.rest.v2.util.CrudNotificationType;
 import com.infiniteautomation.mango.rest.v2.util.RestExceptionMapper;
+import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.util.BackgroundContext;
 import com.serotonin.m2m2.util.timeout.HighPriorityTask;
 import com.serotonin.m2m2.util.timeout.TimeoutClient;
 import com.serotonin.m2m2.util.timeout.TimeoutTask;
@@ -34,14 +34,16 @@ public final class MangoTaskTemporaryResourceManager<T> extends TemporaryResourc
         TimerTask expirationTask;
     }
 
+    private final PermissionService permissionService;
     private final TemporaryResourceWebSocketHandler websocketHandler;
 
-    public MangoTaskTemporaryResourceManager() {
-        this(null);
+    public MangoTaskTemporaryResourceManager(PermissionService permissionService) {
+        this(permissionService, null);
     }
 
-    public MangoTaskTemporaryResourceManager(TemporaryResourceWebSocketHandler websocketHandler) {
+    public MangoTaskTemporaryResourceManager(PermissionService permissionService, TemporaryResourceWebSocketHandler websocketHandler) {
         this.websocketHandler = websocketHandler;
+        this.permissionService = permissionService;
     }
 
     @Override
@@ -107,15 +109,14 @@ public final class MangoTaskTemporaryResourceManager<T> extends TemporaryResourc
         tasks.mainTask = new HighPriorityTask("Temporary resource " + resource.getResourceType() + " " + resource.getId()) {
             @Override
             public void run(long runtime) {
-                try {
-                    BackgroundContext.set(user);
-                    resource.runTask(user);
-                } catch (Exception e) {
-                    AbstractRestV2Exception error = MangoTaskTemporaryResourceManager.this.mapException(e);
-                    resource.safeError(error);
-                } finally {
-                    BackgroundContext.remove();
-                }
+                permissionService.runAs(user, ()-> {
+                    try {
+                        resource.runTask(user);
+                    } catch (Exception e) {
+                        AbstractRestV2Exception error = MangoTaskTemporaryResourceManager.this.mapException(e);
+                        resource.safeError(error);
+                    }
+                });
             }
 
             @Override
