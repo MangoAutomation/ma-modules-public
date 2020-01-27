@@ -197,6 +197,11 @@ public class WatchListVO extends AbstractVO {
         JsonObject o = jsonObject.getJsonObject("data");
         if(o != null)
             this.data = o.toMap();
+
+        //Legacy permissions support
+        this.readRoles = readLegacyPermissions("readPermissions", this.readRoles, jsonObject);
+        this.editRoles = readLegacyPermissions("editPermissions", this.editRoles, jsonObject);
+
     }
 
     @Override
