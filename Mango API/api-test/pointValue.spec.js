@@ -102,7 +102,7 @@ describe('Point values v1', function() {
         }).then(() => {
             // insert point values for the data point
             return client.restRequest({
-                path: '/rest/v1/point-values',
+                path: '/rest/v2/point-values',
                 method: 'PUT',
                 data: pointValues
             }).then(response => {
@@ -117,7 +117,7 @@ describe('Point values v1', function() {
 
     it('Gets latest point values for a data point', function() {
         return client.restRequest({
-            path: `/rest/v1/point-values/${this.testPoint.xid}/latest`,
+            path: `/rest/v2/point-values/${this.testPoint.xid}/latest`,
             method: 'GET'
         }).then(response => {
             comparePointValues({
@@ -129,7 +129,7 @@ describe('Point values v1', function() {
 
     it('Gets latest point values for a data point with a limit', function() {
         return client.restRequest({
-            path: `/rest/v1/point-values/${this.testPoint.xid}/latest?limit=20`,
+            path: `/rest/v2/point-values/${this.testPoint.xid}/latest?limit=20`,
             method: 'GET'
         }).then(response => {
             comparePointValues({
@@ -141,7 +141,7 @@ describe('Point values v1', function() {
     
     it('Gets latest point values for data source as single json array', function() {
         return client.restRequest({
-            path: `/rest/v1/point-values/${this.ds.xid}/latest-data-source-single-array`,
+            path: `/rest/v2/point-values/${this.ds.xid}/latest-data-source-single-array`,
             method: 'GET'
         }).then(response => {
             comparePointValues({
@@ -154,7 +154,7 @@ describe('Point values v1', function() {
 
     it('Gets latest point values for data source as multiple json arrays', function() {
         return client.restRequest({
-            path: `/rest/v1/point-values/${this.ds.xid}/latest-data-source-multiple-arrays`,
+            path: `/rest/v2/point-values/${this.ds.xid}/latest-data-source-multiple-arrays`,
             method: 'GET'
         }).then(response => {
             comparePointValues({
@@ -166,7 +166,7 @@ describe('Point values v1', function() {
 
     it('Gets latest point values for multiple points as a single json array', function() {
         return client.restRequest({
-            path: `/rest/v1/point-values/${this.testPoint.xid}/latest-multiple-points-single-array`,
+            path: `/rest/v2/point-values/${this.testPoint.xid}/latest-multiple-points-single-array`,
             method: 'GET'
         }).then(response => {
             comparePointValues({
@@ -179,7 +179,7 @@ describe('Point values v1', function() {
 
     it('Gets latest point values for multiple points as a multiple json arrays', function() {
         return client.restRequest({
-            path: `/rest/v1/point-values/${this.testPoint.xid}/latest-multiple-points-multiple-arrays`,
+            path: `/rest/v2/point-values/${this.testPoint.xid}/latest-multiple-points-multiple-arrays`,
             method: 'GET'
         }).then(response => {
             comparePointValues({
@@ -191,7 +191,7 @@ describe('Point values v1', function() {
 
     it('Gets first and last point values', function() {
         return client.restRequest({
-            path: `/rest/v1/point-values/${this.testPoint.xid}/first-last?from=${isoFrom}&to=${isoTo}`,
+            path: `/rest/v2/point-values/${this.testPoint.xid}/first-last?from=${isoFrom}&to=${isoTo}`,
             method: 'GET'
         }).then(response => {
             assert.strictEqual(2, response.data.length);
@@ -206,7 +206,7 @@ describe('Point values v1', function() {
 
     it('Gets point values for multiple points as single array', function() {
         return client.restRequest({
-            path: `/rest/v1/point-values/${this.testPoint.xid}/multiple-points-single-array?from=${isoFrom}&to=${isoTo}`,
+            path: `/rest/v2/point-values/${this.testPoint.xid}/multiple-points-single-array?from=${isoFrom}&to=${isoTo}`,
             method: 'GET'
         }).then(response => {
             comparePointValues({
@@ -219,7 +219,7 @@ describe('Point values v1', function() {
 
     it('Gets point values for multiple points as single array with limit 20', function() {
         return client.restRequest({
-            path: `/rest/v1/point-values/${this.testPoint.xid}/multiple-points-single-array?limit=20&from=${isoFrom}&to=${isoTo}`,
+            path: `/rest/v2/point-values/${this.testPoint.xid}/multiple-points-single-array?limit=20&from=${isoFrom}&to=${isoTo}`,
             method: 'GET'
         }).then(response => {
             comparePointValues({
@@ -232,7 +232,7 @@ describe('Point values v1', function() {
 
     it('Gets point values for multiple points as a multiple json arrays', function() {
         return client.restRequest({
-            path: `/rest/v1/point-values/${this.testPoint.xid}/multiple-points-multiple-arrays?from=${isoFrom}&to=${isoTo}`,
+            path: `/rest/v2/point-values/${this.testPoint.xid}/multiple-points-multiple-arrays?from=${isoFrom}&to=${isoTo}`,
             method: 'GET'
         }).then(response => {
             comparePointValues({
@@ -244,7 +244,7 @@ describe('Point values v1', function() {
 
     it('Gets point values for multiple points as a multiple json arrays with limit 20', function() {
         return client.restRequest({
-            path: `/rest/v1/point-values/${this.testPoint.xid}/multiple-points-multiple-arrays?limit=20&from=${isoFrom}&to=${isoTo}`,
+            path: `/rest/v2/point-values/${this.testPoint.xid}/multiple-points-multiple-arrays?limit=20&from=${isoFrom}&to=${isoTo}`,
             method: 'GET'
         }).then(response => {
             comparePointValues({
@@ -256,7 +256,7 @@ describe('Point values v1', function() {
 
     it('Gets point values for single point', function() {
         return client.restRequest({
-            path: `/rest/v1/point-values/${this.testPoint.xid}?from=${isoFrom}&to=${isoTo}`,
+            path: `/rest/v2/point-values/${this.testPoint.xid}?from=${isoFrom}&to=${isoTo}`,
             method: 'GET'
         }).then(response => {
             comparePointValues({
@@ -268,7 +268,7 @@ describe('Point values v1', function() {
 
     it('Gets point values for single point with limit 20', function() {
         return client.restRequest({
-            path: `/rest/v1/point-values/${this.testPoint.xid}?limit=20&from=${isoFrom}&to=${isoTo}`,
+            path: `/rest/v2/point-values/${this.testPoint.xid}?limit=20&from=${isoFrom}&to=${isoTo}`,
             method: 'GET'
         }).then(response => {
             comparePointValues({

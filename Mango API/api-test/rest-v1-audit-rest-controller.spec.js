@@ -23,10 +23,10 @@ describe('audit-rest-controller', function() {
     before('Login', function() { return login.call(this, client); });
 
     // Query Audit Events - Admin access only
-    it('GET /rest/v1/audit', function() {
+    it('GET /rest/v2/audit', function() {
         return client.restRequest({
             method: 'GET',
-            path: '/rest/v1/audit?limit(10)'
+            path: '/rest/v2/audit?limit(10)'
         }).then(response => {
             // OK
             assert.strictEqual(response.status, 200);
@@ -60,10 +60,10 @@ describe('audit-rest-controller', function() {
     });
 
     // List all Audit Event Types in the system - Admin access only
-    it('GET /rest/v1/audit/list-event-types', function() {
+    it('GET /rest/v2/audit/list-event-types', function() {
         return client.restRequest({
             method: 'GET',
-            path: '/rest/v1/audit/list-event-types',
+            path: '/rest/v2/audit/list-event-types',
         }).then(response => {
             // OK
             assert.strictEqual(response.status, 200);

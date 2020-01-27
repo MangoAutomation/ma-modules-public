@@ -30,10 +30,10 @@ describe('device-name-controller', function() {
     })
 
     // List device names - 
-    it('GET /rest/v1/device-names', function() {
+    it('GET /rest/v2/device-names', function() {
         return client.restRequest({
             method: 'GET',
-            path: '/rest/v1/device-names'
+            path: '/rest/v2/device-names'
         }).then(response => {
             // OK
             assert.strictEqual(response.status, 200);
@@ -46,10 +46,10 @@ describe('device-name-controller', function() {
     });
 
     // List device names by data source ID - 
-    it('GET /rest/v1/device-names/by-data-source-id/{id}', function() {
+    it('GET /rest/v2/device-names/by-data-source-id/{id}', function() {
         return client.restRequest({
             method: 'GET',
-            path: '/rest/v1/device-names/by-data-source-id/' + encodeURIComponent(this.internalDs.id)
+            path: '/rest/v2/device-names/by-data-source-id/' + encodeURIComponent(this.internalDs.id)
         }).then(response => {
             // OK
             assert.strictEqual(response.status, 200);
@@ -62,10 +62,10 @@ describe('device-name-controller', function() {
     });
 
     // List device names by data source XID - 
-    it('GET /rest/v1/device-names/by-data-source-xid/{xid}', function() {
+    it('GET /rest/v2/device-names/by-data-source-xid/{xid}', function() {
         return client.restRequest({
             method: 'GET',
-            path: '/rest/v1/device-names/by-data-source-xid/' + encodeURIComponent(this.internalDs.xid)
+            path: '/rest/v2/device-names/by-data-source-xid/' + encodeURIComponent(this.internalDs.xid)
         }).then(response => {
             // OK
             assert.strictEqual(response.status, 200);

@@ -72,10 +72,10 @@ describe('runtime-manager-rest-controller', function() {
     });
 
     // Force Refresh a data point - Not all data sources implement this feature
-    it('PUT /rest/v1/runtime-manager/force-refresh/{xid}', function() {
+    it('PUT /rest/v2/runtime-manager/force-refresh/{xid}', function() {
         return client.restRequest({
             method: 'PUT',
-            path: `/rest/v1/runtime-manager/force-refresh/${this.test.dpXid}`,
+            path: `/rest/v2/runtime-manager/force-refresh/${this.test.dpXid}`,
         }).then(response => {
             // OK
             assert.strictEqual(response.status, 200);
@@ -83,10 +83,10 @@ describe('runtime-manager-rest-controller', function() {
     });
 
     // Relinquish the value of a data point - Only BACnet data points allow this
-    it('POST /rest/v1/runtime-manager/relinquish/{xid}', function() {
+    it('POST /rest/v2/runtime-manager/relinquish/{xid}', function() {
         return client.restRequest({
             method: 'POST',
-            path: `/rest/v1/runtime-manager/relinquish/${this.test.dpXid}`,
+            path: `/rest/v2/runtime-manager/relinquish/${this.test.dpXid}`,
         }).then(response => {
             assert.fail('Relinquish should not be supported on virtual data source');
         }, response => {

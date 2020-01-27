@@ -162,7 +162,7 @@ describe('Legacy MBus Data Source tests ', function() {
 
     it('Copy MBus data source', () => {
       return client.restRequest({
-          path: '/rest/v1/data-sources/copy/DS_MBUS_SERIAL_TEST?copyXid=DS_MBUS_SERIAL_TEST_COPY&copyName=MBUS_SERIAL_TEST_COPY_NAME',
+          path: '/rest/v2/data-sources/copy/DS_MBUS_SERIAL_TEST?copyXid=DS_MBUS_SERIAL_TEST_COPY&copyName=MBUS_SERIAL_TEST_COPY_NAME',
           method: 'PUT'
       }).then(response => {
         assert.equal(response.data.xid, 'DS_MBUS_SERIAL_TEST_COPY');
@@ -269,7 +269,7 @@ describe('Test MBus Data Source v1 ', function() {
     beforeEach('Create serial data source v1', function() {
         const dsv1 = ds();
         return client.restRequest({
-            path: '/rest/v1/data-sources',
+            path: '/rest/v2/data-sources',
             method: 'POST',
             data: dsv1
         }).then((response) => {
@@ -290,7 +290,7 @@ describe('Test MBus Data Source v1 ', function() {
     it('Get data source', function() {
         const dsv1 = ds();
         return client.restRequest({
-            path: `/rest/v1/data-sources/${this.ds.xid}`,
+            path: `/rest/v2/data-sources/${this.ds.xid}`,
             method: 'GET'
         }).then(response => {
             assertV1(response, dsv1);
@@ -325,7 +325,7 @@ describe('Test MBus Data Source v1 ', function() {
               modelType : "mbusSerial"
           };
           return client.restRequest({
-              path:  `/rest/v1/data-sources/${this.ds.xid}`,
+              path:  `/rest/v2/data-sources/${this.ds.xid}`,
               method: 'PUT',
               data: dsv1
           }).then((response) => {
@@ -345,7 +345,7 @@ describe('Test MBus Data Source v1 ', function() {
       
       afterEach('Delete data source', function() {
           return client.restRequest({
-              path: `/rest/v1/data-sources/${this.ds.xid}`,
+              path: `/rest/v2/data-sources/${this.ds.xid}`,
               method: 'DELETE',
               data: {}
           }).then(response => {

@@ -73,7 +73,7 @@ describe('Modules Endpoints', function() {
       }
 		}).then(response => {
       return client.restRequest({
-        path: '/rest/v1/modules/upgrade-status',
+        path: '/rest/v2/modules/upgrade-status',
         method: 'GET'
       });
 		});

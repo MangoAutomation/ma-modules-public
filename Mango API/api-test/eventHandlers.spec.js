@@ -121,7 +121,7 @@ describe('Test Event Handlers Endpoints', function() {
 
     it('Create set point event handler', () => {
       return client.restRequest({
-          path: '/rest/v1/event-handlers',
+          path: '/rest/v2/event-handlers',
           method: 'POST',
           data: {
               xid : "EVTH_SET_POINT_TEST",
@@ -162,7 +162,7 @@ describe('Test Event Handlers Endpoints', function() {
 
     it('Delete set point event handler', () => {
       return client.restRequest({
-          path: '/rest/v1/event-handlers/EVTH_SET_POINT_TEST',
+          path: '/rest/v2/event-handlers/EVTH_SET_POINT_TEST',
           method: 'DELETE',
           data: {}
       }).then(response => {
@@ -175,7 +175,7 @@ describe('Test Event Handlers Endpoints', function() {
 
     it('Create email event handler', () => {
       return client.restRequest({
-          path: '/rest/v1/event-handlers',
+          path: '/rest/v2/event-handlers',
           method: 'POST',
           data: {
               xid : "EVTH_EMAIL_TEST",
@@ -222,7 +222,7 @@ describe('Test Event Handlers Endpoints', function() {
 
     it('Delete email event handler', () => {
       return client.restRequest({
-          path: '/rest/v1/event-handlers/EVTH_EMAIL_TEST',
+          path: '/rest/v2/event-handlers/EVTH_EMAIL_TEST',
           method: 'DELETE',
           data: {}
       }).then(response => {
@@ -234,7 +234,7 @@ describe('Test Event Handlers Endpoints', function() {
 
     it('Create process event handler', () => {
       return client.restRequest({
-          path: '/rest/v1/event-handlers',
+          path: '/rest/v2/event-handlers',
           method: 'POST',
           data: {
               xid : "EVTH_PROCESS_TEST",
@@ -267,7 +267,7 @@ describe('Test Event Handlers Endpoints', function() {
 
     it('Update process event handler', () => {
       return client.restRequest({
-          path: '/rest/v1/event-handlers/EVTH_PROCESS_TEST',
+          path: '/rest/v2/event-handlers/EVTH_PROCESS_TEST',
           method: 'PUT',
           data: {
               xid : "EVTH_PROCESS_TEST",
@@ -300,7 +300,7 @@ describe('Test Event Handlers Endpoints', function() {
 
     it('Get process event handler', () => {
       return client.restRequest({
-          path: '/rest/v1/event-handlers/EVTH_PROCESS_TEST',
+          path: '/rest/v2/event-handlers/EVTH_PROCESS_TEST',
           method: 'GET'
       }).then(response => {
         assert.equal(response.data.xid, 'EVTH_PROCESS_TEST');
@@ -315,7 +315,7 @@ describe('Test Event Handlers Endpoints', function() {
 
     it('Query process event handler', () => {
       return client.restRequest({
-          path: '/rest/v1/event-handlers?xid=EVTH_PROCESS_TEST',
+          path: '/rest/v2/event-handlers?xid=EVTH_PROCESS_TEST',
           method: 'GET'
       }).then(response => {
         assert.equal(response.data.items.length, 1);
@@ -332,7 +332,7 @@ describe('Test Event Handlers Endpoints', function() {
 
     it('Delete process event handler', () => {
       return client.restRequest({
-          path: '/rest/v1/event-handlers/EVTH_PROCESS_TEST',
+          path: '/rest/v2/event-handlers/EVTH_PROCESS_TEST',
           method: 'DELETE',
           data: {}
       }).then(response => {

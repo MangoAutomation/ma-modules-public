@@ -23,14 +23,14 @@ describe('work-item-rest-controller', function() {
     before('Login', function() { return login.call(this, client); });
 
     // Get all work items - Returns a list of all work items, optionally filterable on classname
-    it('GET /rest/v1/work-items', function() {
+    it('GET /rest/v2/work-items', function() {
         const params = {
             classname: 'string' // in = query, description = classname, required = false, type = string, default = , enum = 
         };
         
         return client.restRequest({
             method: 'GET',
-            path: `/rest/v1/work-items`,
+            path: `/rest/v2/work-items`,
             params: {
                 //classname: params.classname
             }
@@ -53,7 +53,7 @@ describe('work-item-rest-controller', function() {
     });
 
     // Get list of work items by classname - Returns the Work Item specified by the given classname and priority
-    it('GET /rest/v1/work-items/by-priority/{priority}', function() {
+    it('GET /rest/v2/work-items/by-priority/{priority}', function() {
         const params = {
             classname: 'string', // in = query, description = classname, required = false, type = string, default = , enum = 
             priority: 'HIGH' // in = path, description = priority, required = true, type = string, default = , enum = 
@@ -61,7 +61,7 @@ describe('work-item-rest-controller', function() {
         
         return client.restRequest({
             method: 'GET',
-            path: `/rest/v1/work-items/by-priority/${params.priority}`,
+            path: `/rest/v2/work-items/by-priority/${params.priority}`,
             params: {
                 //classname: params.classname
             }
@@ -84,13 +84,13 @@ describe('work-item-rest-controller', function() {
     });
 
     // Get Queued Work Item Counts - Returns Work Item names to instance count for High, Medium and Low thread pools
-    it('GET /rest/v1/work-items/queue-counts', function() {
+    it('GET /rest/v2/work-items/queue-counts', function() {
         const params = {
         };
         
         return client.restRequest({
             method: 'GET',
-            path: `/rest/v1/work-items/queue-counts`,
+            path: `/rest/v2/work-items/queue-counts`,
         }).then(response => {
             // OK
             assert.strictEqual(response.status, 200);
@@ -107,13 +107,13 @@ describe('work-item-rest-controller', function() {
     });
 
     // Get Rejected Task Statistics - Returns information on all tasks rejected from the High and Medium thread pools
-    it('GET /rest/v1/work-items/rejected-stats', function() {
+    it('GET /rest/v2/work-items/rejected-stats', function() {
         const params = {
         };
         
         return client.restRequest({
             method: 'GET',
-            path: `/rest/v1/work-items/rejected-stats`,
+            path: `/rest/v2/work-items/rejected-stats`,
         }).then(response => {
             // OK
             assert.strictEqual(response.status, 200);
@@ -155,13 +155,13 @@ describe('work-item-rest-controller', function() {
     });
 
     // Get Running Work Item Statistics - Returns information on all tasks running in the High and Medium thread pools
-    it('GET /rest/v1/work-items/running-stats', function() {
+    it('GET /rest/v2/work-items/running-stats', function() {
         const params = {
         };
         
         return client.restRequest({
             method: 'GET',
-            path: `/rest/v1/work-items/running-stats`,
+            path: `/rest/v2/work-items/running-stats`,
         }).then(response => {
             // OK
             assert.strictEqual(response.status, 200);

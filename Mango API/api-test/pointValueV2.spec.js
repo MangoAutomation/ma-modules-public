@@ -1411,7 +1411,7 @@ describe('Point values v2', function() {
     });
     
     // Update an existing data point's value - Data point must exist and be enabled
-    it.skip('PUT /rest/v1/point-values/{xid}', function() {
+    it.skip('PUT /rest/v2/point-values/{xid}', function() {
         const requestBody = {
             annotation: 'test annotation',
             dataType: 'NUMERIC',

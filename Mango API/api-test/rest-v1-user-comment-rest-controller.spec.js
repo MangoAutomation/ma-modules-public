@@ -40,7 +40,7 @@ describe('user-comment-rest-controller', function() {
         if (!noCreate.includes(this.currentTest)) {
             return client.restRequest({
                 method: 'POST',
-                path: '/rest/v1/comments',
+                path: '/rest/v2/comments',
                 data: this.currentTest.expectedResult
             });
         }
@@ -50,15 +50,15 @@ describe('user-comment-rest-controller', function() {
         // common test teardown, e.g. delete a VO object
         return client.restRequest({
             method: 'DELETE',
-            path: `/rest/v1/comments/${this.currentTest.xid}`,
+            path: `/rest/v2/comments/${this.currentTest.xid}`,
         }).catch(noop);
     });
     
     // Query User Comments - 
-    it('GET /rest/v1/comments', function() {
+    it('GET /rest/v2/comments', function() {
         return client.restRequest({
             method: 'GET',
-            path: `/rest/v1/comments?limit(10)`,
+            path: `/rest/v2/comments?limit(10)`,
         }).then(response => {
             // OK
             assert.strictEqual(response.status, 200);
@@ -98,7 +98,7 @@ describe('user-comment-rest-controller', function() {
     });
 
     // Create New User Comment - 
-    noCreate[noCreate.length] = it('POST /rest/v1/comments', function() {
+    noCreate[noCreate.length] = it('POST /rest/v2/comments', function() {
         const requestBody =
         { // title: UserCommentModel
             comment: 'string',
@@ -115,7 +115,7 @@ describe('user-comment-rest-controller', function() {
         
         return client.restRequest({
             method: 'POST',
-            path: `/rest/v1/comments`,
+            path: `/rest/v2/comments`,
             data: requestBody
         }).then(response => {
             // OK
@@ -149,14 +149,14 @@ describe('user-comment-rest-controller', function() {
     });
 
     // Get all User Comments - 
-    it('GET /rest/v1/comments/list', function() {
+    it('GET /rest/v2/comments/list', function() {
         const params = {
             limit: 10 // in = query, description = limit, required = false, type = integer, default = 100, enum = 
         };
         
         return client.restRequest({
             method: 'GET',
-            path: `/rest/v1/comments/list`,
+            path: `/rest/v2/comments/list`,
             params: {
                 limit: params.limit
             }
@@ -195,7 +195,7 @@ describe('user-comment-rest-controller', function() {
     });
 
     // Query User Comments - 
-    it('POST /rest/v1/comments/query', function() {
+    it('POST /rest/v2/comments/query', function() {
         const requestBody = {
             name: 'eq',
             arguments: ['xid', this.test.xid]
@@ -206,7 +206,7 @@ describe('user-comment-rest-controller', function() {
         
         return client.restRequest({
             method: 'POST',
-            path: `/rest/v1/comments/query`,
+            path: `/rest/v2/comments/query`,
             data: requestBody
         }).then(response => {
             // OK
@@ -247,14 +247,14 @@ describe('user-comment-rest-controller', function() {
     });
 
     // Get user comment by xid - Returns the user comment specified by the given xid
-    it('GET /rest/v1/comments/{xid}', function() {
+    it('GET /rest/v2/comments/{xid}', function() {
         const params = {
             xid: this.test.xid // in = path, description = Valid xid, required = true, type = string, default = , enum = 
         };
         
         return client.restRequest({
             method: 'GET',
-            path: `/rest/v1/comments/${params.xid}`,
+            path: `/rest/v2/comments/${params.xid}`,
         }).then(response => {
             // OK
             assert.strictEqual(response.status, 200);
@@ -288,7 +288,7 @@ describe('user-comment-rest-controller', function() {
     });
 
     // Updates a user comment - 
-    it('PUT /rest/v1/comments/{xid}', function() {
+    it('PUT /rest/v2/comments/{xid}', function() {
         const requestBody =
         { // title: UserCommentModel
             comment: 'new comment',
@@ -305,7 +305,7 @@ describe('user-comment-rest-controller', function() {
         
         return client.restRequest({
             method: 'PUT',
-            path: `/rest/v1/comments/${params.xid}`,
+            path: `/rest/v2/comments/${params.xid}`,
             data: requestBody
         }).then(response => {
             // OK
@@ -340,14 +340,14 @@ describe('user-comment-rest-controller', function() {
     });
 
     // Delete A User Comment by XID - 
-    it('DELETE /rest/v1/comments/{xid}', function() {
+    it('DELETE /rest/v2/comments/{xid}', function() {
         const params = {
             xid: this.test.xid // in = path, description = xid, required = true, type = string, default = , enum = 
         };
         
         return client.restRequest({
             method: 'DELETE',
-            path: `/rest/v1/comments/${params.xid}`,
+            path: `/rest/v2/comments/${params.xid}`,
         }).then(response => {
             // OK
             assert.strictEqual(response.status, 200);

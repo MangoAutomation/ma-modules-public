@@ -31,7 +31,7 @@ describe('modules-rest-controller', function() {
     };
     
     // AngularJS Modules - Publicly Available Angular JS Modules
-    it('GET /rest/v1/modules/angularjs-modules/public', function() {
+    it('GET /rest/v2/modules/angularjs-modules/public', function() {
         const params = {
         };
         
@@ -40,7 +40,7 @@ describe('modules-rest-controller', function() {
         }).then(() => {
             return client.restRequest({
                 method: 'GET',
-                path: `/rest/v1/modules/angularjs-modules/public`,
+                path: `/rest/v2/modules/angularjs-modules/public`,
             });
         }).then(response => {
             // OK
@@ -80,7 +80,7 @@ describe('modules-rest-controller', function() {
     });
 
     // Get Core Module - For checking current licensing and version
-    it('GET /rest/v1/modules/core', function() {
+    it('GET /rest/v2/modules/core', function() {
         const params = {
         };
         
@@ -89,7 +89,7 @@ describe('modules-rest-controller', function() {
         }).then(() => {
             return client.restRequest({
                 method: 'GET',
-                path: `/rest/v1/modules/core`,
+                path: `/rest/v2/modules/core`,
             });
         }).then(response => {
             // OK
@@ -122,7 +122,7 @@ describe('modules-rest-controller', function() {
     });
 
     // Set Marked For Deletion state of Module - Marking a module for deletion will un-install it upon restart
-    it.skip('PUT /rest/v1/modules/deletion-state', function() {
+    it.skip('PUT /rest/v2/modules/deletion-state', function() {
         const requestBody =
         { // title: ModuleModel
             dependencies: 'string',
@@ -148,7 +148,7 @@ describe('modules-rest-controller', function() {
         }).then(() => {
             return client.restRequest({
                 method: 'PUT',
-                path: `/rest/v1/modules/deletion-state`,
+                path: `/rest/v2/modules/deletion-state`,
                 params: {
                     delete: params.delete
                 },
@@ -181,7 +181,7 @@ describe('modules-rest-controller', function() {
     });
 
     // Set Marked For Deletion state of Module - Marking a module for deletion will un-install it upon restart
-    it.skip('PUT /rest/v1/modules/deletion-state/{moduleName}', function() {
+    it.skip('PUT /rest/v2/modules/deletion-state/{moduleName}', function() {
         const params = {
             delete: false, // in = query, description = Deletion State, required = true, type = boolean, default = false, enum = 
             moduleName: 'string' // in = path, description = moduleName, required = true, type = string, default = , enum = 
@@ -192,7 +192,7 @@ describe('modules-rest-controller', function() {
         }).then(() => {
             return client.restRequest({
                 method: 'PUT',
-                path: `/rest/v1/modules/deletion-state/${params.moduleName}`,
+                path: `/rest/v2/modules/deletion-state/${params.moduleName}`,
                 params: {
                     delete: params.delete
                 }
@@ -224,7 +224,7 @@ describe('modules-rest-controller', function() {
     });
 
     // Download your license from the store - Admin Only
-    it.skip('PUT /rest/v1/modules/download-license', function() {
+    it.skip('PUT /rest/v2/modules/download-license', function() {
         const requestBody =
         { // title: CredentialsModel
             password: 'string',
@@ -240,7 +240,7 @@ describe('modules-rest-controller', function() {
         }).then(() => {
             return client.restRequest({
                 method: 'PUT',
-                path: `/rest/v1/modules/download-license`,
+                path: `/rest/v2/modules/download-license`,
                 params: {
                     retries: params.retries
                 },
@@ -258,7 +258,7 @@ describe('modules-rest-controller', function() {
     });
 
     // List Current Installed Modules - List all installed
-    it('GET /rest/v1/modules/list', function() {
+    it('GET /rest/v2/modules/list', function() {
         const params = {
         };
         
@@ -267,7 +267,7 @@ describe('modules-rest-controller', function() {
         }).then(() => {
             return client.restRequest({
                 method: 'GET',
-                path: `/rest/v1/modules/list`,
+                path: `/rest/v2/modules/list`,
             });
         }).then(response => {
             // OK
@@ -305,7 +305,7 @@ describe('modules-rest-controller', function() {
     });
 
     // List Current Missing Module Dependencies - List all installed
-    it('GET /rest/v1/modules/list-missing-dependencies', function() {
+    it('GET /rest/v2/modules/list-missing-dependencies', function() {
         const params = {
         };
         
@@ -314,7 +314,7 @@ describe('modules-rest-controller', function() {
         }).then(() => {
             return client.restRequest({
                 method: 'GET',
-                path: `/rest/v1/modules/list-missing-dependencies`,
+                path: `/rest/v2/modules/list-missing-dependencies`,
             });
         }).then(response => {
             // OK
@@ -329,7 +329,7 @@ describe('modules-rest-controller', function() {
     });
 
     // Get the update license payload, to make requests to store - Admin Only
-    it('GET /rest/v1/modules/update-license-payload', function() {
+    it('GET /rest/v2/modules/update-license-payload', function() {
         const params = {
             download: true // in = query, description = Set content disposition to attachment, required = false, type = boolean, default = true, enum = 
         };
@@ -339,7 +339,7 @@ describe('modules-rest-controller', function() {
         }).then(() => {
             return client.restRequest({
                 method: 'GET',
-                path: `/rest/v1/modules/update-license-payload`,
+                path: `/rest/v2/modules/update-license-payload`,
                 params: {
                     download: params.download
                 }
@@ -366,7 +366,7 @@ describe('modules-rest-controller', function() {
     });
 
     // Download Upgrades and optionally backup and restart - Use Modules web socket to track progress
-    it.skip('POST /rest/v1/modules/upgrade', function() {
+    it.skip('POST /rest/v2/modules/upgrade', function() {
         const requestBody =
         { // title: ModuleUpgradesModel
             newInstalls: [
@@ -421,7 +421,7 @@ describe('modules-rest-controller', function() {
         }).then(() => {
             return client.restRequest({
                 method: 'POST',
-                path: `/rest/v1/modules/upgrade`,
+                path: `/rest/v2/modules/upgrade`,
                 params: {
                     backup: params.backup,
                     restart: params.restart
@@ -440,7 +440,7 @@ describe('modules-rest-controller', function() {
     });
 
     // Cancel Download of Upgrades - 
-    it.skip('PUT /rest/v1/modules/upgrade', function() {
+    it.skip('PUT /rest/v2/modules/upgrade', function() {
         const params = {
         };
         
@@ -449,7 +449,7 @@ describe('modules-rest-controller', function() {
         }).then(() => {
             return client.restRequest({
                 method: 'PUT',
-                path: `/rest/v1/modules/upgrade`,
+                path: `/rest/v2/modules/upgrade`,
             });
         }).then(response => {
             // OK
@@ -463,7 +463,7 @@ describe('modules-rest-controller', function() {
     });
 
     // Get Current Upgrade Task Status - 
-    it.skip('GET /rest/v1/modules/upgrade-status', function() {
+    it.skip('GET /rest/v2/modules/upgrade-status', function() {
         const params = {
         };
         
@@ -472,7 +472,7 @@ describe('modules-rest-controller', function() {
         }).then(() => {
             return client.restRequest({
                 method: 'GET',
-                path: `/rest/v1/modules/upgrade-status`,
+                path: `/rest/v2/modules/upgrade-status`,
             });
         }).then(response => {
             // OK
@@ -513,7 +513,7 @@ describe('modules-rest-controller', function() {
     });
 
     // Get Available Upgrades - Check the store for Upgrades
-    it.skip('GET /rest/v1/modules/upgrades-available', function() {
+    it.skip('GET /rest/v2/modules/upgrades-available', function() {
         const params = {
         };
         
@@ -522,7 +522,7 @@ describe('modules-rest-controller', function() {
         }).then(() => {
             return client.restRequest({
                 method: 'GET',
-                path: `/rest/v1/modules/upgrades-available`,
+                path: `/rest/v2/modules/upgrades-available`,
             });
         }).then(response => {
             // OK
@@ -581,7 +581,7 @@ describe('modules-rest-controller', function() {
     });
 
     // Upload upgrade zip bundle, to be installed on restart - The bundle can be downloaded from the Mango Store
-    it.skip('POST /rest/v1/modules/upload-upgrades', function() {
+    it.skip('POST /rest/v2/modules/upload-upgrades', function() {
         const params = {
             backup: false, // in = query, description = Perform Backup first, required = false, type = boolean, default = false, enum = 
             multipartRequest: undefined, // in = formData, description = multipartRequest, required = false, type = file, default = , enum = 
@@ -593,7 +593,7 @@ describe('modules-rest-controller', function() {
         }).then(() => {
             return client.restRequest({
                 method: 'POST',
-                path: `/rest/v1/modules/upload-upgrades`,
+                path: `/rest/v2/modules/upload-upgrades`,
                 params: {
                     backup: params.backup,
                     restart: params.restart

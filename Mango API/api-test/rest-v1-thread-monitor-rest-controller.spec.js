@@ -23,7 +23,7 @@ describe('thread-monitor-rest-controller', function() {
     before('Login', function() { return login.call(this, client); });
 
     // Get all threads - Larger stack depth will slow this request
-    it('GET /rest/v1/threads', function() {
+    it('GET /rest/v2/threads', function() {
         const params = {
             asFile: false, // in = query, description = Return as file, required = false, type = boolean, default = false, enum = 
             orderBy: 'cpuTime', // in = query, description = Order by this member, required = false, type = string, default = , enum = 
@@ -32,7 +32,7 @@ describe('thread-monitor-rest-controller', function() {
         
         return client.restRequest({
             method: 'GET',
-            path: `/rest/v1/threads`,
+            path: `/rest/v2/threads`,
             params: {
                 asFile: params.asFile,
                 orderBy: params.orderBy,
