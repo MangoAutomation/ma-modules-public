@@ -87,10 +87,9 @@ public class EventsRestController {
         this.fieldMap.put("acknowledgedTimestamp", eventTable.getAlias("ackTs"));
         this.fieldMap.put("eventType", eventTable.getAlias("typeName"));
         this.fieldMap.put("referenceId1", eventTable.getAlias("typeRef1"));
-        this.fieldMap.put("referenceId2", eventTable.getAlias("typeRef1"));
+        this.fieldMap.put("referenceId2", eventTable.getAlias("typeRef2"));
         this.fieldMap.put("acknowledged", eventTable.getAlias("ackTs"));
         this.fieldMap.put("active", eventTable.getAlias("rtnTs"));
-
     }
 
     @ApiOperation(
