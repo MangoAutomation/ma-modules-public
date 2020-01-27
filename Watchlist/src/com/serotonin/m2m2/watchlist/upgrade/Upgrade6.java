@@ -57,4 +57,9 @@ public class Upgrade6 extends Upgrade29 {
             "ALTER TABLE watchLists DROP COLUMN readPermission;",
             "ALTER TABLE watchLists DROP COLUMN editPermission;",
     };
+
+    @Override
+    protected String getNewSchemaVersion() {
+        return "7";
+    }
 }

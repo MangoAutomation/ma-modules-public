@@ -29,6 +29,6 @@ public class WatchListSchemaDefinition extends DatabaseSchemaDefinition {
 
     @Override
     public int getDatabaseSchemaVersion() {
-        return 6;
+        return 7;
     }
 }
