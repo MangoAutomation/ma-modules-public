@@ -25,7 +25,6 @@ import net.jazdw.rql.parser.RQLParser;
 public class EventInstanceDaoTest extends MangoTestBase {
 
     public EventInstanceDaoTest() {
-        super(true, 9000);
     }
 
     /**
