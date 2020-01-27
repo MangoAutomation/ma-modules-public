@@ -90,7 +90,6 @@ const validateSchema = {
         assert.isObject(item, path);
         assert.isString(item.deviceName, path + '.deviceName');
         assert.isString(item.name, path + '.name');
-        assert.isNumber(item.pointFolderId, path + '.pointFolderId');
         assert.isString(item.readPermission, path + '.readPermission');
         assert.isString(item.setPermission, path + '.setPermission');
         assert.isString(item.xid, path + '.xid');

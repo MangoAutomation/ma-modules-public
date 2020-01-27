@@ -93,7 +93,6 @@ describe('Full event detector service', function() {
                   type : "YEARS"
                 },
                 unit : "",
-                pointFolderId : 0,
                 integralUnit : "s",
                 renderedUnit : "",
                 modelType : "DATA_POINT",
@@ -160,7 +159,6 @@ describe('Full event detector service', function() {
                 type : "YEARS"
               },
               unit : "",
-              pointFolderId : 0,
               integralUnit : "s",
               renderedUnit : "",
               modelType : "DATA_POINT",
@@ -227,7 +225,6 @@ describe('Full event detector service', function() {
               type : "YEARS"
             },
             unit : "",
-            pointFolderId : 0,
             integralUnit : "s",
             renderedUnit : "",
             modelType : "DATA_POINT",
@@ -294,7 +291,6 @@ describe('Full event detector service', function() {
                 type : "YEARS"
               },
               unit : "",
-              pointFolderId : 0,
               integralUnit : "s",
               renderedUnit : "",
               modelType : "DATA_POINT",

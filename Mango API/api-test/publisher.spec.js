@@ -91,7 +91,6 @@ describe('Publisher service', function() {
                   type : "YEARS"
                 },
                 unit : "",
-                pointFolderId : 0,
                 integralUnit : "s",
                 renderedUnit : "",
                 modelType : "DATA_POINT",

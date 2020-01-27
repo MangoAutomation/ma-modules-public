@@ -92,7 +92,6 @@ describe.skip('Point Hierarchy service', () => {
               type : "YEARS"
             },
             unit : "",
-            pointFolderId : 0,
             integralUnit : "s",
             renderedUnit : "",
             modelType : "DATA_POINT",

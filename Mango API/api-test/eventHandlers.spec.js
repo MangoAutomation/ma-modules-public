@@ -93,7 +93,6 @@ describe('Test Event Handlers Endpoints', function() {
                     type : "YEARS"
                   },
                   unit : "",
-                  pointFolderId : 0,
                   integralUnit : "s",
                   renderedUnit : "",
                   modelType : "DATA_POINT",
