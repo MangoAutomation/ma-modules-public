@@ -20,7 +20,7 @@ const client = createClient();
 const DataSource = client.DataSource;
 const DataPoint = client.DataPoint;
 
-describe('Point values v1', function() {
+describe('Point values V2', function() {
     before('Login', function() { return login.call(this, client); });
     
     const insertionDelay = 1000;
