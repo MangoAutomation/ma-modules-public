@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-const {createClient, assertValidationErrors, defer, delay, login} = require('@infinite-automation/mango-module-tools/test-helper/testHelper');;
+const {createClient, assertValidationErrors, defer, delay, login} = require('@infinite-automation/mango-module-tools/test-helper/testHelper');
 const client = createClient();
 const Role = client.Role;
 const User = client.User;
 
 describe('Role endpoint tests', function() {
     before('Login', function() { return login.call(this, client); });
-    
+    debugger;
     it('Create a new role', () => {
         const role = new Role();
         const local = Object.assign({}, role);

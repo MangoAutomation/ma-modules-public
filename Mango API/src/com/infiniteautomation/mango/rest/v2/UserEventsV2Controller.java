@@ -77,7 +77,7 @@ public class UserEventsV2Controller extends AbstractMangoRestV2Controller{
         //Parse the RQL Query
         ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
         List<EventInstance> results;
-        List<EventInstance> events = Common.eventManager.getAllActiveUserEvents(user.getId());
+        List<EventInstance> events = Common.eventManager.getAllActiveUserEvents(user);
         //TODO in v3 change this to query on models not event instances, it is confusing
         if(query != null)
             results = query.accept(new RQLToObjectListQuery<EventInstance>(), events);

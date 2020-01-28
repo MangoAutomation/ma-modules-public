@@ -82,7 +82,6 @@ public class EventsRestController {
         this.fieldMap.put("activeTimestamp", eventTable.getAlias("activeTs"));
         this.fieldMap.put("rtnTimestamp", eventTable.getAlias("rtnTs"));
         this.fieldMap.put("userNotified", eventTable.getAlias("silenced"));
-        this.fieldMap.put("userId", EventInstanceTableDefinition.USER_EVENTS_USERID_ALIAS);
         this.fieldMap.put("acknowledged", eventTable.getAlias("ackTs"));
         this.fieldMap.put("acknowledgedTimestamp", eventTable.getAlias("ackTs"));
         this.fieldMap.put("eventType", eventTable.getAlias("typeName"));
@@ -198,8 +197,6 @@ public class EventsRestController {
     }
 
     private StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
-        rql = RQLUtils.addAndRestriction(rql, new ASTNode("eq", "userId", user.getId()));
-
         if (user.hasAdminRole()) {
             return new StreamedVORqlQueryWithTotal<>(service, rql, fieldMap, valueConverters, item -> true, vo -> map.apply(vo, user));
         } else {
