@@ -128,7 +128,7 @@ public class JsonDataRestController {
         JsonDataVO vo = service.get(xid);
         String[] pathParts = splitAndDecodePath(path);
         if (pathParts.length != 0) {
-            JsonNode data = (JsonNode) vo.getJsonData();
+            JsonNode data = vo.getJsonData();
             JsonNode subNode = getNode(data, pathParts);
             vo.setJsonData(subNode);
         }
@@ -333,7 +333,7 @@ public class JsonDataRestController {
         } else {
             JsonDataVO vo = service.get(xid);
             //Delete something from the map
-            JsonNode existingData = (JsonNode) vo.getJsonData();
+            JsonNode existingData = vo.getJsonData();
             boolean deleted = deleteNode(existingData, pathParts);
             if (!deleted) {
                 throw new NotFoundException();
@@ -382,7 +382,7 @@ public class JsonDataRestController {
             vo.setReadRoles(permissionService.explodeLegacyPermissionGroupsToRoles(readPermissions));
             vo.setEditRoles(permissionService.explodeLegacyPermissionGroupsToRoles(editPermissions));
 
-            JsonNode existingData = (JsonNode) vo.getJsonData();
+            JsonNode existingData = vo.getJsonData();
 
             if (operation == MapOperation.REPLACE) {
                 JsonNode newData = replaceNode(existingData, pathParts, data);
