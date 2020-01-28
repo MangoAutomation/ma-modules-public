@@ -147,4 +147,8 @@ public class EventInstanceModel {
     public void setMessage(TranslatableMessage message) {
         this.message = message;
     }
+
+    public boolean isActive() {
+        return rtnApplicable && rtnTimestamp == 0;
+    }
 }
