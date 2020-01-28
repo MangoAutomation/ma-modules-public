@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -33,6 +34,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.infiniteautomation.mango.rest.v2.bulk.VoAction;
 import com.infiniteautomation.mango.rest.v2.model.ActionAndModel;
 import com.infiniteautomation.mango.rest.v2.model.JSONStreamedArray;
+import com.infiniteautomation.mango.rest.v2.model.ListWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArray;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
@@ -43,7 +45,6 @@ import com.infiniteautomation.mango.rest.v2.model.WatchListSummaryModel;
 import com.infiniteautomation.mango.rest.v2.model.WatchListSummaryModelMapping;
 import com.infiniteautomation.mango.rest.v2.model.dataPoint.DataPointModel;
 import com.infiniteautomation.mango.rest.v2.model.event.EventInstanceModel;
-import com.infiniteautomation.mango.rest.v2.model.mailingList.MailingListWithRecipientsModel;
 import com.infiniteautomation.mango.rest.v2.patch.PatchVORequestBody;
 import com.infiniteautomation.mango.spring.db.UserTableDefinition;
 import com.infiniteautomation.mango.spring.service.WatchListService;
@@ -104,12 +105,27 @@ public class WatchListRestController {
         this.fieldMap.put("username", userTable.getXidAlias());
     }
 
-    @ApiOperation(
-            value = "Query WatchLists",
-            notes = "",
-            responseContainer="List",
-            response=WatchListSummaryModel.class
-            )
+    /**
+     * For Swagger documentation use only.
+     * @author Jared Wiltshire
+     */
+    private interface WatchListQueryResult extends ListWithTotal<WatchListSummaryModel> {
+    }
+    /**
+     * For Swagger documentation use only.
+     * @author Jared Wiltshire
+     */
+    private interface WatchListPointsResult extends ListWithTotal<DataPointModel> {
+    }
+    /**
+     * For Swagger documentation use only.
+     * @author Jared Wiltshire
+     */
+    private interface WatchListEventsResult extends ListWithTotal<EventInstanceModel> {
+    }
+
+
+    @ApiOperation(value = "Query WatchLists", response=WatchListQueryResult.class)
     @RequestMapping(method = RequestMethod.GET)
     public StreamedArrayWithTotal query(
             HttpServletRequest request,
@@ -121,9 +137,7 @@ public class WatchListRestController {
     }
 
     @ApiOperation(
-            value = "Get a WatchList",
-            notes = "",
-            response=WatchListModel.class
+            value = "Get a WatchList"
             )
     @RequestMapping(method = RequestMethod.GET, value="/{xid}")
     public WatchListModel get(
@@ -134,11 +148,8 @@ public class WatchListRestController {
         return mapping.map(service.get(xid), user, mapper);
     }
 
-    @ApiOperation(
-            value = "Create a WatchList",
-            notes = "",
-            response=WatchListModel.class
-            )
+    @ApiOperation(value = "Create New WatchList")
+    @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<WatchListModel> create(
             @RequestBody WatchListModel model,
@@ -148,13 +159,12 @@ public class WatchListRestController {
         URI location = builder.path("/watch-lists/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
-        return new ResponseEntity<>(mapping.map(vo, user, mapper), headers, HttpStatus.OK);
+        return new ResponseEntity<>(mapping.map(vo, user, mapper), headers, HttpStatus.CREATED);
     }
 
     @ApiOperation(
             value = "Update a WatchList",
-            notes = "Requires edit permission",
-            response=WatchListModel.class
+            notes = "Requires edit permission"
             )
     @RequestMapping(method = RequestMethod.PUT, value="/{xid}")
     public ResponseEntity<WatchListModel> update(
@@ -173,8 +183,7 @@ public class WatchListRestController {
 
     @ApiOperation(
             value = "Partially update a WatchList",
-            notes = "Requires edit permission",
-            response=MailingListWithRecipientsModel.class
+            notes = "Requires edit permission"
             )
     @RequestMapping(method = RequestMethod.PATCH, value = "/{xid}")
     public ResponseEntity<WatchListModel> partialUpdate(
@@ -200,9 +209,7 @@ public class WatchListRestController {
     }
 
     @ApiOperation(
-            value = "Delete a WatchList",
-            notes = "",
-            response=WatchListModel.class
+            value = "Delete a WatchList"
             )
     @RequestMapping(method = RequestMethod.DELETE, value="/{xid}")
     public ResponseEntity<WatchListModel> delete(
@@ -215,8 +222,7 @@ public class WatchListRestController {
 
     @ApiOperation(
             value = "Get Data Points for a Watchlist",
-            notes = "",
-            response=WatchListPointsQueryDataPageStream.class
+            response=WatchListPointsResult.class
             )
     @RequestMapping(method = RequestMethod.GET, value = "/{xid}/data-points")
     public WatchListPointsQueryDataPageStream getDataPoints(
@@ -228,7 +234,7 @@ public class WatchListRestController {
     @ApiOperation(
             value = "Get Data Points for a Watchlist for bulk import via CSV",
             notes = "Adds an additional action and originalXid column",
-            response=WatchListPointsQueryDataPageStream.class
+            response=String.class
             )
     @RequestMapping(method = RequestMethod.GET, value = "/{xid}/data-points", produces="text/csv")
     public WatchListPointsQueryDataPageStream getDataPointsWithAction(
@@ -245,8 +251,7 @@ public class WatchListRestController {
 
     @ApiOperation(
             value = "Get Data Point Events for a Watchlist",
-            notes = "",
-            response=StreamedArrayWithTotal.class
+            response = WatchListEventsResult.class
             )
     @RequestMapping(method = RequestMethod.GET, value = "/{xid}/events")
     public WatchListEventQueryArrayWithTotal getEvents(

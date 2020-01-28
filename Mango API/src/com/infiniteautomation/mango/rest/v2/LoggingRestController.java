@@ -31,6 +31,7 @@ import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.model.JSONStreamedArray;
 import com.infiniteautomation.mango.rest.v2.model.filestore.FileModel;
+import com.infiniteautomation.mango.rest.v2.model.logging.LogMessageModel;
 import com.infiniteautomation.mango.rest.v2.model.logging.LogQueryArrayStream;
 import com.infiniteautomation.mango.rest.v2.model.query.TableModel;
 import com.infiniteautomation.mango.spring.service.FileStoreService;
@@ -39,6 +40,8 @@ import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.vo.User;
 
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -90,13 +93,15 @@ public class LoggingRestController {
     }
 
     @PreAuthorize("isAdmin()")
-    @ApiOperation(value = "Query ma.log logs",
-    notes = "Returns a list of recent logs, ie. /by-filename/ma.log?limit(10)\n" +
-            "<br>Query Examples: \n" +
-            "by-filename/ma.log/?level=gt=DEBUG\n" +
-            "by-filename/ma.log/?classname=com.serotonin.m2m2m.Common\n" +
-            "by-filename/ma.log/?methodName=setPointValue\n" +
-            "NOTE: Querying non ma.log files is not supported, nor is ordering")
+    @ApiOperation(value = "Query ma.log logs", response = LogMessageModel.class, responseContainer = "List")
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "level", paramType="query", allowableValues = "TRACE,DEBUG,INFO,WARN,ERROR,FATAL"),
+        @ApiImplicitParam(name = "classname", paramType="query"),
+        @ApiImplicitParam(name = "methodName", paramType="query"),
+        @ApiImplicitParam(name = "lineNumber", paramType="query", dataType = "int"),
+        @ApiImplicitParam(name = "time", paramType="query", dataType = "date"),
+        @ApiImplicitParam(name = "message", paramType="query")
+    })
     @RequestMapping(method = RequestMethod.GET, value="/by-filename/{filename}")
     public JSONStreamedArray query(
             @PathVariable String filename,
@@ -116,7 +121,7 @@ public class LoggingRestController {
     }
 
     @PreAuthorize("isAdmin()")
-    @ApiOperation(value = "View log", notes = "Optionally download file as attachment")
+    @ApiOperation(value = "View log", notes = "Optionally download file as attachment", response = String.class)
     @RequestMapping(method = RequestMethod.GET, produces={"text/plain"}, value = "/view/{filename}")
     public ResponseEntity<FileSystemResource> download(
             @ApiParam(value = "Set content disposition to attachment", required = false, defaultValue="true", allowMultiple = false)

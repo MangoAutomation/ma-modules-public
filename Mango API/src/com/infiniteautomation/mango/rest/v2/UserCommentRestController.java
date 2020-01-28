@@ -23,9 +23,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.infiniteautomation.mango.rest.v2.model.ListWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedBasicVORqlQueryWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.comment.UserCommentModel;
@@ -71,12 +73,17 @@ public class UserCommentRestController {
         this.fieldMap.put("timestamp", userCommentTable.getAlias("ts"));
     }
 
+    /**
+     * For Swagger documentation use only.
+     * @author Jared Wiltshire
+     */
+    private interface UserCommentQueryResult extends ListWithTotal<UserCommentModel> {
+    }
+
     @ApiOperation(
             value = "Get all User Comments",
-            notes = "",
             response=UserCommentModel.class,
-            responseContainer="Array"
-            )
+            responseContainer = "List")
     @RequestMapping(method = RequestMethod.GET, value="/list")
     public StreamedArrayWithTotal getAll(HttpServletRequest request,
             @RequestParam(value="limit", required=false, defaultValue="100")Integer limit,
@@ -87,10 +94,7 @@ public class UserCommentRestController {
 
     @ApiOperation(
             value = "Query User Comments",
-            notes = "",
-            response=UserCommentModel.class,
-            responseContainer="Array"
-            )
+            response=UserCommentQueryResult.class)
     @RequestMapping(method = RequestMethod.POST, value = "/query")
     public StreamedArrayWithTotal query(
 
@@ -102,10 +106,7 @@ public class UserCommentRestController {
 
     @ApiOperation(
             value = "Query User Comments",
-            notes = "",
-            response=UserCommentModel.class,
-            responseContainer="Array"
-            )
+            response=UserCommentQueryResult.class)
     @RequestMapping(method = RequestMethod.GET)
     public StreamedArrayWithTotal queryRQL(
             @AuthenticationPrincipal User user,
@@ -126,9 +127,9 @@ public class UserCommentRestController {
      * @throws RestValidationFailedException
      */
     @ApiOperation(
-            value = "Create New User Comment",
-            notes = ""
+            value = "Create New User Comment"
             )
+    @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<UserCommentModel> createNewUserComment(
             @ApiParam( value = "User Comment to save", required = true )
@@ -150,7 +151,7 @@ public class UserCommentRestController {
         URI location = builder.path("/comments/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
-        return new ResponseEntity<>(map.apply(vo, user), headers, HttpStatus.OK);
+        return new ResponseEntity<>(map.apply(vo, user), headers, HttpStatus.CREATED);
     }
 
     @ApiOperation(value = "Delete A User Comment by XID")

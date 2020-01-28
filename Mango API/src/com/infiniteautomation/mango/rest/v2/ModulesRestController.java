@@ -165,7 +165,7 @@ public class ModulesRestController {
         return getAngularJSModules(env.getProperty("development.enabled", Boolean.class, false));
     }
 
-    @ApiOperation(value = "Get Core Module", notes = "For checking current licensing and version")
+    @ApiOperation(value = "Get Core Module", notes = "For checking current licensing and version", response = ModuleModel.class)
     @RequestMapping(method = RequestMethod.GET, value = "/core")
     public MappingJacksonValue getCore(@AuthenticationPrincipal User user) {
 

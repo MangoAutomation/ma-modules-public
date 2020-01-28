@@ -22,6 +22,8 @@ import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.vo.event.audit.AuditEventInstanceVO;
 
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * @author Terry Packer
  *
@@ -134,6 +136,7 @@ public class AuditEventInstanceModel {
         this.message = message;
     }
 
+    @ApiModelProperty(dataType="com.serotonin.json.type.JsonObject")
     public String getContext() {
         return context;
     }

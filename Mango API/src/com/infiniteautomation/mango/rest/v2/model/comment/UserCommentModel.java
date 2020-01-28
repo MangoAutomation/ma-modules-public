@@ -5,9 +5,12 @@
  */
 package com.infiniteautomation.mango.rest.v2.model.comment;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.infiniteautomation.mango.rest.v2.model.AbstractVoModel;
 import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.m2m2.vo.comment.UserCommentVO;
+
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  * This class should really JSON ignore name properties
@@ -60,6 +63,13 @@ public class UserCommentModel extends AbstractVoModel<UserCommentVO> {
         return vo;
     }
 
+    @ApiModelProperty(hidden = true)
+    @JsonIgnore
+    @Override
+    public String getName() {
+        return super.getName();
+    }
+
     public int getUserId() {
         return userId;
     }
@@ -92,6 +102,7 @@ public class UserCommentModel extends AbstractVoModel<UserCommentVO> {
         this.timestamp = timestamp;
     }
 
+    @ApiModelProperty(allowableValues = "POINT,EVENT,JSON_DATA")
     public String getCommentType() {
         return commentType;
     }
