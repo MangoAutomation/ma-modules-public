@@ -105,7 +105,9 @@ public class WatchListDao extends AbstractDao<WatchListVO, WatchListTableDefinit
             private int row = 0;
             @Override
             public void processRow(ResultSet rs) throws SQLException {
-                callback.accept(pointMapper.mapRow(rs, row));
+                DataPointVO vo = pointMapper.mapRow(rs, row);
+                dataPointDao.loadRelationalData(vo);
+                callback.accept(vo);
                 row++;
             }
 
