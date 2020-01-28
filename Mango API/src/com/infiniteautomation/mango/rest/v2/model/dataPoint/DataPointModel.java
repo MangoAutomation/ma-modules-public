@@ -16,6 +16,8 @@ import com.infiniteautomation.mango.rest.v2.model.AbstractVoModel;
 import com.infiniteautomation.mango.rest.v2.model.dataPoint.textRenderer.BaseTextRendererModel;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.db.dao.DataPointTagsDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.util.UnitUtil;
 import com.serotonin.m2m2.vo.DataPointVO;
@@ -241,6 +243,16 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
                     }
                 }
                 point.setTags(mergedTags);
+            }
+        }else {
+            //TODO Mango 4.0 unmap
+            if(id != null && id > 0) {
+                point.setTags(DataPointTagsDao.getInstance().getTagsForDataPointId(id));
+            }else if(xid != null) {
+                Integer id = DataPointDao.getInstance().getIdByXid(xid);
+                if(id != null) {
+                    point.setTags(DataPointTagsDao.getInstance().getTagsForDataPointId(id));
+                }
             }
         }
         if (this.loggingProperties != null) {
