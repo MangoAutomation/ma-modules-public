@@ -4,6 +4,7 @@
 
 package com.infiniteautomation.mango.rest.v2.model.jsondata;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.infiniteautomation.mango.rest.v2.model.AbstractVoModel;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.exception.ValidationException;
@@ -19,7 +20,7 @@ public class JsonDataModel extends AbstractVoModel<JsonDataVO> {
     private String readPermission;
     private String editPermission;
     private boolean publicData;
-    private Object jsonData;
+    private JsonNode jsonData;
 
     public JsonDataModel(JsonDataVO data) {
         fromVO(data);
@@ -51,11 +52,11 @@ public class JsonDataModel extends AbstractVoModel<JsonDataVO> {
         this.publicData = publicData;
     }
 
-    public Object getJsonData() {
+    public JsonNode getJsonData() {
         return jsonData;
     }
 
-    public void setJsonData(Object jsonData) {
+    public void setJsonData(JsonNode jsonData) {
         this.jsonData = jsonData;
     }
 
