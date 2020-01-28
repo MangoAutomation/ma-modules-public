@@ -7,19 +7,23 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.context.request.async.DeferredResult;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import com.fasterxml.classmate.TypeResolver;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.infiniteautomation.mango.rest.v2.model.ArbitraryJsonData;
 import com.infiniteautomation.mango.spring.ConditionalOnProperty;
 import com.infiniteautomation.mangoApi.rootRest.MangoRestSwaggerResourceProvider;
 import com.serotonin.m2m2.Common;
@@ -78,23 +82,50 @@ public class SwaggerConfig {
                 .securityContexts(Arrays.asList(securityContext()))
                 .produces(defaultMediaTypes)
                 .consumes(defaultMediaTypes)
-                .genericModelSubstitutes(ResponseEntity.class);
+                .useDefaultResponseMessages(false);
 
         docket.alternateTypeRules(
                 AlternateTypeRules.newRule(
-                        typeResolver.resolve(DeferredResult.class,
-                                typeResolver.resolve(ResponseEntity.class, WildcardType.class)),
-                        typeResolver.resolve(WildcardType.class)),
+                        typeResolver.resolve(Future.class, typeResolver.resolve(ResponseEntity.class, WildcardType.class)),
+                        typeResolver.resolve(WildcardType.class),
+                        Ordered.HIGHEST_PRECEDENCE),
+
+                AlternateTypeRules.newRule(
+                        typeResolver.resolve(CompletableFuture.class, typeResolver.resolve(ResponseEntity.class, WildcardType.class)),
+                        typeResolver.resolve(WildcardType.class),
+                        Ordered.HIGHEST_PRECEDENCE),
+
+                AlternateTypeRules.newRule(
+                        typeResolver.resolve(ResponseEntity.class, typeResolver.resolve(List.class, TranslatableMessage.class)),
+                        typeResolver.resolve(typeResolver.resolve(List.class, String.class)),
+                        Ordered.HIGHEST_PRECEDENCE),
+
+                AlternateTypeRules.newRule(
+                        typeResolver.resolve(ResponseEntity.class, typeResolver.resolve(Set.class, TranslatableMessage.class)),
+                        typeResolver.resolve(typeResolver.resolve(Set.class, String.class)),
+                        Ordered.HIGHEST_PRECEDENCE),
+
+                AlternateTypeRules.newRule(
+                        typeResolver.resolve(Future.class, typeResolver.resolve(WildcardType.class)),
+                        typeResolver.resolve(WildcardType.class),
+                        Ordered.HIGHEST_PRECEDENCE + 1),
+
+                AlternateTypeRules.newRule(
+                        typeResolver.resolve(CompletableFuture.class, typeResolver.resolve(WildcardType.class)),
+                        typeResolver.resolve(WildcardType.class),
+                        Ordered.HIGHEST_PRECEDENCE + 1),
+
                 // Rule to allow Multipart requests to show up as single file input
-                AlternateTypeRules.newRule(typeResolver.resolve(MultipartHttpServletRequest.class),
-                        typeResolver.resolve(MultipartFile.class)),
+                AlternateTypeRules.newRule(typeResolver.resolve(MultipartHttpServletRequest.class), typeResolver.resolve(MultipartFile.class)),
+
                 //Setup Translatable Messages to appear as Strings
                 AlternateTypeRules.newRule(TranslatableMessage.class, String.class),
                 //Setup Lists of Translatable Messages to appear as Lists of Strings
                 AlternateTypeRules.newRule(typeResolver.resolve(List.class, TranslatableMessage.class), typeResolver.resolve(List.class, String.class)),
                 //Setup Sets of Translatable Messages to appear as Sets of Strings
-                AlternateTypeRules.newRule(typeResolver.resolve(Set.class, TranslatableMessage.class), typeResolver.resolve(Set.class, String.class)))
-        .useDefaultResponseMessages(false);
+                AlternateTypeRules.newRule(typeResolver.resolve(Set.class, TranslatableMessage.class), typeResolver.resolve(Set.class, String.class)),
+                // Map JsonNode to a marker interface for arbitrary JSON data
+                AlternateTypeRules.newRule(typeResolver.resolve(JsonNode.class), typeResolver.resolve(ArbitraryJsonData.class)));
 
         docket.apiInfo(new ApiInfoBuilder().title("Mango REST V2 API").description(
                 "Support: <a href='http://infiniteautomation.com/forum' target='_blank'>Forum</a> or <a href='https://help.infiniteautomation.com/explore-the-api/' target='_blank'>Help</a>")
