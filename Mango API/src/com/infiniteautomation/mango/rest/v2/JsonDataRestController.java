@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -46,8 +47,6 @@ import com.serotonin.m2m2.vo.json.JsonDataVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
 
 /**
  *
@@ -79,8 +78,7 @@ public class JsonDataRestController {
 
     @ApiOperation(
             value = "List all available xids",
-            notes = "Shows any xids that you have read permissions for",
-            response = List.class
+            notes = "Shows any xids that you have read permissions for"
             )
     @RequestMapping(method = RequestMethod.GET)
     public List<String> list(){
@@ -138,14 +136,8 @@ public class JsonDataRestController {
     }
 
     @ApiOperation(
-            value = "Append JSON Data to existing",
-            response=JsonDataModel.class
+            value = "Append JSON Data to existing"
             )
-    @ApiResponses({
-        @ApiResponse(code = 201, message = "Data Created", response=JsonDataModel.class),
-        @ApiResponse(code = 401, message = "Unauthorized Access", response=ResponseEntity.class),
-        @ApiResponse(code = 409, message = "Data Already Exists")
-    })
     @RequestMapping(method = RequestMethod.PUT, value="/{xid}")
     public ResponseEntity<JsonDataModel> updateJsonData(
             @ApiParam(value = "XID", required = true, allowMultiple = false)
@@ -163,9 +155,10 @@ public class JsonDataRestController {
             @ApiParam(value = "Is public?", required = true, allowMultiple = false, defaultValue="false")
             @RequestParam(required=false, defaultValue="false") boolean publicData,
 
-            @ApiParam( value = "Data to save", required = true )
-            @RequestBody(required=false)
+            @ApiParam( value = "Data to save")
+            @RequestBody(required=true)
             JsonNode data,
+
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder,
             HttpServletRequest request) {
@@ -186,14 +179,8 @@ public class JsonDataRestController {
 
     @ApiOperation(
             value = "Append JSON Data to existing",
-            notes = "{path} is the path to data with dots data.member.submember",
-            response=JsonDataModel.class
+            notes = "{path} is the path to data with dots data.member.submember"
             )
-    @ApiResponses({
-        @ApiResponse(code = 201, message = "Data Created", response=JsonDataModel.class),
-        @ApiResponse(code = 401, message = "Unauthorized Access", response=ResponseEntity.class),
-        @ApiResponse(code = 403, message = "Data Doesn't Exists")
-    })
     @RequestMapping(method = RequestMethod.PUT, value="/{xid}/{path:.*}")
     public ResponseEntity<JsonDataModel> updateJsonData(
             @ApiParam(value = "XID", required = true, allowMultiple = false)
@@ -214,9 +201,10 @@ public class JsonDataRestController {
             @ApiParam(value = "Is public?", required = true, allowMultiple = false, defaultValue="false")
             @RequestParam(required=false, defaultValue="false") boolean publicData,
 
-            @ApiParam( value = "Data to save", required = true )
+            @ApiParam( value = "Data to save")
             @RequestBody(required=true)
             JsonNode data,
+
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder,
             HttpServletRequest request) throws UnsupportedEncodingException {
@@ -236,14 +224,9 @@ public class JsonDataRestController {
 
 
     @ApiOperation(
-            value = "Create/replace JSON Data",
-            response=JsonDataModel.class
+            value = "Create/replace JSON Data"
             )
-    @ApiResponses({
-        @ApiResponse(code = 201, message = "Data Created", response=JsonDataModel.class),
-        @ApiResponse(code = 401, message = "Unauthorized Access", response=ResponseEntity.class),
-        @ApiResponse(code = 409, message = "Data Already Exists")
-    })
+    @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(method = RequestMethod.POST, value="/{xid}")
     public ResponseEntity<JsonDataModel> createJsonData(
             @ApiParam(value = "XID", required = true, allowMultiple = false)
@@ -261,12 +244,14 @@ public class JsonDataRestController {
             @ApiParam(value = "Is public?", required = true, allowMultiple = false, defaultValue="false")
             @RequestParam(required=false, defaultValue="false") boolean publicData,
 
-            @ApiParam( value = "Data to save", required = true )
+            @ApiParam( value = "Data to save")
             @RequestBody(required=true)
             JsonNode data,
+
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder,
             HttpServletRequest request) {
+
         return modifyJsonData(MapOperation.REPLACE,
                 xid,
                 new String[] {},
@@ -279,14 +264,9 @@ public class JsonDataRestController {
 
     @ApiOperation(
             value = "Replace JSON Data",
-            notes = "{path} is the path to data with dots data.member.submember",
-            response=JsonDataModel.class
+            notes = "{path} is the path to data with dots data.member.submember"
             )
-    @ApiResponses({
-        @ApiResponse(code = 201, message = "Data Created", response=JsonDataModel.class),
-        @ApiResponse(code = 401, message = "Unauthorized Access", response=ResponseEntity.class),
-        @ApiResponse(code = 409, message = "Data Already Exists")
-    })
+    @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(method = RequestMethod.POST, value="/{xid}/{path:.*}")
     public ResponseEntity<JsonDataModel> replaceJsonData(
             @ApiParam(value = "XID", required = true, allowMultiple = false)
@@ -307,12 +287,13 @@ public class JsonDataRestController {
             @ApiParam(value = "Is public?", required = true, allowMultiple = false, defaultValue="false")
             @RequestParam(required=false, defaultValue="false") boolean publicData,
 
-            @ApiParam( value = "Data to save", required = true )
+            @ApiParam( value = "Data to save")
             @RequestBody(required=true)
             JsonNode data,
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder,
             HttpServletRequest request) throws UnsupportedEncodingException {
+
         String[] pathParts = splitAndDecodePath(path);
         return modifyJsonData(MapOperation.REPLACE,
                 xid,
@@ -325,16 +306,7 @@ public class JsonDataRestController {
                 builder, request, HttpStatus.CREATED);
     }
 
-    @ApiOperation(
-            value = "Fully Delete JSON Data",
-            notes = "",
-            response=JsonDataModel.class
-            )
-    @ApiResponses({
-        @ApiResponse(code = 201, message = "Data Deleted", response=JsonDataModel.class),
-        @ApiResponse(code = 401, message = "Unauthorized Access", response=ResponseEntity.class),
-        @ApiResponse(code = 403, message = "Data Doesn't Exists")
-    })
+    @ApiOperation(value = "Fully Delete JSON Data")
     @RequestMapping(method = RequestMethod.DELETE, value="/{xid}")
     public JsonDataModel deleteJsonData(
             @ApiParam(value = "XID", required = true, allowMultiple = false)
@@ -343,16 +315,8 @@ public class JsonDataRestController {
         return deletePartialJsonData(xid, null, user);
     }
 
-    @ApiOperation(
-            value = "Partially Delete JSON Data",
-            notes = "{path} is the path to data with dots data.member.submember",
-            response=JsonDataModel.class
-            )
-    @ApiResponses({
-        @ApiResponse(code = 201, message = "Data Deleted", response=JsonDataModel.class),
-        @ApiResponse(code = 401, message = "Unauthorized Access", response=ResponseEntity.class),
-        @ApiResponse(code = 403, message = "Data Doesn't Exists")
-    })
+    @ApiOperation(value = "Partially Delete JSON Data",
+            notes = "{path} is the path to data with dots data.member.submember")
     @RequestMapping(method = RequestMethod.DELETE, value="/{xid}/{path:.*}")
     public JsonDataModel deletePartialJsonData(
             @ApiParam(value = "XID", required = true, allowMultiple = false)

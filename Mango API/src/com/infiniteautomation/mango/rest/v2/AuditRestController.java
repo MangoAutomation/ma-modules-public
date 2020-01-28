@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.infiniteautomation.mango.rest.v2.model.ListWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedBasicVORqlQueryWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.audit.AuditEventInstanceModel;
@@ -32,6 +33,8 @@ import com.serotonin.m2m2.vo.event.audit.AuditEventInstanceVO;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import net.jazdw.rql.parser.ASTNode;
 
@@ -68,12 +71,24 @@ public class AuditRestController {
         this.modelMap = new HashMap<String,String>();
     }
 
+    /**
+     * For Swagger documentation use only.
+     * @author Jared Wiltshire
+     */
+    private interface AuditQueryResult extends ListWithTotal<AuditEventInstanceModel> {
+    }
+
     @ApiOperation(
             value = "Query Audit Events",
             notes = "Admin access only",
-            response=AuditEventInstanceModel.class,
-            responseContainer="Array"
-            )
+            response=AuditQueryResult.class)
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "typeName", paramType="query"),
+        @ApiImplicitParam(name = "alarmLevel", paramType="query", allowableValues = "NONE,INFORMATION,IMPORTANT,WARNING,URGENT,CRITICAL,LIFE_SAFETY,DO_NOT_LOG,IGNORE"),
+        @ApiImplicitParam(name = "changeType", paramType="query", allowableValues = "CREATE,MODIFY,DELETE"),
+        @ApiImplicitParam(name = "objectId", paramType="query", dataType = "int"),
+        @ApiImplicitParam(name = "timestamp", paramType="query", dataType = "long")
+    })
     @RequestMapping(method = RequestMethod.GET)
     public StreamedArrayWithTotal queryRQL(
             @AuthenticationPrincipal User user,
@@ -86,9 +101,7 @@ public class AuditRestController {
 
     @ApiOperation(
             value = "List all Audit Event Types in the system",
-            notes = "Admin access only",
-            response=String.class,
-            responseContainer="Array"
+            notes = "Admin access only"
             )
     @RequestMapping(method = RequestMethod.GET, value = "list-event-types")
     public List<EventTypeInfo> listEventTypes(
