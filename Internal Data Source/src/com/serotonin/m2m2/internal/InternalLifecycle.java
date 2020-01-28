@@ -55,7 +55,7 @@ public class InternalLifecycle extends LifecycleDefinition {
 
     //Module Monitor IDs
     public static final String POINT_LINK_COUNT_MONITOR_ID = "com.serotonin.m2m2.pointLinks.PointLinkDao.COUNT";
-    public static final String WATCHLIST_COUNT_MONITOR_ID = "com.serotonin.m2m2.watchlist.WatchListDao.COUNT";
+    public static final String WATCHLIST_COUNT_MONITOR_ID = "com.infiniteautomation.mango.spring.dao.WatchListDao.COUNT";
     public static final String SCHEDULED_EVENTS_COUNT_MONITOR_ID = "com.serotonin.m2m2.scheduledEvents.ScheduledEventDao.COUNT";
     public static final String REPORTS_COUNT_MONITOR_ID = "com.serotonin.m2m2.reports.ReportDao.COUNT";
     public static final String REPORT_INSTANCES_COUNT_MONITOR_ID = "com.serotonin.m2m2.reports.ReportInstanceDao.COUNT";
