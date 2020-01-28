@@ -87,9 +87,6 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
 
     //TODO Test initial values and no initial values
 
-    /* (non-Javadoc)
-     * @see com.serotonin.m2m2.MangoTestBase#after()
-     */
     @Override
     public void after() {
         super.after();
@@ -1373,9 +1370,6 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
         return null;
     }
 
-    /* (non-Javadoc)
-     * @see com.serotonin.m2m2.MangoTestBase#getLifecycle()
-     */
     @Override
     protected MockMangoLifecycle getLifecycle() {
         return new TestLifecycle(modules, enableH2Web, h2WebPort, runtimeManager);
