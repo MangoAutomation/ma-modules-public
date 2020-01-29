@@ -9,12 +9,17 @@ public class WebSocketResponse<T> implements WebSocketMessage {
     int sequenceNumber;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     T payload;
-    
+
     public WebSocketResponse() {
     }
-    
+
     public WebSocketResponse(int sequenceNumber) {
         this.sequenceNumber = sequenceNumber;
+    }
+
+    public WebSocketResponse(int sequenceNumber, T payload) {
+        this.sequenceNumber = sequenceNumber;
+        this.payload = payload;
     }
 
     public int getSequenceNumber() {

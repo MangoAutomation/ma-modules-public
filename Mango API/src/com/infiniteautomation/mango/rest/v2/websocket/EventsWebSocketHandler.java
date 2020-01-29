@@ -86,7 +86,8 @@ public class EventsWebSocketHandler extends MangoWebSocketHandler implements Use
     public static class EventsSubscriptionRequest extends EventsWebsocketRequest {
         private Set<AlarmLevels> levels;
         private Set<EventActionEnum> actions;
-        private boolean sendEventLevelSummaries;
+        private boolean sendActiveSummary;
+        private boolean sendUnacknowledgedSummary;
 
         @Override
         public void validate(ProcessResult response) { }
@@ -103,13 +104,40 @@ public class EventsWebSocketHandler extends MangoWebSocketHandler implements Use
         public void setActions(Set<EventActionEnum> actions) {
             this.actions = actions;
         }
-        public boolean isSendEventLevelSummaries() {
-            return sendEventLevelSummaries;
-        }
-        public void setSendEventLevelSummaries(boolean sendEventLevelSummaries) {
-            this.sendEventLevelSummaries = sendEventLevelSummaries;
+
+        public boolean isSendActiveSummary() {
+            return sendActiveSummary;
         }
 
+        public void setSendActiveSummary(boolean sendActiveSummary) {
+            this.sendActiveSummary = sendActiveSummary;
+        }
+
+        public boolean isSendUnacknowledgedSummary() {
+            return sendUnacknowledgedSummary;
+        }
+
+        public void setSendUnacknowledgedSummary(boolean sendUnacknowledgedSummary) {
+            this.sendUnacknowledgedSummary = sendUnacknowledgedSummary;
+        }
+
+    }
+
+    public static class EventsSubscriptionResponse {
+        List<EventLevelSummaryModel> activeSummary;
+        List<EventLevelSummaryModel> unacknowledgedSummary;
+        public List<EventLevelSummaryModel> getActiveSummary() {
+            return activeSummary;
+        }
+        public void setActiveSummary(List<EventLevelSummaryModel> activeSummary) {
+            this.activeSummary = activeSummary;
+        }
+        public List<EventLevelSummaryModel> getUnacknowledgedSummary() {
+            return unacknowledgedSummary;
+        }
+        public void setUnacknowledgedSummary(List<EventLevelSummaryModel> unacknowledgedSummary) {
+            this.unacknowledgedSummary = unacknowledgedSummary;
+        }
     }
 
     private final RestModelMapper modelMapper;
@@ -221,18 +249,29 @@ public class EventsWebSocketHandler extends MangoWebSocketHandler implements Use
                         }
                     }
                 }
-                if(subscription.isSendEventLevelSummaries()) {
-                    WebSocketResponse<List<EventLevelSummaryModel>> response = new WebSocketResponse<>(request.getSequenceNumber());
+
+                EventsSubscriptionResponse response = new EventsSubscriptionResponse();
+                if (subscription.isSendActiveSummary()) {
                     List<UserEventLevelSummary> summaries = permissionService.runAs(user, () -> service.getActiveSummary());
+
                     List<EventLevelSummaryModel> models = summaries.stream().map(s -> {
                         EventInstanceModel instanceModel = s.getLatest() != null ? modelMapper.map(s.getLatest(), EventInstanceModel.class, user) : null;
                         return new EventLevelSummaryModel(s.getAlarmLevel(), s.getCount(), instanceModel);
                     }).collect(Collectors.toList());
-                    response.setPayload(models);
-                    this.sendRawMessage(session, response);
-                }else {
-                    this.sendRawMessage(session, new WebSocketResponse<Void>(request.getSequenceNumber()));
+
+                    response.setActiveSummary(models);
                 }
+                if (subscription.isSendUnacknowledgedSummary()) {
+                    List<UserEventLevelSummary> summaries = permissionService.runAs(user, () -> service.getUnacknowledgedSummary());
+
+                    List<EventLevelSummaryModel> models = summaries.stream().map(s -> {
+                        EventInstanceModel instanceModel = s.getLatest() != null ? modelMapper.map(s.getLatest(), EventInstanceModel.class, user) : null;
+                        return new EventLevelSummaryModel(s.getAlarmLevel(), s.getCount(), instanceModel);
+                    }).collect(Collectors.toList());
+
+                    response.setUnacknowledgedSummary(models);
+                }
+                this.sendRawMessage(session, new WebSocketResponse<>(request.getSequenceNumber(), response));
             }else if(request instanceof EventsDataPointSummaryRequest) {
                 EventsDataPointSummaryRequest query = (EventsDataPointSummaryRequest)request;
                 WebSocketResponse<List<DataPointEventSummaryModel>> response = new WebSocketResponse<>(request.getSequenceNumber());
