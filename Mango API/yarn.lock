@@ -41,9 +41,9 @@
     "@hapi/hoek" "^8.3.0"
 
 "@infinite-automation/mango-client@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@infinite-automation/mango-client/-/mango-client-1.0.0.tgz#01fd6c81ef243f1519d9f2abd1cd69d3e9c8be49"
-  integrity sha512-Oy+xRrnusOpYUN2ltVL55oltcFi0uftLBmfb7Fte+qIIl980xIsOKOKCCF9Izu1bYnAQk+x52Gd+xkbfIwLCNg==
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@infinite-automation/mango-client/-/mango-client-1.1.0.tgz#c414b1dedda17bcd5d2836aee77babe6dceabc17"
+  integrity sha512-nnJo630UEwbSOBDKXaeiZF5/odzQ1gDb/JagjYT7bJa/iFvG7DYRJmwn10AlSgzMszhGNtQhTNN6TKRyY0PKag==
   dependencies:
     form-data "^2.3.0"
     moment "^2.19.0"
@@ -52,9 +52,9 @@
     ws ">=4 <7"
 
 "@infinite-automation/mango-module-tools@^2.1.0":
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/@infinite-automation/mango-module-tools/-/mango-module-tools-2.2.0.tgz#58cc2bbc1b4422886ee6a2e4d3a1367da8d24158"
-  integrity sha512-f7MQ5wMSbKVHG0cc5tCoTassxgvlyhnBzrfz4KOpS1W/yUHyBCF/XVDzp8xm2GND7U/XqyzS23cKOUwCzE3GjA==
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/@infinite-automation/mango-module-tools/-/mango-module-tools-2.3.0.tgz#022623af7928c07aa189eae853d3606beaa79014"
+  integrity sha512-iz53sQss3+agL46IZi2J2RKXtsMfy09f9O+Ld+OrfbW4sD0KQzxHGjvoIg6pDsWo+jY8GH0Aj7h3qx9jh8Xrig==
   dependencies:
     "@infinite-automation/mango-client" "^1.0.0"
     chai "^4.2.0"
@@ -99,9 +99,9 @@
   integrity sha512-tHq6qdbT9U1IRSGf14CL0pUlULksvY9OZ+5eEgl1N7t+OA3tGvNpxJCzuKQlsNgCVwbAs670L1vcVQi8j9HjnA==
 
 "@types/node@*":
-  version "13.5.0"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-13.5.0.tgz#4e498dbf355795a611a87ae5ef811a8660d42662"
-  integrity sha512-Onhn+z72D2O2Pb2ql2xukJ55rglumsVo1H6Fmyi8mlU9SvKdBk/pUSUAiBY/d9bAOF7VVWajX3sths/+g6ZiAQ==
+  version "13.5.1"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-13.5.1.tgz#6fae50892d1841f4b38b298e2f78fb68c5960cb9"
+  integrity sha512-Jj2W7VWQ2uM83f8Ls5ON9adxN98MvyJsMSASYFuSvrov8RMRY64Ayay7KV35ph1TSGIJ2gG9ZVDdEq3c3zaydA==
 
 "@types/source-list-map@*":
   version "0.1.2"
@@ -816,9 +816,9 @@ class-utils@^0.3.5:
     static-extend "^0.1.1"
 
 clean-css@4.2.x:
-  version "4.2.1"
-  resolved "https://registry.yarnpkg.com/clean-css/-/clean-css-4.2.1.tgz#2d411ef76b8569b6d0c84068dabe85b0aa5e5c17"
-  integrity sha512-4ZxI6dy4lrY6FHzfiy1aEOXgu4LIsW2MhwG0VBKdcoGoH/XLFgaHSdLTGr4O8Be6A8r3MOphEiI8Gc1n0ecf3g==
+  version "4.2.3"
+  resolved "https://registry.yarnpkg.com/clean-css/-/clean-css-4.2.3.tgz#507b5de7d97b48ee53d84adb0160ff6216380f78"
+  integrity sha512-VcMWDN54ZN/DS+g58HYL5/n4Zrqe8vHJpGA8KdgUXFU4fuP/aHNw8eld9SyEIyabIMJX/0RaY/fplOo5hYLSFA==
   dependencies:
     source-map "~0.6.0"
 
@@ -2523,9 +2523,9 @@ mocha@^5.2.0:
     supports-color "5.4.0"
 
 mocha@^7.0.0:
-  version "7.0.0"
-  resolved "https://registry.yarnpkg.com/mocha/-/mocha-7.0.0.tgz#c60d14bf3de9601f549b3ff5be657eb8381c54bf"
-  integrity sha512-CirsOPbO3jU86YKjjMzFLcXIb5YiGLUrjrXFHoJ3e2z9vWiaZVCZQ2+gtRGMPWF+nFhN6AWwLM/juzAQ6KRkbA==
+  version "7.0.1"
+  resolved "https://registry.yarnpkg.com/mocha/-/mocha-7.0.1.tgz#276186d35a4852f6249808c6dd4a1376cbf6c6ce"
+  integrity sha512-9eWmWTdHLXh72rGrdZjNbG3aa1/3NRPpul1z0D979QpEnFdCG0Q5tv834N+94QEN2cysfV72YocQ3fn87s70fg==
   dependencies:
     ansi-colors "3.2.3"
     browser-stdout "1.3.1"
