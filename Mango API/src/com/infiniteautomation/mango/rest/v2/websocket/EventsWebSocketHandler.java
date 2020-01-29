@@ -27,6 +27,7 @@ import com.infiniteautomation.mango.rest.v2.model.event.EventActionEnum;
 import com.infiniteautomation.mango.rest.v2.model.event.EventInstanceModel;
 import com.infiniteautomation.mango.rest.v2.model.event.EventLevelSummaryModel;
 import com.infiniteautomation.mango.spring.service.EventInstanceService;
+import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.ProcessResult;
@@ -113,6 +114,7 @@ public class EventsWebSocketHandler extends MangoWebSocketHandler implements Use
 
     private final RestModelMapper modelMapper;
     private final EventInstanceService service;
+    private final PermissionService permissionService;
 
     private volatile Set<AlarmLevels> levels;
     private volatile EnumSet<EventActionEnum> actions;
@@ -121,10 +123,11 @@ public class EventsWebSocketHandler extends MangoWebSocketHandler implements Use
     private final Object lock = new Object();
 
     @Autowired
-    public EventsWebSocketHandler(RestModelMapper modelMapper, EventInstanceService service) {
+    public EventsWebSocketHandler(RestModelMapper modelMapper, EventInstanceService service, PermissionService permissionService) {
         super(true);
         this.modelMapper = modelMapper;
         this.service = service;
+        this.permissionService = permissionService;
     }
 
     @Override
@@ -175,6 +178,7 @@ public class EventsWebSocketHandler extends MangoWebSocketHandler implements Use
     public void handleTextMessage(WebSocketSession session, TextMessage message) {
         try {
             User user = this.getUser(session);
+
             JsonNode tree = this.jacksonMapper.readTree(message.getPayload());
 
             if (!WebSocketMessageType.REQUEST.messageTypeMatches(tree) || tree.get("requestType") == null) {
@@ -219,10 +223,10 @@ public class EventsWebSocketHandler extends MangoWebSocketHandler implements Use
                 }
                 if(subscription.isSendEventLevelSummaries()) {
                     WebSocketResponse<List<EventLevelSummaryModel>> response = new WebSocketResponse<>(request.getSequenceNumber());
-                    List<UserEventLevelSummary> summaries = service.getActiveSummary(user);
+                    List<UserEventLevelSummary> summaries = permissionService.runAs(user, () -> service.getActiveSummary());
                     List<EventLevelSummaryModel> models = summaries.stream().map(s -> {
                         EventInstanceModel instanceModel = s.getLatest() != null ? modelMapper.map(s.getLatest(), EventInstanceModel.class, user) : null;
-                        return new EventLevelSummaryModel(s.getAlarmLevel(), s.getUnsilencedCount(), instanceModel);
+                        return new EventLevelSummaryModel(s.getAlarmLevel(), s.getCount(), instanceModel);
                     }).collect(Collectors.toList());
                     response.setPayload(models);
                     this.sendRawMessage(session, response);
@@ -232,13 +236,13 @@ public class EventsWebSocketHandler extends MangoWebSocketHandler implements Use
             }else if(request instanceof EventsDataPointSummaryRequest) {
                 EventsDataPointSummaryRequest query = (EventsDataPointSummaryRequest)request;
                 WebSocketResponse<List<DataPointEventSummaryModel>> response = new WebSocketResponse<>(request.getSequenceNumber());
-                Collection<DataPointEventLevelSummary> summaries = service.getDataPointEventSummaries(query.getDataPointXids(), user);
+                Collection<DataPointEventLevelSummary> summaries = permissionService.runAs(user, () -> service.getDataPointEventSummaries(query.getDataPointXids()));
                 List<DataPointEventSummaryModel> models = summaries.stream().map(s -> new DataPointEventSummaryModel(s.getXid(), s.getCounts())).collect(Collectors.toList());
                 response.setPayload(models);
                 this.sendRawMessage(session, response);
             }else if(request instanceof AllActiveEventsRequest) {
                 WebSocketResponse<List<EventInstanceModel>> response = new WebSocketResponse<>(request.getSequenceNumber());
-                List<EventInstance> active = service.getAllActiveUserEvents(user);
+                List<EventInstance> active = permissionService.runAs(user, () -> service.getAllActiveUserEvents());
                 List<EventInstanceModel> models = new ArrayList<>(active.size());
                 for(EventInstance vo : active) {
                     models.add(modelMapper.map(vo, EventInstanceModel.class, user));

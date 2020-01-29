@@ -92,15 +92,39 @@ public class EventsRestController {
     }
 
     @ApiOperation(
+            value = "Get the active events for a user",
+            notes = "List of all active events for a user")
+    @RequestMapping(method = RequestMethod.GET, value = "/active")
+    public List<EventInstanceModel> getActive(@AuthenticationPrincipal User user) {
+        List<EventInstance> events = service.getAllActiveUserEvents();
+        return events.stream().map(s -> {
+            return modelMapper.map(events, EventInstanceModel.class, user);
+        }).collect(Collectors.toList());
+    }
+
+    @ApiOperation(
             value = "Get the active events summary",
             notes = "List of counts for all active events by type and the most recent active alarm for each."
             )
     @RequestMapping(method = RequestMethod.GET, value = "/active-summary")
     public List<EventLevelSummaryModel> getActiveSummary(@AuthenticationPrincipal User user) {
-        List<UserEventLevelSummary> summaries = service.getActiveSummary(user);
+        List<UserEventLevelSummary> summaries = service.getActiveSummary();
         return summaries.stream().map(s -> {
             EventInstanceModel instanceModel = s.getLatest() != null ? modelMapper.map(s.getLatest(), EventInstanceModel.class, user) : null;
-            return new EventLevelSummaryModel(s.getAlarmLevel(), s.getUnsilencedCount(), instanceModel);
+            return new EventLevelSummaryModel(s.getAlarmLevel(), s.getCount(), instanceModel);
+        }).collect(Collectors.toList());
+    }
+
+    @ApiOperation(
+            value = "Get the unacknowledged events summary",
+            notes = "List of counts for all unacknowledged events by type and the most recent unacknowledged alarm for each."
+            )
+    @RequestMapping(method = RequestMethod.GET, value = "/unacknowledged-summary")
+    public List<EventLevelSummaryModel> getUnacknowledgedSummary(@AuthenticationPrincipal User user) {
+        List<UserEventLevelSummary> summaries = service.getUnacknowledgedSummary();
+        return summaries.stream().map(s -> {
+            EventInstanceModel instanceModel = s.getLatest() != null ? modelMapper.map(s.getLatest(), EventInstanceModel.class, user) : null;
+            return new EventLevelSummaryModel(s.getAlarmLevel(), s.getCount(), instanceModel);
         }).collect(Collectors.toList());
     }
 
@@ -113,7 +137,7 @@ public class EventsRestController {
             @RequestBody(required=true)
             String[] xids,
             @AuthenticationPrincipal User user) {
-        Collection<DataPointEventLevelSummary> summaries = service.getDataPointEventSummaries(xids, user);
+        Collection<DataPointEventLevelSummary> summaries = service.getDataPointEventSummaries(xids);
         return summaries.stream().map(s -> new DataPointEventSummaryModel(s.getXid(), s.getCounts())).collect(Collectors.toList());
     }
 
