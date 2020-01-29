@@ -1,5 +1,6 @@
 *Version 4.0.0*
 * Upgraded to work with core version 4.0.x
+* Add new message option for the events websocket with a requestType of REQUEST_TYPE_ALL_ACTIVE_EVENTS to return a list of all currently active events that user can see
 
 *Version 3.7.0*
 * Upgraded to work with core version 3.7.x
