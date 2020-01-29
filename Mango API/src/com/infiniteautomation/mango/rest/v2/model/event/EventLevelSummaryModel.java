@@ -12,15 +12,15 @@ import com.serotonin.m2m2.rt.event.AlarmLevels;
 public class EventLevelSummaryModel {
 
     private AlarmLevels level;
-    private int unsilencedCount;
-    private EventInstanceModel mostRecentUnsilenced;
-    
+    private int count;
+    private EventInstanceModel latest;
+
     public EventLevelSummaryModel(){ }
 
-    public EventLevelSummaryModel(AlarmLevels level, int unsilencedCount, EventInstanceModel mostRecentUnsilenced) {
+    public EventLevelSummaryModel(AlarmLevels level, int unsilencedCount, EventInstanceModel latest) {
         this.level = level;
-        this.unsilencedCount = unsilencedCount;
-        this.mostRecentUnsilenced = mostRecentUnsilenced;
+        this.count = unsilencedCount;
+        this.latest = latest;
     }
 
     public AlarmLevels getLevel() {
@@ -31,20 +31,20 @@ public class EventLevelSummaryModel {
         this.level = level;
     }
 
-    public int getUnsilencedCount() {
-        return unsilencedCount;
+    public int getCount() {
+        return count;
     }
 
-    public void setUnsilencedCount(int unsilencedCount) {
-        this.unsilencedCount = unsilencedCount;
+    public void setCount(int count) {
+        this.count = count;
     }
 
-    public EventInstanceModel getMostRecentUnsilenced() {
-        return mostRecentUnsilenced;
+    public EventInstanceModel getLatest() {
+        return latest;
     }
 
-    public void setMostRecentUnsilenced(EventInstanceModel mostRecentUnsilenced) {
-        this.mostRecentUnsilenced = mostRecentUnsilenced;
+    public void setLatest(EventInstanceModel latest) {
+        this.latest = latest;
     }
-    
+
 }

@@ -3,6 +3,9 @@
  */
 package com.infiniteautomation.mango.rest.v2.model.event;
 
+import java.util.List;
+
+import com.infiniteautomation.mango.rest.v2.model.comment.UserCommentModel;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.rt.event.ReturnCause;
@@ -25,6 +28,7 @@ public class EventInstanceModel {
     private AlarmLevels alarmLevel;
     private TranslatableMessage message;
     private TranslatableMessage rtnMessage;
+    private List<UserCommentModel> comments;
 
     //TODO We also have access to comments and handlers if necessary/desired
 
@@ -46,7 +50,7 @@ public class EventInstanceModel {
     public EventInstanceModel(int id, AbstractEventTypeModel<?, ?, ?> eventType,
             long activeTimestamp, Integer acknowledgedByUserId, String acknowledgedByUsername,
             Long acknowledgedTimestamp, boolean rtnApplicable, Long rtnTimestamp,
-            ReturnCause rtnCause, AlarmLevels alarmLevel, TranslatableMessage message, TranslatableMessage rtnMessage) {
+            ReturnCause rtnCause, AlarmLevels alarmLevel, TranslatableMessage message, TranslatableMessage rtnMessage, List<UserCommentModel> comments) {
         super();
         this.id = id;
         this.eventType = eventType;
@@ -60,6 +64,7 @@ public class EventInstanceModel {
         this.alarmLevel = alarmLevel;
         this.message = message;
         this.rtnMessage = rtnMessage;
+        this.comments = comments;
     }
 
     public int getId() {
@@ -164,5 +169,13 @@ public class EventInstanceModel {
 
     public void setRtnMessage(TranslatableMessage rtnMessage) {
         this.rtnMessage = rtnMessage;
+    }
+
+    public List<UserCommentModel> getComments() {
+        return comments;
+    }
+
+    public void setComments(List<UserCommentModel> comments) {
+        this.comments = comments;
     }
 }

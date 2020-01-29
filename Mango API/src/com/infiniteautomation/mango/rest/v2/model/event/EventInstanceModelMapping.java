@@ -3,11 +3,15 @@
  */
 package com.infiniteautomation.mango.rest.v2.model.event;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Component;
 
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapping;
-import com.serotonin.m2m2.rt.event.EventInstance;
+import com.infiniteautomation.mango.rest.v2.model.comment.UserCommentModel;
+import com.serotonin.m2m2.vo.event.EventInstanceI;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 /**
@@ -15,11 +19,11 @@ import com.serotonin.m2m2.vo.permission.PermissionHolder;
  *
  */
 @Component
-public class EventInstanceModelMapping implements RestModelMapping<EventInstance, EventInstanceModel>{
+public class EventInstanceModelMapping implements RestModelMapping<EventInstanceI, EventInstanceModel>{
 
     @Override
-    public Class<? extends EventInstance> fromClass() {
-        return EventInstance.class;
+    public Class<? extends EventInstanceI> fromClass() {
+        return EventInstanceI.class;
     }
 
     @Override
@@ -29,8 +33,9 @@ public class EventInstanceModelMapping implements RestModelMapping<EventInstance
 
     @Override
     public EventInstanceModel map(Object from, PermissionHolder user, RestModelMapper mapper) {
-        EventInstance evt = (EventInstance)from;
+        EventInstanceI evt = (EventInstanceI)from;
         AbstractEventTypeModel<?,?,?> eventTypeModel = mapper.map(evt.getEventType(), AbstractEventTypeModel.class, user);
+        List<UserCommentModel> comments = evt.getEventComments().stream().map(c -> mapper.map(c, UserCommentModel.class, user)).collect(Collectors.toList());
         return new EventInstanceModel(
                 evt.getId(),
                 eventTypeModel,
@@ -43,8 +48,8 @@ public class EventInstanceModelMapping implements RestModelMapping<EventInstance
                 evt.getRtnCause(),
                 evt.getAlarmLevel(),
                 evt.getMessage(),
-                evt.getRtnMessage()
+                evt.getRtnMessage(),
+                comments
                 );
     }
-
 }
