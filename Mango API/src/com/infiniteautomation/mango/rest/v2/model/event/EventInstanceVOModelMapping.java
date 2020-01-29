@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapping;
+import com.serotonin.m2m2.rt.event.EventInstance;
 import com.serotonin.m2m2.vo.event.EventInstanceVO;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
@@ -30,7 +31,7 @@ public class EventInstanceVOModelMapping implements RestModelMapping<EventInstan
     @Override
     public EventInstanceModel map(Object from, PermissionHolder user, RestModelMapper mapper) {
         EventInstanceVO evt = (EventInstanceVO)from;
-        AbstractEventTypeModel<?,?,?> eventTypeModel = mapper.map(evt.getEventType(), AbstractEventTypeModel.class, user); 
+        AbstractEventTypeModel<?,?,?> eventTypeModel = mapper.map(evt.getEventType(), AbstractEventTypeModel.class, user);
         return new EventInstanceModel(
                 evt.getId(),
                 eventTypeModel,
@@ -42,7 +43,8 @@ public class EventInstanceVOModelMapping implements RestModelMapping<EventInstan
                 evt.getRtnTimestamp(),
                 evt.getRtnCause(),
                 evt.getAlarmLevel(),
-                evt.getMessage()
+                evt.getMessage(),
+                EventInstance.getRtnMessage(evt.getEventType(), evt.getRtnCause())
                 );
     }
 

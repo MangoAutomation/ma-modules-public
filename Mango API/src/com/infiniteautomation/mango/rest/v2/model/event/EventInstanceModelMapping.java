@@ -30,7 +30,7 @@ public class EventInstanceModelMapping implements RestModelMapping<EventInstance
     @Override
     public EventInstanceModel map(Object from, PermissionHolder user, RestModelMapper mapper) {
         EventInstance evt = (EventInstance)from;
-        AbstractEventTypeModel<?,?,?> eventTypeModel = mapper.map(evt.getEventType(), AbstractEventTypeModel.class, user); 
+        AbstractEventTypeModel<?,?,?> eventTypeModel = mapper.map(evt.getEventType(), AbstractEventTypeModel.class, user);
         return new EventInstanceModel(
                 evt.getId(),
                 eventTypeModel,
@@ -42,7 +42,8 @@ public class EventInstanceModelMapping implements RestModelMapping<EventInstance
                 evt.getRtnTimestamp(),
                 evt.getRtnCause(),
                 evt.getAlarmLevel(),
-                evt.getMessage()
+                evt.getMessage(),
+                evt.getRtnMessage()
                 );
     }
 

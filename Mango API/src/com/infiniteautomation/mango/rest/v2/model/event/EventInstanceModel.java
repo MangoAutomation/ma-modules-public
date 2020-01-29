@@ -24,6 +24,7 @@ public class EventInstanceModel {
     private ReturnCause rtnCause;
     private AlarmLevels alarmLevel;
     private TranslatableMessage message;
+    private TranslatableMessage rtnMessage;
 
     //TODO We also have access to comments and handlers if necessary/desired
 
@@ -45,7 +46,7 @@ public class EventInstanceModel {
     public EventInstanceModel(int id, AbstractEventTypeModel<?, ?, ?> eventType,
             long activeTimestamp, Integer acknowledgedByUserId, String acknowledgedByUsername,
             Long acknowledgedTimestamp, boolean rtnApplicable, Long rtnTimestamp,
-            ReturnCause rtnCause, AlarmLevels alarmLevel, TranslatableMessage message) {
+            ReturnCause rtnCause, AlarmLevels alarmLevel, TranslatableMessage message, TranslatableMessage rtnMessage) {
         super();
         this.id = id;
         this.eventType = eventType;
@@ -58,6 +59,7 @@ public class EventInstanceModel {
         this.rtnCause = rtnCause;
         this.alarmLevel = alarmLevel;
         this.message = message;
+        this.rtnMessage = rtnMessage;
     }
 
     public int getId() {
@@ -154,5 +156,13 @@ public class EventInstanceModel {
 
     public boolean isAcknowledged() {
         return acknowledgedTimestamp != null;
+    }
+
+    public TranslatableMessage getRtnMessage() {
+        return rtnMessage;
+    }
+
+    public void setRtnMessage(TranslatableMessage rtnMessage) {
+        this.rtnMessage = rtnMessage;
     }
 }
