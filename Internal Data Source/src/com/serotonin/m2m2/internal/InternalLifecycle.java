@@ -54,11 +54,8 @@ public class InternalLifecycle extends LifecycleDefinition {
     }
 
     //Module Monitor IDs
-    public static final String POINT_LINK_COUNT_MONITOR_ID = "com.serotonin.m2m2.pointLinks.PointLinkDao.COUNT";
     public static final String WATCHLIST_COUNT_MONITOR_ID = "com.infiniteautomation.mango.spring.dao.WatchListDao.COUNT";
     public static final String SCHEDULED_EVENTS_COUNT_MONITOR_ID = "com.serotonin.m2m2.scheduledEvents.ScheduledEventDao.COUNT";
-    public static final String REPORTS_COUNT_MONITOR_ID = "com.serotonin.m2m2.reports.ReportDao.COUNT";
-    public static final String REPORT_INSTANCES_COUNT_MONITOR_ID = "com.serotonin.m2m2.reports.ReportInstanceDao.COUNT";
     public static final String EXCEL_REPORTS_COUNT_MONITOR_ID = "com.infiniteautomation.mango.excelreports.dao.ExcelReportDao.COUNT";
     public static final String EXCEL_REPORT_TEMPLATES_COUNT_MONITOR_ID = "com.infiniteautomation.mango.excelreports.dao.ExcelReportTemplateDao.COUNT";
 
@@ -73,15 +70,12 @@ public class InternalLifecycle extends LifecycleDefinition {
     public static final String PUBLISHER_COUNT_POINT_XID = "internal_mango_num_publishers";
     public static final String EVENT_DETECTOR_COUNT_POINT_XID = "internal_mango_num_event_detectors";
     public static final String EVENT_HANDLER_COUNT_POINT_XID = "internal_mango_num_event_handlers";
-    public static final String POINT_LINK_COUNT_POINT_XID = "internal_mango_num_point_links";
     public static final String AVAILABLE_UPDATES_COUNT_POINT_XID = "internal_mango_num_updates_available";
     public static final String ACTIVE_USER_SESSION_COUNT_POINT_XID = "internal_mango_num_active_user_sessions";
     public static final String SYSTEM_UPTIME_POINT_XID = "internal_mango_uptime_hrs";
     public static final String WATCHLIST_COUNT_POINT_XID = "internal_mango_num_watchlists";
     public static final String SCHEDULED_EVENTS_COUNT_POINT_XID = "internal_mango_num_scheduled_events";
     public static final String MAILING_LIST_COUNT_POINT_XID = "internal_mango_num_mailing_lists";
-    public static final String REPORTS_COUNT_POINT_XID = "internal_mango_num_reports";
-    public static final String REPORT_INSTANCES_COUNT_POINT_XID = "internal_mango_num_report_instances";
     public static final String EXCEL_REPORTS_COUNT_POINT_XID = "internal_mango_num_excel_reports";
     public static final String EXCEL_REPORT_TEMPLATES_COUNT_POINT_XID = "internal_mango_num_excel_report_templates";
 
@@ -123,11 +117,8 @@ public class InternalLifecycle extends LifecycleDefinition {
         monitors.put(SYSTEM_UPTIME_POINT_XID, Common.MONITORED_VALUES.getMonitor(ServerMonitoringService.SYSTEM_UPTIME_MONITOR_ID));
 
         //Get from Modules
-        monitors.put(POINT_LINK_COUNT_POINT_XID, Common.MONITORED_VALUES.getMonitor(POINT_LINK_COUNT_MONITOR_ID));
         monitors.put(WATCHLIST_COUNT_POINT_XID, Common.MONITORED_VALUES.getMonitor(WATCHLIST_COUNT_MONITOR_ID));
         monitors.put(SCHEDULED_EVENTS_COUNT_POINT_XID, Common.MONITORED_VALUES.getMonitor(SCHEDULED_EVENTS_COUNT_MONITOR_ID));
-        monitors.put(REPORTS_COUNT_POINT_XID, Common.MONITORED_VALUES.getMonitor(REPORTS_COUNT_MONITOR_ID));
-        monitors.put(REPORT_INSTANCES_COUNT_POINT_XID, Common.MONITORED_VALUES.getMonitor(REPORT_INSTANCES_COUNT_MONITOR_ID));
         monitors.put(EXCEL_REPORTS_COUNT_POINT_XID, Common.MONITORED_VALUES.getMonitor(EXCEL_REPORTS_COUNT_MONITOR_ID));
         monitors.put(EXCEL_REPORT_TEMPLATES_COUNT_POINT_XID, Common.MONITORED_VALUES.getMonitor(EXCEL_REPORT_TEMPLATES_COUNT_MONITOR_ID));
 
