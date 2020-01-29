@@ -16,11 +16,11 @@ public class EventInstanceModel {
     private int id;
     private AbstractEventTypeModel<?,?,?> eventType;
     private long activeTimestamp;
-    private int acknowledgedByUserId;
+    private Integer acknowledgedByUserId;
     private String acknowledgedByUsername;
-    private long acknowledgedTimestamp;
+    private Long acknowledgedTimestamp;
     private boolean rtnApplicable;
-    private long rtnTimestamp;
+    private Long rtnTimestamp;
     private ReturnCause rtnCause;
     private AlarmLevels alarmLevel;
     private TranslatableMessage message;
@@ -43,8 +43,8 @@ public class EventInstanceModel {
      * @param message
      */
     public EventInstanceModel(int id, AbstractEventTypeModel<?, ?, ?> eventType,
-            long activeTimestamp, int acknowledgedByUserId, String acknowledgedByUsername,
-            long acknowledgedTimestamp, boolean rtnApplicable, long rtnTimestamp,
+            long activeTimestamp, Integer acknowledgedByUserId, String acknowledgedByUsername,
+            Long acknowledgedTimestamp, boolean rtnApplicable, Long rtnTimestamp,
             ReturnCause rtnCause, AlarmLevels alarmLevel, TranslatableMessage message) {
         super();
         this.id = id;
@@ -84,11 +84,11 @@ public class EventInstanceModel {
         this.activeTimestamp = activeTimestamp;
     }
 
-    public int getAcknowledgedByUserId() {
+    public Integer getAcknowledgedByUserId() {
         return acknowledgedByUserId;
     }
 
-    public void setAcknowledgedByUserId(int acknowledgedByUserId) {
+    public void setAcknowledgedByUserId(Integer acknowledgedByUserId) {
         this.acknowledgedByUserId = acknowledgedByUserId;
     }
 
@@ -100,11 +100,11 @@ public class EventInstanceModel {
         this.acknowledgedByUsername = acknowledgedByUsername;
     }
 
-    public long getAcknowledgedTimestamp() {
+    public Long getAcknowledgedTimestamp() {
         return acknowledgedTimestamp;
     }
 
-    public void setAcknowledgedTimestamp(long acknowledgedTimestamp) {
+    public void setAcknowledgedTimestamp(Long acknowledgedTimestamp) {
         this.acknowledgedTimestamp = acknowledgedTimestamp;
     }
 
@@ -116,11 +116,11 @@ public class EventInstanceModel {
         this.rtnApplicable = rtnApplicable;
     }
 
-    public long getRtnTimestamp() {
+    public Long getRtnTimestamp() {
         return rtnTimestamp;
     }
 
-    public void setRtnTimestamp(long rtnTimestamp) {
+    public void setRtnTimestamp(Long rtnTimestamp) {
         this.rtnTimestamp = rtnTimestamp;
     }
 
@@ -149,6 +149,6 @@ public class EventInstanceModel {
     }
 
     public boolean isActive() {
-        return rtnApplicable && rtnTimestamp == 0;
+        return rtnApplicable && rtnTimestamp == null;
     }
 }
