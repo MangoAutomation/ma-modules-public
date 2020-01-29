@@ -151,4 +151,8 @@ public class EventInstanceModel {
     public boolean isActive() {
         return rtnApplicable && rtnTimestamp == null;
     }
+
+    public boolean isAcknowledged() {
+        return acknowledgedTimestamp != null;
+    }
 }
