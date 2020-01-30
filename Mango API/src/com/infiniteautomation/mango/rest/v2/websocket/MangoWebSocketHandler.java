@@ -14,8 +14,12 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.PongMessage;
+import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.adapter.jetty.JettyWebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
@@ -24,6 +28,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.infiniteautomation.mango.spring.MangoRuntimeContextConfiguration;
+import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.User;
@@ -62,6 +67,9 @@ public abstract class MangoWebSocketHandler extends TextWebSocketHandler {
 
     @Autowired
     protected ScheduledExecutorService scheduledExecutor;
+
+    @Autowired
+    protected PermissionService permissionService;
 
     public MangoWebSocketHandler() {
         this(true);
@@ -154,10 +162,28 @@ public abstract class MangoWebSocketHandler extends TextWebSocketHandler {
     }
 
     protected User getUser(WebSocketSession session) {
+        User user = (User) session.getAttributes().get(MangoWebSocketHandshakeInterceptor.USER_ATTR);
         if (this.authenticationRequired) {
-            return (User) session.getAttributes().get(MangoWebSocketHandshakeInterceptor.USER_ATTR);
+            this.permissionService.ensureValidPermissionHolder(user);
         }
-        return null;
+        return user;
+    }
+
+    @Override
+    public void handleMessage(WebSocketSession session, WebSocketMessage<?> message) throws Exception {
+        try {
+            SecurityContext context = SecurityContextHolder.getContext();
+            if (context.getAuthentication() != null) {
+                throw new RuntimeException("Authentication is not null");
+            }
+
+            Authentication auth = (Authentication) session.getAttributes().get(MangoWebSocketHandshakeInterceptor.AUTHENTICATION_ATTR);
+            context.setAuthentication(auth);
+
+            super.handleMessage(session, message);
+        } finally {
+            SecurityContextHolder.clearContext();
+        }
     }
 
     @Override

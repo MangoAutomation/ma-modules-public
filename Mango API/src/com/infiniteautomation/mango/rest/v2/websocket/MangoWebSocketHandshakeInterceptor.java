@@ -26,6 +26,7 @@ public class MangoWebSocketHandshakeInterceptor implements HandshakeInterceptor 
 
     public static final String HTTP_SESSION_ID_ATTR = "MA_HTTP_SESSION_ID";
     public static final String USER_ATTR = "MA_USER";
+    public static final String AUTHENTICATION_ATTR = "MA_AUTHENTICATION";
 
     @Override
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response,
@@ -40,11 +41,11 @@ public class MangoWebSocketHandshakeInterceptor implements HandshakeInterceptor 
         Principal principal = request.getPrincipal();
         if (principal instanceof Authentication) {
             Authentication authentication = (Authentication) principal;
+            attributes.put(AUTHENTICATION_ATTR, authentication);
 
             Object authenticationPrincipal = authentication.getPrincipal();
             if (authenticationPrincipal instanceof User) {
-                User user = (User) authenticationPrincipal;
-                attributes.put(USER_ATTR, user);
+                attributes.put(USER_ATTR, authenticationPrincipal);
             }
         }
 

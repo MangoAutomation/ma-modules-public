@@ -27,7 +27,6 @@ import com.infiniteautomation.mango.rest.v2.model.event.EventActionEnum;
 import com.infiniteautomation.mango.rest.v2.model.event.EventInstanceModel;
 import com.infiniteautomation.mango.rest.v2.model.event.EventLevelSummaryModel;
 import com.infiniteautomation.mango.spring.service.EventInstanceService;
-import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.ProcessResult;
@@ -142,7 +141,6 @@ public class EventsWebSocketHandler extends MangoWebSocketHandler implements Use
 
     private final RestModelMapper modelMapper;
     private final EventInstanceService service;
-    private final PermissionService permissionService;
 
     private volatile Set<AlarmLevels> levels;
     private volatile EnumSet<EventActionEnum> actions;
@@ -151,20 +149,16 @@ public class EventsWebSocketHandler extends MangoWebSocketHandler implements Use
     private final Object lock = new Object();
 
     @Autowired
-    public EventsWebSocketHandler(RestModelMapper modelMapper, EventInstanceService service, PermissionService permissionService) {
+    public EventsWebSocketHandler(RestModelMapper modelMapper, EventInstanceService service) {
         super(true);
         this.modelMapper = modelMapper;
         this.service = service;
-        this.permissionService = permissionService;
     }
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        // Check for permissions
+        // Check for permissions, must be a User for UserEventListener
         this.user = this.getUser(session);
-        if (this.user == null) {
-            return;
-        }
         this.session = session;
         session.getAttributes().put(SUBSCRIPTION_ATTRIBUTE, Boolean.FALSE);
         super.afterConnectionEstablished(session);
@@ -252,7 +246,7 @@ public class EventsWebSocketHandler extends MangoWebSocketHandler implements Use
 
                 EventsSubscriptionResponse response = new EventsSubscriptionResponse();
                 if (subscription.isSendActiveSummary()) {
-                    List<UserEventLevelSummary> summaries = permissionService.runAs(user, () -> service.getActiveSummary());
+                    List<UserEventLevelSummary> summaries = service.getActiveSummary();
 
                     List<EventLevelSummaryModel> models = summaries.stream().map(s -> {
                         EventInstanceModel instanceModel = s.getLatest() != null ? modelMapper.map(s.getLatest(), EventInstanceModel.class, user) : null;
@@ -262,7 +256,7 @@ public class EventsWebSocketHandler extends MangoWebSocketHandler implements Use
                     response.setActiveSummary(models);
                 }
                 if (subscription.isSendUnacknowledgedSummary()) {
-                    List<UserEventLevelSummary> summaries = permissionService.runAs(user, () -> service.getUnacknowledgedSummary());
+                    List<UserEventLevelSummary> summaries = service.getUnacknowledgedSummary();
 
                     List<EventLevelSummaryModel> models = summaries.stream().map(s -> {
                         EventInstanceModel instanceModel = s.getLatest() != null ? modelMapper.map(s.getLatest(), EventInstanceModel.class, user) : null;
@@ -275,13 +269,13 @@ public class EventsWebSocketHandler extends MangoWebSocketHandler implements Use
             }else if(request instanceof EventsDataPointSummaryRequest) {
                 EventsDataPointSummaryRequest query = (EventsDataPointSummaryRequest)request;
                 WebSocketResponse<List<DataPointEventSummaryModel>> response = new WebSocketResponse<>(request.getSequenceNumber());
-                Collection<DataPointEventLevelSummary> summaries = permissionService.runAs(user, () -> service.getDataPointEventSummaries(query.getDataPointXids()));
+                Collection<DataPointEventLevelSummary> summaries = service.getDataPointEventSummaries(query.getDataPointXids());
                 List<DataPointEventSummaryModel> models = summaries.stream().map(s -> new DataPointEventSummaryModel(s.getXid(), s.getCounts())).collect(Collectors.toList());
                 response.setPayload(models);
                 this.sendRawMessage(session, response);
             }else if(request instanceof AllActiveEventsRequest) {
                 WebSocketResponse<List<EventInstanceModel>> response = new WebSocketResponse<>(request.getSequenceNumber());
-                List<EventInstance> active = permissionService.runAs(user, () -> service.getAllActiveUserEvents());
+                List<EventInstance> active = service.getAllActiveUserEvents();
                 List<EventInstanceModel> models = new ArrayList<>(active.size());
                 for(EventInstance vo : active) {
                     models.add(modelMapper.map(vo, EventInstanceModel.class, user));
@@ -311,7 +305,7 @@ public class EventsWebSocketHandler extends MangoWebSocketHandler implements Use
         }
     }
 
-    protected void notify(EventActionEnum action, EventInstance event, User user, WebSocketSession session) {
+    protected void notify(EventActionEnum action, EventInstance event, WebSocketSession session) {
         try {
             EventInstanceModel instanceModel = modelMapper.map(event, EventInstanceModel.class, user);
             sendRawMessage(session, new WebSocketNotification<EventInstanceModel>(action.name(), instanceModel));
@@ -369,7 +363,7 @@ public class EventsWebSocketHandler extends MangoWebSocketHandler implements Use
         }
 
         try{
-            EventsWebSocketHandler.this.notify(EventActionEnum.RAISED, evt, user, session);
+            EventsWebSocketHandler.this.notify(EventActionEnum.RAISED, evt, session);
         } catch (Exception e) {
             if (log.isDebugEnabled()) {
                 log.debug("Error notifying of event raised", e);
@@ -398,7 +392,7 @@ public class EventsWebSocketHandler extends MangoWebSocketHandler implements Use
         }
 
         try{
-            EventsWebSocketHandler.this.notify(EventActionEnum.RETURN_TO_NORMAL, evt, user, session);
+            EventsWebSocketHandler.this.notify(EventActionEnum.RETURN_TO_NORMAL, evt, session);
         } catch (Exception e) {
             if (log.isDebugEnabled()) {
                 log.debug("Error notifying of event return to normal", e);
@@ -427,7 +421,7 @@ public class EventsWebSocketHandler extends MangoWebSocketHandler implements Use
         }
 
         try{
-            EventsWebSocketHandler.this.notify(EventActionEnum.DEACTIVATED, evt, user, session);
+            EventsWebSocketHandler.this.notify(EventActionEnum.DEACTIVATED, evt, session);
         } catch (Exception e) {
             if (log.isDebugEnabled()) {
                 log.debug("Error notifying of event deactivated", e);
@@ -456,7 +450,7 @@ public class EventsWebSocketHandler extends MangoWebSocketHandler implements Use
         }
 
         try{
-            EventsWebSocketHandler.this.notify(EventActionEnum.ACKNOWLEDGED, evt, user, session);
+            EventsWebSocketHandler.this.notify(EventActionEnum.ACKNOWLEDGED, evt, session);
         } catch (Exception e) {
             if (log.isDebugEnabled()) {
                 log.debug("Error notifying of event acknowledged", e);
