@@ -173,13 +173,8 @@ public abstract class MangoWebSocketHandler extends TextWebSocketHandler {
     public void handleMessage(WebSocketSession session, WebSocketMessage<?> message) throws Exception {
         try {
             SecurityContext context = SecurityContextHolder.getContext();
-            if (context.getAuthentication() != null) {
-                throw new RuntimeException("Authentication is not null");
-            }
-
             Authentication auth = (Authentication) session.getAttributes().get(MangoWebSocketHandshakeInterceptor.AUTHENTICATION_ATTR);
             context.setAuthentication(auth);
-
             super.handleMessage(session, message);
         } finally {
             SecurityContextHolder.clearContext();
