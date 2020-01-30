@@ -458,7 +458,7 @@ public class EventTypesRestController {
                 DataPointVO dp = this.dataPointService.get(referenceId1);
                 dp.setTags(DataPointTagsDao.getInstance().getTagsForDataPointId(dp.getId()));
 
-                for(AbstractPointEventDetectorVO vo : dp.getEventDetectors()) {
+                for(AbstractPointEventDetectorVO vo : eventDetectorDao.getWithSource(dp.getId(), dp)) {
                     AbstractPointEventDetectorModel<?> edm =  modelMapper.map(vo, AbstractPointEventDetectorModel.class, user);
                     EventTypeVO type = vo.getEventType();
                     DataPointEventType eventType = (DataPointEventType)type.getEventType();
