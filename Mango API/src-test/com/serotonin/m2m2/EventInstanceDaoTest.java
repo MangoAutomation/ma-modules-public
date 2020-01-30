@@ -6,7 +6,6 @@ package com.serotonin.m2m2;
 import static org.junit.Assert.assertEquals;
 
 import org.apache.commons.lang3.mutable.MutableInt;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.infiniteautomation.mango.db.query.ConditionSortLimit;
@@ -24,17 +23,6 @@ import net.jazdw.rql.parser.RQLParser;
  * @author Terry Packer
  */
 public class EventInstanceDaoTest extends MangoTestBase {
-
-    public EventInstanceDaoTest() {
-
-
-    }
-
-    @BeforeClass
-    public static void beforeClass() {
-        System.setProperty("mango.test.enableH2Web", "true");
-        System.setProperty("mango.test.h2WebPort", "9000");
-    }
 
     /**
      * Ensure the extra fields property doesn't cause problems with JOOQ
