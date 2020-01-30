@@ -77,18 +77,7 @@ public class EventsRestController {
         };
 
         this.valueConverters = new HashMap<>();
-        //Setup any exposed special query aliases to map model fields to db columns
-        this.fieldMap = new HashMap<>();
-        this.fieldMap.put("activeTimestamp", eventTable.getAlias("activeTs"));
-        this.fieldMap.put("rtnTimestamp", eventTable.getAlias("rtnTs"));
-        this.fieldMap.put("userNotified", eventTable.getAlias("silenced"));
-        this.fieldMap.put("acknowledged", eventTable.getAlias("ackTs"));
-        this.fieldMap.put("acknowledgedTimestamp", eventTable.getAlias("ackTs"));
-        this.fieldMap.put("eventType", eventTable.getAlias("typeName"));
-        this.fieldMap.put("referenceId1", eventTable.getAlias("typeRef1"));
-        this.fieldMap.put("referenceId2", eventTable.getAlias("typeRef2"));
-        this.fieldMap.put("acknowledged", eventTable.getAlias("ackTs"));
-        this.fieldMap.put("active", eventTable.getAlias("rtnTs"));
+        this.fieldMap = new EventTableRqlMappings(eventTable);
     }
 
     @ApiOperation(
@@ -226,5 +215,30 @@ public class EventsRestController {
         } else {
             return new StreamedVORqlQueryWithTotal<>(service, rql, fieldMap, valueConverters, item -> service.hasReadPermission(user, item), vo -> map.apply(vo, user));
         }
+    }
+
+    /**
+     * Shared class for anyone who wants to do RQL queries on the event table
+     *
+     * @author Terry Packer
+     */
+    public static class EventTableRqlMappings extends HashMap<String, Field<?>> {
+
+        private static final long serialVersionUID = 1L;
+
+        public EventTableRqlMappings(EventInstanceTableDefinition eventTable) {
+            //Setup any exposed special query aliases to map model fields to db columns
+            this.put("activeTimestamp", eventTable.getAlias("activeTs"));
+            this.put("rtnTimestamp", eventTable.getAlias("rtnTs"));
+            this.put("userNotified", eventTable.getAlias("silenced"));
+            this.put("acknowledged", eventTable.getAlias("ackTs"));
+            this.put("acknowledgedTimestamp", eventTable.getAlias("ackTs"));
+            this.put("eventType", eventTable.getAlias("typeName"));
+            this.put("referenceId1", eventTable.getAlias("typeRef1"));
+            this.put("referenceId2", eventTable.getAlias("typeRef2"));
+            this.put("acknowledged", eventTable.getAlias("ackTs"));
+            this.put("active", eventTable.getAlias("rtnTs"));
+        }
+
     }
 }

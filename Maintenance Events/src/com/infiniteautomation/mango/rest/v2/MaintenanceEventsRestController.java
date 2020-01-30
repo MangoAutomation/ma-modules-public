@@ -6,12 +6,16 @@ package com.infiniteautomation.mango.rest.v2;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.jooq.Field;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -25,15 +29,26 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.infiniteautomation.mango.rest.v2.EventsRestController.EventTableRqlMappings;
+import com.infiniteautomation.mango.rest.v2.model.EventQueryByMaintenanceCriteria;
+import com.infiniteautomation.mango.rest.v2.model.EventQueryByMaintenanceEventRql;
 import com.infiniteautomation.mango.rest.v2.model.MaintenanceEventModel;
+import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
+import com.infiniteautomation.mango.rest.v2.model.StreamedArray;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
+import com.infiniteautomation.mango.rest.v2.model.StreamedVORqlQueryWithTotal;
+import com.infiniteautomation.mango.rest.v2.model.event.EventInstanceModel;
 import com.infiniteautomation.mango.rest.v2.patch.PatchVORequestBody;
+import com.infiniteautomation.mango.spring.db.EventInstanceTableDefinition;
+import com.infiniteautomation.mango.spring.service.EventInstanceService;
 import com.infiniteautomation.mango.spring.service.maintenanceEvents.MaintenanceEventsService;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.db.MappedRowCallback;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventDao;
+import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventType;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventVO;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.event.EventInstanceVO;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -49,13 +64,31 @@ import net.jazdw.rql.parser.ASTNode;
 @RequestMapping("/maintenance-events")
 public class MaintenanceEventsRestController {
 
+    private final RestModelMapper modelMapper;
+
+    private final EventInstanceService eventService;
+    private final Map<String, Function<Object, Object>> eventTableValueConverters;
+    private final Map<String, Field<?>> eventTableFieldMap;
+    private final BiFunction<EventInstanceVO, User, EventInstanceModel> eventMap;
+
+    private final MaintenanceEventDao dao;
+    private final MaintenanceEventsService service;
+
     @Autowired
-    private MaintenanceEventDao dao;
-
-    private MaintenanceEventsService service;
-
-    public MaintenanceEventsRestController(@Autowired MaintenanceEventsService service) {
+    public MaintenanceEventsRestController(MaintenanceEventsService service,
+            MaintenanceEventDao dao,
+            RestModelMapper modelMapper, EventInstanceService eventService,
+            EventInstanceTableDefinition eventTable) {
         this.service = service;
+        this.dao = dao;
+        this.modelMapper = modelMapper;
+        this.eventService = eventService;
+        this.eventTableValueConverters = new HashMap<>();
+        this.eventTableFieldMap = new EventTableRqlMappings(eventTable);
+
+        this.eventMap = (vo, user) -> {
+            return modelMapper.map(vo, EventInstanceModel.class, user);
+        };
     }
 
     @ApiOperation(
@@ -313,7 +346,187 @@ public class MaintenanceEventsRestController {
         return map;
     }
 
+    @ApiOperation(
+            value = "Find Events for a set of Maintenance events created by the supplied rql query",
+            notes = "Returns a map of point xids to a list of events that have this data point in their list OR the its data source in the list",
+            response=EventInstanceModel.class,
+            responseContainer="List"
+            )
+    @RequestMapping(method = RequestMethod.POST, value="/query/get-events-by-rql")
+    public StreamedArrayWithTotal getEvents(
+            @RequestBody
+            EventQueryByMaintenanceEventRql body,
+            @AuthenticationPrincipal User user) {
+        ASTNode rql = RQLUtils.parseRQLtoAST(body.getMaintenanceEventsRql());
+
+        //First do the RQL on maintenance events
+        List<Object> args = new ArrayList<>();
+        args.add("typeRef1");
+        MaintenanceEventDao.getInstance().rqlQuery(rql, new MappedRowCallback<MaintenanceEventVO>() {
+            @Override
+            public void row(MaintenanceEventVO vo, int index) {
+                args.add(Integer.toString(vo.getId()));
+            }
+        });
+        //Second query the events
+        if(args.size() > 1) {
+            ASTNode query = new ASTNode("in", args);
+            query = addAndRestriction(query, new ASTNode("eq", "typeName", MaintenanceEventType.TYPE_NAME));
+
+            if(body.getActive() != null) {
+                query = addAndRestriction(query, new ASTNode("eq", "active", body.getActive()));
+            }
+            if(body.getOrder() != null) {
+                String order = body.getOrder();
+                if("asc".equals(order))
+                    query = addAndRestriction(query, new ASTNode("sort","+activeTs"));
+                else
+                    query = addAndRestriction(query, new ASTNode("sort","-activeTs"));
+            }
+            if (body.getLimit() != null)
+                query = addAndRestriction(query, new ASTNode("limit", body.getLimit()));
+
+            return doEventQuery(query, user);
+        }else {
+            return new StreamedArrayWithTotal() {
+                @Override
+                public StreamedArray getItems() {
+                    return null;
+                }
+                @Override
+                public int getTotal() {
+                    return 0;
+                }
+            };
+        }
+    }
+
+    @ApiOperation(
+            value = "Find Events for a set of Maintenance events created by the supplied criteria",
+            notes = "Returns a map of point xids to a list of events that have this data point in their list OR the its data source in the list",
+            response=EventInstanceModel.class,
+            responseContainer="List"
+            )
+    @RequestMapping(method = RequestMethod.POST, value="/query/get-events-by-rql")
+    public StreamedArrayWithTotal getEventsByCriteria(
+            @RequestBody
+            EventQueryByMaintenanceCriteria body,
+            @AuthenticationPrincipal User user) {
+
+        List<String> dataSourceXids = new ArrayList<>();
+        if(body.getDataSourceXids() != null) {
+            for(String xid : body.getDataSourceXids()) {
+                dataSourceXids.add(xid);
+            }
+        }
+        List<String> dataPointXids = new ArrayList<>();
+        if(body.getDataPointXids() != null) {
+            for(String xid : body.getDataPointXids()) {
+                dataPointXids.add(xid);
+            }
+        }
+        //Find all matching Maintenance Events
+        Set<Integer> ids = new HashSet<>();
+        MappedRowCallback<MaintenanceEventVO> callback = new MappedRowCallback<MaintenanceEventVO>() {
+            @Override
+            public void row(MaintenanceEventVO vo, int index) {
+                ids.add(vo.getId());
+            }
+        };
+        for(String xid : dataPointXids) {
+            MaintenanceEventDao.getInstance().getForDataPoint(xid, callback);
+        }
+
+        for(String xid : dataSourceXids) {
+            MaintenanceEventDao.getInstance().getForDataSource(xid, callback);
+        }
+
+        List<Object> args = new ArrayList<>();
+        args.add("typeRef1");
+        for(Integer id : ids)
+            args.add(Integer.toString(id));
+
+        //Second query the events
+        if(args.size() > 1) {
+            ASTNode query = new ASTNode("in", args);
+            query = addAndRestriction(query, new ASTNode("eq", "typeName", MaintenanceEventType.TYPE_NAME));
+
+            if(body.getActive() != null) {
+                query = addAndRestriction(query, new ASTNode("eq", "active", body.getActive()));
+            }
+            if(body.getOrder() != null) {
+                String order = body.getOrder();
+                if("asc".equals(order))
+                    query = addAndRestriction(query, new ASTNode("sort","+activeTs"));
+                else
+                    query = addAndRestriction(query, new ASTNode("sort","-activeTs"));
+            }
+            if (body.getLimit() != null)
+                query = addAndRestriction(query, new ASTNode("limit", body.getLimit()));
+
+            return doEventQuery(query, user);
+        }else {
+            return new StreamedArrayWithTotal() {
+                @Override
+                public StreamedArray getItems() {
+                    return null;
+                }
+                @Override
+                public int getTotal() {
+                    return 0;
+                }
+            };
+        }
+    }
+
     //Helpers for Queries
+    private StreamedArrayWithTotal doEventQuery(ASTNode rql, User user) {
+        if (user.hasAdminRole()) {
+            return new StreamedVORqlQueryWithTotal<>(eventService, rql, eventTableFieldMap, eventTableValueConverters, item -> true, vo -> eventMap.apply(vo, user));
+        } else {
+            return new StreamedVORqlQueryWithTotal<>(eventService, rql, eventTableFieldMap, eventTableValueConverters, item -> eventService.hasReadPermission(user, item), vo -> eventMap.apply(vo, user));
+        }
+    }
+
+    /**
+     * Append an AND Restriction to a query
+     * @param query - can be null
+     * @param restriction
+     * @return
+     */
+    protected static ASTNode addAndRestriction(ASTNode query, ASTNode restriction){
+        //Root query node
+        ASTNode root = null;
+
+        if(query == null){
+            root = restriction;
+        }else if(query.getName().equalsIgnoreCase("and")){
+            root = query.addArgument(restriction);
+        }else{
+            root = new ASTNode("and", restriction, query);
+        }
+        return root;
+    }
+
+    /**
+     * Append an OR restriction to the query
+     * @param query - can be null
+     * @param restriction
+     * @return
+     */
+    protected static ASTNode addOrRestriction(ASTNode query, ASTNode restriction){
+        //Root query node
+        ASTNode root = null;
+
+        if(query == null){
+            root = restriction;
+        }else if(query.getName().equalsIgnoreCase("or")){
+            root = query.addArgument(restriction);
+        }else{
+            root = new ASTNode("or", restriction, query);
+        }
+        return root;
+    }
 
     final Function<MaintenanceEventVO, Object> transformVisit = item -> {
         MaintenanceEventModel model = new MaintenanceEventModel(item);
