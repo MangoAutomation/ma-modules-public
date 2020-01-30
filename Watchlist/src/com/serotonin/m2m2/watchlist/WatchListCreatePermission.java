@@ -32,7 +32,7 @@ public class WatchListCreatePermission extends PermissionDefinition {
 
     @Override
     protected Set<Role> getDefaultRoles() {
-        return Collections.singleton(PermissionHolder.USER_ROLE.get());
+        return Collections.singleton(PermissionHolder.USER_ROLE);
     }
 
 }

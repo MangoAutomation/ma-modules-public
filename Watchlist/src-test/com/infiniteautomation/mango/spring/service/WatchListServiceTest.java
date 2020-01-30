@@ -123,7 +123,7 @@ public class WatchListServiceTest extends AbstractVOServiceWithPermissionsTest<W
     @Override
     public void testCreatePrivilegeFails() {
         WatchListVO vo = newVO(editUser);
-        addRoleToCreatePermission(PermissionHolder.SUPERADMIN_ROLE.get());
+        addRoleToCreatePermission(PermissionHolder.SUPERADMIN_ROLE);
         getService().permissionService.runAs(editUser, () -> {
             service.insert(vo);
         });

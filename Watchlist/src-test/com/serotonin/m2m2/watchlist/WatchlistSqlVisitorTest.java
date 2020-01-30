@@ -61,7 +61,7 @@ public class WatchlistSqlVisitorTest extends MangoTestBase {
     public void testRQL() throws IOException{
 
         //Create a User
-        List<User> users = createUsers(1, PermissionHolder.SUPERADMIN_ROLE.get(), PermissionHolder.USER_ROLE.get());
+        List<User> users = createUsers(1, PermissionHolder.SUPERADMIN_ROLE, PermissionHolder.USER_ROLE);
 
         //Insert some watchlists
         for(int i=0; i<5; i++) {
