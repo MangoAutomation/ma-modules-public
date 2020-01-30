@@ -39,8 +39,6 @@
 		<module>MBus</module>
 		<module>Serial Data Source</module>
 		<module>SQL console</module>
-		<module>SST Graphics</module>
-		<module>SST Theme</module>
 		<module>Virtual Data Source</module>
 		<module>VMStat data source</module>
 		<module>Watchlist</module>
