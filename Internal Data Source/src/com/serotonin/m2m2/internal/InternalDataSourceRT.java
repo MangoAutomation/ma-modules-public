@@ -4,7 +4,6 @@
  */
 package com.serotonin.m2m2.internal;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -15,6 +14,8 @@ import org.apache.commons.lang3.StringUtils;
 import com.infiniteautomation.mango.monitor.MonitoredValues;
 import com.infiniteautomation.mango.monitor.PollableMonitor;
 import com.infiniteautomation.mango.monitor.ValueMonitor;
+import com.infiniteautomation.mango.spring.service.DataPointService;
+import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.Common.Rollups;
@@ -29,7 +30,7 @@ import com.serotonin.m2m2.rt.dataSource.PollingDataSource;
 import com.serotonin.m2m2.view.text.AnalogRenderer;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
-import com.serotonin.m2m2.vo.event.detector.AbstractPointEventDetectorVO;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 
 /**
@@ -119,7 +120,6 @@ public class InternalDataSourceRT extends PollingDataSource<InternalDataSourceVO
         dpvo.setPointLocator(plvo);
         dpvo.setDataSourceId(vo.getId());
         dpvo.setDataSourceTypeName(vo.getDefinition().getDataSourceTypeName());
-        dpvo.setEventDetectors(new ArrayList<AbstractPointEventDetectorVO>(0));
         dpvo.setEnabled(true);
         dpvo.setDeviceName(vo.getName());
         //Logging types are usually going to be ON_CHANGE, INTERVAL (MAXIMUM), INTERVAL (INSTANT) AND INTERVAL (MINIMUM)
@@ -203,7 +203,9 @@ public class InternalDataSourceRT extends PollingDataSource<InternalDataSourceVO
         dpvo.defaultTextRenderer();
         dpvo.setXid(Common.generateXid("DP_In_"));
         monitorMap.put(monitor.getId(), true);
-        Common.runtimeManager.insertDataPoint(dpvo); //Won't appear until next poll, but that's fine.
+        Common.getBean(PermissionService.class).runAs(PermissionHolder.SYSTEM_SUPERADMIN, () -> {
+            Common.getBean(DataPointService.class).insert(dpvo);
+        }); //Won't appear until next poll, but that's fine.
     }
 
     private void defaultNewPointToDataSource(DataPointVO dpvo, String dsXid) {

@@ -68,6 +68,7 @@ import com.serotonin.m2m2.rt.dataImage.types.NumericValue;
 import com.serotonin.m2m2.view.stats.StatisticsGenerator;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.DataPointVO.LoggingTypes;
+import com.serotonin.m2m2.vo.dataPoint.DataPointWithEventDetectors;
 import com.serotonin.m2m2.vo.dataPoint.MockPointLocatorVO;
 import com.serotonin.m2m2.vo.dataSource.mock.MockDataSourceVO;
 
@@ -1113,7 +1114,8 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
             this.dsVo = dsVo;
             this.vo = vo;
             this.initialValue = initial;
-            this.rt = new DataPointRT(vo, vo.getPointLocator().createRuntime(), dsVo, null, timer);
+            DataPointWithEventDetectors dp = new DataPointWithEventDetectors(vo, new ArrayList<>());
+            this.rt = new DataPointRT(dp, vo.getPointLocator().createRuntime(), dsVo, null, timer);
             runtimeManager.points.add(this.rt);
             this.nextValue = nextValue;
             this.creator = creator;

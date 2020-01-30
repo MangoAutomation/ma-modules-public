@@ -14,6 +14,7 @@ import com.infiniteautomation.serial.vo.SerialPointLocatorVO;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.vo.DataPointVO;
+import com.serotonin.m2m2.vo.dataPoint.DataPointWithEventDetectors;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 
 /**
@@ -42,7 +43,7 @@ public class SerialDataSourceTestData {
         plVo.setValueIndex(2);
         plVo.setPointIdentifier("");
         vo.setPointLocator(plVo);
-        return new DataPointRT(vo, plVo.createRuntime(), ds, null, null);
+        return new DataPointRT(new DataPointWithEventDetectors(vo, new ArrayList<>()), plVo.createRuntime(), ds, null, null);
     }
     public static DataPointRT getNewlineTerminated(DataSourceVO ds) {
         DataPointVO vo = new DataPointVO();
@@ -55,7 +56,7 @@ public class SerialDataSourceTestData {
         plVo.setValueIndex(2);
         plVo.setPointIdentifier("");
         vo.setPointLocator(plVo);
-        return new DataPointRT(vo, plVo.createRuntime(), ds, null, null);
+        return new DataPointRT(new DataPointWithEventDetectors(vo, new ArrayList<>()), plVo.createRuntime(), ds, null, null);
     }
     public static DataPointRT getCustomPoint(String name, String xid, String valueRegex, int valueIndex, String pointIdentifier, DataSourceVO ds) {
         DataPointVO vo = new DataPointVO();
@@ -68,7 +69,7 @@ public class SerialDataSourceTestData {
         plVo.setValueIndex(valueIndex);
         plVo.setPointIdentifier(pointIdentifier);
         vo.setPointLocator(plVo);
-        return new DataPointRT(vo, plVo.createRuntime(), ds, null, null);
+        return new DataPointRT(new DataPointWithEventDetectors(vo, new ArrayList<>()), plVo.createRuntime(), ds, null, null);
     }
     // ============ END POINT CREATION SECTION =========
 

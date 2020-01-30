@@ -34,8 +34,8 @@ import com.serotonin.m2m2.rt.maint.UpgradeCheck;
 import com.serotonin.m2m2.view.text.AnalogRenderer;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.DataPointVO.LoggingTypes;
+import com.serotonin.m2m2.vo.dataPoint.DataPointWithEventDetectors;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
-import com.serotonin.m2m2.vo.event.detector.AbstractPointEventDetectorVO;
 
 /**
  *
@@ -184,7 +184,6 @@ public class InternalLifecycle extends LifecycleDefinition {
                     dp.setName(monitor.getName().translate(Common.getTranslations()));
                     dp.setDataSourceId(vo.getId());
                     dp.setDeviceName(vo.getName());
-                    dp.setEventDetectors(new ArrayList<AbstractPointEventDetectorVO>(0));
                     dp.defaultTextRenderer();
                     dp.setEnabled(true);
                     dp.setChartColour("");
@@ -210,11 +209,10 @@ public class InternalLifecycle extends LifecycleDefinition {
                             }
                             break;
                     }
-
-                    if(safe)
-                        DataPointDao.getInstance().insert(dp);
-                    else
-                        Common.runtimeManager.insertDataPoint(dp);
+                    DataPointDao.getInstance().insert(dp);
+                    if(!safe) {
+                        Common.runtimeManager.startDataPoint(new DataPointWithEventDetectors(dp, new ArrayList<>()));
+                    }
                 }
             }
         }

@@ -157,7 +157,7 @@ public class DataPointRestController {
             @ApiParam(value = "Restart the data point, enabled must equal true", required = false, defaultValue="false", allowMultiple = false)
             @RequestParam(required=false, defaultValue="false") boolean restart) {
 
-        service.enableDisable(xid, enabled, restart);
+        service.setDataPointState(xid, enabled, restart);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
