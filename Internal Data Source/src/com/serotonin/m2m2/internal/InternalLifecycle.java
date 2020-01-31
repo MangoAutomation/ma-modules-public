@@ -4,7 +4,6 @@
  */
 package com.serotonin.m2m2.internal;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -19,6 +18,7 @@ import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.Common.TimePeriods;
 import com.serotonin.m2m2.DataTypes;
+import com.serotonin.m2m2.IMangoLifecycle;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.db.dao.EventDetectorDao;
@@ -36,6 +36,7 @@ import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.DataPointVO.LoggingTypes;
 import com.serotonin.m2m2.vo.dataPoint.DataPointWithEventDetectors;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
+import com.serotonin.provider.Providers;
 
 /**
  *
@@ -48,9 +49,8 @@ public class InternalLifecycle extends LifecycleDefinition {
 
     @Override
     public void postInitialize(boolean install, boolean upgrade) {
-        File safeFile = new File(Common.MA_HOME, "SAFE");
-        final boolean safe = (safeFile.exists() && safeFile.isFile());
-        maybeInstallSystemMonitor(safe);
+        IMangoLifecycle lifecycle = Providers.get(IMangoLifecycle.class);
+        maybeInstallSystemMonitor(lifecycle.isSafeMode());
     }
 
     //Module Monitor IDs

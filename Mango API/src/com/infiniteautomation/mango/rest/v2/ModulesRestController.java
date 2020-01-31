@@ -7,13 +7,16 @@ package com.infiniteautomation.mango.rest.v2;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Writer;
 import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.UnknownHostException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -50,7 +53,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.google.common.io.Files;
 import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
 import com.infiniteautomation.mango.rest.v2.exception.ModuleRestV2Exception;
@@ -68,7 +70,6 @@ import com.infiniteautomation.mango.rest.v2.util.MangoStoreClient;
 import com.infiniteautomation.mango.spring.service.ModulesService;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.serotonin.db.pair.StringStringPair;
-import com.serotonin.io.StreamUtils;
 import com.serotonin.json.type.JsonArray;
 import com.serotonin.json.type.JsonObject;
 import com.serotonin.json.type.JsonString;
@@ -105,11 +106,7 @@ import io.swagger.annotations.ApiParam;
 @RequestMapping("/modules")
 public class ModulesRestController {
 
-    private static final String MODULES_WEB_DIR = Constants.DIR_WEB + "/" + Constants.DIR_MODULES;
-    private static final String WEB_MODULE_PREFIX = MODULES_WEB_DIR + "/" + ModuleUtils.Constants.MODULE_PREFIX;
-    private static final File coreDir = new File(Common.MA_HOME);
-    private static final File moduleDir = new File(coreDir, MODULES_WEB_DIR);
-
+    private static final String WEB_MODULE_PREFIX = Constants.DIR_WEB + "/" + Constants.DIR_MODULES + "/" + ModuleUtils.Constants.MODULE_PREFIX;
     private static final String SNAPSHOT = "-SNAPSHOT";
 
     private final Environment env;
@@ -454,7 +451,7 @@ public class ModulesRestController {
         int upgradeVersionState = SystemSettingsDao.instance.getIntValue(SystemSettingsDao.UPGRADE_VERSION_STATE);
         int currentVersionState = UpgradeVersionState.DEVELOPMENT;
         Properties props = new Properties();
-        File propFile = new File(Common.MA_HOME + File.separator + "release.properties");
+        File propFile = Common.MA_HOME_PATH.resolve("release.properties").toFile();
         try {
             if (propFile.exists()) {
                 InputStream in;
@@ -534,23 +531,22 @@ public class ModulesRestController {
                 throw new BadRequestException(new TranslatableMessage("rest.error.noFileProvided"));
 
             // Create the temp directory into which to download, if necessary.
-            File tempDir = new File(Common.MA_HOME, ModuleUtils.DOWNLOAD_DIR);
-            if (!tempDir.exists())
-                tempDir.mkdirs();
+            Path tempDir = Common.getTempPath().resolve(ModuleUtils.DOWNLOAD_DIR);
+            Files.createDirectories(tempDir);
 
             // Delete anything that is currently the temp directory.
-            FileUtils.cleanDirectory(tempDir);
+            FileUtils.cleanDirectory(tempDir.toFile());
 
             try {
                 //Save the upload(s) to the temp dir
                 for (MultipartFile file : files) {
-                    File newFile = new File(tempDir, file.getOriginalFilename());
-                    try(FileOutputStream fos = new FileOutputStream(newFile)){
-                        org.springframework.util.StreamUtils.copy(file.getInputStream(), fos);
+                    Path newFile = tempDir.resolve(file.getOriginalFilename());
+                    try (InputStream is = file.getInputStream()) {
+                        Files.copy(is, newFile);
                     }
                 }
 
-                String[] potentialUpgrades = tempDir.list(new FilenameFilter() {
+                String[] potentialUpgrades = tempDir.toFile().list(new FilenameFilter() {
                     @Override
                     public boolean accept(File dir, String name) {
                         if(name.endsWith(".zip"))
@@ -562,46 +558,40 @@ public class ModulesRestController {
 
                 boolean didUpgrade = false;
                 for(String potentialUpgrade : potentialUpgrades) {
-                    File file = new File(tempDir, potentialUpgrade);
+                    Path file = tempDir.resolve(potentialUpgrade);
                     boolean core = false;
                     boolean hasWebModules = false;
-                    try(FileInputStream fis = new FileInputStream(file)){
-                        // Test to see if it is a core or a bundle of only zips or many zip files
-                        try (ZipInputStream is = new ZipInputStream(fis)) {
-                            ZipEntry entry = is.getNextEntry();
-                            if (entry == null) {
-                                // Not a zip file or empty, either way we don't care
-                                throw new BadRequestException(new TranslatableMessage("rest.error.badUpgradeFile"));
-                            } else {
-                                do {
-                                    if("release.signed".equals(entry.getName())) {
-                                        core = true;
-                                        break;
-                                    }else if(entry.getName().startsWith(WEB_MODULE_PREFIX)) {
-                                        hasWebModules = true;
-                                    }
-                                } while ((entry = is.getNextEntry()) != null);
-                            }
+                    // Test to see if it is a core or a bundle of only zips or many zip files
+                    try (ZipInputStream is = new ZipInputStream(Files.newInputStream(file))) {
+                        ZipEntry entry = is.getNextEntry();
+                        if (entry == null) {
+                            // Not a zip file or empty, either way we don't care
+                            throw new BadRequestException(new TranslatableMessage("rest.error.badUpgradeFile"));
+                        } else {
+                            do {
+                                if("release.signed".equals(entry.getName())) {
+                                    core = true;
+                                    break;
+                                }else if(entry.getName().startsWith(WEB_MODULE_PREFIX)) {
+                                    hasWebModules = true;
+                                }
+                            } while ((entry = is.getNextEntry()) != null);
                         }
                     }
 
                     if(core) {
                         //move file to core directory
-                        Files.move(file, new File(coreDir, "m2m2-core-upgrade.zip"));
+                        Files.move(file, Common.MA_HOME_PATH.resolve("m2m2-core-upgrade.zip"));
                         didUpgrade = true;
-                    }else if(hasWebModules){
+                    }else if(hasWebModules) {
                         //This is a zip with modules in web/modules move them all out into the MA_HOME/web/modules dir
-                        try(FileInputStream fis = new FileInputStream(file)){
-                            try (ZipInputStream is = new ZipInputStream(fis)) {
-                                ZipEntry entry;
-                                while((entry  = is.getNextEntry()) != null) {
-                                    if(entry.getName().startsWith(WEB_MODULE_PREFIX)) {
-                                        File newModule = new File(coreDir, entry.getName());
-                                        try(FileOutputStream fos = new FileOutputStream(newModule)){
-                                            org.springframework.util.StreamUtils.copy(is, fos);
-                                        }
-                                        didUpgrade = true;
-                                    }
+                        try (ZipInputStream is = new ZipInputStream(Files.newInputStream(file))) {
+                            ZipEntry entry;
+                            while ((entry = is.getNextEntry()) != null) {
+                                if(entry.getName().startsWith(WEB_MODULE_PREFIX)) {
+                                    Path newModule = Common.MA_HOME_PATH.resolve(entry.getName());
+                                    Files.copy(is, newModule);
+                                    didUpgrade = true;
                                 }
                             }
                         }
@@ -609,26 +599,23 @@ public class ModulesRestController {
                         //if its a module move it to the modules folder
                         if(isModule(file)) {
                             //Its extra work but we better check that it is a module from the store:
-                            Files.move(file, new File(moduleDir, file.getName()));
+                            Files.move(file, Common.MODULES.resolve(file.getFileName()));
                             didUpgrade = true;
                         }else {
                             //Is this a zip of modules?
-                            try(FileInputStream fis = new FileInputStream(file)){
-                                try (ZipInputStream is = new ZipInputStream(fis)) {
-                                    ZipEntry entry;
-                                    while((entry  = is.getNextEntry()) != null) {
-                                        if(entry.getName().startsWith(ModuleUtils.Constants.MODULE_PREFIX)) {
-                                            //Extract it and confirm it is a module
-                                            File newModule = new File(tempDir, entry.getName());
-                                            try(FileOutputStream fos = new FileOutputStream(newModule)){
-                                                org.springframework.util.StreamUtils.copy(is, fos);
-                                            }
-                                            if(isModule(newModule)) {
-                                                Files.move(newModule, new File(moduleDir, newModule.getName()));
-                                                didUpgrade = true;
-                                            }
+                            try (ZipInputStream is = new ZipInputStream(Files.newInputStream(file))) {
+                                ZipEntry entry;
+                                while((entry  = is.getNextEntry()) != null) {
+                                    if(entry.getName().startsWith(ModuleUtils.Constants.MODULE_PREFIX)) {
+                                        //Extract it and confirm it is a module
+                                        Path newModule = tempDir.resolve(entry.getName());
+                                        Files.copy(is, newModule);
+                                        if(isModule(newModule)) {
+                                            Files.move(newModule, Common.MODULES.resolve(newModule.getFileName()));
+                                            didUpgrade = true;
                                         }
                                     }
+
                                 }
                             }
                         }
@@ -639,7 +626,7 @@ public class ModulesRestController {
                 if (!didUpgrade)
                     throw new BadRequestException(new TranslatableMessage("rest.error.invalidUpgradeFile"));
             }finally {
-                FileUtils.deleteDirectory(tempDir);
+                FileUtils.deleteDirectory(tempDir.toFile());
             }
         }finally {
             //TODO We could retain the lock indefinitely if there is a restart request?
@@ -655,14 +642,12 @@ public class ModulesRestController {
         }
     }
 
-    private boolean isModule(File file) throws FileNotFoundException, IOException {
-        try(FileInputStream fis = new FileInputStream(file)){
-            try (ZipInputStream is = new ZipInputStream(fis)) {
-                ZipEntry entry;
-                while((entry  = is.getNextEntry()) != null) {
-                    if(entry.getName().equals(ModuleUtils.Constants.MODULE_SIGNED)) {
-                        return true;
-                    }
+    private boolean isModule(Path file) throws FileNotFoundException, IOException {
+        try (ZipInputStream is = new ZipInputStream(Files.newInputStream(file))) {
+            ZipEntry entry;
+            while((entry  = is.getNextEntry()) != null) {
+                if(entry.getName().equals(ModuleUtils.Constants.MODULE_SIGNED)) {
+                    return true;
                 }
             }
         }
@@ -673,17 +658,17 @@ public class ModulesRestController {
 
         // If there is an existing license file, move it to a backup name. First check if the backup name exists, and
         // if so, delete it.
-        File licenseFile = new File(Common.MA_HOME, "m2m2.license.xml");
-        File backupFile = new File(Common.MA_HOME, "m2m2.license.old.xml");
+        Path licenseFile = Common.MA_HOME_PATH.resolve("m2m2.license.xml");
+        Path backupFile = Common.MA_HOME_PATH.resolve("m2m2.license.old.xml");
 
-        if (licenseFile.exists()) {
-            if (backupFile.exists())
-                backupFile.delete();
-            licenseFile.renameTo(backupFile);
+        if (Files.exists(licenseFile)) {
+            Files.move(licenseFile, backupFile, StandardCopyOption.REPLACE_EXISTING);
         }
 
         // Save the data
-        StreamUtils.writeFile(licenseFile, license);
+        try (Writer writer = Files.newBufferedWriter(licenseFile)) {
+            writer.write(license);
+        }
 
         // Reload the license file.
         Providers.get(IMangoLifecycle.class).loadLic();
