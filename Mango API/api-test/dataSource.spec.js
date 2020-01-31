@@ -125,7 +125,6 @@ describe('Data source service', function() {
             this.testPoint2.save(),
             this.testPoint3.save(),
             this.testPoint4.save()]).then(() => {
-                
                 return client.restRequest({
                     path: `/rest/v2/data-sources/copy/${this.ds.xid}`,
                     params: {
