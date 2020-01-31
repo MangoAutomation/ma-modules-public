@@ -6,6 +6,7 @@ package com.infiniteautomation.mango.spring.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -16,6 +17,7 @@ import com.infiniteautomation.mango.rest.v2.exception.ServerErrorException;
 import com.infiniteautomation.mango.spring.dao.WatchListDao;
 import com.infiniteautomation.mango.spring.dao.WatchListTableDefinition;
 import com.infiniteautomation.mango.util.RQLUtils;
+import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
@@ -26,6 +28,7 @@ import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.IDataPoint;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.EventInstanceVO;
+import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.vo.role.Role;
 import com.serotonin.m2m2.watchlist.WatchListCreatePermission;
@@ -56,6 +59,32 @@ public class WatchListService extends AbstractVOService<WatchListVO, WatchListTa
         this.eventService = eventService;
     }
 
+    @Override
+    public WatchListVO insert(WatchListVO vo) throws PermissionException, ValidationException {
+        PermissionHolder user = Common.getUser();
+        Objects.requireNonNull(user, "Permission holder must be set in security context");
+
+        //If user not set then set it
+        if(vo.getUserId() <= 0 && user instanceof User) {
+            vo.setUserId(((User)user).getId());
+        }
+
+        return super.insert(vo);
+    }
+
+    @Override
+    public WatchListVO update(WatchListVO existing, WatchListVO vo)
+            throws PermissionException, ValidationException {
+        PermissionHolder user = Common.getUser();
+        Objects.requireNonNull(user, "Permission holder must be set in security context");
+
+        //If user not set then set it
+        if(vo.getUserId() <= 0 && user instanceof User) {
+            vo.setUserId(((User)user).getId());
+        }
+
+        return super.update(existing, vo);
+    }
     @Override
     public boolean hasEditPermission(PermissionHolder user, WatchListVO vo) {
         if(user instanceof User && ((User)user).getId() == vo.getUserId()) {
@@ -151,32 +180,48 @@ public class WatchListService extends AbstractVOService<WatchListVO, WatchListTa
     }
 
     /**
-     * Get points for the watchlist.
+     * Load data points from the mapping table for a watchlist
+     */
+    public void getWatchListPoints(int id, Consumer<DataPointVO> callback) {
+        PermissionHolder user = Common.getUser();
+        Objects.requireNonNull(user, "Permission holder must be set in security context");
+
+        this.dao.getPoints(id, (dp) -> {
+            if(dataPointService.hasReadPermission(user, dp)) {
+                callback.accept(dp);
+            }
+        });
+    }
+
+    /**
+     * Get the full data points for a list (TAG_TYPE not supported)
      * @param id
      * @param callback
      */
-    public void getPoints(int id, Consumer<DataPointVO> callback) {
+    public void getDataPoints(int id, Consumer<DataPointVO> callback) {
         WatchListVO vo = get(id);
-        getPoints(vo, callback);
+        getDataPoints(vo, callback);
     }
 
     /**
-     *
+     * Get the full data points for a list (TAG_TYPE not supported)
      * @param xid
      * @param callback
      */
-    public void getPoints(String xid, Consumer<DataPointVO> callback) {
+    public void getDataPoints(String xid, Consumer<DataPointVO> callback) {
         WatchListVO vo = get(xid);
-        getPoints(vo, callback);
+        getDataPoints(vo, callback);
     }
 
     /**
-     *
+     * Get the full data points for a list (TAG_TYPE not supported)
      * @param vo
      * @param callback
      */
-    public  void getPoints(WatchListVO vo, Consumer<DataPointVO> callback) {
+    public void getDataPoints(WatchListVO vo, Consumer<DataPointVO> callback) {
         PermissionHolder user = Common.getUser();
+        Objects.requireNonNull(user, "Permission holder must be set in security context");
+
         switch(vo.getType()) {
             case WatchListVO.STATIC_TYPE:
                 this.dao.getPoints(vo.getId(), (dp) -> {
@@ -233,7 +278,7 @@ public class WatchListService extends AbstractVOService<WatchListVO, WatchListTa
      * @param offset
      * @param callback
      */
-    public  void getPointEvents(WatchListVO vo, Integer limit, Integer offset, Consumer<EventInstanceVO> callback) {
+    public void getPointEvents(WatchListVO vo, Integer limit, Integer offset, Consumer<EventInstanceVO> callback) {
         PermissionHolder user = Common.getUser();
         List<Object> args = new ArrayList<>();
         args.add("typeRef1");

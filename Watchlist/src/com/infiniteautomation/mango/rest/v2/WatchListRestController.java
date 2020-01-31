@@ -325,7 +325,7 @@ public class WatchListRestController {
         @Override
         public StreamedArray getItems() {
             return (JSONStreamedArray) (jgen) -> {
-                service.getPoints(xid, (dp) -> {
+                service.getDataPoints(xid, (dp) -> {
                     Object model = mapToModel.apply(dp);
                     try {
                         jgen.writeObject(model);

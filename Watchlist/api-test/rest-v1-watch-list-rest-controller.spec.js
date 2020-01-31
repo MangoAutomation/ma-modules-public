@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-const {createClient, addLoginHook, uuid, noop} = require('@infinite-automation/mango-module-tools/test-helper/testHelper');
+const {createClient, addLoginHook, assertValidationErrors, uuid, noop} = require('@infinite-automation/mango-module-tools/test-helper/testHelper');
 const client = createClient();
 
 const validateSchema = {
@@ -39,8 +39,6 @@ const validateSchema = {
         }
         // DESCRIPTION: ID of object in database
         assert.isNumber(item.id, path + '.id');
-        // DESCRIPTION: Model Type Definition
-        assert.isString(item.modelType, path + '.modelType');
         // DESCRIPTION: Name of object
         assert.isString(item.name, path + '.name');
         if (item.params) {
@@ -57,11 +55,6 @@ const validateSchema = {
         if (item.username) {
             assert.isString(item.username, path + '.username');
         }
-        // DESCRIPTION: Messages for validation of data
-        assert.isArray(item.validationMessages, path + '.validationMessages');
-        item.validationMessages.forEach((item, index) => {
-            this['RestValidationMessage'](item, path + '.validationMessages' + `[${index}]`);
-        });
         // DESCRIPTION: XID of object
         assert.isString(item.xid, path + '.xid');
     },
@@ -124,7 +117,6 @@ describe('watch-list-rest-controller', function() {
                 editPermission: '',
                 readPermission: '',
                 type: 'query',
-                folderIds: null,
                 params: [],
                 query: 'limit(1)',
                 data: {}
@@ -141,6 +133,8 @@ describe('watch-list-rest-controller', function() {
             }).then((response) => {
                 this.currentTest.savedObject = response.data;
                 this.currentTest.xid = response.data.xid;
+            }, error => {
+                assertValidationErrors([''], error);
             });
         }
     });
@@ -242,7 +236,6 @@ describe('watch-list-rest-controller', function() {
             editPermission: '',
             readPermission: '',
             type: 'query',
-            folderIds: null,
             params: [],
             query: 'limit(1)',
             data: {}
@@ -263,6 +256,8 @@ describe('watch-list-rest-controller', function() {
             
             // actualResult is verified against expectedResult in afterEach hook
             this.test.actualResult = response.data;
+        }, error => {
+            assertValidationErrors([''], error);
         });
     });
 
@@ -277,7 +272,7 @@ describe('watch-list-rest-controller', function() {
             path: `/rest/v2/watch-lists/${params.xid}`,
         }).then(response => {
             // No Content
-            assert.strictEqual(response.status, 204);
+            assert.strictEqual(response.status, 200);
             
             // actualResult is verified against expectedResult in afterEach hook
             this.test.actualResult = response.data;
