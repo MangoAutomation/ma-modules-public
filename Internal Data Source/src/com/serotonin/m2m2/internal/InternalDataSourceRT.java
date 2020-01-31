@@ -203,7 +203,7 @@ public class InternalDataSourceRT extends PollingDataSource<InternalDataSourceVO
         dpvo.defaultTextRenderer();
         dpvo.setXid(Common.generateXid("DP_In_"));
         monitorMap.put(monitor.getId(), true);
-        Common.getBean(PermissionService.class).runAs(PermissionHolder.SYSTEM_SUPERADMIN, () -> {
+        Common.getBean(PermissionService.class).runAsSystemAdmin(() -> {
             Common.getBean(DataPointService.class).insert(dpvo);
         }); //Won't appear until next poll, but that's fine.
     }
