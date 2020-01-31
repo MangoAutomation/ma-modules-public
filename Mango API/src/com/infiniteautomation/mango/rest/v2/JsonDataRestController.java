@@ -96,8 +96,8 @@ public class JsonDataRestController {
             HttpServletRequest request,
             @ApiParam(value = "XID", required = true, allowMultiple = false)
             @PathVariable String xid,
-            @AuthenticationPrincipal User user){
-        return this.map.apply(service.get(xid), user);
+            @AuthenticationPrincipal User user) {
+        return this.map.apply(service.getPublicData(xid), user);
     }
 
     @ApiOperation(value = "Get JSON Data")
