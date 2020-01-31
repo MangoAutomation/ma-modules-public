@@ -7,8 +7,6 @@ package com.infiniteautomation.mango.rest.v2.model;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
-import com.infiniteautomation.mango.rest.v2.model.RestModelMapping;
 import com.infiniteautomation.mango.spring.service.DataPointService;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.spring.service.UsersService;
@@ -74,13 +72,15 @@ public class WatchListModelMapping implements RestModelMapping<WatchListVO, Watc
         vo.setEditRoles(permissionService.explodeLegacyPermissionGroupsToRoles(model.getEditPermission()));
 
         ProcessResult result = new ProcessResult();
-        for(WatchListDataPointModel summary : model.getPoints()) {
-            try {
-                vo.getPointList().add(dataPointService.getSummary(summary.getXid()));
-            }catch(NotFoundException e) {
-                result.addContextualMessage("points", "watchList.validate.pointNotFound", summary.getXid());
-            }catch(PermissionException e) {
-                result.addContextualMessage("points", "watchlist.vaildate.pointNoReadPermission", summary.getXid());
+        if(model.getPoints() != null) {
+            for(WatchListDataPointModel summary : model.getPoints()) {
+                try {
+                    vo.getPointList().add(dataPointService.getSummary(summary.getXid()));
+                }catch(NotFoundException e) {
+                    result.addContextualMessage("points", "watchList.validate.pointNotFound", summary.getXid());
+                }catch(PermissionException e) {
+                    result.addContextualMessage("points", "watchlist.vaildate.pointNoReadPermission", summary.getXid());
+                }
             }
         }
         if(result.getHasMessages()) {
