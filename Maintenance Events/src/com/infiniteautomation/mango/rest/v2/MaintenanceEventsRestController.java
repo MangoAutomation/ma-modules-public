@@ -64,8 +64,6 @@ import net.jazdw.rql.parser.ASTNode;
 @RequestMapping("/maintenance-events")
 public class MaintenanceEventsRestController {
 
-    private final RestModelMapper modelMapper;
-
     private final EventInstanceService eventService;
     private final Map<String, Function<Object, Object>> eventTableValueConverters;
     private final Map<String, Field<?>> eventTableFieldMap;
@@ -81,7 +79,6 @@ public class MaintenanceEventsRestController {
             EventInstanceTableDefinition eventTable) {
         this.service = service;
         this.dao = dao;
-        this.modelMapper = modelMapper;
         this.eventService = eventService;
         this.eventTableValueConverters = new HashMap<>();
         this.eventTableFieldMap = new EventTableRqlMappings(eventTable);
@@ -348,7 +345,7 @@ public class MaintenanceEventsRestController {
 
     @ApiOperation(
             value = "Find Events for a set of Maintenance events created by the supplied rql query",
-            notes = "Returns a map of point xids to a list of events that have this data point in their list OR the its data source in the list",
+            notes = "Returns Events for any Maintenance event that",
             response=EventInstanceModel.class,
             responseContainer="List"
             )
@@ -403,11 +400,11 @@ public class MaintenanceEventsRestController {
 
     @ApiOperation(
             value = "Find Events for a set of Maintenance events created by the supplied criteria",
-            notes = "Returns a map of point xids to a list of events that have this data point in their list OR the its data source in the list",
+            notes = "Returns Events for any Maintenance event that has any of the supplied data points OR data sources as its source",
             response=EventInstanceModel.class,
             responseContainer="List"
             )
-    @RequestMapping(method = RequestMethod.POST, value="/query/get-events-by-rql")
+    @RequestMapping(method = RequestMethod.POST, value="/query/get-events-by-points-and-or-sources")
     public StreamedArrayWithTotal getEventsByCriteria(
             @RequestBody
             EventQueryByMaintenanceCriteria body,
