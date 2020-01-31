@@ -44,8 +44,6 @@ describe('audit-rest-controller', function() {
                     assert.isObject(item.context, 'data.items[].context');
                 }
                 assert.isString(item.message, 'data.items[].message');
-                // DESCRIPTION: Model Type Definition
-                assert.isString(item.modelType, 'data.items[].modelType');
                 assert.isNumber(item.objectId, 'data.items[].objectId');
                 assert.isNumber(item.timestamp, 'data.items[].timestamp');
                 assert.isString(item.typeName, 'data.items[].typeName');
