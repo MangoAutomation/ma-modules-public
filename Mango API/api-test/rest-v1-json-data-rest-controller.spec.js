@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-const {createClient, login, uuid, noop} = require('@infinite-automation/mango-module-tools/test-helper/testHelper');
+const {createClient, assertValidationErrors, login, uuid, noop} = require('@infinite-automation/mango-module-tools/test-helper/testHelper');
 const client = createClient();
 
 // Mango REST V1 API - Json Data Rest Controller
@@ -100,23 +100,11 @@ describe('json-data-rest-controller', function() {
             assert.strictEqual(response.data.jsonData.key1, 'value1');
             assert.strictEqual(response.data.jsonData.key2, 'value2');
             // END MODEL: ArbitraryJsonData
-            // DESCRIPTION: Model Type Definition
-            assert.isString(response.data.modelType, 'data.modelType');
+
             // DESCRIPTION: Name of object
             assert.isString(response.data.name, 'data.name');
             assert.isBoolean(response.data.publicData, 'data.publicData');
             assert.isString(response.data.readPermission, 'data.readPermission');
-            // DESCRIPTION: Messages for validation of data
-            assert.isArray(response.data.validationMessages, 'data.validationMessages');
-            response.data.validationMessages.forEach((item, index) => {
-                // MODEL: RestValidationMessage
-                assert.isObject(item, 'data.validationMessages[]');
-                assert.isString(item.level, 'data.validationMessages[].level');
-                assert.include(["INFORMATION","WARNING","ERROR"], item.level, 'data.validationMessages[].level');
-                assert.isString(item.message, 'data.validationMessages[].message');
-                assert.isString(item.property, 'data.validationMessages[].property');
-                // END MODEL: RestValidationMessage
-            });
             // DESCRIPTION: XID of object
             assert.isString(response.data.xid, 'data.xid');
             // END MODEL: JsonData
@@ -152,23 +140,11 @@ describe('json-data-rest-controller', function() {
             assert.strictEqual(response.data.jsonData.key1, 'value1');
             assert.strictEqual(response.data.jsonData.key2, 'value2');
             // END MODEL: ArbitraryJsonData
-            // DESCRIPTION: Model Type Definition
-            assert.isString(response.data.modelType, 'data.modelType');
+
             // DESCRIPTION: Name of object
             assert.isString(response.data.name, 'data.name');
             assert.isBoolean(response.data.publicData, 'data.publicData');
             assert.isString(response.data.readPermission, 'data.readPermission');
-            // DESCRIPTION: Messages for validation of data
-            assert.isArray(response.data.validationMessages, 'data.validationMessages');
-            response.data.validationMessages.forEach((item, index) => {
-                // MODEL: RestValidationMessage
-                assert.isObject(item, 'data.validationMessages[]');
-                assert.isString(item.level, 'data.validationMessages[].level');
-                assert.include(["INFORMATION","WARNING","ERROR"], item.level, 'data.validationMessages[].level');
-                assert.isString(item.message, 'data.validationMessages[].message');
-                assert.isString(item.property, 'data.validationMessages[].property');
-                // END MODEL: RestValidationMessage
-            });
             // DESCRIPTION: XID of object
             assert.isString(response.data.xid, 'data.xid');
             // END MODEL: JsonData
@@ -184,10 +160,10 @@ describe('json-data-rest-controller', function() {
         };
         const params = {
             data: requestBody, // in = body, description = Data to save, required = false, type = , default = , enum = 
-            editPermission: ['string'], // in = query, description = Edit Permissions, required = false, type = array, default = , enum = 
+            editPermission: ['user'], // in = query, description = Edit Permissions, required = false, type = array, default = , enum = 
             name: 'string', // in = query, description = Name, required = true, type = string, default = , enum = 
             publicData: false, // in = query, description = Is public?, required = true, type = boolean, default = false, enum = 
-            readPermission: ['string'], // in = query, description = Read Permissions, required = false, type = array, default = , enum = 
+            readPermission: ['user'], // in = query, description = Read Permissions, required = false, type = array, default = , enum = 
             xid: uuid() // in = path, description = XID, required = true, type = string, default = , enum = 
         };
         
@@ -217,26 +193,16 @@ describe('json-data-rest-controller', function() {
             assert.strictEqual(response.data.jsonData.key1, 'value1');
             assert.doesNotHaveAnyKeys(response.data.jsonData, ['value2', 'value3']);
             // END MODEL: ArbitraryJsonData
-            // DESCRIPTION: Model Type Definition
-            assert.isString(response.data.modelType, 'data.modelType');
+
             // DESCRIPTION: Name of object
             assert.isString(response.data.name, 'data.name');
             assert.isBoolean(response.data.publicData, 'data.publicData');
             assert.isString(response.data.readPermission, 'data.readPermission');
-            // DESCRIPTION: Messages for validation of data
-            assert.isArray(response.data.validationMessages, 'data.validationMessages');
-            response.data.validationMessages.forEach((item, index) => {
-                // MODEL: RestValidationMessage
-                assert.isObject(item, 'data.validationMessages[]');
-                assert.isString(item.level, 'data.validationMessages[].level');
-                assert.include(["INFORMATION","WARNING","ERROR"], item.level, 'data.validationMessages[].level');
-                assert.isString(item.message, 'data.validationMessages[].message');
-                assert.isString(item.property, 'data.validationMessages[].property');
-                // END MODEL: RestValidationMessage
-            });
             // DESCRIPTION: XID of object
             assert.isString(response.data.xid, 'data.xid');
             // END MODEL: JsonData
+        }, error => {
+            assertValidationErrors([''], error);
         }).finally(() => {
             return testTeardown.call(this, params).catch(noop);
         });
@@ -249,10 +215,10 @@ describe('json-data-rest-controller', function() {
         };
         const params = {
             data: requestBody, // in = body, description = Data to save, required = false, type = , default = , enum = 
-            editPermission: ['string'], // in = query, description = Edit Permissions, required = false, type = array, default = , enum = 
+            editPermission: ['user'], // in = query, description = Edit Permissions, required = false, type = array, default = , enum = 
             name: 'string', // in = query, description = Name, required = true, type = string, default = , enum = 
             publicData: false, // in = query, description = Is public?, required = true, type = boolean, default = false, enum = 
-            readPermission: ['string'], // in = query, description = Read Permissions, required = false, type = array, default = , enum = 
+            readPermission: ['user'], // in = query, description = Read Permissions, required = false, type = array, default = , enum = 
             xid: uuid() // in = path, description = XID, required = true, type = string, default = , enum = 
         };
         
@@ -272,7 +238,7 @@ describe('json-data-rest-controller', function() {
             });
         }).then(response => {
             // Created
-            assert.strictEqual(response.status, 201);
+            assert.strictEqual(response.status, 200);
             // MODEL: JsonData
             // DESCRIPTION: Json Data Model
             assert.isObject(response.data, 'data');
@@ -285,23 +251,11 @@ describe('json-data-rest-controller', function() {
             assert.strictEqual(response.data.jsonData.key2, 'value2');
             assert.strictEqual(response.data.jsonData.key3, 'value3');
             // END MODEL: ArbitraryJsonData
-            // DESCRIPTION: Model Type Definition
-            assert.isString(response.data.modelType, 'data.modelType');
+
             // DESCRIPTION: Name of object
             assert.isString(response.data.name, 'data.name');
             assert.isBoolean(response.data.publicData, 'data.publicData');
             assert.isString(response.data.readPermission, 'data.readPermission');
-            // DESCRIPTION: Messages for validation of data
-            assert.isArray(response.data.validationMessages, 'data.validationMessages');
-            response.data.validationMessages.forEach((item, index) => {
-                // MODEL: RestValidationMessage
-                assert.isObject(item, 'data.validationMessages[]');
-                assert.isString(item.level, 'data.validationMessages[].level');
-                assert.include(["INFORMATION","WARNING","ERROR"], item.level, 'data.validationMessages[].level');
-                assert.isString(item.message, 'data.validationMessages[].message');
-                assert.isString(item.property, 'data.validationMessages[].property');
-                // END MODEL: RestValidationMessage
-            });
             // DESCRIPTION: XID of object
             assert.isString(response.data.xid, 'data.xid');
             // END MODEL: JsonData
@@ -338,7 +292,7 @@ describe('json-data-rest-controller', function() {
             });
         }).then(response => {
             // Created
-            assert.strictEqual(response.status, 201);
+            assert.strictEqual(response.status, 200);
             // MODEL: JsonData
             // DESCRIPTION: Json Data Model
             assert.isObject(response.data, 'data');
@@ -350,23 +304,11 @@ describe('json-data-rest-controller', function() {
             assert.strictEqual(response.data.jsonData[0], 0);
             assert.strictEqual(response.data.jsonData[1], 1);
             // END MODEL: ArbitraryJsonData
-            // DESCRIPTION: Model Type Definition
-            assert.isString(response.data.modelType, 'data.modelType');
+
             // DESCRIPTION: Name of object
             assert.isString(response.data.name, 'data.name');
             assert.isBoolean(response.data.publicData, 'data.publicData');
             assert.isString(response.data.readPermission, 'data.readPermission');
-            // DESCRIPTION: Messages for validation of data
-            assert.isArray(response.data.validationMessages, 'data.validationMessages');
-            response.data.validationMessages.forEach((item, index) => {
-                // MODEL: RestValidationMessage
-                assert.isObject(item, 'data.validationMessages[]');
-                assert.isString(item.level, 'data.validationMessages[].level');
-                assert.include(["INFORMATION","WARNING","ERROR"], item.level, 'data.validationMessages[].level');
-                assert.isString(item.message, 'data.validationMessages[].message');
-                assert.isString(item.property, 'data.validationMessages[].property');
-                // END MODEL: RestValidationMessage
-            });
             // DESCRIPTION: XID of object
             assert.isString(response.data.xid, 'data.xid');
             // END MODEL: JsonData
@@ -400,23 +342,11 @@ describe('json-data-rest-controller', function() {
             // MODEL: ArbitraryJsonData
             assert.isObject(response.data.jsonData, 'data.jsonData');
             // END MODEL: ArbitraryJsonData
-            // DESCRIPTION: Model Type Definition
-            assert.isString(response.data.modelType, 'data.modelType');
+
             // DESCRIPTION: Name of object
             assert.isString(response.data.name, 'data.name');
             assert.isBoolean(response.data.publicData, 'data.publicData');
             assert.isString(response.data.readPermission, 'data.readPermission');
-            // DESCRIPTION: Messages for validation of data
-            assert.isArray(response.data.validationMessages, 'data.validationMessages');
-            response.data.validationMessages.forEach((item, index) => {
-                // MODEL: RestValidationMessage
-                assert.isObject(item, 'data.validationMessages[]');
-                assert.isString(item.level, 'data.validationMessages[].level');
-                assert.include(["INFORMATION","WARNING","ERROR"], item.level, 'data.validationMessages[].level');
-                assert.isString(item.message, 'data.validationMessages[].message');
-                assert.isString(item.property, 'data.validationMessages[].property');
-                // END MODEL: RestValidationMessage
-            });
             // DESCRIPTION: XID of object
             assert.isString(response.data.xid, 'data.xid');
             // END MODEL: JsonData
@@ -453,23 +383,11 @@ describe('json-data-rest-controller', function() {
             assert.isTrue(response.data.jsonData.prop1);
             assert.isFalse(response.data.jsonData.prop2);
             // END MODEL: ArbitraryJsonData
-            // DESCRIPTION: Model Type Definition
-            assert.isString(response.data.modelType, 'data.modelType');
+
             // DESCRIPTION: Name of object
             assert.isString(response.data.name, 'data.name');
             assert.isBoolean(response.data.publicData, 'data.publicData');
             assert.isString(response.data.readPermission, 'data.readPermission');
-            // DESCRIPTION: Messages for validation of data
-            assert.isArray(response.data.validationMessages, 'data.validationMessages');
-            response.data.validationMessages.forEach((item, index) => {
-                // MODEL: RestValidationMessage
-                assert.isObject(item, 'data.validationMessages[]');
-                assert.isString(item.level, 'data.validationMessages[].level');
-                assert.include(["INFORMATION","WARNING","ERROR"], item.level, 'data.validationMessages[].level');
-                assert.isString(item.message, 'data.validationMessages[].message');
-                assert.isString(item.property, 'data.validationMessages[].property');
-                // END MODEL: RestValidationMessage
-            });
             // DESCRIPTION: XID of object
             assert.isString(response.data.xid, 'data.xid');
             // END MODEL: JsonData
@@ -522,23 +440,11 @@ describe('json-data-rest-controller', function() {
             assert.strictEqual(response.data.jsonData.prop1, 1);
             assert.strictEqual(response.data.jsonData.prop2, 2);
             // END MODEL: ArbitraryJsonData
-            // DESCRIPTION: Model Type Definition
-            assert.isString(response.data.modelType, 'data.modelType');
+
             // DESCRIPTION: Name of object
             assert.isString(response.data.name, 'data.name');
             assert.isBoolean(response.data.publicData, 'data.publicData');
             assert.isString(response.data.readPermission, 'data.readPermission');
-            // DESCRIPTION: Messages for validation of data
-            assert.isArray(response.data.validationMessages, 'data.validationMessages');
-            response.data.validationMessages.forEach((item, index) => {
-                // MODEL: RestValidationMessage
-                assert.isObject(item, 'data.validationMessages[]');
-                assert.isString(item.level, 'data.validationMessages[].level');
-                assert.include(["INFORMATION","WARNING","ERROR"], item.level, 'data.validationMessages[].level');
-                assert.isString(item.message, 'data.validationMessages[].message');
-                assert.isString(item.property, 'data.validationMessages[].property');
-                // END MODEL: RestValidationMessage
-            });
             // DESCRIPTION: XID of object
             assert.isString(response.data.xid, 'data.xid');
             // END MODEL: JsonData
@@ -554,11 +460,11 @@ describe('json-data-rest-controller', function() {
         };
         const params = {
             data: requestBody, // in = body, description = Data to save, required = false, type = , default = , enum = 
-            editPermission: ['string'], // in = query, description = Edit Permissions, required = false, type = array, default = , enum = 
+            editPermission: ['user'], // in = query, description = Edit Permissions, required = false, type = array, default = , enum = 
             name: 'string', // in = query, description = Name, required = true, type = string, default = , enum = 
             path: 'objectKey', // in = path, description = Data path using dots as separator, required = true, type = string, default = , enum = 
             publicData: false, // in = query, description = Is public?, required = true, type = boolean, default = false, enum = 
-            readPermission: ['string'], // in = query, description = Read Permissions, required = false, type = array, default = , enum = 
+            readPermission: ['user'], // in = query, description = Read Permissions, required = false, type = array, default = , enum = 
             xid: uuid() // in = path, description = XID, required = true, type = string, default = , enum = 
         };
         
@@ -578,7 +484,7 @@ describe('json-data-rest-controller', function() {
             });
         }).then(response => {
             // Created
-            assert.strictEqual(response.status, 201);
+            assert.strictEqual(response.status, 200);
             // MODEL: JsonData
             // DESCRIPTION: Json Data Model
             assert.isObject(response.data, 'data');
@@ -591,26 +497,16 @@ describe('json-data-rest-controller', function() {
             assert.isFalse(response.data.jsonData.prop2);
             assert.strictEqual(response.data.jsonData.prop3, 123);
             // END MODEL: ArbitraryJsonData
-            // DESCRIPTION: Model Type Definition
-            assert.isString(response.data.modelType, 'data.modelType');
+
             // DESCRIPTION: Name of object
             assert.isString(response.data.name, 'data.name');
             assert.isBoolean(response.data.publicData, 'data.publicData');
             assert.isString(response.data.readPermission, 'data.readPermission');
-            // DESCRIPTION: Messages for validation of data
-            assert.isArray(response.data.validationMessages, 'data.validationMessages');
-            response.data.validationMessages.forEach((item, index) => {
-                // MODEL: RestValidationMessage
-                assert.isObject(item, 'data.validationMessages[]');
-                assert.isString(item.level, 'data.validationMessages[].level');
-                assert.include(["INFORMATION","WARNING","ERROR"], item.level, 'data.validationMessages[].level');
-                assert.isString(item.message, 'data.validationMessages[].message');
-                assert.isString(item.property, 'data.validationMessages[].property');
-                // END MODEL: RestValidationMessage
-            });
             // DESCRIPTION: XID of object
             assert.isString(response.data.xid, 'data.xid');
             // END MODEL: JsonData
+        }, error => {
+            assertValidationErrors([''], error);
         }).finally(() => {
             return testTeardown.call(this, params).catch(noop);
         });
@@ -643,23 +539,11 @@ describe('json-data-rest-controller', function() {
             assert.isObject(response.data.jsonData, 'data.jsonData');
             assert.doesNotHaveAnyKeys(response.data.jsonData, ['objectKey'], 'data.jsonData');
             // END MODEL: ArbitraryJsonData
-            // DESCRIPTION: Model Type Definition
-            assert.isString(response.data.modelType, 'data.modelType');
+
             // DESCRIPTION: Name of object
             assert.isString(response.data.name, 'data.name');
             assert.isBoolean(response.data.publicData, 'data.publicData');
             assert.isString(response.data.readPermission, 'data.readPermission');
-            // DESCRIPTION: Messages for validation of data
-            assert.isArray(response.data.validationMessages, 'data.validationMessages');
-            response.data.validationMessages.forEach((item, index) => {
-                // MODEL: RestValidationMessage
-                assert.isObject(item, 'data.validationMessages[]');
-                assert.isString(item.level, 'data.validationMessages[].level');
-                assert.include(["INFORMATION","WARNING","ERROR"], item.level, 'data.validationMessages[].level');
-                assert.isString(item.message, 'data.validationMessages[].message');
-                assert.isString(item.property, 'data.validationMessages[].property');
-                // END MODEL: RestValidationMessage
-            });
             // DESCRIPTION: XID of object
             assert.isString(response.data.xid, 'data.xid');
             // END MODEL: JsonData

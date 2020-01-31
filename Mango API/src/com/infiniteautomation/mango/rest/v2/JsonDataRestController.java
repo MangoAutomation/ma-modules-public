@@ -47,6 +47,8 @@ import com.serotonin.m2m2.vo.json.JsonDataVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 /**
  *
@@ -138,6 +140,11 @@ public class JsonDataRestController {
     @ApiOperation(
             value = "Append JSON Data to existing"
             )
+    @ApiResponses({
+        @ApiResponse(code = 201, message = "Data Created", response=JsonDataModel.class),
+        @ApiResponse(code = 401, message = "Unauthorized Access", response=ResponseEntity.class),
+        @ApiResponse(code = 409, message = "Data Already Exists")
+    })
     @RequestMapping(method = RequestMethod.PUT, value="/{xid}")
     public ResponseEntity<JsonDataModel> updateJsonData(
             @ApiParam(value = "XID", required = true, allowMultiple = false)
@@ -181,6 +188,11 @@ public class JsonDataRestController {
             value = "Append JSON Data to existing",
             notes = "{path} is the path to data with dots data.member.submember"
             )
+    @ApiResponses({
+        @ApiResponse(code = 201, message = "Data Created", response=JsonDataModel.class),
+        @ApiResponse(code = 401, message = "Unauthorized Access", response=ResponseEntity.class),
+        @ApiResponse(code = 403, message = "Data Doesn't Exists")
+    })
     @RequestMapping(method = RequestMethod.PUT, value="/{xid}/{path:.*}")
     public ResponseEntity<JsonDataModel> updateJsonData(
             @ApiParam(value = "XID", required = true, allowMultiple = false)
@@ -226,6 +238,11 @@ public class JsonDataRestController {
     @ApiOperation(
             value = "Create/replace JSON Data"
             )
+    @ApiResponses({
+        @ApiResponse(code = 201, message = "Data Created", response=JsonDataModel.class),
+        @ApiResponse(code = 401, message = "Unauthorized Access", response=ResponseEntity.class),
+        @ApiResponse(code = 409, message = "Data Already Exists")
+    })
     @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(method = RequestMethod.POST, value="/{xid}")
     public ResponseEntity<JsonDataModel> createJsonData(
@@ -266,6 +283,11 @@ public class JsonDataRestController {
             value = "Replace JSON Data",
             notes = "{path} is the path to data with dots data.member.submember"
             )
+    @ApiResponses({
+        @ApiResponse(code = 201, message = "Data Created", response=JsonDataModel.class),
+        @ApiResponse(code = 401, message = "Unauthorized Access", response=ResponseEntity.class),
+        @ApiResponse(code = 409, message = "Data Already Exists")
+    })
     @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(method = RequestMethod.POST, value="/{xid}/{path:.*}")
     public ResponseEntity<JsonDataModel> replaceJsonData(
@@ -307,6 +329,11 @@ public class JsonDataRestController {
     }
 
     @ApiOperation(value = "Fully Delete JSON Data")
+    @ApiResponses({
+        @ApiResponse(code = 201, message = "Data Deleted", response=JsonDataModel.class),
+        @ApiResponse(code = 401, message = "Unauthorized Access", response=ResponseEntity.class),
+        @ApiResponse(code = 403, message = "Data Doesn't Exists")
+    })
     @RequestMapping(method = RequestMethod.DELETE, value="/{xid}")
     public JsonDataModel deleteJsonData(
             @ApiParam(value = "XID", required = true, allowMultiple = false)
@@ -317,6 +344,11 @@ public class JsonDataRestController {
 
     @ApiOperation(value = "Partially Delete JSON Data",
             notes = "{path} is the path to data with dots data.member.submember")
+    @ApiResponses({
+        @ApiResponse(code = 201, message = "Data Deleted", response=JsonDataModel.class),
+        @ApiResponse(code = 401, message = "Unauthorized Access", response=ResponseEntity.class),
+        @ApiResponse(code = 403, message = "Data Doesn't Exists")
+    })
     @RequestMapping(method = RequestMethod.DELETE, value="/{xid}/{path:.*}")
     public JsonDataModel deletePartialJsonData(
             @ApiParam(value = "XID", required = true, allowMultiple = false)
