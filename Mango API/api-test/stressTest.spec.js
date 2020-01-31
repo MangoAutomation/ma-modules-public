@@ -16,7 +16,7 @@
  */
 
 const fs = require('fs');
-const {createClient, login, delay, noop, config} = require('@infinite-automation/mango-module-tools/test-helper/testHelper');
+const {createClient, login, delay, noop, config, assertValidationErrors} = require('@infinite-automation/mango-module-tools/test-helper/testHelper');
 const client = createClient();
 const MangoObject = client.MangoObject;
 const DataSource = client.DataSource;
@@ -104,9 +104,6 @@ describe('Stress test', function() {
               periods: 10,
               type: 'SECONDS'
             },
-            alarmLevels: {
-              POLL_ABORTED: 'URGENT'
-            },
             purgeSettings: {
               override: false,
               frequency: {
@@ -114,7 +111,7 @@ describe('Stress test', function() {
                 type: 'YEARS'
               }
             },
-            editPermission: ''
+            editPermission: [],
         });
         
         this.publisher = new Publisher({
@@ -236,7 +233,7 @@ describe('Stress test', function() {
                     modelType: 'PL.META',
                     context: [
                         {
-                            dataPointXid: this.virtualXids[i],
+                            xid: this.virtualXids[i],
                             variableName: 'src',
                             contextUpdate: true
                         }
