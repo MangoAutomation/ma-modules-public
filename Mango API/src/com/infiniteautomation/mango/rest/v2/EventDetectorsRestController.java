@@ -50,6 +50,7 @@ import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceW
 import com.infiniteautomation.mango.spring.service.EventDetectorsService;
 import com.infiniteautomation.mango.spring.service.EventHandlerService;
 import com.infiniteautomation.mango.util.RQLUtils;
+import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.detector.AbstractEventDetectorVO;
@@ -315,7 +316,7 @@ public class EventDetectorsRestController {
         Long timeout = requestBody.getTimeout();
 
         TemporaryResource<EventDetectorBulkResponse, AbstractRestV2Exception> responseBody = bulkResourceManager.newTemporaryResource(
-                RESOURCE_TYPE_BULK_EVENT_DETECTOR, resourceId, user.getId(), expiration, timeout, (resource, taskUser) -> {
+                RESOURCE_TYPE_BULK_EVENT_DETECTOR, resourceId, user.getId(), expiration, timeout, (resource) -> {
 
                     EventDetectorBulkResponse bulkResponse = new EventDetectorBulkResponse();
                     int i = 0;
@@ -324,7 +325,7 @@ public class EventDetectorsRestController {
 
                     for (EventDetectorIndividualRequest request : requests) {
                         UriComponentsBuilder reqBuilder = UriComponentsBuilder.newInstance();
-                        EventDetectorIndividualResponse individualResponse = doIndividualRequest(request, restart, defaultAction, defaultBody, taskUser, reqBuilder);
+                        EventDetectorIndividualResponse individualResponse = doIndividualRequest(request, restart, defaultAction, defaultBody, reqBuilder);
                         bulkResponse.addResponse(individualResponse);
 
                         resource.progressOrSuccess(bulkResponse, i++, requests.size());
@@ -448,7 +449,7 @@ public class EventDetectorsRestController {
     }
 
     //TODO improve performance by tracking all data sources that need to be restarted and restart at the end?
-    private EventDetectorIndividualResponse doIndividualRequest(EventDetectorIndividualRequest request, boolean restart, VoAction defaultAction, AbstractEventDetectorModel<? extends AbstractEventDetectorVO> defaultBody, User user, UriComponentsBuilder builder) {
+    private EventDetectorIndividualResponse doIndividualRequest(EventDetectorIndividualRequest request, boolean restart, VoAction defaultAction, AbstractEventDetectorModel<? extends AbstractEventDetectorVO> defaultBody, UriComponentsBuilder builder) {
         EventDetectorIndividualResponse result = new EventDetectorIndividualResponse();
 
         try {
@@ -462,6 +463,8 @@ public class EventDetectorsRestController {
             result.setAction(action);
 
             AbstractEventDetectorModel<? extends AbstractEventDetectorVO> body = request.getBody() == null ? defaultBody : request.getBody();
+
+            User user = (User) Common.getUser();
 
             switch (action) {
                 case GET:

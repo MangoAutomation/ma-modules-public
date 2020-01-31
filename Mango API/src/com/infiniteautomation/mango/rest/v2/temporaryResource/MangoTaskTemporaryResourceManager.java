@@ -111,7 +111,7 @@ public final class MangoTaskTemporaryResourceManager<T> extends TemporaryResourc
             public void run(long runtime) {
                 permissionService.runAs(user, ()-> {
                     try {
-                        resource.runTask(user);
+                        resource.runTask();
                     } catch (Exception e) {
                         AbstractRestV2Exception error = MangoTaskTemporaryResourceManager.this.mapException(e);
                         resource.safeError(error);

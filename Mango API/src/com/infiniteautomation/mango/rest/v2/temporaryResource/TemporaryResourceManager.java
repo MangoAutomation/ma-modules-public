@@ -14,7 +14,6 @@ import org.apache.commons.logging.LogFactory;
 
 import com.infiniteautomation.mango.rest.v2.util.ExceptionMapper;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
-import com.serotonin.m2m2.vo.User;
 
 /**
  * @author Jared Wiltshire
@@ -37,7 +36,7 @@ public abstract class TemporaryResourceManager<T, E> implements ExceptionMapper<
 
     @FunctionalInterface
     public static interface ResourceTask<T, E> {
-        public Consumer<TemporaryResource<T, E>> run(TemporaryResource<T, E> resource, User user) throws Exception;
+        public Consumer<TemporaryResource<T, E>> run(TemporaryResource<T, E> resource) throws Exception;
     }
 
     private final ConcurrentMap<String, TemporaryResource<T, E>> resources;

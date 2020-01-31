@@ -57,6 +57,7 @@ import com.infiniteautomation.mango.spring.db.DataSourceTableDefinition;
 import com.infiniteautomation.mango.spring.service.DataPointService;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.RQLUtils;
+import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -326,7 +327,7 @@ public class DataPointRestController {
         Long timeout = requestBody.getTimeout();
 
         TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception> responseBody = bulkResourceManager.newTemporaryResource(
-                RESOURCE_TYPE_BULK_DATA_POINT, resourceId, user.getId(), expiration, timeout, (resource, taskUser) -> {
+                RESOURCE_TYPE_BULK_DATA_POINT, resourceId, user.getId(), expiration, timeout, (resource) -> {
 
                     DataPointBulkResponse bulkResponse = new DataPointBulkResponse();
                     int i = 0;
@@ -335,7 +336,8 @@ public class DataPointRestController {
 
                     for (DataPointIndividualRequest request : requests) {
                         UriComponentsBuilder reqBuilder = UriComponentsBuilder.newInstance();
-                        DataPointIndividualResponse individualResponse = doIndividualRequest(request, defaultAction, defaultBody, taskUser, reqBuilder);
+                        User resourceUser = (User) Common.getUser();
+                        DataPointIndividualResponse individualResponse = doIndividualRequest(request, defaultAction, defaultBody, resourceUser, reqBuilder);
                         bulkResponse.addResponse(individualResponse);
 
                         resource.progressOrSuccess(bulkResponse, i++, requests.size());

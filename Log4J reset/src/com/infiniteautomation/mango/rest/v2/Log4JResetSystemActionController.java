@@ -38,7 +38,7 @@ public class Log4JResetSystemActionController {
     private static final String RESOURCE_TYPE = "log4JUtil";
     private static final Log LOG = LogFactory.getLog(Log4JResetSystemActionController.class);
     private final SystemActionTemporaryResourceManager manager;
-    
+
     @Autowired
     public Log4JResetSystemActionController(SystemActionTemporaryResourceManager manager) {
         this.manager = manager;
@@ -51,7 +51,7 @@ public class Log4JResetSystemActionController {
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
 
-        return manager.create(requestBody, user, builder, Log4JResetActionPermissionDefinition.PERMISSION, RESOURCE_TYPE, (resource, taskUser) -> {
+        return manager.create(requestBody, user, builder, Log4JResetActionPermissionDefinition.PERMISSION, RESOURCE_TYPE, (resource) -> {
             try {
                 String output = null;
                 switch(requestBody.getAction()){
@@ -72,7 +72,7 @@ public class Log4JResetSystemActionController {
                     case TEST_WARN:
                         output = "Log4JReset module test warn message";
                         LOG.warn(output);
-                        break;  
+                        break;
                     case TEST_ERROR:
                         output = "Log4JReset module test error message";
                         LOG.error(output);
@@ -82,15 +82,15 @@ public class Log4JResetSystemActionController {
                         LOG.fatal(output);
                         break;
                     default:
-                        throw new ShouldNeverHappenException("Uknonwn command " + requestBody.getAction());        
+                        throw new ShouldNeverHappenException("Uknonwn command " + requestBody.getAction());
                 }
                 Log4JUtilResult result = new Log4JUtilResult();
                 result.setLogOutput(output);
-                resource.success(result);                
+                resource.success(result);
             }catch(Exception e) {
                 resource.error(new ServerErrorException(e));
             }
             return null; //No ability to cancel this task
         });
-    }  
+    }
 }

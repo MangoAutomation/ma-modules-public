@@ -1146,7 +1146,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
         model.ensureValid();
         TemporaryResource<PurgePointValuesResponseModel, AbstractRestV2Exception> response = resourceManager.newTemporaryResource(
                 "DATA_POINT_PURGE", null, user.getId(), model.getExpiry(), model.getTimeout(),
-                (resource, taskUser) -> {
+                (resource) -> {
                     PurgePointValuesResponseModel result = new PurgePointValuesResponseModel();
 
                     Map<Integer, DataSourceVO> dataSourceMap = new HashMap<>();

@@ -46,6 +46,7 @@ import com.serotonin.m2m2.mbus.MangoMBusSerialConnection;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.permission.PermissionException;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -101,10 +102,10 @@ public class MBusDataSourceRestController {
             ensureNotRunning(requestBody.getDataSourceXid(), user);
 
         TemporaryResource<MBusScanResult, AbstractRestV2Exception> responseBody = temporaryResourceManager.newTemporaryResource(
-                RESOURCE_TYPE_MBUS, null, user.getId(), expiry, timeout, (resource, taskUser)-> {
+                RESOURCE_TYPE_MBUS, null, user.getId(), expiry, timeout, (resource)-> {
 
                     //Start the discovery
-                    MBusScan scan = new MBusScan(requestBody, taskUser, resource);
+                    MBusScan scan = new MBusScan(requestBody, Common.getUser(), resource);
                     Future<?> future = this.executor.submit(scan);
 
                     return r -> {
@@ -126,10 +127,10 @@ public class MBusDataSourceRestController {
 
         private volatile boolean cancelled;
         private final MBusScanRequest requestBody;
-        private final User user;
+        private final PermissionHolder user;
         private final TemporaryResource<MBusScanResult, AbstractRestV2Exception> resource;
 
-        public MBusScan(MBusScanRequest requestBody, User user,
+        public MBusScan(MBusScanRequest requestBody, PermissionHolder user,
                 TemporaryResource<MBusScanResult, AbstractRestV2Exception> resource) {
             this.requestBody = requestBody;
             this.user = user;
@@ -145,7 +146,7 @@ public class MBusDataSourceRestController {
                 if (connection instanceof SerialPortConnection) {
                     //replace with buggy jssc
                     SerialPortConnection spc = (SerialPortConnection) connection;
-                    String owner = "Mango MBus Serial Test Tool by " + user.getUsername();
+                    String owner = "Mango MBus Serial Test Tool by " + user.getPermissionHolderName();
                     master.setConnection(new MangoMBusSerialConnection(owner, spc.getPortName(), spc.getBitPerSecond(), 1000));
                 } else {
                     master.setConnection(connection);

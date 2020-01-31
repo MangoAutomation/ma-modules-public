@@ -47,10 +47,12 @@ import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceW
 import com.infiniteautomation.mango.spring.service.DataPointService;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.RQLUtils;
+import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointTagsDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.web.MediaTypes;
 
 import io.swagger.annotations.Api;
@@ -252,9 +254,7 @@ public class DataPointTagsRestController {
     @RequestMapping(method = RequestMethod.GET, value="/point/{xid}")
     public Map<String, String> getTagsForDataPoint(
             @ApiParam(value = "Data point XID", required = true, allowMultiple = false)
-            @PathVariable String xid,
-
-            @AuthenticationPrincipal User user) {
+            @PathVariable String xid) {
 
         DataPointVO dataPoint = dataPointService.get(xid);
 
@@ -272,14 +272,12 @@ public class DataPointTagsRestController {
             @PathVariable String xid,
 
             @RequestBody
-            Map<String, String> tags,
-
-            @AuthenticationPrincipal
-            User user) {
+            Map<String, String> tags) {
 
         return dataPointTagsDao.doInTransaction(txStatus -> {
             DataPointVO dataPoint = dataPointService.get(xid);
 
+            PermissionHolder user = Common.getUser();
             permissionService.ensureDataSourcePermission(user, dataPoint.getDataSourceId());
 
             dataPoint.setTags(tags);
@@ -297,13 +295,11 @@ public class DataPointTagsRestController {
             @PathVariable String xid,
 
             @RequestBody
-            Map<String, String> tags,
-
-            @AuthenticationPrincipal
-            User user) {
+            Map<String, String> tags) {
 
         return dataPointTagsDao.doInTransaction(txStatus -> {
             DataPointVO dataPoint = dataPointService.get(xid);
+            PermissionHolder user = Common.getUser();
             permissionService.ensureDataSourcePermission(user, dataPoint.getDataSourceId());
 
             Map<String, String> existingTags = dataPointTagsDao.getTagsForDataPointId(dataPoint.getId());
@@ -328,7 +324,7 @@ public class DataPointTagsRestController {
         });
     }
 
-    private TagIndividualResponse doIndividualRequest(TagIndividualRequest request, BulkTagAction defaultAction, Map<String, String> defaultBody, User user) {
+    private TagIndividualResponse doIndividualRequest(TagIndividualRequest request, BulkTagAction defaultAction, Map<String, String> defaultBody) {
         TagIndividualResponse result = new TagIndividualResponse();
 
         try {
@@ -348,20 +344,20 @@ public class DataPointTagsRestController {
 
             switch (action) {
                 case GET:
-                    result.setBody(this.getTagsForDataPoint(xid, user));
+                    result.setBody(this.getTagsForDataPoint(xid));
                     break;
                 case SET:
                     if (tags == null) {
                         throw new BadRequestException(new TranslatableMessage("rest.error.mustNotBeNull", "body"));
                     }
-                    result.setBody(this.setTagsForDataPoint(xid, tags, user));
+                    result.setBody(this.setTagsForDataPoint(xid, tags));
                     break;
                 case MERGE:
                 case UPDATE:
                     if (tags == null) {
                         throw new BadRequestException(new TranslatableMessage("rest.error.mustNotBeNull", "body"));
                     }
-                    result.setBody(this.mergeTagsForDataPoint(xid, tags, user));
+                    result.setBody(this.mergeTagsForDataPoint(xid, tags));
                     break;
             }
         } catch (Exception e) {
@@ -375,10 +371,7 @@ public class DataPointTagsRestController {
     @RequestMapping(method = RequestMethod.POST, value="/bulk-sync")
     public TagBulkResponse bulkDataPointTagOperationSync(
             @RequestBody
-            TagBulkRequest requestBody,
-
-            @AuthenticationPrincipal
-            User user) {
+            TagBulkRequest requestBody) {
 
         BulkTagAction defaultAction = requestBody.getAction();
         Map<String, String> defaultBody = requestBody.getBody();
@@ -390,7 +383,7 @@ public class DataPointTagsRestController {
 
         TagBulkResponse response = new TagBulkResponse();
         for (TagIndividualRequest request : requests) {
-            TagIndividualResponse individualResponse = doIndividualRequest(request, defaultAction, defaultBody, user);
+            TagIndividualResponse individualResponse = doIndividualRequest(request, defaultAction, defaultBody);
             response.addResponse(individualResponse);
         }
 
@@ -474,14 +467,14 @@ public class DataPointTagsRestController {
         Long timeout = requestBody.getTimeout();
 
         TemporaryResource<TagBulkResponse, AbstractRestV2Exception> responseBody =
-                bulkResourceManager.newTemporaryResource(RESOURCE_TYPE_BULK_DATA_POINT_TAGS, resourceId, user.getId(), expiration, timeout, (resource, taskUser) -> {
+                bulkResourceManager.newTemporaryResource(RESOURCE_TYPE_BULK_DATA_POINT_TAGS, resourceId, user.getId(), expiration, timeout, (resource) -> {
                     TagBulkResponse bulkResponse = new TagBulkResponse();
 
                     int i = 0;
                     resource.progress(bulkResponse, i++, requests.size());
 
                     for (TagIndividualRequest request : requests) {
-                        TagIndividualResponse individualResponse = doIndividualRequest(request, defaultAction, defaultBody, taskUser);
+                        TagIndividualResponse individualResponse = doIndividualRequest(request, defaultAction, defaultBody);
                         bulkResponse.addResponse(individualResponse);
 
                         resource.progressOrSuccess(bulkResponse, i++, requests.size());

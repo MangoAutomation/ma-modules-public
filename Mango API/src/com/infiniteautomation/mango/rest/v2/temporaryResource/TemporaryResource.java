@@ -11,7 +11,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceManager.ResourceTask;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.vo.User;
 
 /**
  * @author Jared Wiltshire
@@ -174,8 +173,8 @@ public final class TemporaryResource<T, E> {
         return !(status == TemporaryResourceStatus.VIRGIN || status == TemporaryResourceStatus.SCHEDULED || status == TemporaryResourceStatus.RUNNING);
     }
 
-    protected final void runTask(User user) throws Exception {
-        this.completeCallback = task.run(this, user);
+    protected final void runTask() throws Exception {
+        this.completeCallback = task.run(this);
     }
 
     @JsonIgnore
