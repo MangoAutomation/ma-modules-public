@@ -77,17 +77,6 @@ describe('user-comment-rest-controller', function() {
                 assert.isNumber(item.timestamp, 'data.items[].timestamp');
                 assert.isNumber(item.userId, 'data.items[].userId');
                 assert.isString(item.username, 'data.items[].username');
-                // DESCRIPTION: Messages for validation of data
-                assert.isArray(item.validationMessages, 'data.items[].validationMessages');
-                item.validationMessages.forEach((item, index) => {
-                    // MODEL: RestValidationMessage
-                    assert.isObject(item, 'data.items[].validationMessages[]');
-                    assert.isString(item.level, 'data.items[].validationMessages[].level');
-                    assert.include(["INFORMATION","WARNING","ERROR"], item.level, 'data.items[].validationMessages[].level');
-                    assert.isString(item.message, 'data.items[].validationMessages[].message');
-                    assert.isString(item.property, 'data.items[].validationMessages[].property');
-                    // END MODEL: RestValidationMessage
-                });
                 // DESCRIPTION: XID of object
                 assert.isString(item.xid, 'data.items[].xid');
                 // END MODEL: UserCommentModel
@@ -131,17 +120,6 @@ describe('user-comment-rest-controller', function() {
             assert.isNumber(response.data.timestamp, 'data.timestamp');
             assert.isNumber(response.data.userId, 'data.userId');
             assert.isString(response.data.username, 'data.username');
-            // DESCRIPTION: Messages for validation of data
-            assert.isArray(response.data.validationMessages, 'data.validationMessages');
-            response.data.validationMessages.forEach((item, index) => {
-                // MODEL: RestValidationMessage
-                assert.isObject(item, 'data.validationMessages[]');
-                assert.isString(item.level, 'data.validationMessages[].level');
-                assert.include(["INFORMATION","WARNING","ERROR"], item.level, 'data.validationMessages[].level');
-                assert.isString(item.message, 'data.validationMessages[].message');
-                assert.isString(item.property, 'data.validationMessages[].property');
-                // END MODEL: RestValidationMessage
-            });
             // DESCRIPTION: XID of object
             assert.isString(response.data.xid, 'data.xid');
             // END MODEL: UserCommentModel
@@ -176,17 +154,6 @@ describe('user-comment-rest-controller', function() {
                 assert.isNumber(item.timestamp, 'data[].timestamp');
                 assert.isNumber(item.userId, 'data[].userId');
                 assert.isString(item.username, 'data[].username');
-                // DESCRIPTION: Messages for validation of data
-                assert.isArray(item.validationMessages, 'data[].validationMessages');
-                item.validationMessages.forEach((item, index) => {
-                    // MODEL: RestValidationMessage
-                    assert.isObject(item, 'data[].validationMessages[]');
-                    assert.isString(item.level, 'data[].validationMessages[].level');
-                    assert.include(["INFORMATION","WARNING","ERROR"], item.level, 'data[].validationMessages[].level');
-                    assert.isString(item.message, 'data[].validationMessages[].message');
-                    assert.isString(item.property, 'data[].validationMessages[].property');
-                    // END MODEL: RestValidationMessage
-                });
                 // DESCRIPTION: XID of object
                 assert.isString(item.xid, 'data[].xid');
                 // END MODEL: UserCommentModel
@@ -226,17 +193,6 @@ describe('user-comment-rest-controller', function() {
                 assert.isNumber(item.timestamp, 'data.items[].timestamp');
                 assert.isNumber(item.userId, 'data.items[].userId');
                 assert.isString(item.username, 'data.items[].username');
-                // DESCRIPTION: Messages for validation of data
-                assert.isArray(item.validationMessages, 'data.items[].validationMessages');
-                item.validationMessages.forEach((item, index) => {
-                    // MODEL: RestValidationMessage
-                    assert.isObject(item, 'data.items[].validationMessages[]');
-                    assert.isString(item.level, 'data.items[].validationMessages[].level');
-                    assert.include(["INFORMATION","WARNING","ERROR"], item.level, 'data.items[].validationMessages[].level');
-                    assert.isString(item.message, 'data.items[].validationMessages[].message');
-                    assert.isString(item.property, 'data.items[].validationMessages[].property');
-                    // END MODEL: RestValidationMessage
-                });
                 // DESCRIPTION: XID of object
                 assert.isString(item.xid, 'data.items[].xid');
                 // END MODEL: UserCommentModel
@@ -269,17 +225,6 @@ describe('user-comment-rest-controller', function() {
             assert.isNumber(response.data.timestamp, 'data.timestamp');
             assert.isNumber(response.data.userId, 'data.userId');
             assert.isString(response.data.username, 'data.username');
-            // DESCRIPTION: Messages for validation of data
-            assert.isArray(response.data.validationMessages, 'data.validationMessages');
-            response.data.validationMessages.forEach((item, index) => {
-                // MODEL: RestValidationMessage
-                assert.isObject(item, 'data.validationMessages[]');
-                assert.isString(item.level, 'data.validationMessages[].level');
-                assert.include(["INFORMATION","WARNING","ERROR"], item.level, 'data.validationMessages[].level');
-                assert.isString(item.message, 'data.validationMessages[].message');
-                assert.isString(item.property, 'data.validationMessages[].property');
-                // END MODEL: RestValidationMessage
-            });
             // DESCRIPTION: XID of object
             assert.isString(response.data.xid, 'data.xid');
             // END MODEL: UserCommentModel
@@ -321,17 +266,6 @@ describe('user-comment-rest-controller', function() {
             assert.isNumber(response.data.timestamp, 'data.timestamp');
             assert.isNumber(response.data.userId, 'data.userId');
             assert.isString(response.data.username, 'data.username');
-            // DESCRIPTION: Messages for validation of data
-            assert.isArray(response.data.validationMessages, 'data.validationMessages');
-            response.data.validationMessages.forEach((item, index) => {
-                // MODEL: RestValidationMessage
-                assert.isObject(item, 'data.validationMessages[]');
-                assert.isString(item.level, 'data.validationMessages[].level');
-                assert.include(["INFORMATION","WARNING","ERROR"], item.level, 'data.validationMessages[].level');
-                assert.isString(item.message, 'data.validationMessages[].message');
-                assert.isString(item.property, 'data.validationMessages[].property');
-                // END MODEL: RestValidationMessage
-            });
             // DESCRIPTION: XID of object
             assert.isString(response.data.xid, 'data.xid');
             // END MODEL: UserCommentModel
@@ -362,17 +296,6 @@ describe('user-comment-rest-controller', function() {
             assert.isNumber(response.data.timestamp, 'data.timestamp');
             assert.isNumber(response.data.userId, 'data.userId');
             assert.isString(response.data.username, 'data.username');
-            // DESCRIPTION: Messages for validation of data
-            assert.isArray(response.data.validationMessages, 'data.validationMessages');
-            response.data.validationMessages.forEach((item, index) => {
-                // MODEL: RestValidationMessage
-                assert.isObject(item, 'data.validationMessages[]');
-                assert.isString(item.level, 'data.validationMessages[].level');
-                assert.include(["INFORMATION","WARNING","ERROR"], item.level, 'data.validationMessages[].level');
-                assert.isString(item.message, 'data.validationMessages[].message');
-                assert.isString(item.property, 'data.validationMessages[].property');
-                // END MODEL: RestValidationMessage
-            });
             // DESCRIPTION: XID of object
             assert.isString(response.data.xid, 'data.xid');
             // END MODEL: UserCommentModel
