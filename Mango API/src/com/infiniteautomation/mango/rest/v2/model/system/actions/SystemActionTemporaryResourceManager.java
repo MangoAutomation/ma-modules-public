@@ -39,7 +39,7 @@ public class SystemActionTemporaryResourceManager {
 
     @Autowired
     public SystemActionTemporaryResourceManager(TemporaryResourceWebSocketHandler websocket, PermissionService service) {
-        this.resourceManager = new MangoTaskTemporaryResourceManager<>(service);
+        this.resourceManager = new MangoTaskTemporaryResourceManager<>(service, websocket);
         this.service = service;
     }
 
