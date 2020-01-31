@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-const {createClient, login, uuid, noop} = require('@infinite-automation/mango-module-tools/test-helper/testHelper');
+const {createClient, login, uuid, assertValidationErrors, noop} = require('@infinite-automation/mango-module-tools/test-helper/testHelper');
 const client = createClient();
 
 // Mango REST V1 API - User Comments
@@ -161,8 +161,8 @@ describe('user-comment-rest-controller', function() {
         });
     });
 
-    // Query User Comments - 
-    it('POST /rest/v2/comments/query', function() {
+    // Query User Comments - This v2 endpoint is gone
+    it.skip('POST /rest/v2/comments/query', function() {
         const requestBody = {
             name: 'eq',
             arguments: ['xid', this.test.xid]
@@ -236,6 +236,7 @@ describe('user-comment-rest-controller', function() {
     it('PUT /rest/v2/comments/{xid}', function() {
         const requestBody =
         { // title: UserCommentModel
+            xid: this.test.xid,
             comment: 'new comment',
             commentType: 'POINT',
             referenceId: 1,
@@ -270,6 +271,8 @@ describe('user-comment-rest-controller', function() {
             assert.isString(response.data.xid, 'data.xid');
             // END MODEL: UserCommentModel
             assert.strictEqual(response.data.comment, 'new comment', 'data.comment');
+        }, error => {
+            assertValidationErrors([''], error);
         });
     });
 
