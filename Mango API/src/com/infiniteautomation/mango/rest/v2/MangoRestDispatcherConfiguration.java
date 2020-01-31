@@ -3,6 +3,7 @@
  */
 package com.infiniteautomation.mango.rest.v2;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TimeZone;
@@ -51,7 +52,6 @@ import com.infiniteautomation.mango.rest.v2.resolver.PartialUpdateArgumentResolv
 import com.infiniteautomation.mango.rest.v2.util.MangoRestTemporaryResourceContainer;
 import com.infiniteautomation.mango.spring.MangoCommonConfiguration;
 import com.infiniteautomation.mango.spring.MangoRuntimeContextConfiguration;
-import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.web.MediaTypes;
 import com.serotonin.m2m2.web.mvc.spring.security.MangoMethodSecurityConfiguration;
 
@@ -102,7 +102,7 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
         converters.add(new SqlMessageConverter());
         converters.add(new PointValueTimeStreamCsvMessageConverter(csvMapper()));
         converters.add(new GenericCSVMessageConverter(csvObjectMapper()));
-        converters.add(new StringHttpMessageConverter(Common.UTF8_CS));
+        converters.add(new StringHttpMessageConverter(StandardCharsets.UTF_8));
     }
 
     /**

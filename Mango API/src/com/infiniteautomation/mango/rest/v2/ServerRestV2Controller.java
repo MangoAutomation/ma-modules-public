@@ -159,7 +159,7 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
         Map<String, Object> model = new HashMap<>();
         model.put("message", new TranslatableMessage("ftl.userTestEmail", username));
         MangoEmailContent content = new MangoEmailContent("testEmail", model, translations,
-                translations.translate("ftl.testEmail"), Common.UTF8);
+                translations.translate("ftl.testEmail"), StandardCharsets.UTF_8);
         EmailSender emailSender = new EmailSender(
                 SystemSettingsDao.instance.getValue(SystemSettingsDao.EMAIL_SMTP_HOST),
                 SystemSettingsDao.instance.getIntValue(SystemSettingsDao.EMAIL_SMTP_PORT),
@@ -171,9 +171,9 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
 
         String addr = SystemSettingsDao.instance.getValue(SystemSettingsDao.EMAIL_FROM_ADDRESS);
         String pretty = SystemSettingsDao.instance.getValue(SystemSettingsDao.EMAIL_FROM_NAME);
-        InternetAddress fromAddress = new InternetAddress(addr, pretty, Common.UTF8);
+        InternetAddress fromAddress = new InternetAddress(addr, pretty, StandardCharsets.UTF_8.name());
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try (PrintStream ps = new PrintStream(baos, true, Common.UTF8)) {
+        try (PrintStream ps = new PrintStream(baos, true, StandardCharsets.UTF_8.name())) {
             emailSender.setDebug(ps);
             try{
                 emailSender.send(fromAddress, email, content.getSubject(), content);
@@ -214,10 +214,10 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
 
         String addr = SystemSettingsDao.instance.getValue(SystemSettingsDao.EMAIL_FROM_ADDRESS);
         String pretty = SystemSettingsDao.instance.getValue(SystemSettingsDao.EMAIL_FROM_NAME);
-        InternetAddress fromAddress = new InternetAddress(addr, pretty, Common.UTF8);
+        InternetAddress fromAddress = new InternetAddress(addr, pretty, StandardCharsets.UTF_8.name());
 
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try (PrintStream ps = new PrintStream(baos, true, Common.UTF8)) {
+        try (PrintStream ps = new PrintStream(baos, true, StandardCharsets.UTF_8.name())) {
             emailSender.setDebug(ps);
             try{
                 emailSender.send(fromAddress, sendTo.getEmail(), contentModel.getSubject(), content);
@@ -264,10 +264,10 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
 
         String addr = SystemSettingsDao.instance.getValue(SystemSettingsDao.EMAIL_FROM_ADDRESS);
         String pretty = SystemSettingsDao.instance.getValue(SystemSettingsDao.EMAIL_FROM_NAME);
-        InternetAddress fromAddress = new InternetAddress(addr, pretty, Common.UTF8);
+        InternetAddress fromAddress = new InternetAddress(addr, pretty, StandardCharsets.UTF_8.name());
 
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try (PrintStream ps = new PrintStream(baos, true, Common.UTF8)) {
+        try (PrintStream ps = new PrintStream(baos, true, StandardCharsets.UTF_8.name())) {
             emailSender.setDebug(ps);
             try{
                 emailSender.send(fromAddress, toAddresses, contentModel.getSubject(), content);

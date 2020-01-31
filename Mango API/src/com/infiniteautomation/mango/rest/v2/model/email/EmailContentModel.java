@@ -3,9 +3,11 @@
  */
 package com.infiniteautomation.mango.rest.v2.model.email;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+
 import org.apache.commons.lang3.StringUtils;
 
-import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.vo.Validatable;
 import com.serotonin.web.mail.EmailContent;
@@ -20,7 +22,7 @@ public class EmailContentModel implements Validatable {
     private String plainContent;
     private String htmlContent;
     private String encoding;
-    
+
     public String getSubject() {
         return subject;
     }
@@ -54,7 +56,7 @@ public class EmailContentModel implements Validatable {
     }
 
     public EmailContent toEmailContent() {
-        return new EmailContent(plainContent, htmlContent, encoding);
+        return new EmailContent(plainContent, htmlContent, Charset.forName(encoding));
     }
 
     @Override
@@ -67,7 +69,7 @@ public class EmailContentModel implements Validatable {
             response.addContextualMessage("subject", "validate.required");
         }
         if(StringUtils.isEmpty(encoding)) {
-            encoding = Common.UTF8;
+            encoding = StandardCharsets.UTF_8.name();
         }
     }
 }

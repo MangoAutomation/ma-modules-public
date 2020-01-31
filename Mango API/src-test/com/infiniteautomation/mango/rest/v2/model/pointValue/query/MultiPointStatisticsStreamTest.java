@@ -12,6 +12,7 @@ import static org.junit.Assert.fail;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
@@ -1072,7 +1073,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
         jgen.flush();
 
         ObjectMapper mapper = new ObjectMapper();
-        return mapper.readTree(output.toString(Common.UTF8));
+        return mapper.readTree(output.toString(StandardCharsets.UTF_8.name()));
     }
 
     protected MockDataSourceVO createDataSource() {
