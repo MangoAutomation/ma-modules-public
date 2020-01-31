@@ -122,7 +122,7 @@ public class SystemSettingsRestController {
             throw new ValidationException(response);
         }
         this.dao.updateSettings(settings);
-        return settings;
+        return model;
     }
 
     private Map<String, Object> convertValues(Map<String, JsonNode> input) {
