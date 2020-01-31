@@ -22,7 +22,6 @@ const User = client.User;
 
 describe('Role endpoint tests', function() {
     before('Login', function() { return login.call(this, client); });
-    debugger;
     it('Create a new role', () => {
         const role = new Role();
         const local = Object.assign({}, role);
