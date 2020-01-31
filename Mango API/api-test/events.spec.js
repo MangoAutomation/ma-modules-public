@@ -106,7 +106,8 @@ describe('Events v2 tests', function(){
         const subscription = {
             actions: ['RAISED'],
             levels: ['NONE'],
-            sendEventLevelSummaries: true,
+            sendActiveSummary: true,
+            sendUnacknowledgedSummary: true,
             messageType: 'REQUEST',
             requestType: 'SUBSCRIPTION'
         };
@@ -145,7 +146,8 @@ describe('Events v2 tests', function(){
                 if(msg.messageType === 'RESPONSE') {
                     assert.strictEqual(msg.sequenceNumber, 0);
                     assert.property(msg, 'payload');
-                    assert.strictEqual(msg.payload.length, 8);
+                    assert.strictEqual(msg.payload.activeSummary.length, 8);
+                    assert.strictEqual(msg.payload.unacknowledgedSummary.length, 8);
                     gotAlarmSummaries.resolve();
                 }
                 if(msg.messageType === 'NOTIFICATION' && msg.payload.message === 'test id ' + testId) {
@@ -197,7 +199,8 @@ describe('Events v2 tests', function(){
         const subscription = {
             actions: ['RAISED'],
             levels: ['NONE','INFORMATION'],
-            sendEventLevelSummaries: true,
+            sendActiveSummary: true,
+            sendUnacknowledgedSummary: true,
             messageType: 'REQUEST',
             requestType: 'SUBSCRIPTION'
         };
@@ -234,7 +237,8 @@ describe('Events v2 tests', function(){
                 const msg = JSON.parse(msgStr);
                 if(msg.messageType === 'RESPONSE' && msg.sequenceNumber === 0) {
                     assert.property(msg, 'payload');
-                    assert.strictEqual(msg.payload.length, 8);
+                    assert.strictEqual(msg.payload.activeSummary.length, 8);
+                    assert.strictEqual(msg.payload.unacknowledgedSummary.length, 8);
                     gotAlarmSummaries.resolve();
                 }else if(msg.messageType === 'RESPONSE' && msg.sequenceNumber === 1) {
                     assert.property(msg, 'payload');
