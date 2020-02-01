@@ -25,7 +25,7 @@ import com.google.common.collect.SetMultimap;
 import com.infiniteautomation.mango.spring.events.AuthTokensRevokedEvent;
 import com.infiniteautomation.mango.spring.events.DaoEvent;
 import com.infiniteautomation.mango.spring.events.DaoEventType;
-import com.serotonin.m2m2.db.dao.UserDao.UpdatedFields;
+import com.serotonin.m2m2.db.dao.UpdatedFields;
 import com.serotonin.m2m2.util.timeout.TimeoutClient;
 import com.serotonin.m2m2.util.timeout.TimeoutTask;
 import com.serotonin.m2m2.vo.User;
