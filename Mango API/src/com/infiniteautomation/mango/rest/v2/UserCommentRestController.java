@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -78,30 +77,6 @@ public class UserCommentRestController {
      * @author Jared Wiltshire
      */
     private interface UserCommentQueryResult extends ListWithTotal<UserCommentModel> {
-    }
-
-    @ApiOperation(
-            value = "Get all User Comments",
-            response=UserCommentModel.class,
-            responseContainer = "List")
-    @RequestMapping(method = RequestMethod.GET, value="/list")
-    public StreamedArrayWithTotal getAll(HttpServletRequest request,
-            @RequestParam(value="limit", required=false, defaultValue="100")Integer limit,
-            @AuthenticationPrincipal User user) {
-
-        return doQuery(new ASTNode("limit", limit), user);
-    }
-
-    @ApiOperation(
-            value = "Query User Comments",
-            response=UserCommentQueryResult.class)
-    @RequestMapping(method = RequestMethod.POST, value = "/query")
-    public StreamedArrayWithTotal query(
-
-            @ApiParam(value="Query", required=true)
-            @RequestBody(required=true) ASTNode query,
-            @AuthenticationPrincipal User user) {
-        return doQuery(query, user);
     }
 
     @ApiOperation(
