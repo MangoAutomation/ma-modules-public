@@ -162,7 +162,7 @@ public final class MangoWebSocketSessionTracker {
         if (disabledOrPermissionsChanged || authTokensRevoked) {
             Set<WebSocketSession> sessions = jwtSessionsByUserId.removeAll(userId);
             if (!sessions.isEmpty() && log.isDebugEnabled()) {
-                log.debug("Closing JWT authenticated WebSocket sessions for updated user '" + updatedUser.getUsername() + "', changed fields " + fields);
+                log.debug("Closing JWT authenticated WebSocket sessions for updated user '" + updatedUser.getUsername() + "'");
             }
 
             for (WebSocketSession session : sessions) {
@@ -172,7 +172,7 @@ public final class MangoWebSocketSessionTracker {
             Set<WebSocketSession> sessions = jwtSessionsByUserId.get(userId);
             synchronized (jwtSessionsByUserId) {
                 if (!sessions.isEmpty() && log.isDebugEnabled()) {
-                    log.debug("Storing updated user '" + updatedUser.getUsername() + "' in JWT authenticated WebSocket sessions, changed fields " + fields);
+                    log.debug("Storing updated user '" + updatedUser.getUsername() + "' in JWT authenticated WebSocket sessions");
                 }
 
                 for (WebSocketSession session : sessions) {
@@ -185,7 +185,7 @@ public final class MangoWebSocketSessionTracker {
         if (disabledOrPermissionsChanged || passwordChanged) {
             Set<WebSocketSession> sessions = otherSessionsByUserId.removeAll(userId);
             if (!sessions.isEmpty() && log.isDebugEnabled()) {
-                log.debug("Closing session/basic authenticated WebSocket sessions for updated user '" + updatedUser.getUsername() + "', changed fields " + fields);
+                log.debug("Closing session/basic authenticated WebSocket sessions for updated user '" + updatedUser.getUsername() + "'");
             }
 
             for (WebSocketSession session : sessions) {
@@ -195,7 +195,7 @@ public final class MangoWebSocketSessionTracker {
             Set<WebSocketSession> sessions = otherSessionsByUserId.get(userId);
             synchronized (otherSessionsByUserId) {
                 if (!sessions.isEmpty() && log.isDebugEnabled()) {
-                    log.debug("Storing updated user '" + updatedUser.getUsername() + "' in session/basic authenticated WebSocket sessions, changed fields " + fields);
+                    log.debug("Storing updated user '" + updatedUser.getUsername() + "' in session/basic authenticated WebSocket sessions");
                 }
 
                 for (WebSocketSession session : sessions) {
