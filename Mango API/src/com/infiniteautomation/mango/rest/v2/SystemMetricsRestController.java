@@ -5,6 +5,7 @@
 package com.infiniteautomation.mango.rest.v2;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.infiniteautomation.mango.monitor.ValueMonitor;
 import com.infiniteautomation.mango.permission.MangoPermission;
+import com.infiniteautomation.mango.rest.v2.model.ValueMonitorModel;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.serotonin.m2m2.Common;
@@ -53,10 +55,10 @@ public class SystemMetricsRestController {
             notes = "TBD Add RQL Support to this endpoint"
             )
     @RequestMapping(method = RequestMethod.GET)
-    public List<ValueMonitor<?>> query(@AuthenticationPrincipal User user) {
+    public List<ValueMonitorModel> query(@AuthenticationPrincipal User user) {
         MangoPermission permission = definition.getPermission();
         service.ensurePermission(user, permission);
-        return Common.MONITORED_VALUES.getMonitors();
+        return Common.MONITORED_VALUES.getMonitors().stream().map(m -> new ValueMonitorModel(m)).collect(Collectors.toList());
     }
 
     @ApiOperation(
@@ -64,7 +66,7 @@ public class SystemMetricsRestController {
             notes = ""
             )
     @RequestMapping(method = RequestMethod.GET, value="/{id}")
-    public ValueMonitor<?> get(
+    public ValueMonitorModel get(
             @ApiParam(value = "Valid Monitor id", required = true, allowMultiple = false)
             @PathVariable String id,
             @AuthenticationPrincipal User user) {
@@ -75,7 +77,7 @@ public class SystemMetricsRestController {
         List<ValueMonitor<?>> values = Common.MONITORED_VALUES.getMonitors();
         for(ValueMonitor<?> v : values){
             if(v.getId().equals(id)){
-                return v;
+                return new ValueMonitorModel(v);
             }
         }
         throw new NotFoundException();
