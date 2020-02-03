@@ -63,7 +63,7 @@ public class UserCommentRestController {
     public UserCommentRestController(UserCommentService service, UserCommentTableDefinition userCommentTable, UserTableDefinition userTable){
         this.service = service;
         this.valueConverterMap = new HashMap<>();
-        this.valueConverterMap.put("valueConverterMap", (toConvert) -> {
+        this.valueConverterMap.put("commentType", (toConvert) -> {
             return UserCommentVO.COMMENT_TYPE_CODES.getId((String)toConvert);
         });
         this.fieldMap = new HashMap<>();

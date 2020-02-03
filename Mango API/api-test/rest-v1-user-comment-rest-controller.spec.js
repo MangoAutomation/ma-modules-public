@@ -85,6 +85,40 @@ describe('user-comment-rest-controller', function() {
             // END MODEL: UserCommentQueryResult
         });
     });
+    
+    // Query User Comments - 
+    it('GET /rest/v2/comments using POINT comment type in query', function() {
+        return client.restRequest({
+            method: 'GET',
+            path: `/rest/v2/comments?commentType=POINT&limit(1)`,
+        }).then(response => {
+            // OK
+            assert.strictEqual(response.status, 200);
+            assert.strictEqual(response.data.items.length, 1);
+            assert.strictEqual(response.data.items[0].xid, this.test.xid);
+            // MODEL: UserCommentQueryResult
+            assert.isObject(response.data, 'data');
+            assert.isArray(response.data.items, 'data.items');
+            response.data.items.forEach((item, index) => {
+                // MODEL: UserCommentModel
+                assert.isObject(item, 'data.items[]');
+                assert.isString(item.comment, 'data.items[].comment');
+                assert.isString(item.commentType, 'data.items[].commentType');
+                assert.include(["POINT","EVENT","JSON_DATA"], item.commentType, 'data.items[].commentType');
+                // DESCRIPTION: ID of object in database
+                assert.isNumber(item.id, 'data.items[].id');
+                assert.isNumber(item.referenceId, 'data.items[].referenceId');
+                assert.isNumber(item.timestamp, 'data.items[].timestamp');
+                assert.isNumber(item.userId, 'data.items[].userId');
+                assert.isString(item.username, 'data.items[].username');
+                // DESCRIPTION: XID of object
+                assert.isString(item.xid, 'data.items[].xid');
+                // END MODEL: UserCommentModel
+            });
+            assert.isNumber(response.data.total, 'data.total');
+            // END MODEL: UserCommentQueryResult
+        });
+    });
 
     // Create New User Comment - 
     noCreate[noCreate.length] = it('POST /rest/v2/comments', function() {
@@ -123,82 +157,6 @@ describe('user-comment-rest-controller', function() {
             // DESCRIPTION: XID of object
             assert.isString(response.data.xid, 'data.xid');
             // END MODEL: UserCommentModel
-        });
-    });
-
-    // Get all User Comments - 
-    it('GET /rest/v2/comments/list', function() {
-        const params = {
-            limit: 10 // in = query, description = limit, required = false, type = integer, default = 100, enum = 
-        };
-        
-        return client.restRequest({
-            method: 'GET',
-            path: `/rest/v2/comments/list`,
-            params: {
-                limit: params.limit
-            }
-        }).then(response => {
-            // OK
-            assert.strictEqual(response.status, 200);
-            assert.isArray(response.data, 'data');
-            response.data.forEach((item, index) => {
-                // MODEL: UserCommentModel
-                assert.isObject(item, 'data[]');
-                assert.isString(item.comment, 'data[].comment');
-                assert.isString(item.commentType, 'data[].commentType');
-                assert.include(["POINT","EVENT","JSON_DATA"], item.commentType, 'data[].commentType');
-                // DESCRIPTION: ID of object in database
-                assert.isNumber(item.id, 'data[].id');
-                assert.isNumber(item.referenceId, 'data[].referenceId');
-                assert.isNumber(item.timestamp, 'data[].timestamp');
-                assert.isNumber(item.userId, 'data[].userId');
-                assert.isString(item.username, 'data[].username');
-                // DESCRIPTION: XID of object
-                assert.isString(item.xid, 'data[].xid');
-                // END MODEL: UserCommentModel
-            });
-        });
-    });
-
-    // Query User Comments - This v2 endpoint is gone
-    it.skip('POST /rest/v2/comments/query', function() {
-        const requestBody = {
-            name: 'eq',
-            arguments: ['xid', this.test.xid]
-        };
-        const params = {
-            query: requestBody // in = body, description = Query, required = true, type = , default = , enum = 
-        };
-        
-        return client.restRequest({
-            method: 'POST',
-            path: `/rest/v2/comments/query`,
-            data: requestBody
-        }).then(response => {
-            // OK
-            assert.strictEqual(response.status, 200);
-            // MODEL: UserCommentQueryResult
-            assert.isObject(response.data, 'data');
-            assert.isArray(response.data.items, 'data.items');
-            response.data.items.forEach((item, index) => {
-                // MODEL: UserCommentModel
-                assert.isObject(item, 'data.items[]');
-                assert.isString(item.comment, 'data.items[].comment');
-                assert.isString(item.commentType, 'data.items[].commentType');
-                assert.include(["POINT","EVENT","JSON_DATA"], item.commentType, 'data.items[].commentType');
-                // DESCRIPTION: ID of object in database
-                assert.isNumber(item.id, 'data.items[].id');
-                assert.isNumber(item.referenceId, 'data.items[].referenceId');
-                assert.isNumber(item.timestamp, 'data.items[].timestamp');
-                assert.isNumber(item.userId, 'data.items[].userId');
-                assert.isString(item.username, 'data.items[].username');
-                // DESCRIPTION: XID of object
-                assert.isString(item.xid, 'data.items[].xid');
-                // END MODEL: UserCommentModel
-            });
-            assert.isNumber(response.data.total, 'data.total');
-            // END MODEL: UserCommentQueryResult
         });
     });
 
