@@ -157,7 +157,7 @@ public final class MangoWebSocketSessionTracker {
         User old = event.getOriginalVo();
         boolean disabledOrPermissionsChanged = updatedUser.isDisabled() || !updatedUser.getRoles().equals(old.getRoles());
         boolean authTokensRevoked = updatedUser.getTokenVersion() > old.getTokenVersion();
-        boolean passwordChanged = StringUtils.equals(updatedUser.getPassword(), old.getPassword());
+        boolean passwordChanged = !StringUtils.equals(updatedUser.getPassword(), old.getPassword());
 
         if (disabledOrPermissionsChanged || authTokensRevoked) {
             Set<WebSocketSession> sessions = jwtSessionsByUserId.removeAll(userId);
