@@ -125,7 +125,9 @@ public class WatchListDao extends AbstractDao<WatchListVO, WatchListTableDefinit
         if(!insert) {
             ejt.update("DELETE FROM watchListPoints WHERE watchListId=?", new Object[] { vo.getId() });
         }
-        ejt.batchUpdate("INSERT INTO watchListPoints VALUES (?,?,?)", new InsertPoints(vo));
+        if(WatchListVO.STATIC_TYPE.equals(vo.getType())) {
+            ejt.batchUpdate("INSERT INTO watchListPoints VALUES (?,?,?)", new InsertPoints(vo));
+        }
 
         //Replace the role mappings
         RoleDao.getInstance().replaceRolesOnVoPermission(vo.getReadRoles(), vo, PermissionService.READ, insert);
