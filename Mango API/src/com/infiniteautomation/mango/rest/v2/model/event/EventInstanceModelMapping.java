@@ -19,7 +19,7 @@ import com.serotonin.m2m2.vo.permission.PermissionHolder;
  *
  */
 @Component
-public class EventInstanceModelMapping implements RestModelMapping<EventInstanceI, EventInstanceModel>{
+public class EventInstanceModelMapping implements RestModelMapping<EventInstanceI, EventInstanceModel> {
 
     @Override
     public Class<? extends EventInstanceI> fromClass() {
@@ -35,7 +35,7 @@ public class EventInstanceModelMapping implements RestModelMapping<EventInstance
     public EventInstanceModel map(Object from, PermissionHolder user, RestModelMapper mapper) {
         EventInstanceI evt = (EventInstanceI)from;
         AbstractEventTypeModel<?,?,?> eventTypeModel = mapper.map(evt.getEventType(), AbstractEventTypeModel.class, user);
-        List<UserCommentModel> comments = evt.getEventComments().stream().map(c -> mapper.map(c, UserCommentModel.class, user)).collect(Collectors.toList());
+        List<UserCommentModel> comments = evt.getEventComments().stream().map(c -> new UserCommentModel(c)).collect(Collectors.toList());
         return new EventInstanceModel(
                 evt.getId(),
                 eventTypeModel,
