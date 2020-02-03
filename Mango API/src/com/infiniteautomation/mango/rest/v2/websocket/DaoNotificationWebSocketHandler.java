@@ -23,15 +23,16 @@ public abstract class DaoNotificationWebSocketHandler<T extends AbstractBasicVO>
     /**
      * @param action add, update or delete
      * @param vo
+     * @param originalVo
      */
-    public void notify(String action, T vo, String originalXid) {
+    public void notify(String action, T vo, T originalVo) {
         if (sessions.isEmpty()) return;
 
         Object message = null;
         String jsonMessage = null;
 
         if (!this.isModelPerUser()) {
-            message = createNotification(action, vo, originalXid, null);
+            message = createNotification(action, vo, originalVo, null);
 
             if (!this.isViewPerUser()) {
                 ObjectWriter writer;
@@ -53,12 +54,12 @@ public abstract class DaoNotificationWebSocketHandler<T extends AbstractBasicVO>
 
         for (WebSocketSession session : sessions) {
             User user = getUser(session);
-            if (user != null && hasPermission(user, vo) && isSubscribed(session, action, vo, originalXid)) {
+            if (user != null && hasPermission(user, vo) && isSubscribed(session, action, vo, originalVo)) {
                 Object userMessage = message;
                 String userJsonMessage = jsonMessage;
 
                 if (userMessage == null) {
-                    userMessage = createNotification(action, vo, originalXid, user);
+                    userMessage = createNotification(action, vo, originalVo, user);
                     if (userMessage == null) {
                         continue;
                     }
@@ -104,7 +105,7 @@ public abstract class DaoNotificationWebSocketHandler<T extends AbstractBasicVO>
         return null;
     }
 
-    protected boolean isSubscribed(WebSocketSession session, String action, T vo, String originalXid) {
+    protected boolean isSubscribed(WebSocketSession session, String action, T vo, T originalVo) {
         return true;
     }
 
@@ -122,7 +123,7 @@ public abstract class DaoNotificationWebSocketHandler<T extends AbstractBasicVO>
             case DELETE: action = "delete"; break;
             case UPDATE: action = "update"; break;
         }
-        this.notify(action, event.getVo(), event.getOriginalXid());
+        this.notify(action, event.getVo(), event.getOriginalVo());
     }
 
     protected void notify(WebSocketSession session, String jsonMessage) {
@@ -139,13 +140,13 @@ public abstract class DaoNotificationWebSocketHandler<T extends AbstractBasicVO>
         }
     }
 
-    protected Object createNotification(String action, T vo, String originalXid, User user) {
+    protected Object createNotification(String action, T vo, T originalVo, User user) {
         Object model = createModel(vo, user);
         if (model == null) {
             return null;
         }
 
-        DaoNotificationModel payload = new DaoNotificationModel("create".equals(action) ? "add" : action, model, originalXid);
+        DaoNotificationModel payload = new DaoNotificationModel("create".equals(action) ? "add" : action, model, originalVo);
         return new MangoWebSocketResponseModel(MangoWebSocketResponseStatus.OK, payload);
     }
 }

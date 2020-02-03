@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.event.EventListener;
@@ -25,7 +26,6 @@ import com.google.common.collect.SetMultimap;
 import com.infiniteautomation.mango.spring.events.AuthTokensRevokedEvent;
 import com.infiniteautomation.mango.spring.events.DaoEvent;
 import com.infiniteautomation.mango.spring.events.DaoEventType;
-import com.serotonin.m2m2.db.dao.UserDao.UpdatedFields;
 import com.serotonin.m2m2.util.timeout.TimeoutClient;
 import com.serotonin.m2m2.util.timeout.TimeoutTask;
 import com.serotonin.m2m2.vo.User;
@@ -154,12 +154,10 @@ public final class MangoWebSocketSessionTracker {
         User updatedUser = event.getVo();
         int userId = updatedUser.getId();
 
-        @SuppressWarnings("unchecked")
-        Set<UpdatedFields> fields = (Set<UpdatedFields>) event.getUpdatedFields();
-
-        boolean disabledOrPermissionsChanged = updatedUser.isDisabled() || fields.contains(UpdatedFields.PERMISSIONS);
-        boolean authTokensRevoked = fields.contains(UpdatedFields.AUTH_TOKEN);
-        boolean passwordChanged = fields.contains(UpdatedFields.PASSWORD);
+        User old = event.getOriginalVo();
+        boolean disabledOrPermissionsChanged = updatedUser.isDisabled() || !updatedUser.getRoles().equals(old.getRoles());
+        boolean authTokensRevoked = updatedUser.getTokenVersion() > old.getTokenVersion();
+        boolean passwordChanged = StringUtils.equals(updatedUser.getPassword(), old.getPassword());
 
         if (disabledOrPermissionsChanged || authTokensRevoked) {
             Set<WebSocketSession> sessions = jwtSessionsByUserId.removeAll(userId);

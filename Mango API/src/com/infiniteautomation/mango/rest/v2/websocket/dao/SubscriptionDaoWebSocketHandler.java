@@ -85,7 +85,7 @@ public abstract class SubscriptionDaoWebSocketHandler<T extends AbstractBasicVO>
     }
 
     @Override
-    protected boolean isSubscribed(WebSocketSession session, String type, T vo, String originalXid) {
+    protected boolean isSubscribed(WebSocketSession session, String type, T vo, T originalVo) {
         DaoSubscription subscription = (DaoSubscription) session.getAttributes().get(SUBSCRIPTION_ATTRIBUTE);
         if (subscription == null) {
             return false;
@@ -95,8 +95,8 @@ public abstract class SubscriptionDaoWebSocketHandler<T extends AbstractBasicVO>
         Set<String> xids = subscription.getXids();
 
         String xid;
-        if (originalXid != null) {
-            xid = originalXid;
+        if (originalVo != null) {
+            xid = this.getXid(originalVo);
         } else {
             xid = this.getXid(vo);
         }
@@ -113,14 +113,14 @@ public abstract class SubscriptionDaoWebSocketHandler<T extends AbstractBasicVO>
     }
 
     @Override
-    protected Object createNotification(String type, T vo, String originalXid, User user) {
+    protected Object createNotification(String type, T vo, T originalVo, User user) {
         Object model = createModel(vo, user);
         if (model == null) {
             return null;
         }
 
         Map<String, Object> attributes = new HashMap<>(2);
-        attributes.put("originalXid", originalXid);
+        attributes.put("originalXid", getXid(originalVo));
         return new WebSocketNotification<Object>(type, model, attributes);
     }
 
