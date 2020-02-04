@@ -183,7 +183,8 @@ describe('Role endpoint tests', function() {
     });
     
     it('Gets websocket notifications for role create', function() {
-
+        this.timeout(5000);
+        
         let ws;
         const subscription = {
             notificationTypes: ['create'],
