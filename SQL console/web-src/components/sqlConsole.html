@@ -65,7 +65,7 @@
                 <table md-table>
                     <thead md-head md-order="query.order">
                         <tr md-row>
-                            <th md-column ng-repeat="header in $ctrl.tableHeaders">{{header}}</th>
+                            <th md-column ng-repeat="header in $ctrl.tableHeaders track by $index">{{header}}</th>
                         </tr>
                     </thead>
                     <tbody md-body>
