@@ -176,10 +176,12 @@ public class InternalLifecycle extends LifecycleDefinition {
             if(monitor != null){
                 DataPointVO dp = DataPointDao.getInstance().getByXid(xid);
                 if(dp == null){
+                    dp = new DataPointVO();
+
                     InternalPointLocatorVO pl = new InternalPointLocatorVO();
                     pl.setMonitorId(monitor.getId());
+                    dp.setPointLocator(pl);
 
-                    dp = new DataPointVO();
                     dp.setXid(xid);
                     dp.setName(monitor.getName().translate(Common.getTranslations()));
                     dp.setDataSourceId(vo.getId());
@@ -188,27 +190,25 @@ public class InternalLifecycle extends LifecycleDefinition {
                     dp.setEnabled(true);
                     dp.setChartColour("");
 
-                    dp.setPointLocator(pl);
-
                     //If we are numeric then we want to log on change
-                    switch(pl.getDataTypeId()){
-                        case DataTypes.NUMERIC:
-                            if(SYSTEM_UPTIME_POINT_XID.equals(xid)) { //This changes every time, so just do an interval instant
-                                dp.setLoggingType(LoggingTypes.INTERVAL);
-                                dp.setIntervalLoggingPeriodType(Common.TimePeriods.MINUTES);
-                                dp.setIntervalLoggingPeriod(5);
-                                dp.setIntervalLoggingType(DataPointVO.IntervalLoggingTypes.INSTANT);
-                            } else {
-                                //Setup to Log on Change
-                                dp.setLoggingType(LoggingTypes.ON_CHANGE);
-                            }
+                    if (pl.getDataTypeId() == DataTypes.NUMERIC) {
+                        if (SYSTEM_UPTIME_POINT_XID.equals(xid)) { //This changes every time, so just do an interval instant
+                            dp.setLoggingType(LoggingTypes.INTERVAL);
+                            dp.setIntervalLoggingPeriodType(Common.TimePeriods.MINUTES);
+                            dp.setIntervalLoggingPeriod(5);
+                            dp.setIntervalLoggingType(DataPointVO.IntervalLoggingTypes.INSTANT);
 
-                            if(dp.getTextRenderer() instanceof AnalogRenderer && !dp.getXid().equals(SYSTEM_UPTIME_POINT_XID)) {
-                                // This are count points, no need for decimals.
-                                ((AnalogRenderer)dp.getTextRenderer()).setFormat("0");
-                            }
-                            break;
+                            AnalogRenderer renderer = new AnalogRenderer("0.0", "", true);
+                            dp.setTextRenderer(renderer);
+                        } else {
+                            //Setup to Log on Change
+                            dp.setLoggingType(LoggingTypes.ON_CHANGE);
+
+                            AnalogRenderer renderer = new AnalogRenderer("0", "", true);
+                            dp.setTextRenderer(renderer);
+                        }
                     }
+
                     DataPointDao.getInstance().insert(dp);
                     if(!safe) {
                         Common.runtimeManager.startDataPoint(new DataPointWithEventDetectors(dp, new ArrayList<>()));
