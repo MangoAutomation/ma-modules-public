@@ -195,15 +195,14 @@ public class EventsRestController {
             tlm = null;
         }
 
-        if (!user.hasAdminRole()) {
-            rql = RQLUtils.addAndRestriction(rql, new ASTNode("eq", "userId", user.getId()));
-        }
         AtomicInteger total = new AtomicInteger();
         long ackTimestamp = Common.timer.currentTimeMillis();
         service.customizedQuery(rql, (EventInstanceVO vo, int index) -> {
-            EventInstance event = Common.eventManager.acknowledgeEventById(vo.getId(), ackTimestamp, user, tlm);
-            if (event != null && event.isAcknowledged()) {
-                total.incrementAndGet();
+            if(service.hasEditPermission(user, vo)) {
+                EventInstance event = Common.eventManager.acknowledgeEventById(vo.getId(), ackTimestamp, user, tlm);
+                if (event != null && event.isAcknowledged()) {
+                    total.incrementAndGet();
+                }
             }
         });
         return total.get();

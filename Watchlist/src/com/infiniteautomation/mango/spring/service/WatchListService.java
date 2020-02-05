@@ -13,6 +13,7 @@ import java.util.function.Consumer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.infiniteautomation.mango.db.query.ConditionSortLimit;
 import com.infiniteautomation.mango.rest.v2.exception.ServerErrorException;
 import com.infiniteautomation.mango.spring.dao.WatchListDao;
 import com.infiniteautomation.mango.spring.dao.WatchListTableDefinition;
@@ -233,7 +234,8 @@ public class WatchListService extends AbstractVOService<WatchListVO, WatchListTa
             case WatchListVO.QUERY_TYPE:
                 if(vo.getParams().size() > 0)
                     throw new ServerErrorException(new TranslatableMessage("watchList.queryParametersNotSupported"));
-                ASTNode conditions = RQLUtils.parseRQLtoAST(vo.getQuery());
+                ASTNode rql = RQLUtils.parseRQLtoAST(vo.getQuery());
+                ConditionSortLimit conditions = dataPointService.rqlToCondition(rql, null, null);
                 dataPointService.customizedQuery(conditions, (dp, index) -> {
                     if(dataPointService.hasReadPermission(user, dp)) {
                         callback.accept(dp);

@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.infiniteautomation.mango.spring.db.DataPointTableDefinition;
 import com.infiniteautomation.mango.spring.db.DataSourceTableDefinition;
-import com.infiniteautomation.mango.spring.db.RoleTableDefinition;
 import com.infiniteautomation.mango.spring.service.DataPointService;
 
 import io.swagger.annotations.Api;
@@ -36,18 +35,14 @@ public class DeviceNameController {
     private final DataPointService service;
     private final DataPointTableDefinition dataPointTable;
     private final DataSourceTableDefinition dataSourceTable;
-    //TODO Mango 4.0 use role mapping table for permissions filtering
-    private final RoleTableDefinition roleTable;
 
     @Autowired
     public DeviceNameController(DataPointService service,
             DataPointTableDefinition dataPointTable,
-            DataSourceTableDefinition dataSourceTable,
-            RoleTableDefinition roleTable) {
+            DataSourceTableDefinition dataSourceTable) {
         this.service = service;
         this.dataPointTable = dataPointTable;
         this.dataSourceTable = dataSourceTable;
-        this.roleTable = roleTable;
     }
 
     @ApiOperation(
@@ -65,7 +60,7 @@ public class DeviceNameController {
         }
 
         Set<String> deviceNames = new HashSet<>();
-        service.customizedQuery(conditions, (vo, index) -> {
+        service.customizedQuery(conditions, null, null, null, (vo, index) -> {
             deviceNames.add(vo.getDeviceName());
         });
         return deviceNames;
@@ -89,7 +84,7 @@ public class DeviceNameController {
         }
 
         Set<String> deviceNames = new HashSet<>();
-        service.customizedQuery(conditions, (vo, index) -> {
+        service.customizedQuery(conditions, null, null, null, (vo, index) -> {
             deviceNames.add(vo.getDeviceName());
         });
         return deviceNames;
@@ -113,7 +108,7 @@ public class DeviceNameController {
         }
 
         Set<String> deviceNames = new HashSet<>();
-        service.customizedQuery(conditions, (vo, index) -> {
+        service.customizedQuery(conditions, null, null, null, (vo, index) -> {
             deviceNames.add(vo.getDeviceName());
         });
         return deviceNames;

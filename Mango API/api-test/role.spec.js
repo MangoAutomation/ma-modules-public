@@ -428,7 +428,6 @@ describe('Role endpoint tests', function() {
             return role.save().then(saved => {
                 assert.isNumber(saved.id);
                 role.id = saved.id;
-                role.name = 'new name';
                 assert.strictEqual(role.xid, saved.xid);
                 return role.delete();
             });
