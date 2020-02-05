@@ -1,18 +1,18 @@
 /**
  * Copyright 2017 Infinite Automation Systems Inc.
  * http://infiniteautomation.com/
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 const {createClient, assertValidationErrors, defer, delay, login} = require('@infinite-automation/mango-module-tools/test-helper/testHelper');
@@ -110,7 +110,7 @@ describe('Role endpoint tests', function() {
         const user = new User();
         const local = Object.assign({}, user);
         return user.save().then(() => {
-            //Create new client, login and then create a role
+            // Create new client, login and then create a role
             const userClient = createClient();
             return userClient.User.login(local.username, local.password).then(() => {
                 const newRole = new userClient.Role();
@@ -194,7 +194,8 @@ describe('Role endpoint tests', function() {
         
         const socketOpenDeferred = defer();
         const listUpdatedDeferred = defer();
-
+        const subscriptionDeferred = defer();
+        
         const role = new Role();
         
         return Promise.resolve().then(() => {
@@ -222,6 +223,10 @@ describe('Role endpoint tests', function() {
                 try{
                     assert.isString(msgStr);
                     const msg = JSON.parse(msgStr);
+                    if(msg.messageType === 'RESPONSE'){
+                        // Subscription response
+                        subscriptionDeferred.resolve();
+                    }
                     if(msg.messageType === 'NOTIFICATION') {
                         assert.strictEqual(msg.notificationType, 'create');
                         assert.strictEqual(msg.payload.name, role.name);
@@ -243,8 +248,7 @@ describe('Role endpoint tests', function() {
                 }
             });
             return send.promise;
-            
-        }).then(() => {
+        }).then(() => subscriptionDeferred.promise).then(() => {
             return role.save().then(saved => {
                 assert.isNumber(saved.id);
                 assert.strictEqual(role.xid, saved.xid);
@@ -271,6 +275,7 @@ describe('Role endpoint tests', function() {
         
         const socketOpenDeferred = defer();
         const listUpdatedDeferred = defer();
+        const subscriptionDeferred = defer();
         
         const role = new Role();
 
@@ -299,12 +304,17 @@ describe('Role endpoint tests', function() {
                 try{
                     assert.isString(msgStr);
                     const msg = JSON.parse(msgStr);
+                    if(msg.messageType === 'RESPONSE'){
+                        // Subscription response
+                        subscriptionDeferred.resolve();
+                    }
                     if(msg.messageType === 'NOTIFICATION') {
-                        assert.strictEqual(msg.notificationType, 'update');
-                        assert.strictEqual(msg.payload.name, role.name);
-                        assert.strictEqual(msg.payload.xid, role.xid);
-                        listUpdatedDeferred.resolve();                           
-                        listUpdatedDeferred.resolve(); 
+                        assert.include(['create', 'update'], msg.notificationType);
+                        if(msg.notificationType === 'update'){
+                            assert.strictEqual(msg.payload.name, role.name);
+                            assert.strictEqual(msg.payload.xid, role.xid);
+                            listUpdatedDeferred.resolve(); 
+                        }
                     }
                 }catch(e){
                     listUpdatedDeferred.reject(e);
@@ -323,8 +333,7 @@ describe('Role endpoint tests', function() {
             });
             return send.promise;
             
-        }).then(() => delay(1000)).then(() => {
-            //TODO Fix DaoNotificationWebSocketHandler so we can remove this delay, only required for cold start
+        }).then(() => subscriptionDeferred.promise).then(() => {
             return role.save().then(saved => {
                 assert.isNumber(saved.id);
                 role.id = saved.id;
@@ -357,7 +366,8 @@ describe('Role endpoint tests', function() {
         
         const socketOpenDeferred = defer();
         const listUpdatedDeferred = defer();
-
+        const subscriptionDeferred = defer();
+        
         const role = new Role();
         
         return Promise.resolve().then(() => {
@@ -385,12 +395,17 @@ describe('Role endpoint tests', function() {
                 try{
                     assert.isString(msgStr);
                     const msg = JSON.parse(msgStr);
+                    if(msg.messageType === 'RESPONSE'){
+                        // Subscription response
+                        subscriptionDeferred.resolve();
+                    }
                     if(msg.messageType === 'NOTIFICATION') {
-                        assert.strictEqual(msg.notificationType, 'delete');
-                        assert.strictEqual(msg.payload.name, role.name);
-                        assert.strictEqual(msg.payload.xid, role.xid);
-                        listUpdatedDeferred.resolve();                           
-                        listUpdatedDeferred.resolve(); 
+                        assert.include(['create', 'delete'], msg.notificationType);
+                        if(msg.notificationType === 'delete'){
+                            assert.strictEqual(msg.payload.name, role.name);
+                            assert.strictEqual(msg.payload.xid, role.xid);
+                            listUpdatedDeferred.resolve();
+                        }
                     }
                 }catch(e){
                     listUpdatedDeferred.reject(e);
@@ -409,8 +424,7 @@ describe('Role endpoint tests', function() {
             });
             return send.promise;
             
-        }).then(() => delay(1000)).then(() => {
-            //TODO Fix DaoNotificationWebSocketHandler so we can remove this delay, only required for cold start
+        }).then(() => subscriptionDeferred.promise).then(() => {
             return role.save().then(saved => {
                 assert.isNumber(saved.id);
                 role.id = saved.id;
