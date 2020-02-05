@@ -83,10 +83,6 @@ public class StreamedBasicVORqlQueryWithTotal<T extends AbstractBasicVO, TABLE e
         this.conditions = conditions;
         this.toModel = toModel;
         this.filter = filter;
-        if(filter == null) {
-            //Strip out limit/offset and do manually
-
-        }
     }
 
     @Override
@@ -116,6 +112,7 @@ public class StreamedBasicVORqlQueryWithTotal<T extends AbstractBasicVO, TABLE e
                             try {
                                 jgen.writeObject(toModel.apply(item));
                             } catch (IOException e) {
+                                //TODO Mango 4.0 this can mangle the response, perhaps handle in exception handler to reset stream
                                 throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, e);
                             }
                             offsetCount++;
@@ -129,6 +126,7 @@ public class StreamedBasicVORqlQueryWithTotal<T extends AbstractBasicVO, TABLE e
                     try {
                         jgen.writeObject(toModel.apply(item));
                     } catch (IOException e) {
+                        //TODO Mango 4.0 this can mangle the response, perhaps handle in exception handler to reset stream
                         throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, e);
                     }
                 });
