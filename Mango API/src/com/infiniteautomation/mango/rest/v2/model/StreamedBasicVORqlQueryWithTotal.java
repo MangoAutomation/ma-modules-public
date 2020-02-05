@@ -31,7 +31,10 @@ public class StreamedBasicVORqlQueryWithTotal<T extends AbstractBasicVO, TABLE e
     protected final ConditionSortLimit conditions;
     protected final Function<T, ?> toModel;
     protected final Predicate<T> filter;
+
+    //For use when we have a filter as we cannot accurately do a count query
     protected int count;
+    protected int offsetCount;
 
     /**
      * Use if permissions cannot be enforced in the RQL/Database query, this will perform a full query and count the results while respecting the limit.
@@ -80,6 +83,10 @@ public class StreamedBasicVORqlQueryWithTotal<T extends AbstractBasicVO, TABLE e
         this.conditions = conditions;
         this.toModel = toModel;
         this.filter = filter;
+        if(filter == null) {
+            //Strip out limit/offset and do manually
+
+        }
     }
 
     @Override
@@ -99,17 +106,33 @@ public class StreamedBasicVORqlQueryWithTotal<T extends AbstractBasicVO, TABLE e
     private class StreamedVOArray implements JSONStreamedArray {
         @Override
         public void writeArrayValues(JsonGenerator jgen) throws IOException {
-            service.customizedQuery(conditions, (T item, int index) -> {
-                boolean write = filter != null ? filter.test(item) : true;
-                if (write) {
-                    count++;
+            if(filter != null) {
+                //Using memory filter
+                int offset = conditions.getOffset() == null ? 0 : conditions.getOffset();
+                int limit = conditions.getLimit(); //Assured to not be null by the constructor of the CSL
+                service.customizedQuery(conditions.getCondition(), conditions.getSort(), null, null, (T item, int index) -> {
+                    if (filter.test(item)) {
+                        if(count >= offset && offsetCount < limit) {
+                            try {
+                                jgen.writeObject(toModel.apply(item));
+                            } catch (IOException e) {
+                                throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, e);
+                            }
+                            offsetCount++;
+                        }
+                        count++;
+                    }
+                });
+            }else {
+                //No filter just run query
+                service.customizedQuery(conditions, (T item, int index) -> {
                     try {
                         jgen.writeObject(toModel.apply(item));
                     } catch (IOException e) {
                         throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, e);
                     }
-                }
-            });
+                });
+            }
         }
     }
 }
