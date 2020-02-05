@@ -15,7 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
-import com.infiniteautomation.mango.rest.v2.model.StreamedVOQueryWithTotal;
+import com.infiniteautomation.mango.rest.v2.model.StreamedVORqlQueryWithTotal;
 import com.infiniteautomation.mango.spring.service.AbstractVOService;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
@@ -174,13 +174,14 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
         return rt;
     }
 
+    //TODO Mango 4.0 move to REST api
     public StreamedArrayWithTotal doQuery(ASTNode rql, PermissionHolder user, Function<MaintenanceEventVO, Object> transformVO) {
 
         //If we are admin or have overall data source permission we can view all
         if (user.hasAdminRole() || permissionService.hasDataSourcePermission(user)) {
-            return new StreamedVOQueryWithTotal<>(dao, rql, transformVO);
+            return new StreamedVORqlQueryWithTotal<>(this, rql, null, null, transformVO);
         } else {
-            return new StreamedVOQueryWithTotal<>(dao, rql, item -> {
+            return new StreamedVORqlQueryWithTotal<>(this, rql, null, null, item -> {
                 if(item.getDataPoints().size() > 0) {
                     DataPointPermissionsCheckCallback callback = new DataPointPermissionsCheckCallback(user, true);
                     dao.getPoints(item.getId(), callback);

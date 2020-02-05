@@ -18,7 +18,6 @@ import com.infiniteautomation.mango.spring.db.AbstractBasicTableDefinition;
 import com.infiniteautomation.mango.spring.service.AbstractBasicVOService;
 import com.serotonin.m2m2.db.dao.AbstractBasicDao;
 import com.serotonin.m2m2.vo.AbstractBasicVO;
-import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 import net.jazdw.rql.parser.ASTNode;
 
@@ -32,67 +31,50 @@ public class StreamedBasicVORqlQueryWithTotal<T extends AbstractBasicVO, TABLE e
     protected final ConditionSortLimit conditions;
     protected final Function<T, ?> toModel;
     protected final Predicate<T> filter;
+    protected int count;
 
-    public StreamedBasicVORqlQueryWithTotal(SERVICE service, ConditionSortLimit conditions) {
-        this(service, conditions, item -> true, Function.identity());
-    }
-
-    public StreamedBasicVORqlQueryWithTotal(SERVICE service, ConditionSortLimit conditions, PermissionHolder holder, boolean loadRelational) {
-        this(service, conditions, item -> service.hasReadPermission(holder, item), Function.identity());
-    }
-
-    public StreamedBasicVORqlQueryWithTotal(SERVICE service, ConditionSortLimit conditions, Function<T, ?> toModel) {
-        this(service, conditions, item -> true, toModel);
-    }
-
-    public StreamedBasicVORqlQueryWithTotal(SERVICE service, ConditionSortLimit conditions, PermissionHolder holder, Function<T, ?> toModel) {
-        this(service, conditions, item -> service.hasReadPermission(holder, item), toModel);
-    }
-
-    public StreamedBasicVORqlQueryWithTotal(SERVICE service, ASTNode rql) {
-        this(service, service.getDao().rqlToCondition(rql), item -> true, Function.identity());
-    }
-
-    public StreamedBasicVORqlQueryWithTotal(SERVICE service, ASTNode rql,  Map<String, Function<Object, Object>> valueConverterMap) {
-        this(service, service.getDao().rqlToCondition(rql, valueConverterMap), item -> true, Function.identity());
-    }
-
-    public StreamedBasicVORqlQueryWithTotal(SERVICE service, ASTNode rql, PermissionHolder holder) {
-        this(service, service.getDao().rqlToCondition(rql), item -> service.hasReadPermission(holder, item), Function.identity());
-    }
-
-    public StreamedBasicVORqlQueryWithTotal(SERVICE service, ASTNode rql, Map<String, Function<Object, Object>> valueConverterMap, PermissionHolder holder) {
-        this(service, service.getDao().rqlToCondition(rql, valueConverterMap), item -> service.hasReadPermission(holder, item), Function.identity());
-    }
-
-    public StreamedBasicVORqlQueryWithTotal(SERVICE service, ASTNode rql, Function<T, ?> toModel) {
-        this(service, service.getDao().rqlToCondition(rql), item -> true, toModel);
-    }
-
-    public StreamedBasicVORqlQueryWithTotal(SERVICE service, ASTNode rql, Map<String, Function<Object, Object>> valueConverterMap, Function<T, ?> toModel) {
-        this(service, service.getDao().rqlToCondition(rql, valueConverterMap), item -> true, toModel);
-    }
-
-    public StreamedBasicVORqlQueryWithTotal(SERVICE service, ASTNode rql, PermissionHolder holder, Function<T, ?> toModel) {
-        this(service, service.getDao().rqlToCondition(rql), item -> service.hasReadPermission(holder, item), toModel);
-    }
-
-    public StreamedBasicVORqlQueryWithTotal(SERVICE service, ASTNode rql, Map<String, Function<Object, Object>> valueConverterMap, PermissionHolder holder, Function<T, ?> toModel) {
-        this(service, service.getDao().rqlToCondition(rql, valueConverterMap), item -> service.hasReadPermission(holder, item), toModel);
-    }
-
-    public StreamedBasicVORqlQueryWithTotal(SERVICE service, ASTNode rql, Predicate<T> filter, Function<T, ?> toModel) {
-        this(service, service.getDao().rqlToCondition(rql), filter, toModel);
-    }
-
-    public StreamedBasicVORqlQueryWithTotal(SERVICE service, ASTNode rql, Map<String, Function<Object, Object>> valueConverterMap, Predicate<T> filter, Function<T, ?> toModel) {
-        this(service, service.getDao().rqlToCondition(rql, valueConverterMap), filter, toModel);
-    }
-
+    /**
+     * Use if permissions cannot be enforced in the RQL/Database query, this will perform a full query and count the results while respecting the limit.
+     * @param service
+     * @param rql
+     * @param fieldMap
+     * @param valueConverterMap
+     * @param filter
+     * @param toModel
+     */
     public StreamedBasicVORqlQueryWithTotal(SERVICE service, ASTNode rql, Map<String, Field<?>> fieldMap, Map<String, Function<Object, Object>> valueConverterMap, Predicate<T> filter, Function<T, ?> toModel) {
-        this(service, service.getDao().rqlToCondition(rql, fieldMap, valueConverterMap), filter, toModel);
+        this(service, service.rqlToCondition(rql, fieldMap, valueConverterMap), filter, toModel);
     }
 
+    /**
+     * Variant to use if the permissions can be enforced via the RQL/Database query
+     * @param service
+     * @param rql
+     * @param fieldMap
+     * @param valueConverterMap
+     * @param toModel
+     */
+    public StreamedBasicVORqlQueryWithTotal(SERVICE service, ASTNode rql, Map<String, Field<?>> fieldMap, Map<String, Function<Object, Object>> valueConverterMap, Function<T, ?> toModel) {
+        this(service, service.rqlToCondition(rql, fieldMap, valueConverterMap), null, toModel);
+    }
+
+    /**
+     * Variant to use if permissions can be enforced via the RQL/Database query
+     * @param service
+     * @param conditions
+     * @param toModel
+     */
+    public StreamedBasicVORqlQueryWithTotal(SERVICE service, ConditionSortLimit conditions, Function<T, ?> toModel) {
+        this(service, conditions, null, toModel);
+    }
+
+    /**
+     * Use if permissions cannot be enforced in the RQL/Database query, this will perform a full query and count the results while respecting the limit.
+     * @param service
+     * @param conditions
+     * @param filter
+     * @param toModel
+     */
     public StreamedBasicVORqlQueryWithTotal(SERVICE service, ConditionSortLimit conditions, Predicate<T> filter, Function<T, ?> toModel) {
         this.service = service;
         this.conditions = conditions;
@@ -107,14 +89,20 @@ public class StreamedBasicVORqlQueryWithTotal<T extends AbstractBasicVO, TABLE e
 
     @Override
     public int getTotal() {
-        return service.customizedCount(conditions);
+        if(filter != null) {
+            return count;
+        }else {
+            return service.customizedCount(conditions);
+        }
     }
 
     private class StreamedVOArray implements JSONStreamedArray {
         @Override
         public void writeArrayValues(JsonGenerator jgen) throws IOException {
             service.customizedQuery(conditions, (T item, int index) -> {
-                if (filter.test(item)) {
+                boolean write = filter != null ? filter.test(item) : true;
+                if (write) {
+                    count++;
                     try {
                         jgen.writeObject(toModel.apply(item));
                     } catch (IOException e) {

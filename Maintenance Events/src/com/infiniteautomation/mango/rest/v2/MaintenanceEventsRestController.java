@@ -359,7 +359,7 @@ public class MaintenanceEventsRestController {
         //First do the RQL on maintenance events
         List<Object> args = new ArrayList<>();
         args.add("typeRef1");
-        MaintenanceEventDao.getInstance().rqlQuery(rql, new MappedRowCallback<MaintenanceEventVO>() {
+        service.customizedQuery(rql, new MappedRowCallback<MaintenanceEventVO>() {
             @Override
             public void row(MaintenanceEventVO vo, int index) {
                 args.add(Integer.toString(vo.getId()));

@@ -37,7 +37,7 @@ import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.model.ListWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
-import com.infiniteautomation.mango.rest.v2.model.StreamedVOQueryWithTotal;
+import com.infiniteautomation.mango.rest.v2.model.StreamedVORqlQueryWithTotal;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.MangoTaskTemporaryResourceManager;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource.TemporaryResourceStatus;
@@ -125,13 +125,9 @@ public class DataPointTagsRestController {
             @AuthenticationPrincipal User user) {
 
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
-        ConditionSortLimitWithTagKeys conditions = dataPointService.getDao().rqlToCondition(rql);
+        ConditionSortLimitWithTagKeys conditions = (ConditionSortLimitWithTagKeys) dataPointService.getDao().rqlToCondition(rql, null, null, user);
 
-        if (!user.hasAdminRole()) {
-            conditions.addCondition(dataPointService.getDao().userHasPermission(user));
-        }
-
-        return new StreamedVOQueryWithTotal<>(dataPointService.getDao(), conditions, item -> true, dataPoint -> {
+        return new StreamedVORqlQueryWithTotal<>(dataPointService, conditions, item -> true, dataPoint -> {
             Map<String, String> tags = dataPointTagsDao.getTagsForDataPointId(dataPoint.getId());
 
             // we set the tags on the data point then retrieve them so that the device and name tags are removed
@@ -153,13 +149,9 @@ public class DataPointTagsRestController {
             @AuthenticationPrincipal User user) {
 
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
-        ConditionSortLimitWithTagKeys conditions = dataPointService.getDao().rqlToCondition(rql);
+        ConditionSortLimitWithTagKeys conditions = (ConditionSortLimitWithTagKeys) dataPointService.getDao().rqlToCondition(rql, null, null, user);
 
-        if (!user.hasAdminRole()) {
-            conditions.addCondition(dataPointService.getDao().userHasPermission(user));
-        }
-
-        return new StreamedVOQueryWithTotal<>(dataPointService.getDao(), conditions, item -> true, dataPoint -> {
+        return new StreamedVORqlQueryWithTotal<>(dataPointService, conditions, item -> true, dataPoint -> {
             Map<String, String> tags = dataPointTagsDao.getTagsForDataPointId(dataPoint.getId());
 
             // we set the tags on the data point then retrieve them so that the device and name tags are removed
@@ -188,10 +180,7 @@ public class DataPointTagsRestController {
 
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
 
-        ConditionSortLimitWithTagKeys conditions = dataPointService.getDao().rqlToCondition(rql);
-        if (!user.hasAdminRole()) {
-            conditions.addCondition(dataPointService.getDao().userHasEditPermission(user));
-        }
+        ConditionSortLimitWithTagKeys conditions = (ConditionSortLimitWithTagKeys) dataPointService.getDao().rqlToCondition(rql, null, null, user);
 
         AtomicInteger count = new AtomicInteger();
 
@@ -218,10 +207,7 @@ public class DataPointTagsRestController {
 
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
 
-        ConditionSortLimitWithTagKeys conditions = dataPointService.getDao().rqlToCondition(rql);
-        if (!user.hasAdminRole()) {
-            conditions.addCondition(dataPointService.getDao().userHasEditPermission(user));
-        }
+        ConditionSortLimitWithTagKeys conditions = (ConditionSortLimitWithTagKeys) dataPointService.getDao().rqlToCondition(rql, null, null, user, PermissionService.EDIT);
 
         AtomicInteger count = new AtomicInteger();
 

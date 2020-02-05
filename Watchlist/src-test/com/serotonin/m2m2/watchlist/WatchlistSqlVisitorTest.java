@@ -17,7 +17,6 @@ import org.jooq.Field;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.infiniteautomation.mango.db.query.ConditionSortLimit;
 import com.infiniteautomation.mango.spring.dao.WatchListDao;
 import com.infiniteautomation.mango.spring.db.UserTableDefinition;
 import com.infiniteautomation.mango.spring.service.PermissionService;
@@ -83,15 +82,14 @@ public class WatchlistSqlVisitorTest extends MangoTestBase {
         Map<String, Field<?>> fieldMap = new HashMap<>();
         fieldMap.put("username", Common.getBean(UserTableDefinition.class).getXidAlias());
 
-        ConditionSortLimit condition = service.getDao().rqlToCondition(query, fieldMap, new HashMap<>());
         Common.getBean(PermissionService.class).runAsSystemAdmin(() -> {
 
-            service.customizedQuery(condition, (wl,index) -> {
+            service.customizedQuery(query, (wl,index) -> {
                 selectCounter.incrementAndGet();
                 assertEquals(users.get(0).getId(), wl.getUserId());
                 assertEquals(2, wl.getReadRoles().size());
             });
-            assertEquals(5, service.customizedCount(condition));
+            assertEquals(5, service.customizedCount(query));
         });
         assertEquals(3, selectCounter.get());
     }

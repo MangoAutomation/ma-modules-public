@@ -507,9 +507,9 @@ public class EventDetectorsRestController {
     private StreamedArrayWithTotal doQuery(ASTNode rql, User user, Function<AbstractEventDetectorVO, ?> toModel) {
         //If we are admin or have overall data source permission we can view all
         if (user.hasAdminRole()) {
-            return new StreamedVORqlQueryWithTotal<>(service, rql, toModel);
+            return new StreamedVORqlQueryWithTotal<>(service, rql, null, null, toModel);
         } else {
-            return new StreamedVORqlQueryWithTotal<>(service, rql, user, toModel);
+            return new StreamedVORqlQueryWithTotal<>(service, rql, null, null, vo -> service.hasReadPermission(user, vo), toModel);
         }
     }
 }

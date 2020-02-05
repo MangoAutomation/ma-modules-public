@@ -194,8 +194,7 @@ public class MailingListRestController {
      * @return
      */
     private StreamedArrayWithTotal doQuery(ASTNode rql, PermissionHolder user) {
-        return new StreamedVORqlQueryWithTotal<>(service, rql, user, (item) -> {
-            return mapping.map(item, user, mapper);
-        });
+        //We can filter in the database on the roles
+        return new StreamedVORqlQueryWithTotal<>(service, rql, null, null, item -> mapping.map(item, user, mapper));
     }
 }

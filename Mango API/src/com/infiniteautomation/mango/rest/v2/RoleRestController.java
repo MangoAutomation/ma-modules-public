@@ -180,9 +180,11 @@ public class RoleRestController {
      * @return
      */
     private StreamedArrayWithTotal doQuery(ASTNode rql, PermissionHolder user) {
-        return new StreamedVORqlQueryWithTotal<>(service, rql, user, (item) -> {
-            return mapping.map(item, user, mapper);
-        });
+        if (user.hasAdminRole()) {
+            return new StreamedVORqlQueryWithTotal<>(service, rql, null, null, vo -> mapping.map(vo, user, mapper));
+        } else {
+            return new StreamedVORqlQueryWithTotal<>(service, rql, null, null, vo -> service.hasReadPermission(user, vo), vo -> mapping.map(vo, user, mapper));
+        }
     }
 
 }

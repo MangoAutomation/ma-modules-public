@@ -356,11 +356,11 @@ public class UserRestController {
     public StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
 
         if (user.hasAdminRole()) {
-            return new StreamedVORqlQueryWithTotal<>(service, rql, vo -> map.apply(vo, user));
+            return new StreamedVORqlQueryWithTotal<>(service, rql, null, null, vo -> map.apply(vo, user));
         } else {
             // Add some conditions to restrict based on user permissions
             rql = RQLUtils.addAndRestriction(rql, new ASTNode("eq", "id", user.getId()));
-            return new StreamedVORqlQueryWithTotal<>(service, rql, user, vo -> map.apply(vo, user));
+            return new StreamedVORqlQueryWithTotal<>(service, rql, null, null, vo -> map.apply(vo, user));
         }
     }
 }
