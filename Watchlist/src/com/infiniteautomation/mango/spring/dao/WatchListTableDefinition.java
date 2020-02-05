@@ -4,6 +4,7 @@
 
 package com.infiniteautomation.mango.spring.dao;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -55,7 +56,9 @@ public class WatchListTableDefinition extends AbstractTableDefinition {
     }
 
     @Override
-    protected void addFieldMappings(Map<String, Field<?>> map) {
+    protected Map<String, Field<?>> getAliasMappings() {
+        Map<String, Field<?>> map = new HashMap<>();
         map.put("username", userTable.getXidAlias());
+        return map;
     }
 }

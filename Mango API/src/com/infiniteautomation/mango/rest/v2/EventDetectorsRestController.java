@@ -4,13 +4,16 @@
 package com.infiniteautomation.mango.rest.v2;
 
 import java.net.URI;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.jooq.Field;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -47,6 +50,7 @@ import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource.
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceManager;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceStatusUpdate;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceWebSocketHandler;
+import com.infiniteautomation.mango.spring.db.EventDetectorTableDefinition;
 import com.infiniteautomation.mango.spring.service.EventDetectorsService;
 import com.infiniteautomation.mango.spring.service.EventHandlerService;
 import com.infiniteautomation.mango.util.RQLUtils;
@@ -72,15 +76,24 @@ public class EventDetectorsRestController {
 
     private final EventDetectorsService service;
     private final BiFunction<AbstractEventDetectorVO, User, AbstractEventDetectorModel<?>> map;
+    private final Map<String, Field<?>> fieldMap;
 
     @Autowired
-    public EventDetectorsRestController(EventDetectorsService service, RestModelMapper modelMapper, TemporaryResourceWebSocketHandler websocket){
+    public EventDetectorsRestController(EventDetectorsService service,
+            EventDetectorTableDefinition table,
+            RestModelMapper modelMapper,
+            TemporaryResourceWebSocketHandler websocket){
         this.service = service;
         this.map = (vo, user) -> {
             AbstractEventDetectorModel<?> model = modelMapper.map(vo, AbstractEventDetectorModel.class, user);
             return model;
         };
         this.bulkResourceManager = new MangoTaskTemporaryResourceManager<EventDetectorBulkResponse>(service.getPermissionService(), websocket);
+
+        this.fieldMap = new HashMap<>();
+        this.fieldMap.put("detectorSourceType", table.getAlias("sourceTypeName"));
+        //TODO This will break if we add new detector types and keep the same table structure, we should break this out into a mapping table
+        this.fieldMap.put("sourceId", table.getAlias("dataPointId"));
     }
 
     @ApiOperation(
@@ -507,9 +520,9 @@ public class EventDetectorsRestController {
     private StreamedArrayWithTotal doQuery(ASTNode rql, User user, Function<AbstractEventDetectorVO, ?> toModel) {
         //If we are admin or have overall data source permission we can view all
         if (user.hasAdminRole()) {
-            return new StreamedVORqlQueryWithTotal<>(service, rql, null, null, toModel);
+            return new StreamedVORqlQueryWithTotal<>(service, rql, fieldMap, null, toModel);
         } else {
-            return new StreamedVORqlQueryWithTotal<>(service, rql, null, null, vo -> service.hasReadPermission(user, vo), toModel);
+            return new StreamedVORqlQueryWithTotal<>(service, rql, fieldMap, null, vo -> service.hasReadPermission(user, vo), toModel);
         }
     }
 }
