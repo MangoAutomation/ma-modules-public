@@ -12,8 +12,6 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,7 +41,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.util.AntPathMatcher;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
@@ -88,13 +85,15 @@ import io.swagger.annotations.ApiParam;
 public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller {
 
     private final FileStoreService service;
-    final String cacheControlHeader;
+    private final String cacheControlHeader;
+    private final RequestUtils requestUtils;
 
     @Autowired
-    public FileStoreRestV2Controller(FileStoreService fileStoreService, @Value("${web.cache.maxAge.rest:0}") long maxAge) {
+    public FileStoreRestV2Controller(FileStoreService fileStoreService, @Value("${web.cache.maxAge.rest:0}") long maxAge, RequestUtils requestUtils) {
         // use the rest max age setting but dont honor the nocache setting
         cacheControlHeader = CacheControl.maxAge(maxAge, TimeUnit.SECONDS).getHeaderValue();
         this.service = fileStoreService;
+        this.requestUtils = requestUtils;
     }
 
     @ApiOperation(
@@ -128,7 +127,7 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller {
         Path rootPath = this.service.getFileStoreRootForWrite(name);
         File root = rootPath.toFile().getCanonicalFile();
 
-        String pathInStore = parsePath(request);
+        String pathInStore = requestUtils.extractRemainingPath(request);
 
         File outputDirectory = new File(root, pathInStore).getCanonicalFile();
 
@@ -201,7 +200,7 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller {
         Path rootPath = this.service.getFileStoreRootForWrite(fileStoreName);
         File root = rootPath.toFile().getCanonicalFile();
 
-        String pathInStore = parsePath(request);
+        String pathInStore = requestUtils.extractRemainingPath(request);
         File fileOrFolder = new File(root, pathInStore).getCanonicalFile();
 
         if (!fileOrFolder.toPath().startsWith(root.toPath())) {
@@ -271,7 +270,7 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller {
         Path rootPath = this.service.getFileStoreRootForWrite(name);
         File root = rootPath.toFile().getCanonicalFile();
 
-        String path = parsePath(request);
+        String path = requestUtils.extractRemainingPath(request);
         File file = new File(root, path).getCanonicalFile();
 
         if (!file.toPath().startsWith(root.toPath())) {
@@ -387,7 +386,7 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller {
         Path rootPath = this.service.getFileStoreRootForRead(name);
         File root = rootPath.toFile().getCanonicalFile();
 
-        String path = parsePath(request);
+        String path = requestUtils.extractRemainingPath(request);
         File file = new File(root, path).getCanonicalFile();
 
         if (!file.toPath().startsWith(root.toPath())) {
@@ -419,7 +418,7 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller {
         Path rootPath = this.service.getFileStoreRootForRead(name);
         File root = rootPath.toFile().getCanonicalFile();
 
-        String path = parsePath(request);
+        String path = requestUtils.extractRemainingPath(request);
         File file = new File(root, path).getCanonicalFile();
 
         if (!file.toPath().startsWith(root.toPath())) {
@@ -480,21 +479,6 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller {
         response.setHeader(HttpHeaders.CACHE_CONTROL, cacheControlHeader);
 
         return new ResponseEntity<>(new FileSystemResource(file), responseHeaders, HttpStatus.OK);
-    }
-
-    /**
-     * Get the path within the store off the URL
-     * @param request
-     * @return
-     * @throws UnsupportedEncodingException
-     */
-    protected String parsePath(HttpServletRequest request) throws UnsupportedEncodingException {
-        String path = (String) request.getAttribute(
-                HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
-        String bestMatchPattern = (String ) request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE);
-
-        AntPathMatcher apm = new AntPathMatcher();
-        return URLDecoder.decode(apm.extractPathWithinPattern(bestMatchPattern, path), StandardCharsets.UTF_8.name());
     }
 
     /**

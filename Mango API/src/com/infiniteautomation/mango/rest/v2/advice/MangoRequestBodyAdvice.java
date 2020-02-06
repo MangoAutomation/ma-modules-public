@@ -15,7 +15,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestBodyAdviceAd
 /**
  * Class to place the incoming model class into the request scope so
  *  we can use it to find the model mapper at a later date outside of the controller
- *  that is recieving the model.  i.e. validation errors
+ *  that is receiving the model.  i.e. validation errors
  *
  * @author Jared Wiltshire
  */
@@ -39,4 +39,3 @@ public class MangoRequestBodyAdvice extends RequestBodyAdviceAdapter {
         return body;
     }
 }
-
