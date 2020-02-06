@@ -30,7 +30,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.infiniteautomation.mango.db.query.ConditionSortLimitWithTagKeys;
 import com.infiniteautomation.mango.db.query.pojo.RQLToObjectListQuery;
 import com.infiniteautomation.mango.rest.v2.bulk.BulkRequest;
 import com.infiniteautomation.mango.rest.v2.bulk.BulkResponse;
@@ -58,7 +57,6 @@ import com.infiniteautomation.mango.spring.service.DataPointService;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
@@ -543,15 +541,7 @@ public class DataPointRestController {
 
             return pointModel;
         };
-
-        if (user.hasAdminRole()) {
-            return new StreamedVORqlQueryWithTotal<>(service, rql, this.fieldMap, this.valueConverters, item -> true, transformPoint);
-        } else {
-            // Add some conditions to restrict based on user permissions
-            ConditionSortLimitWithTagKeys conditions = (ConditionSortLimitWithTagKeys) DataPointDao.getInstance().rqlToCondition(rql, this.fieldMap,
-                    this.valueConverters, user);
-            return new StreamedVORqlQueryWithTotal<>(service, conditions, transformPoint);
-        }
+        return new StreamedVORqlQueryWithTotal<>(service, rql, this.fieldMap, this.valueConverters, transformPoint);
     }
 
     public class DataSourceSummary {

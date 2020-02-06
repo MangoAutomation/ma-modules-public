@@ -106,7 +106,9 @@ public class StreamedBasicVORqlQueryWithTotal<T extends AbstractBasicVO, TABLE e
                 //Using memory filter
                 int offset = conditions.getOffset() == null ? 0 : conditions.getOffset();
                 int limit = conditions.getLimit(); //Assured to not be null by the constructor of the CSL
-                service.customizedQuery(conditions.getCondition(), conditions.getGroupBy(), conditions.getSort(), conditions.getLimit(), conditions.getOffset(), (T item, int index) -> {
+                conditions.nullLimit();
+                conditions.nullOffset();
+                service.customizedQuery(conditions, (T item, int index) -> {
                     if (filter.test(item)) {
                         if(count >= offset && offsetCount < limit) {
                             try {
