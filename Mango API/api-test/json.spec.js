@@ -97,52 +97,100 @@ describe('JSON data', function() {
         });
     };
 
-    it('Gets the whole document', function() {
-        return getJsonData(this.test.xid, []).then(data => {
-            assert.deepEqual(data, this.test.item.jsonData);
+    const deleteJsonData = (xid, pointer) => {
+        const pointerEncoded = [''].concat(pointer).map(p => encodePointerComponent(p)).join('/');
+        return client.restRequest({
+            path: `${jsonUrl}/${encodeURIComponent(xid)}${pointerEncoded}`,
+            method: 'DELETE'
+        }).then(response => {
+            return response.data;
         });
-    });
+    };
 
-    it('Gets /foo/0', function() {
-        return getJsonData(this.test.xid, ['foo', '0']).then(data => {
-            assert.deepEqual(data, this.test.item.jsonData.foo[0]);
-        });
-    });
-    
-    for (let key of Object.keys(testData)) {
-        it(`Gets /${encodePointerComponent(key)}`, function() {
-            return getJsonData(this.test.xid, [key]).then(data => {
-                assert.deepEqual(data, this.test.item.jsonData[key]);
-            });
-        });
-    }
-    
-    it('Sets the whole document', function() {
-        const newValue = uuid();
-        return setJsonData(this.test.xid, [], newValue).then(data => {
+    describe('Get data', function() {
+        it('Whole document', function() {
             return getJsonData(this.test.xid, []).then(data => {
-                assert.strictEqual(data, newValue);
+                assert.deepEqual(data, this.test.item.jsonData);
             });
         });
+    
+        it('/foo/0', function() {
+            return getJsonData(this.test.xid, ['foo', '0']).then(data => {
+                assert.deepEqual(data, this.test.item.jsonData.foo[0]);
+            });
+        });
+        
+        for (let key of Object.keys(testData)) {
+            it(`/${encodePointerComponent(key)}`, function() {
+                return getJsonData(this.test.xid, [key]).then(data => {
+                    assert.deepEqual(data, this.test.item.jsonData[key]);
+                });
+            });
+        }
     });
 
-    it('Sets /foo/0', function() {
-        const newValue = uuid();
-        return setJsonData(this.test.xid, ['foo', '0'], newValue).then(data => {
-            return getJsonData(this.test.xid, ['foo', '0']).then(data => {
-                assert.strictEqual(data, newValue);
-            });
-        });
-    });
-    
-    for (let key of Object.keys(testData)) {
-        it(`Sets /${encodePointerComponent(key)}`, function() {
+    describe('Set data', function() {
+        it('Whole document', function() {
             const newValue = uuid();
-            return setJsonData(this.test.xid, [key], newValue).then(data => {
-                return getJsonData(this.test.xid, [key]).then(data => {
+            return setJsonData(this.test.xid, [], newValue).then(data => {
+                return getJsonData(this.test.xid, []).then(data => {
                     assert.strictEqual(data, newValue);
                 });
             });
         });
-    }
+    
+        it('/foo/0', function() {
+            const newValue = uuid();
+            return setJsonData(this.test.xid, ['foo', '0'], newValue).then(data => {
+                return getJsonData(this.test.xid, ['foo', '0']).then(data => {
+                    assert.strictEqual(data, newValue);
+                });
+            });
+        });
+        
+        for (let key of Object.keys(testData)) {
+            it(`/${encodePointerComponent(key)}`, function() {
+                const newValue = uuid();
+                return setJsonData(this.test.xid, [key], newValue).then(data => {
+                    return getJsonData(this.test.xid, [key]).then(data => {
+                        assert.strictEqual(data, newValue);
+                    });
+                });
+            });
+        }
+    });
+    
+    describe('Delete data', function() {
+        it('Whole document', function() {
+            return deleteJsonData(this.test.xid, []).then(data => {
+                return getJsonData(this.test.xid, []).then(data => {
+                    assert.fail('Should be 404');
+                }, error => {
+                    assert.strictEqual(error.status, 404);
+                });
+            });
+        });
+
+        it('/foo/0', function() {
+            return deleteJsonData(this.test.xid, ['foo', '0']).then(data => {
+                return getJsonData(this.test.xid, ['foo', '0']).then(data => {
+                    // array item 1 has shifted into index 0
+                    assert.strictEqual(data, this.test.item.jsonData.foo[1]);
+                });
+            });
+        });
+        
+        for (let key of Object.keys(testData)) {
+            it(`/${encodePointerComponent(key)}`, function() {
+                return deleteJsonData(this.test.xid, [key]).then(data => {
+                    return getJsonData(this.test.xid, [key]).then(data => {
+                        assert.fail('Should be 404');
+                    }, error => {
+                        assert.strictEqual(error.status, 404);
+                    });
+                });
+            });
+        }
+    });
+
 });

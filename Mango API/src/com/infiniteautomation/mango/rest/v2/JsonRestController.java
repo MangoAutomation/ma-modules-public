@@ -42,7 +42,7 @@ public class JsonRestController {
     }
 
     @RequestMapping(method = RequestMethod.GET, value="/data/{xid}/**")
-    public JsonNode getDataWithPath(@PathVariable String xid, HttpServletRequest request) throws UnsupportedEncodingException {
+    public JsonNode getDataAtPointer(@PathVariable String xid, HttpServletRequest request) throws UnsupportedEncodingException {
         String path = this.requestUtils.extractRemainingPath(request);
         String pointer = "/" + path;
         return this.jsonDataService.getDataAtPointer(xid, pointer);
@@ -56,9 +56,23 @@ public class JsonRestController {
     }
 
     @RequestMapping(method = RequestMethod.POST, value="/data/{xid}/**")
-    public void setDataWithPath(@PathVariable String xid, HttpServletRequest request, @RequestBody JsonNode data) throws UnsupportedEncodingException {
+    public void setDataAtPointer(@PathVariable String xid, HttpServletRequest request, @RequestBody JsonNode data) throws UnsupportedEncodingException {
         String path = this.requestUtils.extractRemainingPath(request);
         String pointer = "/" + path;
         this.jsonDataService.setDataAtPointer(xid, pointer, data);
+    }
+
+    @RequestMapping(method = RequestMethod.DELETE, value="/data/{xid}")
+    public void deleteDataAtPointer(@PathVariable String xid, HttpServletRequest request) throws UnsupportedEncodingException {
+        String path = (String) request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
+        String pointer = path.endsWith("/") ? "/" : "";
+        this.jsonDataService.deleteDataAtPointer(xid, pointer);
+    }
+
+    @RequestMapping(method = RequestMethod.DELETE, value="/data/{xid}/**")
+    public void setDataAtPointer(@PathVariable String xid, HttpServletRequest request) throws UnsupportedEncodingException {
+        String path = this.requestUtils.extractRemainingPath(request);
+        String pointer = "/" + path;
+        this.jsonDataService.deleteDataAtPointer(xid, pointer);
     }
 }
