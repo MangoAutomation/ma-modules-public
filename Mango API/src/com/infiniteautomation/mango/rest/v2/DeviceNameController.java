@@ -11,6 +11,7 @@ import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.infiniteautomation.mango.spring.db.DataPointTableDefinition;
 import com.infiniteautomation.mango.spring.db.DataSourceTableDefinition;
 import com.infiniteautomation.mango.spring.service.DataPointService;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -50,7 +52,8 @@ public class DeviceNameController {
             response = String.class,
             responseContainer = "Set")
     @RequestMapping(method = RequestMethod.GET)
-    public Set<String> deviceNames(@RequestParam(value="contains", required=false) String contains) {
+    public Set<String> deviceNames(@RequestParam(value="contains", required=false) String contains,
+            @AuthenticationPrincipal PermissionHolder user) {
         Field<String> deviceName = dataPointTable.getAlias("deviceName");
         Condition conditions;
         if(StringUtils.isEmpty(contains)) {
@@ -60,9 +63,8 @@ public class DeviceNameController {
         }
 
         Set<String> deviceNames = new HashSet<>();
-        service.customizedQuery(conditions, null, null, null, (vo, index) -> {
-            deviceNames.add(vo.getDeviceName());
-        });
+        service.queryDeviceNames(conditions, true, null, null, (name, index) -> deviceNames.add(name));
+
         return deviceNames;
     }
 
@@ -84,9 +86,8 @@ public class DeviceNameController {
         }
 
         Set<String> deviceNames = new HashSet<>();
-        service.customizedQuery(conditions, null, null, null, (vo, index) -> {
-            deviceNames.add(vo.getDeviceName());
-        });
+        service.queryDeviceNames(conditions, true, null, null, (name, index) -> deviceNames.add(name));
+
         return deviceNames;
     }
 
@@ -108,9 +109,8 @@ public class DeviceNameController {
         }
 
         Set<String> deviceNames = new HashSet<>();
-        service.customizedQuery(conditions, null, null, null, (vo, index) -> {
-            deviceNames.add(vo.getDeviceName());
-        });
+        service.queryDeviceNames(conditions, true, null, null, (name, index) -> deviceNames.add(name));
+
         return deviceNames;
     }
 }
