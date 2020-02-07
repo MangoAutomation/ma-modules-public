@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 20202 Infinite Automation Software. All rights reserved.
+ * Copyright (C) 2020 Infinite Automation Software. All rights reserved.
  */
 package com.infiniteautomation.mango.rest.v2;
 
@@ -20,6 +20,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.infiniteautomation.mango.rest.v2.model.DefaultListWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.ListWithTotal;
 import com.infiniteautomation.mango.spring.service.JsonDataService;
+import com.infiniteautomation.mango.util.RQLUtils;
+
+import net.jazdw.rql.parser.ASTNode;
 
 /**
  * @author Jared Wiltshire
@@ -84,6 +87,8 @@ public class JsonRestController {
         String path = (String) request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
         String pointer = path.endsWith("/") ? "/" : "";
         List<JsonNode> items = this.jsonDataService.valuesForDataAtPointer(xid, pointer);
+        ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
+        // TODO filter items
         return new DefaultListWithTotal<>(items);
     }
 
@@ -92,6 +97,8 @@ public class JsonRestController {
         String path = this.requestUtils.extractRemainingPath(request);
         String pointer = "/" + path;
         List<JsonNode> items = this.jsonDataService.valuesForDataAtPointer(xid, pointer);
+        ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
+        // TODO filter items
         return new DefaultListWithTotal<>(items);
     }
 }
