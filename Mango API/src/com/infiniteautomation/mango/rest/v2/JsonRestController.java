@@ -4,6 +4,7 @@
 package com.infiniteautomation.mango.rest.v2;
 
 import java.io.UnsupportedEncodingException;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -16,6 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.HandlerMapping;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.infiniteautomation.mango.rest.v2.model.DefaultListWithTotal;
+import com.infiniteautomation.mango.rest.v2.model.ListWithTotal;
 import com.infiniteautomation.mango.spring.service.JsonDataService;
 
 /**
@@ -74,5 +77,21 @@ public class JsonRestController {
         String path = this.requestUtils.extractRemainingPath(request);
         String pointer = "/" + path;
         this.jsonDataService.deleteDataAtPointer(xid, pointer);
+    }
+
+    @RequestMapping(method = RequestMethod.GET, value="/query/{xid}")
+    public ListWithTotal<JsonNode> query(@PathVariable String xid, HttpServletRequest request) throws UnsupportedEncodingException {
+        String path = (String) request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
+        String pointer = path.endsWith("/") ? "/" : "";
+        List<JsonNode> items = this.jsonDataService.valuesForDataAtPointer(xid, pointer);
+        return new DefaultListWithTotal<>(items);
+    }
+
+    @RequestMapping(method = RequestMethod.GET, value="/query/{xid}/**")
+    public ListWithTotal<JsonNode> queryAtPointer(@PathVariable String xid, HttpServletRequest request) throws UnsupportedEncodingException {
+        String path = this.requestUtils.extractRemainingPath(request);
+        String pointer = "/" + path;
+        List<JsonNode> items = this.jsonDataService.valuesForDataAtPointer(xid, pointer);
+        return new DefaultListWithTotal<>(items);
     }
 }

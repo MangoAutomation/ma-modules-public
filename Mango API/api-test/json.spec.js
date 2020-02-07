@@ -20,6 +20,7 @@ const client = createClient();
 
 const jsonDataUrl = '/rest/v2/json-data';
 const jsonUrl = '/rest/v2/json/data';
+const jsonQueryUrl = '/rest/v2/json/query';
 
 /**
  * Test data taken from JSON pointer spec - https://tools.ietf.org/html/rfc6901
@@ -102,6 +103,16 @@ describe('JSON data', function() {
         return client.restRequest({
             path: `${jsonUrl}/${encodeURIComponent(xid)}${pointerEncoded}`,
             method: 'DELETE'
+        }).then(response => {
+            return response.data;
+        });
+    };
+
+    const queryJsonData = (xid, pointer) => {
+        const pointerEncoded = [''].concat(pointer).map(p => encodePointerComponent(p)).join('/');
+        return client.restRequest({
+            path: `${jsonQueryUrl}/${encodeURIComponent(xid)}${pointerEncoded}`,
+            method: 'GET'
         }).then(response => {
             return response.data;
         });
@@ -193,4 +204,19 @@ describe('JSON data', function() {
         }
     });
 
+    describe('Query data', function() {
+        it('Whole document', function() {
+            return queryJsonData(this.test.xid, []).then(data => {
+                assert.strictEqual(data.total, Object.keys(this.test.item.jsonData).length);
+                assert.deepEqual(data.items, Object.values(this.test.item.jsonData));
+            });
+        });
+
+        it('/foo', function() {
+            return queryJsonData(this.test.xid, ['foo']).then(data => {
+                assert.strictEqual(data.total, this.test.item.jsonData.foo.length);
+                assert.deepEqual(data.items, this.test.item.jsonData.foo);
+            });
+        });
+    });
 });
