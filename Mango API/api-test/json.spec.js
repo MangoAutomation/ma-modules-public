@@ -19,7 +19,7 @@ const {createClient, addLoginHook, uuid} = require('@infinite-automation/mango-m
 const client = createClient();
 
 const jsonDataUrl = '/rest/v2/json-data';
-const jsonUrl = '/rest/v2/json';
+const jsonUrl = '/rest/v2/json/data';
 
 /**
  * Test data taken from JSON pointer spec - https://tools.ietf.org/html/rfc6901
@@ -76,7 +76,7 @@ describe('JSON data', function() {
         });
     });
 
-    const getJsonData = (xid, pointer = []) => {
+    const getJsonData = (xid, pointer) => {
         const pointerEncoded = [''].concat(pointer).map(p => encodePointerComponent(p)).join('/');
         return client.restRequest({
             path: `${jsonUrl}/${encodeURIComponent(xid)}${pointerEncoded}`,
@@ -86,22 +86,62 @@ describe('JSON data', function() {
         });
     };
 
-    it('Retrieves the whole document', function() {
-        return getJsonData(this.test.xid).then(data => {
+    const setJsonData = (xid, pointer, data) => {
+        const pointerEncoded = [''].concat(pointer).map(p => encodePointerComponent(p)).join('/');
+        return client.restRequest({
+            path: `${jsonUrl}/${encodeURIComponent(xid)}${pointerEncoded}`,
+            method: 'POST',
+            data
+        }).then(response => {
+            return response.data;
+        });
+    };
+
+    it('Gets the whole document', function() {
+        return getJsonData(this.test.xid, []).then(data => {
             assert.deepEqual(data, this.test.item.jsonData);
         });
     });
 
-    it('Retrieves /foo/0', function() {
+    it('Gets /foo/0', function() {
         return getJsonData(this.test.xid, ['foo', '0']).then(data => {
             assert.deepEqual(data, this.test.item.jsonData.foo[0]);
         });
     });
     
     for (let key of Object.keys(testData)) {
-        it(`Retrieves /${encodePointerComponent(key)}`, function() {
+        it(`Gets /${encodePointerComponent(key)}`, function() {
             return getJsonData(this.test.xid, [key]).then(data => {
                 assert.deepEqual(data, this.test.item.jsonData[key]);
+            });
+        });
+    }
+    
+    it('Sets the whole document', function() {
+        const newValue = uuid();
+        return setJsonData(this.test.xid, [], newValue).then(data => {
+            return getJsonData(this.test.xid, []).then(data => {
+                assert.strictEqual(data, newValue);
+            });
+        });
+    });
+
+    it('Sets /foo/0', function() {
+        const newValue = uuid();
+        return setJsonData(this.test.xid, ['foo', '0'], newValue).then(data => {
+            return getJsonData(this.test.xid, ['foo', '0']).then(data => {
+                assert.strictEqual(data, newValue);
+            });
+        });
+    });
+    
+    for (let key of Object.keys(testData)) {
+        it(`Sets /${encodePointerComponent(key)}`, function() {
+            const newValue = uuid();
+            return setJsonData(this.test.xid, [key], newValue).then(data => {
+                return getJsonData(this.test.xid, [key]).then(data => {
+                    assert.strictEqual(data, newValue);
+                });
             });
         });
     }
