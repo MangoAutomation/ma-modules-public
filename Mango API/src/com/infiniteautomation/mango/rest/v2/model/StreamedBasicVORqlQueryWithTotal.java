@@ -115,6 +115,8 @@ public class StreamedBasicVORqlQueryWithTotal<T extends AbstractBasicVO, TABLE e
                                 jgen.writeObject(toModel.apply(item));
                             } catch (IOException e) {
                                 //TODO Mango 4.0 this can mangle the response, perhaps handle in exception handler to reset stream
+                                //  also a nice way to cancel this query would be good as it will just keep throwing
+                                // the exception if we don't cancel it.
                                 throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, e);
                             }
                             offsetCount++;
@@ -129,6 +131,8 @@ public class StreamedBasicVORqlQueryWithTotal<T extends AbstractBasicVO, TABLE e
                         jgen.writeObject(toModel.apply(item));
                     } catch (IOException e) {
                         //TODO Mango 4.0 this can mangle the response, perhaps handle in exception handler to reset stream
+                        //  also a nice way to cancel this query would be good as it will just keep throwing
+                        // the exception if we don't cancel it.
                         throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, e);
                     }
                 });
