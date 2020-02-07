@@ -18,8 +18,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.infiniteautomation.mango.db.query.pojo.RQLToPagedObjectListQuery;
 import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
+import com.infiniteautomation.mango.rest.v2.model.FilteredListWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.ListWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.model.dataPoint.DataPointModel;
@@ -109,7 +109,6 @@ public class EventTypesRestController {
             HttpServletRequest request) {
 
         ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
-        RQLToPagedObjectListQuery<EventTypeVOModel<?,?, ?>> filter = new RQLToPagedObjectListQuery<>();
 
         List<EventTypeVOModel<?,?,?>> models = new ArrayList<>();
 
@@ -162,20 +161,7 @@ public class EventTypesRestController {
             models.add(new EventTypeVOModel<>(model, new TranslatableMessage(def.getDescriptionKey()), def.supportsSubType(), def.supportsReferenceId1(), def.supportsReferenceId2()));
         }
 
-        List<EventTypeVOModel<?,?,?>> results = query.accept(filter, models);
-        return new ListWithTotal<EventTypeVOModel<?,?,?>>() {
-
-            @Override
-            public List<EventTypeVOModel<?,?,?>> getItems() {
-                return results;
-            }
-
-            @Override
-            public int getTotal() {
-                return filter.getUnlimitedSize();
-            }
-
-        };
+        return new FilteredListWithTotal<>(models, query);
     }
 
     @ApiOperation(
@@ -190,22 +176,8 @@ public class EventTypesRestController {
             HttpServletRequest request) {
 
         ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
-        RQLToPagedObjectListQuery<EventTypeVOModel<?,?,?>> filter = new RQLToPagedObjectListQuery<>();
         List<EventTypeVOModel<?,?,?>> models = getEventTypes(type, user);
-        List<EventTypeVOModel<?,?,?>> results = query.accept(filter, models);
-        return new ListWithTotal<EventTypeVOModel<?,?,?>>() {
-
-            @Override
-            public List<EventTypeVOModel<?,?,?>> getItems() {
-                return results;
-            }
-
-            @Override
-            public int getTotal() {
-                return filter.getUnlimitedSize();
-            }
-
-        };
+        return new FilteredListWithTotal<>(models, query);
     }
 
     @ApiOperation(
@@ -221,22 +193,8 @@ public class EventTypesRestController {
             HttpServletRequest request) {
 
         ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
-        RQLToPagedObjectListQuery<EventTypeVOModel<?,?,?>> filter = new RQLToPagedObjectListQuery<>();
         List<EventTypeVOModel<?,?,?>> models = getEventTypesForSubtype(type,  StringUtils.equalsIgnoreCase(subtype, "null") ? null : subtype, user);
-        List<EventTypeVOModel<?,?,?>> results = query.accept(filter, models);
-        return new ListWithTotal<EventTypeVOModel<?,?,?>>() {
-
-            @Override
-            public List<EventTypeVOModel<?,?,?>> getItems() {
-                return results;
-            }
-
-            @Override
-            public int getTotal() {
-                return filter.getUnlimitedSize();
-            }
-
-        };
+        return new FilteredListWithTotal<>(models, query);
     }
 
     @ApiOperation(
@@ -253,22 +211,8 @@ public class EventTypesRestController {
             HttpServletRequest request) {
 
         ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
-        RQLToPagedObjectListQuery<EventTypeVOModel<?,?,?>> filter = new RQLToPagedObjectListQuery<>();
         List<EventTypeVOModel<?,?,?>> models = getEventTypesForSubtypeAndReferenceId1(type, StringUtils.equalsIgnoreCase(subtype, "null") ? null : subtype, referenceId1, user);
-        List<EventTypeVOModel<?,?,?>> results = query.accept(filter, models);
-        return new ListWithTotal<EventTypeVOModel<?,?,?>>() {
-
-            @Override
-            public List<EventTypeVOModel<?,?,?>> getItems() {
-                return results;
-            }
-
-            @Override
-            public int getTotal() {
-                return filter.getUnlimitedSize();
-            }
-
-        };
+        return new FilteredListWithTotal<>(models, query);
     }
 
     /**

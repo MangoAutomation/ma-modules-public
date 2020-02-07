@@ -28,7 +28,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.infiniteautomation.mango.db.query.pojo.RQLToObjectListQuery;
 import com.infiniteautomation.mango.rest.v2.bulk.BulkRequest;
 import com.infiniteautomation.mango.rest.v2.bulk.BulkResponse;
 import com.infiniteautomation.mango.rest.v2.bulk.VoAction;
@@ -38,7 +37,7 @@ import com.infiniteautomation.mango.rest.v2.exception.AbstractRestV2Exception;
 import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.model.ActionAndModel;
-import com.infiniteautomation.mango.rest.v2.model.ListWithTotal;
+import com.infiniteautomation.mango.rest.v2.model.FilteredListWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedVORqlQueryWithTotal;
@@ -367,30 +366,10 @@ public class EventDetectorsRestController {
                 .filter((tr) -> user.hasAdminRole() || user.getId() == tr.getUserId())
                 .collect(Collectors.toList());
 
-        List<TemporaryResource<EventDetectorBulkResponse, AbstractRestV2Exception>> results;
         ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
-        if (query != null) {
-            results = query.accept(new RQLToObjectListQuery<TemporaryResource<EventDetectorBulkResponse, AbstractRestV2Exception>>(), preFiltered);
-        }else {
-            results = preFiltered;
-        }
-
-        ListWithTotal<TemporaryResource<EventDetectorBulkResponse, AbstractRestV2Exception>> result =
-                new ListWithTotal<TemporaryResource<EventDetectorBulkResponse, AbstractRestV2Exception>>() {
-
-            @Override
-            public List<TemporaryResource<EventDetectorBulkResponse, AbstractRestV2Exception>> getItems() {
-                return results;
-            }
-
-            @Override
-            public int getTotal() {
-                return results.size();
-            }
-        };
 
         // hide result property by setting a view
-        MappingJacksonValue resultWithView = new MappingJacksonValue(result);
+        MappingJacksonValue resultWithView = new MappingJacksonValue(new FilteredListWithTotal<>(preFiltered, query));
         resultWithView.setSerializationView(Object.class);
         return resultWithView;
     }

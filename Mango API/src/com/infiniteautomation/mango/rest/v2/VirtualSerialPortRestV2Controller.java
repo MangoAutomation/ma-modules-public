@@ -21,11 +21,11 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.infiniteautomation.mango.db.query.pojo.RQLToPagedObjectListQuery;
 import com.infiniteautomation.mango.io.serial.virtual.VirtualSerialPortConfig;
 import com.infiniteautomation.mango.io.serial.virtual.VirtualSerialPortConfigDao;
 import com.infiniteautomation.mango.rest.v2.exception.AlreadyExistsRestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
+import com.infiniteautomation.mango.rest.v2.model.FilteredListWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.ListWithTotal;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.vo.User;
@@ -36,7 +36,7 @@ import io.swagger.annotations.ApiParam;
 import net.jazdw.rql.parser.ASTNode;
 
 /**
- * 
+ *
  * @author Terry Packer
  */
 @Api(value="Virtual Serial Ports", description="Admin only endpoints to manage Virtual ports")
@@ -44,139 +44,123 @@ import net.jazdw.rql.parser.ASTNode;
 @RequestMapping("/virtual-serial-ports")
 public class VirtualSerialPortRestV2Controller extends AbstractMangoRestV2Controller{
 
-	@PreAuthorize("isAdmin()")
-	@ApiOperation(
-			value = "Query all Virtual Serial Ports",
-			notes = "Admin Only"
-			)
-	@RequestMapping(method = RequestMethod.GET)
+    @PreAuthorize("isAdmin()")
+    @ApiOperation(
+            value = "Query all Virtual Serial Ports",
+            notes = "Admin Only"
+            )
+    @RequestMapping(method = RequestMethod.GET)
     public ListWithTotal<VirtualSerialPortConfig> query(
             HttpServletRequest request,
             @AuthenticationPrincipal User user) {
-	
-	    ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
-        RQLToPagedObjectListQuery<VirtualSerialPortConfig> filter = new RQLToPagedObjectListQuery<>();
-	    List<VirtualSerialPortConfig> all = VirtualSerialPortConfigDao.getInstance().getAll();
-        
-	    List<VirtualSerialPortConfig> results = query.accept(filter, all);
-	    
-	    return new ListWithTotal<VirtualSerialPortConfig>() {
 
-            @Override
-            public List<VirtualSerialPortConfig> getItems() {
-                return results;
-            }
+        ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
+        List<VirtualSerialPortConfig> all = VirtualSerialPortConfigDao.getInstance().getAll();
+        return new FilteredListWithTotal<>(all, query);
+    }
 
-            @Override
-            public int getTotal() {
-                return filter.getUnlimitedSize();
-            }
-
-        };
-	}
-
-	@PreAuthorize("isAdmin()")
-	@ApiOperation(
-			value = "Get Virtual Serial Port by XID",
-			notes = "Admin Only"
-			)
-	@RequestMapping(method = RequestMethod.GET, value="/{xid}")
+    @PreAuthorize("isAdmin()")
+    @ApiOperation(
+            value = "Get Virtual Serial Port by XID",
+            notes = "Admin Only"
+            )
+    @RequestMapping(method = RequestMethod.GET, value="/{xid}")
     public ResponseEntity<VirtualSerialPortConfig> get(
-    		@ApiParam(value = "Valid Configuration XID", required = true, allowMultiple = false)
-    		@PathVariable String xid,
-    		HttpServletRequest request) {
-		
-		VirtualSerialPortConfig config  = VirtualSerialPortConfigDao.getInstance().getByXid(xid);
-		if(config == null)
-			throw new NotFoundRestException();
-		
-		return new ResponseEntity<>(config, HttpStatus.OK);
-	}
-	
-	@PreAuthorize("isAdmin()")
-	@ApiOperation(
-			value = "Create a virtual serial port",
-			notes = "Cannot already exist, admin only"
-			)
-	@RequestMapping(method = RequestMethod.POST)
+            @ApiParam(value = "Valid Configuration XID", required = true, allowMultiple = false)
+            @PathVariable String xid,
+            HttpServletRequest request) {
+
+        VirtualSerialPortConfig config  = VirtualSerialPortConfigDao.getInstance().getByXid(xid);
+        if(config == null)
+            throw new NotFoundRestException();
+
+        return new ResponseEntity<>(config, HttpStatus.OK);
+    }
+
+    @PreAuthorize("isAdmin()")
+    @ApiOperation(
+            value = "Create a virtual serial port",
+            notes = "Cannot already exist, admin only"
+            )
+    @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<VirtualSerialPortConfig> save(
-    		@ApiParam(value = "Serial Port", required = true)
-    		@RequestBody(required=true)  VirtualSerialPortConfig model,
-    		@AuthenticationPrincipal User user,
-    		UriComponentsBuilder builder, HttpServletRequest request) {
-		
-		//Check to see if it already exists
-		if(!StringUtils.isEmpty(model.getXid())){
-			VirtualSerialPortConfig existing = VirtualSerialPortConfigDao.getInstance().getByXid(model.getXid());
-			if(existing != null){
-				throw new AlreadyExistsRestException(model.getXid());
- 			}
-		}
-		
-		//Validate
-		model.ensureValid();
+            @ApiParam(value = "Serial Port", required = true)
+            @RequestBody(required=true)  VirtualSerialPortConfig model,
+            @AuthenticationPrincipal User user,
+            UriComponentsBuilder builder, HttpServletRequest request) {
 
-		//Save it
-		VirtualSerialPortConfigDao.getInstance().save(model);
-		
+        //Check to see if it already exists
+        if(!StringUtils.isEmpty(model.getXid())){
+            VirtualSerialPortConfig existing = VirtualSerialPortConfigDao.getInstance().getByXid(model.getXid());
+            if(existing != null){
+                throw new AlreadyExistsRestException(model.getXid());
+            }
+        }
+
+        //Validate
+        model.ensureValid();
+
+        //Save it
+        VirtualSerialPortConfigDao.getInstance().save(model);
+
         //Put a link to the updated data in the header?
-    	URI location = builder.path("/virtual-serial-ports/{xid}").buildAndExpand(model.getXid()).toUri();
-    	return getResourceCreated(model, location);
+        URI location = builder.path("/virtual-serial-ports/{xid}").buildAndExpand(model.getXid()).toUri();
+        return getResourceCreated(model, location);
     }
-	
-	@PreAuthorize("isAdmin()")
-	@ApiOperation(
-			value = "Update virtual serial port",
-			notes = ""
-			)
-	@RequestMapping(method = RequestMethod.PUT, value={"/{xid}"})
+
+    @PreAuthorize("isAdmin()")
+    @ApiOperation(
+            value = "Update virtual serial port",
+            notes = ""
+            )
+    @RequestMapping(method = RequestMethod.PUT, value={"/{xid}"})
     public ResponseEntity<VirtualSerialPortConfig> update(
-    		@ApiParam(value = "Valid virtual serial port id", required = true, allowMultiple = false)
-    		@PathVariable String xid,
-    		@ApiParam(value = "Virtual Serial Port", required = true)
-    		@RequestBody(required=true)  VirtualSerialPortConfig model,
-    		@AuthenticationPrincipal User user,
-    		UriComponentsBuilder builder, HttpServletRequest request) {
+            @ApiParam(value = "Valid virtual serial port id", required = true, allowMultiple = false)
+            @PathVariable String xid,
+            @ApiParam(value = "Virtual Serial Port", required = true)
+            @RequestBody(required=true)  VirtualSerialPortConfig model,
+            @AuthenticationPrincipal User user,
+            UriComponentsBuilder builder, HttpServletRequest request) {
 
-		//Check to see if it already exists
-		VirtualSerialPortConfig existing = VirtualSerialPortConfigDao.getInstance().getByXid(model.getXid());
-		if(existing == null)
-			throw new NotFoundRestException();
-		
-		//Validate
-		model.ensureValid();
+        //Check to see if it already exists
+        VirtualSerialPortConfig existing = VirtualSerialPortConfigDao.getInstance().getByXid(model.getXid());
+        if(existing == null)
+            throw new NotFoundRestException();
 
-		//Save it
-		VirtualSerialPortConfigDao.getInstance().save(model);
-		
+        //Validate
+        model.ensureValid();
+
+        //Save it
+        VirtualSerialPortConfigDao.getInstance().save(model);
+
         //Put a link to the updated data in the header
-    	URI location = builder.path("/virtual-serial-ports/{xid}").buildAndExpand(model.getXid()).toUri();
+        URI location = builder.path("/virtual-serial-ports/{xid}").buildAndExpand(model.getXid()).toUri();
 
-    	return getResourceUpdated(model, location);
+        return getResourceUpdated(model, location);
     }
-	
-	@PreAuthorize("isAdmin()")
-	@ApiOperation(
-			value = "Delete virtual serial port",
-			notes = ""
-			)
-	@RequestMapping(method = RequestMethod.DELETE, value={"/{xid}"})
-    public ResponseEntity<VirtualSerialPortConfig> delete(
-       		@ApiParam(value = "Valid Virtual serial port XID", required = true, allowMultiple = false)
-       	 	@PathVariable String xid,
-    		@AuthenticationPrincipal User user,
-    		UriComponentsBuilder builder, HttpServletRequest request) {
 
-		//Check to see if it already exists
-		VirtualSerialPortConfig existing = VirtualSerialPortConfigDao.getInstance().getByXid(xid);
-		if(existing == null)
-			throw new NotFoundRestException();
-		
-		//Ensure we set the xid
-		existing.setXid(xid);
-		
-		//Save it
-		VirtualSerialPortConfigDao.getInstance().remove(existing);
+    @PreAuthorize("isAdmin()")
+    @ApiOperation(
+            value = "Delete virtual serial port",
+            notes = ""
+            )
+    @RequestMapping(method = RequestMethod.DELETE, value={"/{xid}"})
+    public ResponseEntity<VirtualSerialPortConfig> delete(
+            @ApiParam(value = "Valid Virtual serial port XID", required = true, allowMultiple = false)
+            @PathVariable String xid,
+            @AuthenticationPrincipal User user,
+            UriComponentsBuilder builder, HttpServletRequest request) {
+
+        //Check to see if it already exists
+        VirtualSerialPortConfig existing = VirtualSerialPortConfigDao.getInstance().getByXid(xid);
+        if(existing == null)
+            throw new NotFoundRestException();
+
+        //Ensure we set the xid
+        existing.setXid(xid);
+
+        //Save it
+        VirtualSerialPortConfigDao.getInstance().remove(existing);
 
         return new ResponseEntity<>(existing, HttpStatus.OK);
     }

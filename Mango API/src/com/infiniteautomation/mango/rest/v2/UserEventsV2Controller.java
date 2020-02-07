@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -23,7 +24,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.infiniteautomation.mango.db.query.QueryAttribute;
-import com.infiniteautomation.mango.db.query.pojo.RQLToObjectListQuery;
+import com.infiniteautomation.mango.rest.v2.model.FilteredListWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.ListWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.model.event.EventInstanceModel;
@@ -76,32 +77,12 @@ public class UserEventsV2Controller extends AbstractMangoRestV2Controller{
 
         //Parse the RQL Query
         ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
-        List<EventInstance> results;
-        List<EventInstance> events = Common.eventManager.getAllActiveUserEvents(user);
-        //TODO in v3 change this to query on models not event instances, it is confusing
-        if(query != null)
-            results = query.accept(new RQLToObjectListQuery<EventInstance>(), events);
-        else
-            results = events;
-        List<EventInstanceModel> models = new ArrayList<>();
-        //Convert to models
-        for(EventInstance event : results) {
-            models.add(map.apply(event, user));
-        }
 
-        return new ListWithTotal<EventInstanceModel>() {
+        List<EventInstanceModel> events = Common.eventManager.getAllActiveUserEvents(user).stream().map(e -> {
+            return map.apply(e, user);
+        }).collect(Collectors.toList());
 
-            @Override
-            public List<EventInstanceModel> getItems() {
-                return models;
-            }
-
-            @Override
-            public int getTotal() {
-                return events.size();
-            }
-
-        };
+        return new FilteredListWithTotal<>(events, query);
     }
 
     @ApiOperation(

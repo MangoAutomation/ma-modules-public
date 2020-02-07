@@ -42,12 +42,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.infiniteautomation.mango.db.query.pojo.RQLToObjectListQuery;
 import com.infiniteautomation.mango.io.serial.SerialPortIdentifier;
 import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.exception.SendEmailFailedRestException;
 import com.infiniteautomation.mango.rest.v2.exception.ServerErrorException;
+import com.infiniteautomation.mango.rest.v2.model.FilteredListWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.ListWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.email.EmailContentModel;
 import com.infiniteautomation.mango.rest.v2.model.server.NetworkInterfaceModel;
@@ -127,24 +127,9 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
     @RequestMapping(method = RequestMethod.GET, value = "/timezones")
     public ListWithTotal<TimezoneModel> queryTimezone(
             HttpServletRequest request) {
-        ASTNode root = RQLUtils.parseRQLtoAST(request.getQueryString());
-        List<TimezoneModel> list =
-                root.accept(new RQLToObjectListQuery<TimezoneModel>(), allTimezones);
-        ListWithTotal<TimezoneModel> model =
-                new ListWithTotal<TimezoneModel>() {
 
-            @Override
-            public List<TimezoneModel> getItems() {
-                return list;
-            }
-
-            @Override
-            public int getTotal() {
-                return allTimezones.size() + 1;
-            }
-
-        };
-        return model;
+        ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
+        return new FilteredListWithTotal<>(allTimezones, query);
     }
 
     @PreAuthorize("isAdmin()")

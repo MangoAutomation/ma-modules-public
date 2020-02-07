@@ -11,16 +11,9 @@ import java.util.List;
 public class DefaultListWithTotal<T> implements ListWithTotal<T> {
 
     private final List<T> items;
-    private final Integer total;
 
     public DefaultListWithTotal(List<T> items) {
         this.items = items;
-        this.total = null;
-    }
-
-    public DefaultListWithTotal(List<T> items, int total) {
-        this.items = items;
-        this.total = total;
     }
 
     @Override
@@ -30,9 +23,6 @@ public class DefaultListWithTotal<T> implements ListWithTotal<T> {
 
     @Override
     public int getTotal() {
-        if (this.total != null) {
-            return this.total;
-        }
         return items.size();
     }
 
