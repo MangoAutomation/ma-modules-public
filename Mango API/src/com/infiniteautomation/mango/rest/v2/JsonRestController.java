@@ -4,7 +4,8 @@
 package com.infiniteautomation.mango.rest.v2;
 
 import java.io.UnsupportedEncodingException;
-import java.util.List;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -17,8 +18,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.HandlerMapping;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.infiniteautomation.mango.rest.v2.model.DefaultListWithTotal;
-import com.infiniteautomation.mango.rest.v2.model.ListWithTotal;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.infiniteautomation.mango.db.query.pojo.RQLFilterJsonNode;
+import com.infiniteautomation.mango.rest.v2.model.ArrayWithTotal;
+import com.infiniteautomation.mango.rest.v2.model.FilteredStreamWithTotal;
 import com.infiniteautomation.mango.spring.service.JsonDataService;
 import com.infiniteautomation.mango.util.RQLUtils;
 
@@ -83,22 +86,22 @@ public class JsonRestController {
     }
 
     @RequestMapping(method = RequestMethod.GET, value="/query/{xid}")
-    public ListWithTotal<JsonNode> query(@PathVariable String xid, HttpServletRequest request) throws UnsupportedEncodingException {
+    public ArrayWithTotal<Stream<JsonNode>> query(@PathVariable String xid, HttpServletRequest request) throws UnsupportedEncodingException {
         String path = (String) request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
         String pointer = path.endsWith("/") ? "/" : "";
-        List<JsonNode> items = this.jsonDataService.valuesForDataAtPointer(xid, pointer);
+        ArrayNode items = this.jsonDataService.valuesForDataAtPointer(xid, pointer);
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
-        // TODO filter items
-        return new DefaultListWithTotal<>(items);
+        Stream<JsonNode> stream = StreamSupport.stream(items.spliterator(), false);
+        return new FilteredStreamWithTotal<>(stream, new RQLFilterJsonNode(rql));
     }
 
     @RequestMapping(method = RequestMethod.GET, value="/query/{xid}/**")
-    public ListWithTotal<JsonNode> queryAtPointer(@PathVariable String xid, HttpServletRequest request) throws UnsupportedEncodingException {
+    public ArrayWithTotal<Stream<JsonNode>> queryAtPointer(@PathVariable String xid, HttpServletRequest request) throws UnsupportedEncodingException {
         String path = this.requestUtils.extractRemainingPath(request);
         String pointer = "/" + path;
-        List<JsonNode> items = this.jsonDataService.valuesForDataAtPointer(xid, pointer);
+        ArrayNode items = this.jsonDataService.valuesForDataAtPointer(xid, pointer);
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
-        // TODO filter items
-        return new DefaultListWithTotal<>(items);
+        Stream<JsonNode> stream = StreamSupport.stream(items.spliterator(), false);
+        return new FilteredStreamWithTotal<>(stream, new RQLFilterJsonNode(rql));
     }
 }
