@@ -42,7 +42,12 @@ describe('JSON data', function() {
         "i\\j": 5,
         "k\"l": 6,
         " ": 7,
-        "m~n": 8
+        "m~n": 8,
+        "testArray": [
+            {name: 'nameA', value: 1},
+            {name: 'nameB', value: 2},
+            {name: 'nameC', value: 3}
+        ]
     };
     
     const encodePointerComponent = c => {
@@ -108,10 +113,10 @@ describe('JSON data', function() {
         });
     };
 
-    const queryJsonData = (xid, pointer) => {
+    const queryJsonData = (xid, pointer, rql = '') => {
         const pointerEncoded = [''].concat(pointer).map(p => encodePointerComponent(p)).join('/');
         return client.restRequest({
-            path: `${jsonQueryUrl}/${encodeURIComponent(xid)}${pointerEncoded}`,
+            path: `${jsonQueryUrl}/${encodeURIComponent(xid)}${pointerEncoded}${rql}`,
             method: 'GET'
         }).then(response => {
             return response.data;
@@ -216,6 +221,27 @@ describe('JSON data', function() {
             return queryJsonData(this.test.xid, ['foo']).then(data => {
                 assert.strictEqual(data.total, this.test.item.jsonData.foo.length);
                 assert.deepEqual(data.items, this.test.item.jsonData.foo);
+            });
+        });
+
+        it('/testArray', function() {
+            return queryJsonData(this.test.xid, ['testArray']).then(data => {
+                assert.strictEqual(data.total, this.test.item.jsonData.testArray.length);
+                assert.deepEqual(data.items, this.test.item.jsonData.testArray);
+            });
+        });
+
+        it('/testArray?sort(name)', function() {
+            return queryJsonData(this.test.xid, ['testArray'], '?sort(name)').then(data => {
+                assert.strictEqual(data.total, this.test.item.jsonData.testArray.length);
+                assert.deepEqual(data.items, this.test.item.jsonData.testArray);
+            });
+        });
+
+        it('/testArray?sort(-name)', function() {
+            return queryJsonData(this.test.xid, ['testArray'], '?sort(-name)').then(data => {
+                assert.strictEqual(data.total, this.test.item.jsonData.testArray.length);
+                assert.deepEqual(data.items, this.test.item.jsonData.testArray.reverse());
             });
         });
     });
