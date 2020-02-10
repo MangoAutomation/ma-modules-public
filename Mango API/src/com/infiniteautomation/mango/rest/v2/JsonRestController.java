@@ -5,7 +5,6 @@ package com.infiniteautomation.mango.rest.v2;
 
 import java.io.UnsupportedEncodingException;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -91,8 +90,7 @@ public class JsonRestController {
         String pointer = path.endsWith("/") ? "/" : "";
         ArrayNode items = this.jsonDataService.valuesForDataAtPointer(xid, pointer);
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
-        Stream<JsonNode> stream = StreamSupport.stream(items.spliterator(), false);
-        return new FilteredStreamWithTotal<>(stream, new RQLFilterJsonNode(rql));
+        return new FilteredStreamWithTotal<>(items, new RQLFilterJsonNode(rql));
     }
 
     @RequestMapping(method = RequestMethod.GET, value="/query/{xid}/**")
@@ -101,7 +99,6 @@ public class JsonRestController {
         String pointer = "/" + path;
         ArrayNode items = this.jsonDataService.valuesForDataAtPointer(xid, pointer);
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
-        Stream<JsonNode> stream = StreamSupport.stream(items.spliterator(), false);
-        return new FilteredStreamWithTotal<>(stream, new RQLFilterJsonNode(rql));
+        return new FilteredStreamWithTotal<>(items, new RQLFilterJsonNode(rql));
     }
 }
