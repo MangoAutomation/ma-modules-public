@@ -67,6 +67,16 @@ describe('Log file query tests', function(){
       });
     });
 
+    it('Simple level query for less than ERROR', () => {
+      return client.restRequest({
+          path: '/rest/v2/logging/by-filename/ma.log?level<ERROR&limit(1)',
+          method: 'GET'
+      }).then(response => {
+          // INFO is lower than ERROR (but not alphabetically), should be at least one INFO
+          assert.equal(response.data.length, 1);
+      });
+    });
+
     it('Simple time query', () => {
       testContext.fiveHourAgo = new Date(new Date().getTime() - 18000000);
       return client.restRequest({
@@ -108,7 +118,7 @@ describe('Log file query tests', function(){
             data: 'REST api log query test'
         }).then(()=> {
             return client.restRequest({
-                path: '/rest/v2/logging/by-filename/ma.log?like(classname,.*infiniteautomation.mango.rest.v2.*)&limit(5)',
+                path: '/rest/v2/logging/by-filename/ma.log?like(classname,*infiniteautomation.mango.rest.v2.*)&limit(5)',
                 method: 'GET'
             }).then(response => {
                 assert.isAtLeast(response.data.length, 1);
@@ -148,7 +158,7 @@ describe('Log file query tests', function(){
           data: 'REST api log query test'
         }).then(()=> {
           return client.restRequest({
-              path: '/rest/v2/logging/by-filename/ma.log?like(method,' + encodeURIComponent('logEr.*') + ')&limit(5)',
+              path: '/rest/v2/logging/by-filename/ma.log?like(method,' + encodeURIComponent('logEr*') + ')&limit(5)',
               method: 'GET'
           }).then(response => {
               assert.isAtLeast(response.data.length, 1);
@@ -184,7 +194,7 @@ describe('Log file query tests', function(){
             data: 'REST api log query test'
         }).then(()=> {
             return client.restRequest({
-                path: '/rest/v2/logging/by-filename/ma.log?like(message,' + encodeURIComponent('REST api log query.*') + ')&limit(1)',
+                path: '/rest/v2/logging/by-filename/ma.log?like(message,' + encodeURIComponent('REST api log query*') + ')&limit(1)',
                 method: 'GET'
             }).then(response => {
                 assert.isAtLeast(response.data.length, 1);

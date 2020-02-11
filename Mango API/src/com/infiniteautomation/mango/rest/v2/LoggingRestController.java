@@ -96,17 +96,19 @@ public class LoggingRestController {
     @ApiOperation(value = "Query ma.log logs", response = LogMessageModel.class, responseContainer = "List")
     @ApiImplicitParams({
         @ApiImplicitParam(name = "level", paramType="query", allowableValues = "TRACE,DEBUG,INFO,WARN,ERROR,FATAL"),
-        @ApiImplicitParam(name = "classname", paramType="query"),
+        @ApiImplicitParam(name = "className", paramType="query"),
         @ApiImplicitParam(name = "methodName", paramType="query"),
         @ApiImplicitParam(name = "lineNumber", paramType="query", dataType = "int"),
-        @ApiImplicitParam(name = "time", paramType="query", dataType = "date"),
+        @ApiImplicitParam(name = "timestamp", paramType="query", dataType = "date"),
         @ApiImplicitParam(name = "message", paramType="query")
     })
     @RequestMapping(method = RequestMethod.GET, value="/by-filename/{filename}")
     public JSONStreamedArray query(
             @PathVariable String filename,
             HttpServletRequest request) {
+
         ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
+
         File file = new File(Common.getLogsDir(), filename);
         if(file.exists()){
             //Pattern pattern = new
