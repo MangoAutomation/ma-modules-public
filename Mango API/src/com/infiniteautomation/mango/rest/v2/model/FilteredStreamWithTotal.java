@@ -13,7 +13,7 @@ import com.infiniteautomation.mango.db.query.pojo.RQLFilter;
 /**
  * @author Jared Wiltshire
  */
-public class FilteredStreamWithTotal<T> implements ArrayWithTotal<Stream<T>> {
+public class FilteredStreamWithTotal<T> implements StreamWithTotal<T> {
 
     private final Supplier<Stream<T>> streamSupplier;
     private final RQLFilter<T> filter;
