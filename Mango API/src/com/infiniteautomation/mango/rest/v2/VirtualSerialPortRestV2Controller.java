@@ -25,8 +25,8 @@ import com.infiniteautomation.mango.io.serial.virtual.VirtualSerialPortConfig;
 import com.infiniteautomation.mango.io.serial.virtual.VirtualSerialPortConfigDao;
 import com.infiniteautomation.mango.rest.v2.exception.AlreadyExistsRestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
-import com.infiniteautomation.mango.rest.v2.model.FilteredListWithTotal;
-import com.infiniteautomation.mango.rest.v2.model.ListWithTotal;
+import com.infiniteautomation.mango.rest.v2.model.FilteredStreamWithTotal;
+import com.infiniteautomation.mango.rest.v2.model.StreamWithTotal;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.vo.User;
 
@@ -50,13 +50,13 @@ public class VirtualSerialPortRestV2Controller extends AbstractMangoRestV2Contro
             notes = "Admin Only"
             )
     @RequestMapping(method = RequestMethod.GET)
-    public ListWithTotal<VirtualSerialPortConfig> query(
+    public StreamWithTotal<VirtualSerialPortConfig> query(
             HttpServletRequest request,
             @AuthenticationPrincipal User user) {
 
         ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
         List<VirtualSerialPortConfig> all = VirtualSerialPortConfigDao.getInstance().getAll();
-        return new FilteredListWithTotal<>(all, query);
+        return new FilteredStreamWithTotal<>(all, query);
     }
 
     @PreAuthorize("isAdmin()")

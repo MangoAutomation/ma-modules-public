@@ -9,6 +9,9 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import com.infiniteautomation.mango.db.query.pojo.RQLFilter;
+import com.infiniteautomation.mango.db.query.pojo.RQLFilterJavaBean;
+
+import net.jazdw.rql.parser.ASTNode;
 
 /**
  * @author Jared Wiltshire
@@ -18,6 +21,10 @@ public class FilteredStreamWithTotal<T> implements StreamWithTotal<T> {
     private final Supplier<Stream<T>> streamSupplier;
     private final RQLFilter<T> filter;
 
+    public FilteredStreamWithTotal(Iterable<T> iterable, ASTNode query) {
+        this(iterable, new RQLFilterJavaBean<>(query));
+    }
+
     public FilteredStreamWithTotal(Iterable<T> iterable, RQLFilter<T> filter) {
         this(() -> {
             if (iterable instanceof Collection) {
@@ -25,6 +32,10 @@ public class FilteredStreamWithTotal<T> implements StreamWithTotal<T> {
             }
             return StreamSupport.stream(iterable.spliterator(), false);
         }, filter);
+    }
+
+    public FilteredStreamWithTotal(Supplier<Stream<T>> streamSupplier, ASTNode query) {
+        this(streamSupplier, new RQLFilterJavaBean<>(query));
     }
 
     public FilteredStreamWithTotal(Supplier<Stream<T>> streamSupplier, RQLFilter<T> filter) {

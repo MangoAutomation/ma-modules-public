@@ -37,7 +37,7 @@ import com.infiniteautomation.mango.rest.v2.exception.AbstractRestV2Exception;
 import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.model.ActionAndModel;
-import com.infiniteautomation.mango.rest.v2.model.FilteredListWithTotal;
+import com.infiniteautomation.mango.rest.v2.model.FilteredStreamWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedVORqlQueryWithTotal;
@@ -369,7 +369,7 @@ public class EventDetectorsRestController {
         ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
 
         // hide result property by setting a view
-        MappingJacksonValue resultWithView = new MappingJacksonValue(new FilteredListWithTotal<>(preFiltered, query));
+        MappingJacksonValue resultWithView = new MappingJacksonValue(new FilteredStreamWithTotal<>(preFiltered, query));
         resultWithView.setSerializationView(Object.class);
         return resultWithView;
     }

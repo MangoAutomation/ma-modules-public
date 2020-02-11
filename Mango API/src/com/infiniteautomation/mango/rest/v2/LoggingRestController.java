@@ -6,7 +6,6 @@ package com.infiniteautomation.mango.rest.v2;
 
 import java.io.File;
 import java.io.IOException;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -26,14 +25,12 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.infiniteautomation.mango.db.query.QueryAttribute;
 import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.model.JSONStreamedArray;
 import com.infiniteautomation.mango.rest.v2.model.filestore.FileModel;
 import com.infiniteautomation.mango.rest.v2.model.logging.LogMessageModel;
 import com.infiniteautomation.mango.rest.v2.model.logging.LogQueryArrayStream;
-import com.infiniteautomation.mango.rest.v2.model.query.TableModel;
 import com.infiniteautomation.mango.spring.service.FileStoreService;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.Common;
@@ -44,8 +41,6 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
 import net.jazdw.rql.parser.ASTNode;
 
 /**
@@ -95,11 +90,11 @@ public class LoggingRestController {
     @PreAuthorize("isAdmin()")
     @ApiOperation(value = "Query ma.log logs", response = LogMessageModel.class, responseContainer = "List")
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "level", paramType="query", allowableValues = "TRACE,DEBUG,INFO,WARN,ERROR,FATAL"),
-        @ApiImplicitParam(name = "className", paramType="query"),
-        @ApiImplicitParam(name = "methodName", paramType="query"),
+        @ApiImplicitParam(name = "level", paramType="query", allowableValues = "ALL,TRACE,DEBUG,INFO,WARN,ERROR,FATAL,OFF"),
+        @ApiImplicitParam(name = "classname", paramType="query"),
+        @ApiImplicitParam(name = "method", paramType="query"),
         @ApiImplicitParam(name = "lineNumber", paramType="query", dataType = "int"),
-        @ApiImplicitParam(name = "timestamp", paramType="query", dataType = "date"),
+        @ApiImplicitParam(name = "time", paramType="query", dataType = "date"),
         @ApiImplicitParam(name = "message", paramType="query")
     })
     @RequestMapping(method = RequestMethod.GET, value="/by-filename/{filename}")
@@ -141,26 +136,4 @@ public class LoggingRestController {
         }
     }
 
-
-    @ApiOperation(
-            value = "Get Explaination For Query",
-            notes = "What is Query-able on this model"
-            )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok"),
-            @ApiResponse(code = 403, message = "User does not have access")
-    })
-    @RequestMapping(method = RequestMethod.GET, value = "/explain-query")
-    public TableModel getTableModel() {
-
-        TableModel model = new TableModel();
-        List<QueryAttribute> attributes = new ArrayList<QueryAttribute>();
-        attributes.add(new QueryAttribute("level", null, Types.VARCHAR));
-        attributes.add(new QueryAttribute("classname", null, Types.VARCHAR));
-        attributes.add(new QueryAttribute("method", null, Types.VARCHAR));
-        attributes.add(new QueryAttribute("time", null, Types.INTEGER));
-        attributes.add(new QueryAttribute("message", null, Types.VARCHAR));
-        model.setAttributes(attributes);
-        return model;
-    }
 }

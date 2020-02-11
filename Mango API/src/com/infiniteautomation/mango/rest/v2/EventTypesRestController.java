@@ -19,9 +19,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
-import com.infiniteautomation.mango.rest.v2.model.FilteredListWithTotal;
-import com.infiniteautomation.mango.rest.v2.model.ListWithTotal;
+import com.infiniteautomation.mango.rest.v2.model.FilteredStreamWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
+import com.infiniteautomation.mango.rest.v2.model.StreamWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.dataPoint.DataPointModel;
 import com.infiniteautomation.mango.rest.v2.model.datasource.AbstractDataSourceModel;
 import com.infiniteautomation.mango.rest.v2.model.event.AbstractEventTypeModel;
@@ -104,7 +104,7 @@ public class EventTypesRestController {
             response=EventTypeVOModel.class,
             responseContainer="List")
     @RequestMapping(method = RequestMethod.GET)
-    public ListWithTotal<EventTypeVOModel<?,?,?>> queryAllEventTypes(
+    public StreamWithTotal<EventTypeVOModel<?,?,?>> queryAllEventTypes(
             @AuthenticationPrincipal User user,
             HttpServletRequest request) {
 
@@ -161,7 +161,7 @@ public class EventTypesRestController {
             models.add(new EventTypeVOModel<>(model, new TranslatableMessage(def.getDescriptionKey()), def.supportsSubType(), def.supportsReferenceId1(), def.supportsReferenceId2()));
         }
 
-        return new FilteredListWithTotal<>(models, query);
+        return new FilteredStreamWithTotal<>(models, query);
     }
 
     @ApiOperation(
@@ -170,14 +170,14 @@ public class EventTypesRestController {
             response=EventTypeVOModel.class,
             responseContainer="List")
     @RequestMapping(method = RequestMethod.GET, value="/{type}")
-    public ListWithTotal<EventTypeVOModel<?,?,?>> queryEventTypesForType(
+    public StreamWithTotal<EventTypeVOModel<?,?,?>> queryEventTypesForType(
             @PathVariable(value="type") @ApiParam(value = "Event type to query over", required = true) String type,
             @AuthenticationPrincipal User user,
             HttpServletRequest request) {
 
         ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
         List<EventTypeVOModel<?,?,?>> models = getEventTypes(type, user);
-        return new FilteredListWithTotal<>(models, query);
+        return new FilteredStreamWithTotal<>(models, query);
     }
 
     @ApiOperation(
@@ -186,7 +186,7 @@ public class EventTypesRestController {
             response=EventTypeVOModel.class,
             responseContainer="List")
     @RequestMapping(method = RequestMethod.GET, value="/{type}/{subtype}")
-    public ListWithTotal<EventTypeVOModel<?,?,?>> queryEventTypesForTypeAndSubType(
+    public StreamWithTotal<EventTypeVOModel<?,?,?>> queryEventTypesForTypeAndSubType(
             @PathVariable(value="type") @ApiParam(value = "Event type to query over", required = true) String type,
             @PathVariable(value="subtype") @ApiParam(value = "Event subtype to query over", required = true)  String subtype,
             @AuthenticationPrincipal User user,
@@ -194,7 +194,7 @@ public class EventTypesRestController {
 
         ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
         List<EventTypeVOModel<?,?,?>> models = getEventTypesForSubtype(type,  StringUtils.equalsIgnoreCase(subtype, "null") ? null : subtype, user);
-        return new FilteredListWithTotal<>(models, query);
+        return new FilteredStreamWithTotal<>(models, query);
     }
 
     @ApiOperation(
@@ -203,7 +203,7 @@ public class EventTypesRestController {
             response=EventTypeVOModel.class,
             responseContainer="List")
     @RequestMapping(method = RequestMethod.GET, value="/{type}/{subtype}/{referenceId1}")
-    public ListWithTotal<EventTypeVOModel<?,?,?>> queryEventTypesForTypeAndSubType(
+    public StreamWithTotal<EventTypeVOModel<?,?,?>> queryEventTypesForTypeAndSubType(
             @PathVariable(value="type") @ApiParam(value = "Event type to query over", required = true) String type,
             @PathVariable(value="subtype") @ApiParam(value = "Event subtype to query over", required = true) String subtype,
             @PathVariable(value="referenceId1") @ApiParam(value = "Reference ID 1 locator", required = true)  Integer referenceId1,
@@ -212,7 +212,7 @@ public class EventTypesRestController {
 
         ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
         List<EventTypeVOModel<?,?,?>> models = getEventTypesForSubtypeAndReferenceId1(type, StringUtils.equalsIgnoreCase(subtype, "null") ? null : subtype, referenceId1, user);
-        return new FilteredListWithTotal<>(models, query);
+        return new FilteredStreamWithTotal<>(models, query);
     }
 
     /**

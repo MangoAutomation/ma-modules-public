@@ -47,8 +47,8 @@ import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.exception.SendEmailFailedRestException;
 import com.infiniteautomation.mango.rest.v2.exception.ServerErrorException;
-import com.infiniteautomation.mango.rest.v2.model.FilteredListWithTotal;
-import com.infiniteautomation.mango.rest.v2.model.ListWithTotal;
+import com.infiniteautomation.mango.rest.v2.model.FilteredStreamWithTotal;
+import com.infiniteautomation.mango.rest.v2.model.StreamWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.email.EmailContentModel;
 import com.infiniteautomation.mango.rest.v2.model.server.NetworkInterfaceModel;
 import com.infiniteautomation.mango.rest.v2.model.server.ServerCommandModel;
@@ -125,11 +125,11 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
     @ApiOperation(value = "Query Timezones", notes = "", response = TimezoneModel.class,
             responseContainer = "Array")
     @RequestMapping(method = RequestMethod.GET, value = "/timezones")
-    public ListWithTotal<TimezoneModel> queryTimezone(
+    public StreamWithTotal<TimezoneModel> queryTimezone(
             HttpServletRequest request) {
 
         ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
-        return new FilteredListWithTotal<>(allTimezones, query);
+        return new FilteredStreamWithTotal<>(allTimezones, query);
     }
 
     @PreAuthorize("isAdmin()")
