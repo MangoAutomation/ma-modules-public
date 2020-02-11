@@ -42,15 +42,16 @@ describe('User Event query tests', function(){
         });
     });
 
-    it('Query inserted event', () => {
-      return client.restRequest({
-          path: `/rest/v2/user-events?eq(eventType.eventType,SYSTEM)&eq(eventType.eventSubtype,TestEvent)&sort(-activeTimestamp)&limit(1)`,
-          method: 'GET'
-      }).then(response => {
-          assert.isAbove(response.data.total, 0);
-          assert.equal(response.data.items.length, 1);
-          assert.equal(response.data.items[0].eventType.eventType, 'SYSTEM');
-          assert.equal(response.data.items[0].eventType.subType, 'TestEvent');
-      });
+    it('Query inserted event', function() {
+        this.timeout(10000);
+        return client.restRequest({
+            path: `/rest/v2/user-events?eq(eventType.eventType,SYSTEM)&eq(eventType.eventSubtype,TestEvent)&sort(-activeTimestamp)&limit(1)`,
+            method: 'GET'
+        }).then(response => {
+            assert.isAbove(response.data.total, 0);
+            assert.equal(response.data.items.length, 1);
+            assert.equal(response.data.items[0].eventType.eventType, 'SYSTEM');
+            assert.equal(response.data.items[0].eventType.subType, 'TestEvent');
+        });
     });
 });
