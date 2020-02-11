@@ -316,15 +316,15 @@ describe('JSON data', function() {
             });
         });
 
-        it('/testArray?optional=is=null', function() {
-            return queryJsonData(this.test.xid, ['testArray'], '?optional=is=null').then(data => {
+        it('/testArray?optional=null', function() {
+            return queryJsonData(this.test.xid, ['testArray'], '?optional=null').then(data => {
                 assert.strictEqual(data.total, 1);
                 assert.deepEqual(data.items, this.test.item.jsonData.testArray.slice(0, 1));
             });
         });
 
-        it('/testArray?not(optional=is=null)', function() {
-            return queryJsonData(this.test.xid, ['testArray'], '?not(optional=is=null)').then(data => {
+        it('/testArray?not(optional=null)', function() {
+            return queryJsonData(this.test.xid, ['testArray'], '?not(optional=null)').then(data => {
                 assert.strictEqual(data.total, 2);
                 assert.deepEqual(data.items, this.test.item.jsonData.testArray.slice(1, 3));
             });

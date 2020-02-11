@@ -199,7 +199,7 @@ public class MangoLogFilePatternReceiver {
                         if (classname.equals((String) classComparison.getArgument(0)))
                             return;
                         break;
-                    case LIKE:
+                    case MATCH:
                         if (!classname.matches((String) classComparison.getArgument(0)))
                             return;
                         break;
@@ -219,7 +219,7 @@ public class MangoLogFilePatternReceiver {
                         if (method.equals(methodComparison.getArgument(0)))
                             return;
                         break;
-                    case LIKE:
+                    case MATCH:
                         if (!method.matches((String) methodComparison.getArgument(0)))
                             return;
                         break;
@@ -238,7 +238,7 @@ public class MangoLogFilePatternReceiver {
                         if (message.equals(messageComparison.getArgument(0)))
                             return;
                         break;
-                    case LIKE:
+                    case MATCH:
                         if (!message.matches((String) messageComparison.getArgument(0)))
                             return;
                         break;
