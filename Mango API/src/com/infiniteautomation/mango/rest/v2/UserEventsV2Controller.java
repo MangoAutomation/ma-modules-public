@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.infiniteautomation.mango.db.query.pojo.RQLFilterJavaBean;
 import com.infiniteautomation.mango.rest.v2.model.FilteredStreamWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.model.StreamWithTotal;
@@ -71,7 +72,23 @@ public class UserEventsV2Controller extends AbstractMangoRestV2Controller{
             return map.apply(e, user);
         }).collect(Collectors.toList());
 
-        return new FilteredStreamWithTotal<>(events, query);
+        return new FilteredStreamWithTotal<>(events, new EventFilter(query));
+    }
+
+    public static class EventFilter extends RQLFilterJavaBean<EventInstanceModel> {
+
+        public EventFilter(ASTNode node) {
+            super(node);
+        }
+
+        @Override
+        protected String mapPropertyName(String propertyName) {
+            if ("eventType.eventSubtype".equals(propertyName)) {
+                return "eventType.subType";
+            }
+            return propertyName;
+        }
+
     }
 
 }
