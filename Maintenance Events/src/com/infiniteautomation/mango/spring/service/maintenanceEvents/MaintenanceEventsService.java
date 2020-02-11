@@ -94,18 +94,17 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
 
     /**
      * Delete an event
-     * @param xid
-     * @param user
+     * @param event
      * @return
      * @throws NotFoundException
      * @throws PermissionException
      */
     @Override
-    public MaintenanceEventVO delete(String xid) throws NotFoundException, PermissionException {
+    public MaintenanceEventVO delete(MaintenanceEventVO vo)
+            throws PermissionException, NotFoundException {
         PermissionHolder user = Common.getUser();
         Objects.requireNonNull(user, "Permission holder must be set in security context");
 
-        MaintenanceEventVO vo = get(xid);
         ensureEditPermission(user, vo);
         RTMDefinition.instance.deleteMaintenanceEvent(vo.getId());
         return vo;
