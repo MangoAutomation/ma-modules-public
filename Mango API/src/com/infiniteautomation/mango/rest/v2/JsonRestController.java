@@ -57,31 +57,33 @@ public class JsonRestController {
     }
 
     @RequestMapping(method = RequestMethod.POST, value="/data/{xid}")
-    public void setData(@PathVariable String xid, HttpServletRequest request, @RequestBody JsonNode data) throws UnsupportedEncodingException {
+    public JsonNode setData(@PathVariable String xid, HttpServletRequest request, @RequestBody JsonNode data) throws UnsupportedEncodingException {
         String path = (String) request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
         String pointer = path.endsWith("/") ? "/" : "";
         this.jsonDataService.setDataAtPointer(xid, pointer, data);
+        return data;
     }
 
     @RequestMapping(method = RequestMethod.POST, value="/data/{xid}/**")
-    public void setDataAtPointer(@PathVariable String xid, HttpServletRequest request, @RequestBody JsonNode data) throws UnsupportedEncodingException {
+    public JsonNode setDataAtPointer(@PathVariable String xid, HttpServletRequest request, @RequestBody JsonNode data) throws UnsupportedEncodingException {
         String path = this.requestUtils.extractRemainingPath(request);
         String pointer = "/" + path;
         this.jsonDataService.setDataAtPointer(xid, pointer, data);
+        return data;
     }
 
     @RequestMapping(method = RequestMethod.DELETE, value="/data/{xid}")
-    public void deleteDataAtPointer(@PathVariable String xid, HttpServletRequest request) throws UnsupportedEncodingException {
+    public JsonNode deleteDataAtPointer(@PathVariable String xid, HttpServletRequest request) throws UnsupportedEncodingException {
         String path = (String) request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
         String pointer = path.endsWith("/") ? "/" : "";
-        this.jsonDataService.deleteDataAtPointer(xid, pointer);
+        return this.jsonDataService.deleteDataAtPointer(xid, pointer);
     }
 
     @RequestMapping(method = RequestMethod.DELETE, value="/data/{xid}/**")
-    public void setDataAtPointer(@PathVariable String xid, HttpServletRequest request) throws UnsupportedEncodingException {
+    public JsonNode setDataAtPointer(@PathVariable String xid, HttpServletRequest request) throws UnsupportedEncodingException {
         String path = this.requestUtils.extractRemainingPath(request);
         String pointer = "/" + path;
-        this.jsonDataService.deleteDataAtPointer(xid, pointer);
+        return this.jsonDataService.deleteDataAtPointer(xid, pointer);
     }
 
     @RequestMapping(method = RequestMethod.GET, value="/query/{xid}")
