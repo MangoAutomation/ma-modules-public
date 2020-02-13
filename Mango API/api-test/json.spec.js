@@ -296,10 +296,17 @@ describe('JSON data', function() {
                 });
             });
     
-            it(`/${objName}?name=match=n*A (multi-character wildcard)`, function() {
-                return queryJsonData(this.test.xid, [objName], '?name=match=n*A').then(data => {
+            it(`/${objName}?name=match=na*b (multi-character wildcard, case-insensitive)`, function() {
+                return queryJsonData(this.test.xid, [objName], '?name=match=na*b').then(data => {
                     assert.strictEqual(data.total, 1);
-                    assert.deepEqual(data.items, Object.values(this.test.item.jsonData[objName]).slice(0, 1));
+                    assert.deepEqual(data.items, Object.values(this.test.item.jsonData[objName]).slice(1, 2));
+                });
+            });
+    
+            it(`/${objName}?match(name,na*B,true) (multi-character wildcard, case-sensitive)`, function() {
+                return queryJsonData(this.test.xid, [objName], '?match(name,na*B,true)').then(data => {
+                    assert.strictEqual(data.total, 1);
+                    assert.deepEqual(data.items, Object.values(this.test.item.jsonData[objName]).slice(1, 2));
                 });
             });
     
