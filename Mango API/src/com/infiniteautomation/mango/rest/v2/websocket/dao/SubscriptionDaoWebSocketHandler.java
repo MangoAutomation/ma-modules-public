@@ -3,9 +3,8 @@
  */
 package com.infiniteautomation.mango.rest.v2.websocket.dao;
 
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import org.springframework.web.socket.TextMessage;
@@ -119,9 +118,7 @@ public abstract class SubscriptionDaoWebSocketHandler<T extends AbstractBasicVO>
             return null;
         }
 
-        Map<String, Object> attributes = new HashMap<>(2);
-        attributes.put("originalXid", getXid(originalVo));
-        return new WebSocketNotification<Object>(type, model, attributes);
+        return new WebSocketNotification<Object>(type, model, Collections.singletonMap("originalXid", getXid(originalVo)));
     }
 
     protected String getXid(T vo) {
