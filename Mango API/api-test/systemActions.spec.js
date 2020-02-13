@@ -121,23 +121,23 @@ describe('System Action Endpoints', function() {
     });
 
     it('Kick off sqlBackup then sqlRestore', () => {
-
       return client.restRequest({
           path: '/rest/v2/actions/trigger/sqlBackup',
           method: 'PUT'
       }).then(response => {
-
         return delay(9000).then(() => {
           return client.restRequest({
             path: response.headers.location,
             method: 'GET'
           }).then(response => {
               assert.equal(response.data.results.finished, true);
-              //Now Restore it
+              debugger;
+              //Now Restore it, the endpoint expects a filename only not the full path
+              const parts = response.data.results.backupFile.split("/");
               return client.restRequest({
                   path: '/rest/v2/actions/trigger/sqlRestore',
                   method: 'PUT',
-                  data: {filename: response.data.results.backupFile}
+                  data: {filename: parts[parts.length-1]}
               }).then(response => {
                 return delay(9000).then(() => {
                   return client.restRequest({
