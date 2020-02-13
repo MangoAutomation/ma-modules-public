@@ -211,8 +211,21 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     @Override
     protected ResponseEntity<Object> handleExceptionInternal(Exception ex,
             Object body, HttpHeaders headers, HttpStatus status, WebRequest request) {
-        if(LOG.isDebugEnabled())
-            LOG.debug("Rest API Exception", ex);
+
+        if (status == HttpStatus.UNAUTHORIZED || status == HttpStatus.FORBIDDEN || status == HttpStatus.TOO_MANY_REQUESTS) {
+            if (LOG.isWarnEnabled()) {
+                LOG.warn(String.format("REST request status %s: %s", status, request.getDescription(true)), ex);
+            }
+        } else if (status.value() >= 500) {
+            if (LOG.isErrorEnabled()) {
+                LOG.error(String.format("REST request status %s: %s", status, request.getDescription(true)), ex);
+            }
+        } else if (status.value() >= 400) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(String.format("REST request status %s: %s", status, request.getDescription(true)), ex);
+            }
+        }
+
         HttpServletRequest servletRequest = ((ServletWebRequest) request).getRequest();
         HttpServletResponse servletResponse = ((ServletWebRequest) request).getResponse();
 
