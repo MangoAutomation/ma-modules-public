@@ -33,7 +33,7 @@ describe('ASCII file data source', function() {
         }, error => {
             assertValidationErrors([''], error);
         }).finally(() => {
-            ds.delete();
+            return ds.delete();
         });
     });
 
@@ -61,7 +61,7 @@ describe('ASCII file data source', function() {
         }, error => {
             assertValidationErrors([''], error);
         }).finally(() => {
-            ds.delete();
+            return ds.delete();
         });
     });
     
@@ -90,7 +90,7 @@ describe('ASCII file data source', function() {
                 assertValidationErrors([''], error);
             });
         }).finally(() => {
-            ds.delete();
+            return ds.delete();
         });
     });
     
@@ -120,7 +120,7 @@ describe('ASCII file data source', function() {
                 });
             });
         }).finally(() => {
-            ds.delete();
+            return ds.delete();
         });
     });
     
@@ -140,7 +140,7 @@ describe('ASCII file data source', function() {
                 });
             });
         }).finally(() => {
-            ds.delete();
+            return ds.delete();
         });
     });
     

@@ -33,7 +33,7 @@ describe('Virtual data source', function() {
         }, error => {
             assertValidationErrors([''], error);
         }).finally(() => {
-            ds.delete();
+            return ds.delete();
         });
     });
 
@@ -52,7 +52,7 @@ describe('Virtual data source', function() {
         }, error => {
             assertValidationErrors([''], error);
         }).finally(() => {
-            ds.delete();
+            return ds.delete();
         });
     });
     
@@ -81,7 +81,7 @@ describe('Virtual data source', function() {
                 assertValidationErrors([''], error);
             });
         }).finally(() => {
-            ds.delete();
+            return ds.delete();
         });
     });
     
@@ -104,7 +104,7 @@ describe('Virtual data source', function() {
                 });
             });
         }).finally(() => {
-            ds.delete();
+            return ds.delete();
         });
     });
     
@@ -124,7 +124,7 @@ describe('Virtual data source', function() {
                 });
             });
         }).finally(() => {
-            ds.delete();
+            return ds.delete();
         });
     });
     

@@ -33,7 +33,7 @@ describe('MBus serial data source', function() {
         }, error => {
             assertValidationErrors([''], error);
         }).finally(() => {
-            ds.delete();
+            return ds.delete();
         });
     });
 
@@ -59,7 +59,7 @@ describe('MBus serial data source', function() {
         }, error => {
             assertValidationErrors([''], error);
         }).finally(() => {
-            ds.delete();
+            return ds.delete();
         });
     });
     
@@ -88,7 +88,7 @@ describe('MBus serial data source', function() {
                 assertValidationErrors([''], error);
             });
         }).finally(() => {
-            ds.delete();
+            return ds.delete();
         });
     });
     
@@ -113,7 +113,7 @@ describe('MBus serial data source', function() {
                 });
             });
         }).finally(() => {
-            ds.delete();
+            return ds.delete();
         });
     });
     
@@ -133,7 +133,7 @@ describe('MBus serial data source', function() {
                 });
             });
         }).finally(() => {
-            ds.delete();
+            return ds.delete();
         });
     });
     

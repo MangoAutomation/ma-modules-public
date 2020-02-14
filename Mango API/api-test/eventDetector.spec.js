@@ -51,7 +51,7 @@ describe('Event detector service', function() {
                 });
             })
         }).finally(() => {
-            ds.delete();
+            return ds.delete();
         });
     });
     
@@ -77,7 +77,7 @@ describe('Event detector service', function() {
                 });
             })
         }).finally(() => {
-            ds.delete();
+            return ds.delete();
         });
     });
     
@@ -109,7 +109,7 @@ describe('Event detector service', function() {
                 });
             })
         }).finally(() => {
-            ds.delete();
+            return ds.delete();
         });
     });
     
@@ -135,7 +135,7 @@ describe('Event detector service', function() {
                 });
             })
         }).finally(() => {
-            ds.delete();
+            return ds.delete();
         });
     });
     
@@ -166,7 +166,7 @@ describe('Event detector service', function() {
                 });
             })
         }).finally(() => {
-            ds.delete();
+            return ds.delete();
         });
     });
     
@@ -192,7 +192,7 @@ describe('Event detector service', function() {
                 });
             })
         }).finally(() => {
-            ds.delete();
+            return ds.delete();
         });
     });
 
@@ -223,7 +223,7 @@ describe('Event detector service', function() {
                 });
             })
         }).finally(() => {
-            ds.delete();
+            return ds.delete();
         });
     });
     
@@ -249,7 +249,7 @@ describe('Event detector service', function() {
                 });
             })
         }).finally(() => {
-            ds.delete();
+            return ds.delete();
         });
     });
     
@@ -281,7 +281,7 @@ describe('Event detector service', function() {
                 });
             })
         }).finally(() => {
-            ds.delete();
+            return ds.delete();
         });
     });
     
@@ -308,7 +308,7 @@ describe('Event detector service', function() {
                 });
             })
         }).finally(() => {
-            ds.delete();
+            return ds.delete();
         });
     });
     
@@ -340,7 +340,7 @@ describe('Event detector service', function() {
                 });
             })
         }).finally(() => {
-            ds.delete();
+            return ds.delete();
         });
     });
     
@@ -367,7 +367,7 @@ describe('Event detector service', function() {
                 });
             })
         }).finally(() => {
-            ds.delete();
+            return ds.delete();
         });
     });
 
@@ -401,7 +401,7 @@ describe('Event detector service', function() {
                 });
             })
         }).finally(() => {
-            ds.delete();
+            return ds.delete();
         });
     });
     
@@ -429,7 +429,7 @@ describe('Event detector service', function() {
                 });
             })
         }).finally(() => {
-            ds.delete();
+            return ds.delete();
         });
     });
     
@@ -464,7 +464,7 @@ describe('Event detector service', function() {
                 });
             })
         }).finally(() => {
-            ds.delete();
+            return ds.delete();
         });
     });
     
@@ -494,7 +494,7 @@ describe('Event detector service', function() {
                 });
             })
         }).finally(() => {
-            ds.delete();
+            return ds.delete();
         });
     });
     
@@ -529,7 +529,7 @@ describe('Event detector service', function() {
                 });
             })
         }).finally(() => {
-            ds.delete();
+            return ds.delete();
         });
     });
     
@@ -559,7 +559,7 @@ describe('Event detector service', function() {
                 });
             })
         }).finally(() => {
-            ds.delete();
+            return ds.delete();
         });
     });
     
@@ -593,7 +593,7 @@ describe('Event detector service', function() {
                 });
             })
         }).finally(() => {
-            ds.delete();
+            return ds.delete();
         });
     });
     
@@ -621,7 +621,7 @@ describe('Event detector service', function() {
                 });
             })
         }).finally(() => {
-            ds.delete();
+            return ds.delete();
         });
     });
     
@@ -654,7 +654,7 @@ describe('Event detector service', function() {
                 });
             })
         }).finally(() => {
-            ds.delete();
+            return ds.delete();
         });
     });
     
@@ -682,7 +682,7 @@ describe('Event detector service', function() {
                 });
             })
         }).finally(() => {
-            ds.delete();
+            return ds.delete();
         });
     });
     
@@ -715,7 +715,7 @@ describe('Event detector service', function() {
                 });
             })
         }).finally(() => {
-            ds.delete();
+            return ds.delete();
         });
     });
     
@@ -743,7 +743,7 @@ describe('Event detector service', function() {
                 });
             })
         }).finally(() => {
-            ds.delete();
+            return ds.delete();
         });
     });
     
@@ -776,7 +776,7 @@ describe('Event detector service', function() {
                 });
             })
         }).finally(() => {
-            ds.delete();
+            return ds.delete();
         });
     });
     
@@ -804,7 +804,7 @@ describe('Event detector service', function() {
                 });
             })
         }).finally(() => {
-            ds.delete();
+            return ds.delete();
         });
     });
     
@@ -836,7 +836,7 @@ describe('Event detector service', function() {
                 });
             })
         }).finally(() => {
-            ds.delete();
+            return ds.delete();
         });
     });
     
@@ -862,7 +862,7 @@ describe('Event detector service', function() {
                 });
             })
         }).finally(() => {
-            ds.delete();
+            return ds.delete();
         });
     });
     

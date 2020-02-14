@@ -33,7 +33,7 @@ describe('Serial data source', function() {
         }, error => {
             assertValidationErrors([''], error);
         }).finally(() => {
-            ds.delete();
+            return ds.delete();
         });
     });
 
@@ -72,7 +72,7 @@ describe('Serial data source', function() {
         }, error => {
             assertValidationErrors([''], error);
         }).finally(() => {
-            ds.delete();
+            return ds.delete();
         });
     });
     
@@ -101,7 +101,7 @@ describe('Serial data source', function() {
                 assertValidationErrors([''], error);
             });
         }).finally(() => {
-            ds.delete();
+            return ds.delete();
         });
     });
     
@@ -125,7 +125,7 @@ describe('Serial data source', function() {
                 });
             });
         }).finally(() => {
-            ds.delete();
+            return ds.delete();
         });
     });
     
@@ -145,7 +145,7 @@ describe('Serial data source', function() {
                 });
             });
         }).finally(() => {
-            ds.delete();
+            return ds.delete();
         });
     });
     
