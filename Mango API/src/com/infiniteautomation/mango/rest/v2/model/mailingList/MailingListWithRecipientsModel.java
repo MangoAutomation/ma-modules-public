@@ -16,7 +16,7 @@ import io.swagger.annotations.ApiModelProperty;
 
 /**
  * Model for Users who have read permissions on the mailing list
- * 
+ *
  * @author Terry Packer
  *
  */
@@ -24,12 +24,12 @@ public class MailingListWithRecipientsModel extends MailingListModel {
 
     @ApiModelProperty("recipients are only shown for Users with read permissions for the mailing list")
     private List<EmailRecipientModel> recipients;
-    
+
     public MailingListWithRecipientsModel() { }
     public MailingListWithRecipientsModel(MailingList vo) {
         super(vo);
     }
-    
+
     /**
      * @return the recipients
      */
@@ -60,9 +60,10 @@ public class MailingListWithRecipientsModel extends MailingListModel {
                         break;
                     case EmailRecipient.TYPE_MAILING_LIST:
                         e = new MailingListEntryModel((MailingList)entry);
+                        break;
                     default:
                         throw new ShouldNeverHappenException("Unsupported recipient type: " + entry.getRecipientType());
-                            
+
                 }
                 this.recipients.add(e);
             }
