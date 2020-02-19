@@ -7,7 +7,6 @@ package com.infiniteautomation.mango.rest.v2;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
@@ -27,6 +26,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -546,19 +546,12 @@ public class ModulesRestController {
                     }
                 }
 
-                String[] potentialUpgrades = tempDir.toFile().list(new FilenameFilter() {
-                    @Override
-                    public boolean accept(File dir, String name) {
-                        if(name.endsWith(".zip"))
-                            return true;
-                        else
-                            return false;
-                    }
-                });
+                List<Path> potentialUpgrades = Files.list(tempDir)
+                        .filter(p -> p.endsWith(".zip"))
+                        .collect(Collectors.toList());
 
                 boolean didUpgrade = false;
-                for(String potentialUpgrade : potentialUpgrades) {
-                    Path file = tempDir.resolve(potentialUpgrade);
+                for(Path file : potentialUpgrades) {
                     boolean core = false;
                     boolean hasWebModules = false;
                     // Test to see if it is a core or a bundle of only zips or many zip files
@@ -569,7 +562,8 @@ public class ModulesRestController {
                             throw new BadRequestException(new TranslatableMessage("rest.error.badUpgradeFile"));
                         } else {
                             do {
-                                if("release.signed".equals(entry.getName())) {
+                                String entryName = entry.getName();
+                                if("release.signed".equals(entryName) || "release.properties".equals(entryName)) {
                                     core = true;
                                     break;
                                 }else if(entry.getName().startsWith(WEB_MODULE_PREFIX)) {
@@ -646,7 +640,8 @@ public class ModulesRestController {
         try (ZipInputStream is = new ZipInputStream(Files.newInputStream(file))) {
             ZipEntry entry;
             while((entry  = is.getNextEntry()) != null) {
-                if(entry.getName().equals(ModuleUtils.Constants.MODULE_SIGNED)) {
+                String entryName = entry.getName();
+                if (ModuleUtils.Constants.MODULE_SIGNED.equals(entryName) || ModuleUtils.Constants.MODULE_PROPERTIES.equals(entryName)) {
                     return true;
                 }
             }
