@@ -256,7 +256,7 @@ public class EventHandlersRestController {
         model.getAdditionalContext().computeIfAbsent(EventInstanceWrapper.CONTEXT_KEY, (k) -> {
             return new EventInstanceWrapper(new ValidationEventInstance());
         });
-        return validateScript(model, user);
+        return validateScript(model);
     }
 
     @ApiOperation(
@@ -300,13 +300,13 @@ public class EventHandlersRestController {
         model.getAdditionalContext().computeIfAbsent("model", (k) -> {
             return emailModel;
         });
-        return validateScript(model, user);
+        return validateScript(model);
     }
 
-    private MangoJavaScriptResultModel validateScript(MangoJavaScriptModel model, PermissionHolder user) {
+    private MangoJavaScriptResultModel validateScript(MangoJavaScriptModel model) {
         MangoJavaScript jsVo = model.toVO();
         jsVo.setWrapInFunction(true);
-        return new MangoJavaScriptResultModel(javaScriptService.testScript(jsVo, user));
+        return new MangoJavaScriptResultModel(javaScriptService.testScript(jsVo));
     }
 
     private StreamedArrayWithTotal doQuery(ASTNode rql, User user) {

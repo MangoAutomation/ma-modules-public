@@ -55,7 +55,7 @@ public class ScriptUtilRestController {
             @AuthenticationPrincipal User user,
             @RequestBody MangoJavaScriptModel model) {
         if(LOG.isDebugEnabled()) LOG.debug("Testing script for: " + user.getName());
-        return new MangoJavaScriptResultModel(service.testScript(model.toVO(), user));
+        return new MangoJavaScriptResultModel(service.testScript(model.toVO()));
     }
 
     @PreAuthorize("isAdmin()")
@@ -65,8 +65,13 @@ public class ScriptUtilRestController {
             @AuthenticationPrincipal User user,
             @RequestBody MangoJavaScriptModel scriptModel) {
         if(LOG.isDebugEnabled()) LOG.debug("Running script for: " + user.getName());
-        return new MangoJavaScriptResultModel(service.executeScript(scriptModel.toVO(),
-                new SetCallback(new ScriptPermissions(permissionService.explodeLegacyPermissionGroupsToRoles(scriptModel.getPermissions())), user), user));
+
+        ScriptPermissions scriptUser = new ScriptPermissions(permissionService.explodeLegacyPermissionGroupsToRoles(scriptModel.getPermissions()));
+
+        return service.getPermissionService().runAs(scriptUser, () -> {
+            return new MangoJavaScriptResultModel(service.executeScript(scriptModel.toVO(),
+                    new SetCallback(scriptUser, user)));
+        });
     }
 
     class SetCallback extends ScriptPointValueSetter {
