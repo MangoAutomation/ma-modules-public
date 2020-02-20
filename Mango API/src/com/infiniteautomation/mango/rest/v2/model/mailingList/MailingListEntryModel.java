@@ -4,9 +4,9 @@
 package com.infiniteautomation.mango.rest.v2.model.mailingList;
 
 import com.serotonin.m2m2.db.dao.MailingListDao;
-import com.serotonin.m2m2.vo.mailingList.EmailRecipient;
 import com.serotonin.m2m2.vo.mailingList.MailingList;
-import com.serotonin.m2m2.vo.mailingList.RecipientListEntryBean;
+import com.serotonin.m2m2.vo.mailingList.MailingListEntry;
+import com.serotonin.m2m2.vo.mailingList.MailingListRecipient;
 
 /**
  * @author Terry Packer
@@ -18,7 +18,7 @@ public class MailingListEntryModel extends EmailRecipientModel {
     private String name;
 
     public MailingListEntryModel() { }
-    public MailingListEntryModel(MailingList list) {
+    public MailingListEntryModel(MailingListEntry list) {
         MailingList fullList = MailingListDao.getInstance().get(list.getReferenceId());
         if(fullList != null) {
             this.xid = fullList.getXid();
@@ -41,19 +41,13 @@ public class MailingListEntryModel extends EmailRecipientModel {
     }
 
     @Override
-    public EmailRecipient fromModel() {
-        MailingList vo = MailingListDao.getInstance().getByXid(xid);
-        return vo;
-    }
-
-    @Override
-    public RecipientListEntryBean toBean() {
-        RecipientListEntryBean bean = new RecipientListEntryBean();
-        bean.setRecipientType(EmailRecipient.TYPE_MAILING_LIST);
-        MailingList vo =  MailingListDao.getInstance().getByXid(xid);
-        if(vo != null)
-            bean.setReferenceId(vo.getId());
-        return bean;
+    public MailingListRecipient fromModel() {
+        MailingListEntry entry = new MailingListEntry();
+        Integer id = MailingListDao.getInstance().getIdByXid(xid);
+        if(id != null) {
+            entry.setMailingListId(id);
+        }
+        return entry;
     }
 
 }

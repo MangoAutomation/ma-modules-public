@@ -6,11 +6,7 @@ package com.infiniteautomation.mango.rest.v2.model.mailingList;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.serotonin.ShouldNeverHappenException;
-import com.serotonin.m2m2.vo.mailingList.AddressEntry;
-import com.serotonin.m2m2.vo.mailingList.EmailRecipient;
 import com.serotonin.m2m2.vo.mailingList.MailingList;
-import com.serotonin.m2m2.vo.mailingList.UserEntry;
 
 import io.swagger.annotations.ApiModelProperty;
 
@@ -47,27 +43,6 @@ public class MailingListWithRecipientsModel extends MailingListModel {
     @Override
     public void fromVO(MailingList vo) {
         super.fromVO(vo);
-        if(vo.getEntries() != null && vo.getEntries().size() > 0) {
-            this.recipients = new ArrayList<>();
-            for(EmailRecipient entry : vo.getEntries()) {
-                EmailRecipientModel e;
-                switch(entry.getRecipientType()) {
-                    case EmailRecipient.TYPE_ADDRESS:
-                        e = new AddressEntryModel((AddressEntry) entry);
-                        break;
-                    case EmailRecipient.TYPE_USER:
-                        e = new UserEntryModel((UserEntry) entry);
-                        break;
-                    case EmailRecipient.TYPE_MAILING_LIST:
-                        e = new MailingListEntryModel((MailingList)entry);
-                        break;
-                    default:
-                        throw new ShouldNeverHappenException("Unsupported recipient type: " + entry.getRecipientType());
-
-                }
-                this.recipients.add(e);
-            }
-        }
     }
 
     @Override

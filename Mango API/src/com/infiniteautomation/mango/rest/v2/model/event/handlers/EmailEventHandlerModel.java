@@ -11,24 +11,16 @@ import java.util.Set;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.infiniteautomation.mango.rest.v2.model.javascript.MangoJavaScriptModel.ScriptContextVariableModel;
-import com.infiniteautomation.mango.rest.v2.model.mailingList.AddressEntryModel;
 import com.infiniteautomation.mango.rest.v2.model.mailingList.EmailRecipientModel;
-import com.infiniteautomation.mango.rest.v2.model.mailingList.MailingListEntryModel;
-import com.infiniteautomation.mango.rest.v2.model.mailingList.UserEntryModel;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.script.ScriptPermissions;
-import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.db.pair.IntStringPair;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.module.definitions.event.handlers.EmailEventHandlerDefinition;
 import com.serotonin.m2m2.vo.event.EmailEventHandlerVO;
-import com.serotonin.m2m2.vo.mailingList.AddressEntry;
-import com.serotonin.m2m2.vo.mailingList.EmailRecipient;
-import com.serotonin.m2m2.vo.mailingList.MailingList;
-import com.serotonin.m2m2.vo.mailingList.RecipientListEntryBean;
-import com.serotonin.m2m2.vo.mailingList.UserEntry;
+import com.serotonin.m2m2.vo.mailingList.MailingListRecipient;
 import com.serotonin.m2m2.vo.role.Role;
 
 import io.swagger.annotations.ApiModel;
@@ -318,9 +310,9 @@ public class EmailEventHandlerModel extends AbstractEventHandlerModel<EmailEvent
     public EmailEventHandlerVO toVO() {
         EmailEventHandlerVO vo = super.toVO();
         if(activeRecipients != null) {
-            List<RecipientListEntryBean> beans = new ArrayList<>();
+            List<MailingListRecipient> beans = new ArrayList<>();
             for(EmailRecipientModel model : activeRecipients)
-                beans.add(model.toBean());
+                beans.add(model.fromModel());
             vo.setActiveRecipients(beans);
         }
         vo.setSendEscalation(sendEscalation);
@@ -329,17 +321,17 @@ public class EmailEventHandlerModel extends AbstractEventHandlerModel<EmailEvent
         vo.setEscalationDelay(escalationDelay);
 
         if(escalationRecipients != null) {
-            List<RecipientListEntryBean> beans = new ArrayList<>();
+            List<MailingListRecipient> beans = new ArrayList<>();
             for(EmailRecipientModel model : escalationRecipients)
-                beans.add(model.toBean());
+                beans.add(model.fromModel());
             vo.setEscalationRecipients(beans);
         }
         vo.setSendInactive(sendInactive);
         vo.setInactiveOverride(inactiveOverride);
         if(inactiveRecipients != null) {
-            List<RecipientListEntryBean> beans = new ArrayList<>();
+            List<MailingListRecipient> beans = new ArrayList<>();
             for(EmailRecipientModel model : inactiveRecipients)
-                beans.add(model.toBean());
+                beans.add(model.fromModel());
             vo.setInactiveRecipients(beans);
         }
 
@@ -376,74 +368,14 @@ public class EmailEventHandlerModel extends AbstractEventHandlerModel<EmailEvent
     public void fromVO(EmailEventHandlerVO vo) {
         super.fromVO(vo);
 
-        if(vo.getActiveRecipients() != null) {
-            this.activeRecipients = new ArrayList<>();
-            for(RecipientListEntryBean bean : vo.getActiveRecipients()) {
-                switch(bean.getRecipientType()) {
-                    case EmailRecipient.TYPE_ADDRESS:
-                        activeRecipients.add(new AddressEntryModel((AddressEntry) bean.createEmailRecipient()));
-                        break;
-                    case EmailRecipient.TYPE_USER:
-                        activeRecipients.add(new UserEntryModel((UserEntry) bean.createEmailRecipient()));
-                        break;
-                    case EmailRecipient.TYPE_MAILING_LIST:
-
-                        activeRecipients.add(new MailingListEntryModel((MailingList)bean.createEmailRecipient()));
-                        break;
-                    default:
-                        throw new ShouldNeverHappenException("Unsupported recipient type: " + bean.createEmailRecipient().getRecipientType());
-
-                }
-            }
-        }
-
         this.sendEscalation = vo.isSendEscalation();
         this.escalationDelayType = Common.TIME_PERIOD_CODES.getCode(vo.getEscalationDelayType());
         this.repeatEscalations = vo.isRepeatEscalations();
         this.escalationDelay = vo.getEscalationDelay();
 
-        if(vo.getEscalationRecipients() != null) {
-            this.escalationRecipients = new ArrayList<>();
-            for(RecipientListEntryBean bean : vo.getEscalationRecipients()) {
-                switch(bean.getRecipientType()) {
-                    case EmailRecipient.TYPE_ADDRESS:
-                        escalationRecipients.add(new AddressEntryModel((AddressEntry) bean.createEmailRecipient()));
-                        break;
-                    case EmailRecipient.TYPE_USER:
-                        escalationRecipients.add(new UserEntryModel((UserEntry) bean.createEmailRecipient()));
-                        break;
-                    case EmailRecipient.TYPE_MAILING_LIST:
-                        escalationRecipients.add(new MailingListEntryModel((MailingList)bean.createEmailRecipient()));
-                        break;
-                    default:
-                        throw new ShouldNeverHappenException("Unsupported recipient type: " + bean.createEmailRecipient().getRecipientType());
-
-                }
-            }
-        }
-
         this.sendInactive = vo.isSendInactive();
         this.inactiveOverride = vo.isInactiveOverride();
 
-        if(vo.getInactiveRecipients() != null) {
-            this.inactiveRecipients = new ArrayList<>();
-            for(RecipientListEntryBean bean : vo.getInactiveRecipients()) {
-                switch(bean.getRecipientType()) {
-                    case EmailRecipient.TYPE_ADDRESS:
-                        inactiveRecipients.add(new AddressEntryModel((AddressEntry) bean.createEmailRecipient()));
-                        break;
-                    case EmailRecipient.TYPE_USER:
-                        inactiveRecipients.add(new UserEntryModel((UserEntry) bean.createEmailRecipient()));
-                        break;
-                    case EmailRecipient.TYPE_MAILING_LIST:
-                        inactiveRecipients.add(new MailingListEntryModel((MailingList)bean.createEmailRecipient()));
-                        break;
-                    default:
-                        throw new ShouldNeverHappenException("Unsupported recipient type: " + bean.createEmailRecipient().getRecipientType());
-
-                }
-            }
-        }
         this.includeSystemInfo = vo.isIncludeSystemInfo();
         this.includePointValueCount = vo.getIncludePointValueCount() == 0 ? null : vo.getIncludePointValueCount();
         this.includeLogfile = vo.isIncludeLogfile();

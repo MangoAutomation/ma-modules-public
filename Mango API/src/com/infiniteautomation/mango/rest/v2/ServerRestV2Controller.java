@@ -27,7 +27,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -75,6 +74,7 @@ import com.serotonin.m2m2.util.HostUtils.NICInfo;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.bean.PointHistoryCount;
 import com.serotonin.m2m2.vo.mailingList.MailingList;
+import com.serotonin.m2m2.vo.mailingList.RecipientListEntryType;
 import com.serotonin.m2m2.web.mvc.spring.security.MangoSessionRegistry;
 import com.serotonin.provider.Providers;
 import com.serotonin.web.mail.EmailContent;
@@ -228,8 +228,12 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
 
         //Ensure permissions and existence
         MailingList sendTo = mailingListService.get(xid);
-        Set<String> emailUsers = new HashSet<String>();
-        sendTo.appendAddresses(emailUsers, new DateTime(Common.timer.currentTimeMillis()));
+        Set<String> emailUsers = mailingListService.getActiveRecipients(sendTo.getEntries(),
+                Common.timer.currentTimeMillis(),
+                RecipientListEntryType.MAILING_LIST,
+                RecipientListEntryType.ADDRESS,
+                RecipientListEntryType.USER);
+
         InternetAddress[] toAddresses = new InternetAddress[emailUsers.size()];
         int i = 0;
         for (String email : emailUsers) {

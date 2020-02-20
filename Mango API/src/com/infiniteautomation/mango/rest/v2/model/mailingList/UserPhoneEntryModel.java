@@ -1,8 +1,7 @@
 /**
- * Copyright (C) 2015 Infinite Automation Software. All rights reserved.
- *
- * @author Terry Packer
+ * Copyright (C) 2020  Infinite Automation Software. All rights reserved.
  */
+
 package com.infiniteautomation.mango.rest.v2.model.mailingList;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -14,27 +13,28 @@ import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.mailingList.MailingListRecipient;
 import com.serotonin.m2m2.vo.mailingList.UserEntry;
+import com.serotonin.m2m2.vo.mailingList.UserPhoneEntry;
 
 import io.swagger.annotations.ApiModel;
 
 /**
- * @author Terry Packer
  *
+ * @author Terry Packer
  */
-@ApiModel(value = "USER", parent = EmailRecipientModel.class)
-@JsonTypeName("USER")
-public class UserEntryModel extends EmailRecipientModel {
+@ApiModel(value = "USER_PHONE_NUMBER", parent = EmailRecipientModel.class)
+@JsonTypeName("USER_PHONE_NUMBER")
+public class UserPhoneEntryModel extends EmailRecipientModel {
 
     private String username;
 
-    public UserEntryModel() {}
+    public UserPhoneEntryModel() {}
 
     @JsonCreator
-    public UserEntryModel(@JsonProperty("username") String username) {
+    public UserPhoneEntryModel(@JsonProperty("username") String username) {
         this.username = username;
     }
 
-    public UserEntryModel(UserEntry data) {
+    public UserPhoneEntryModel(UserPhoneEntry data) {
         User u = UserDao.getInstance().get(data.getUserId());
         if (u != null)
             username = u.getUsername();

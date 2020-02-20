@@ -3,7 +3,9 @@
  */
 package com.infiniteautomation.mango.rest.v2.model.mailingList;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +19,7 @@ import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.vo.mailingList.MailingList;
+import com.serotonin.m2m2.vo.mailingList.MailingListRecipient;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.vo.role.Role;
 
@@ -59,6 +62,15 @@ public class MailingListModelMapping implements RestModelMapping<MailingList, Ma
         MailingListModel model;
         if(mailingListService.hasRecipientViewPermission(user, vo)) {
             model = new MailingListWithRecipientsModel(vo);
+
+            if(vo.getEntries() != null && vo.getEntries().size() > 0) {
+                List<EmailRecipientModel> recipients = new ArrayList<>();
+                ((MailingListWithRecipientsModel)model).setRecipients(recipients);
+
+                for(MailingListRecipient entry : vo.getEntries()) {
+                    recipients.add(mapper.map(entry, EmailRecipientModel.class, user));
+                }
+            }
         } else {
             model = new MailingListModel(vo);
         }
