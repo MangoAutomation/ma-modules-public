@@ -68,6 +68,7 @@ import com.infiniteautomation.mango.rest.v2.model.modules.UpdateLicensePayloadMo
 import com.infiniteautomation.mango.rest.v2.model.modules.UpgradeStatusModel;
 import com.infiniteautomation.mango.rest.v2.util.MangoStoreClient;
 import com.infiniteautomation.mango.spring.service.ModulesService;
+import com.infiniteautomation.mango.spring.service.ModulesService.UpgradeStatus;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.serotonin.db.pair.StringStringPair;
 import com.serotonin.json.type.JsonArray;
@@ -325,25 +326,22 @@ public class ModulesRestController {
     @RequestMapping(method = RequestMethod.GET, value = "/upgrade-status")
     public UpgradeStatusModel getUpgradeStatus(@AuthenticationPrincipal User user) {
         user.ensureHasAdminRole();
-        ProcessResult status = service.monitorDownloads();
+        UpgradeStatus status = service.monitorDownloads();
         UpgradeStatusModel model = new UpgradeStatusModel();
-        if (status.getHasMessages()) {
+        if (status.getStage() == UpgradeState.IDLE) {
             // Not running
             model.setRunning(false);
         } else {
             List<ModuleModel> modules = new ArrayList<ModuleModel>();
-            @SuppressWarnings("unchecked")
-            List<StringStringPair> results = (List<StringStringPair>) status.getData().get("results");
+            List<StringStringPair> results = status.getResults();
             for (StringStringPair r : results)
                 modules.add(new ModuleModel(r.getKey(), r.getValue()));
             model.setResults(modules);
-            model.setFinished((boolean) status.getData().get("finished"));
-            model.setCancelled((boolean) status.getData().get("cancelled"));
-            model.setWillRestart((boolean) status.getData().get("restart"));
-            Object error = status.getData().get("error");
-            if (error != null)
-                model.setError((String) error);
-            model.setStage(((UpgradeState) status.getData().get("stage")).name());
+            model.setFinished(status.isFinished());
+            model.setCancelled(status.isCancelled());
+            model.setWillRestart(status.isRestart());
+            model.setError(status.getError());
+            model.setStage(status.getStage().name());
         }
         return model;
     }
