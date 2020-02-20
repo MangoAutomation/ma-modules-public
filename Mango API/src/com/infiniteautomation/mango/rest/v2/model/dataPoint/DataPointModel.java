@@ -75,6 +75,9 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
     boolean mergeTags = false;
     Map<String, String> tags;
 
+    //For display purposes
+    String formatLabel;
+
     public DataPointModel() {
     }
 
@@ -137,6 +140,7 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
                 this.dataSourceEditRoles.add(role.getXid());
             }
         }
+        this.formatLabel = point.getExtendedName();
     }
 
     @Override
@@ -553,6 +557,10 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
 
     public void setDataSourceEditRoles(Set<String> dataSourceEditRoles) {
         //No-op
+    }
+
+    public String getFormatLabel() {
+        return formatLabel;
     }
 
     @Override
