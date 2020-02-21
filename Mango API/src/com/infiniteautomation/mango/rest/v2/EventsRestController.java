@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.infiniteautomation.mango.db.query.ConditionSortLimit;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedVORqlQueryWithTotal;
@@ -197,7 +198,11 @@ public class EventsRestController {
 
         AtomicInteger total = new AtomicInteger();
         long ackTimestamp = Common.timer.currentTimeMillis();
-        service.customizedQuery(rql, (EventInstanceVO vo, int index) -> {
+
+        //Ensure we supply the mappings when converting the RQL
+        ConditionSortLimit conditions = service.rqlToCondition(rql, fieldMap, valueConverters);
+
+        service.customizedQuery(conditions, (EventInstanceVO vo, int index) -> {
             if(service.hasEditPermission(user, vo)) {
                 EventInstance event = Common.eventManager.acknowledgeEventById(vo.getId(), ackTimestamp, user, tlm);
                 if (event != null && event.isAcknowledged()) {
