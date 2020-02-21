@@ -1,6 +1,9 @@
 *Version 4.0.0*
 * Upgraded to work with core version 4.0.x
+* Remove all v1 endpoints
+* Add all missing endpoints to v2 to match v1 any endpoints that already exists will likely have different models so upgrade with caution if you manually access endpoints
 * Add new message option for the events websocket with a requestType of REQUEST_TYPE_ALL_ACTIVE_EVENTS to return a list of all currently active events that user can see
+* Expose event detector runtime information at /full-event-detectors/runtime/{xid}
 
 *Version 3.7.0*
 * Upgraded to work with core version 3.7.x
