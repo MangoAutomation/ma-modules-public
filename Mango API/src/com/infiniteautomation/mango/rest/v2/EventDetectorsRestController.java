@@ -36,12 +36,14 @@ import com.infiniteautomation.mango.rest.v2.bulk.VoIndividualResponse;
 import com.infiniteautomation.mango.rest.v2.exception.AbstractRestV2Exception;
 import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
+import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.model.ActionAndModel;
 import com.infiniteautomation.mango.rest.v2.model.FilteredStreamWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedVORqlQueryWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.event.detectors.AbstractEventDetectorModel;
+import com.infiniteautomation.mango.rest.v2.model.event.detectors.rt.AbstractEventDetectorRTModel;
 import com.infiniteautomation.mango.rest.v2.patch.PatchVORequestBody;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.MangoTaskTemporaryResourceManager;
 import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource;
@@ -53,8 +55,11 @@ import com.infiniteautomation.mango.spring.db.EventDetectorTableDefinition;
 import com.infiniteautomation.mango.spring.service.EventDetectorsService;
 import com.infiniteautomation.mango.spring.service.EventHandlerService;
 import com.infiniteautomation.mango.util.RQLUtils;
+import com.infiniteautomation.mango.util.exception.TranslatableIllegalStateException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
+import com.serotonin.m2m2.rt.dataImage.DataPointRT;
+import com.serotonin.m2m2.rt.event.detectors.PointEventDetectorRT;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.detector.AbstractEventDetectorVO;
 import com.serotonin.m2m2.web.MediaTypes;
@@ -75,6 +80,7 @@ public class EventDetectorsRestController {
 
     private final EventDetectorsService service;
     private final BiFunction<AbstractEventDetectorVO, User, AbstractEventDetectorModel<?>> map;
+    private final RestModelMapper modelMapper;
     private final Map<String, Field<?>> fieldMap;
 
     @Autowired
@@ -87,6 +93,7 @@ public class EventDetectorsRestController {
             AbstractEventDetectorModel<?> model = modelMapper.map(vo, AbstractEventDetectorModel.class, user);
             return model;
         };
+        this.modelMapper = modelMapper;
         this.bulkResourceManager = new MangoTaskTemporaryResourceManager<EventDetectorBulkResponse>(service.getPermissionService(), websocket);
 
         this.fieldMap = new HashMap<>();
@@ -438,6 +445,31 @@ public class EventDetectorsRestController {
         }
 
         resource.remove();
+    }
+
+    @ApiOperation(
+            value = "Get Event Detector's internal state",
+            notes = "User must have read permission for the data point",
+            response = AbstractEventDetectorRTModel.class
+            )
+    @RequestMapping(method = RequestMethod.GET, value="/runtime/{xid}")
+    public AbstractEventDetectorRTModel<?> getState(
+            @ApiParam(value = "ID of Event detector", required = true, allowMultiple = false)
+            @PathVariable String xid,
+            @AuthenticationPrincipal User user,
+            UriComponentsBuilder builder) {
+        AbstractEventDetectorVO vo = service.get(xid);
+        //For now all detectors are data point type
+        DataPointRT rt = Common.runtimeManager.getDataPoint(vo.getSourceId());
+        if(rt == null){
+            throw new TranslatableIllegalStateException(new TranslatableMessage("rest.error.pointNotEnabled", xid));
+        }
+        for(PointEventDetectorRT<?> edrt : rt.getEventDetectors()) {
+            if(edrt.getVO().getId() == vo.getId()) {
+                return modelMapper.map(edrt, AbstractEventDetectorRTModel.class, user);
+            }
+        }
+        throw new NotFoundRestException();
     }
 
     //TODO improve performance by tracking all data sources that need to be restarted and restart at the end?
