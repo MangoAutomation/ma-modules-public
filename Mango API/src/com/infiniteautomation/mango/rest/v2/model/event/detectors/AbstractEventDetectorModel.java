@@ -43,9 +43,10 @@ public abstract class AbstractEventDetectorModel<T extends AbstractEventDetector
     @JsonInclude(JsonInclude.Include.NON_NULL)
     protected String originalXid;
 
+    protected int sourceId;
     protected Set<String> readPermission;
     protected Set<String> editPermission;
-    protected int sourceId;
+
     @ApiModelProperty("Read only description of detector")
     protected TranslatableMessage description;
     @ApiModelProperty("Read only indication if this detector supports return to normal")

@@ -224,6 +224,8 @@ describe('Event detectors CSV format', function() {
             assert.strictEqual(headers[1], 'action');
             assert.strictEqual(headers[2], 'originalXid');
             assert.strictEqual(headers[3], 'sourceId');
+            assert.strictEqual(headers[4], 'readPermission');
+            assert.strictEqual(headers[5], 'editPermission');
             assert.strictEqual(result.length, 2);
             assert.strictEqual(result[0].sourceId, String(this.ed1.sourceId));
             assert.strictEqual(result[1].sourceId, String(this.ed2.sourceId));
@@ -241,6 +243,8 @@ describe('Event detectors CSV format', function() {
             assert.strictEqual(headers[1], 'action');
             assert.strictEqual(headers[2], 'originalXid');
             assert.strictEqual(headers[3], 'sourceId');
+            assert.strictEqual(headers[4], 'readPermission');
+            assert.strictEqual(headers[5], 'editPermission');
             assert.strictEqual(result.length, 2);
             assert.strictEqual(result[0].sourceId, String(this.ed1.sourceId));
             assert.strictEqual(result[1].sourceId, String(this.ed2.sourceId));
@@ -296,6 +300,8 @@ describe('Event detectors CSV format', function() {
             assert.strictEqual(headers[1], 'action');
             assert.strictEqual(headers[2], 'originalXid');
             assert.strictEqual(headers[3], 'sourceId');
+            assert.strictEqual(headers[4], 'readPermission');
+            assert.strictEqual(headers[5], 'editPermission');
             assert.strictEqual(result.length, 2);
             assert.strictEqual(result[0].sourceId, String(this.ed1.sourceId));
             assert.strictEqual(result[1].sourceId, String(this.ed2.sourceId));
@@ -353,6 +359,8 @@ describe('Event detectors CSV format', function() {
             assert.strictEqual(headers[1], 'action');
             assert.strictEqual(headers[2], 'originalXid');
             assert.strictEqual(headers[3], 'sourceId');
+            assert.strictEqual(headers[4], 'readPermission');
+            assert.strictEqual(headers[5], 'editPermission');
             assert.strictEqual(result.length, 2);
             assert.strictEqual(result[0].sourceId, String(this.ed1.sourceId));
             assert.strictEqual(result[1].sourceId, String(this.ed2.sourceId));
