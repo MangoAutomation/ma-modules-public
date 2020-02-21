@@ -3,7 +3,9 @@
  */
 package com.infiniteautomation.mango.rest.v2.model.event.detectors;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.http.HttpStatus;
 
@@ -14,11 +16,14 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.infiniteautomation.mango.rest.v2.bulk.VoAction;
 import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
 import com.infiniteautomation.mango.rest.v2.model.AbstractVoModel;
+import com.infiniteautomation.mango.spring.service.PermissionService;
+import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.EventDetectorDefinition;
 import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.vo.event.detector.AbstractEventDetectorVO;
+import com.serotonin.m2m2.vo.role.Role;
 
 import io.swagger.annotations.ApiModelProperty;
 
@@ -38,6 +43,8 @@ public abstract class AbstractEventDetectorModel<T extends AbstractEventDetector
     @JsonInclude(JsonInclude.Include.NON_NULL)
     protected String originalXid;
 
+    protected Set<String> readPermission;
+    protected Set<String> editPermission;
     protected int sourceId;
     @ApiModelProperty("Read only description of detector")
     protected TranslatableMessage description;
@@ -51,17 +58,30 @@ public abstract class AbstractEventDetectorModel<T extends AbstractEventDetector
     @Override
     public void fromVO(T vo) {
         super.fromVO(vo);
+        this.readPermission = new HashSet<>();
+        for(Role role : vo.getReadRoles()) {
+            this.readPermission.add(role.getXid());
+        }
+        this.editPermission = new HashSet<>();
+        for(Role role : vo.getEditRoles()) {
+            this.editPermission.add(role.getXid());
+        }
         this.sourceId = vo.getSourceId();
         this.description = vo.getDescription();
         this.rtnApplicable = vo.isRtnApplicable();
         this.alarmLevel = vo.getAlarmLevel();
         this.sourceTypeName = vo.getDetectorSourceType();
         this.handlerXids = vo.getEventHandlerXids();
+
     }
 
     @Override
     public T toVO() {
         T vo = super.toVO();
+        PermissionService service = Common.getBean(PermissionService.class);
+        vo.setReadRoles(service.explodeLegacyPermissionGroupsToRoles(readPermission));
+        vo.setEditRoles(service.explodeLegacyPermissionGroupsToRoles(editPermission));
+
         vo.setAlarmLevel(alarmLevel);
         if(handlerXids != null)
             vo.setEventHandlerXids(handlerXids);
@@ -89,9 +109,6 @@ public abstract class AbstractEventDetectorModel<T extends AbstractEventDetector
     @JsonGetter("detectorType")
     public abstract String getDetectorType();
 
-    /**
-     * @return the sourceTypeName
-     */
     public String getSourceTypeName() {
         return sourceTypeName;
     }
@@ -101,6 +118,22 @@ public abstract class AbstractEventDetectorModel<T extends AbstractEventDetector
     }
     public TranslatableMessage getDescription() {
         return description;
+    }
+
+    public Set<String> getReadPermission() {
+        return readPermission;
+    }
+
+    public void setReadPermission(Set<String> readPermission) {
+        this.readPermission = readPermission;
+    }
+
+    public Set<String> getEditPermission() {
+        return editPermission;
+    }
+
+    public void setEditPermission(Set<String> editPermission) {
+        this.editPermission = editPermission;
     }
 
     /**
