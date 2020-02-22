@@ -7,12 +7,15 @@ import angular from 'angular';
 import serialDataSourceEditor from './components/serialDataSourceEditor/serialDataSourceEditor';
 import serialDataPointEditor from './components/serialDataPointEditor/serialDataPointEditor';
 
+import maSerialDsEditorFactory from './services/serialDataSourceEditor';
+
 import dsHelpTemplate from './help/dsHelp.html';
 import dpHelpTemplate from './help/dpHelp.html';
 
 const serialSourceModule = angular.module('maSerialDataSource', ['maUiApp'])
 .component('maSerialDataSourceEditor', serialDataSourceEditor)
 .component('maSerialDataPointEditor', serialDataPointEditor)
+.factory('maSerialDsEditor', maSerialDsEditorFactory)
 .config(['maDataSourceProvider', 'maPointProvider', 'maUiMenuProvider', function(maDataSourceProvider, maPointProvider, maUiMenuProvider) {
     maDataSourceProvider.registerType({
         type: 'SERIAL',
