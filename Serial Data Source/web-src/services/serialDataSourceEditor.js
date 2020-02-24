@@ -3,20 +3,20 @@
  * @author Pier Puccini
  */
 
-maSerialDsEditorFactory.$inject = ['maRestResource'];
-function maSerialDsEditorFactory(RestResource) {
+maSerialDsEditorFactory.$inject = ['$http'];
+function maSerialDsEditorFactory($http) {
     
-    const serialDsEditorBaseUrl = '/rest/v2/';
+    const serialDsEditorBaseUrl = '/rest/v2';
 
-    class serialDsEditorResource extends RestResource {
+    class serialDsEditorResource {
         
         static get baseUrl() {
             return serialDsEditorBaseUrl;
         }
 
         static validateString(xid, data) {
-            return this.http({
-                url: `${this.baseUrl}serial-data-source/validate-ascii/${xid}`,
+            return $http({
+                url: `${this.baseUrl}/serial-data-source/validate-ascii/${encodeURIComponent(xid)}`,
                 method: 'POST',
                 data: data,
                 headers: {
