@@ -76,7 +76,7 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
     Map<String, String> tags;
 
     //For display purposes
-    String formatLabel;
+    String extendedName;
 
     public DataPointModel() {
     }
@@ -140,7 +140,7 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
                 this.dataSourceEditRoles.add(role.getXid());
             }
         }
-        this.formatLabel = point.getExtendedName();
+        this.extendedName = point.getExtendedName();
     }
 
     @Override
@@ -559,8 +559,8 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
         //No-op
     }
 
-    public String getFormatLabel() {
-        return formatLabel;
+    public String getExtendedName() {
+        return extendedName;
     }
 
     @Override
