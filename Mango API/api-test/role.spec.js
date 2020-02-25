@@ -260,7 +260,7 @@ describe('Role endpoint tests', function() {
             ws.close();
             return Promise.reject(e);
         }).finally(() => {
-            role.delete();
+            return role.delete();
         });
     });
 
@@ -351,7 +351,7 @@ describe('Role endpoint tests', function() {
             ws.close();
             return Promise.reject(e);
         }).finally(() => {
-            role.delete();
+            return role.delete();
         });
     });
     
