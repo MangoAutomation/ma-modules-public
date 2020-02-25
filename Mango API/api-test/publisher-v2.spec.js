@@ -95,7 +95,7 @@ describe('Publishers v2 service', function() {
             ws.close();
             return Promise.reject(e);
         }).finally(() => {
-            pub.delete();
+            return pub.delete();
         });
     });
 
@@ -179,7 +179,7 @@ describe('Publishers v2 service', function() {
             ws.close();
             return Promise.reject(e);
         }).finally(() => {
-            pub.delete();
+            return pub.delete();
         });
     });
     
