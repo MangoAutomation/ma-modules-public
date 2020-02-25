@@ -251,9 +251,10 @@ describe('Data point service', function() {
                 actionFinishedDeferred.reject(error);
             });
             
-        }).then(() => actionFinishedDeferred.promise ).then(() => {
-          //Close websocket 
+        }).then(() => actionFinishedDeferred.promise ).then((r) => {
+            //Close websocket 
             ws.close();
+            return r;
         });
     });
 
