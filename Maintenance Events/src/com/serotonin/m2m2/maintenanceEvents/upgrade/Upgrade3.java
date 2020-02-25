@@ -31,7 +31,7 @@ public class Upgrade3 extends Upgrade29 {
         //Convert permissions into roles
         Map<String, Role> roles = getExistingRoles();
         //Move current permissions to roles
-        ejt.query("SELECT id, togglePermission FROM advancedSchedules", new RowCallbackHandler() {
+        ejt.query("SELECT id, togglePermission FROM maintenanceEvents", new RowCallbackHandler() {
             @Override
             public void processRow(ResultSet rs) throws SQLException {
                 int voId = rs.getInt(1);
