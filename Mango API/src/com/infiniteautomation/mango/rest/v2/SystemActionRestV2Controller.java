@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -40,62 +41,64 @@ import io.swagger.annotations.ApiResponses;
 
 /**
  * Controller for triggering system actions and retrieving their status
- * 
+ *
  * @author Terry Packer
  */
 /* See SystemActionsRestController */
-@Deprecated 
+@Deprecated
 @Api(value="System Actions", description="Ask Mango to perform a pre-defined action.  Admin Only.")
 @PreAuthorize("isAdmin()")
 @RestController
 @RequestMapping("/actions")
 public class SystemActionRestV2Controller extends AbstractMangoRestV2Controller{
 
-	private MangoRestTemporaryResourceContainer<SystemActionTemporaryResource> resources;
-	
-	public SystemActionRestV2Controller(){
-		this.resources = new MangoRestTemporaryResourceContainer<>("SYSACTION_");
-	}
-	
-	@ApiOperation(
-			value = "List Available Actions",
-			notes = "",
-			response=List.class,
-			responseContainer="Array"
-			)
-	@RequestMapping(method = RequestMethod.GET)
+    private MangoRestTemporaryResourceContainer<SystemActionTemporaryResource> resources;
+
+    public SystemActionRestV2Controller(){
+        this.resources = new MangoRestTemporaryResourceContainer<>("SYSACTION_");
+    }
+
+    @ApiOperation(
+            value = "List Available Actions",
+            notes = "",
+            response=List.class,
+            responseContainer="Array"
+            )
+    @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<List<String>> list() {
 
-		Map<String, SystemActionDefinition> defs = ModuleRegistry.getSystemActionDefinitions();
-		List<String> model = new ArrayList<String>();
-		for(SystemActionDefinition def : defs.values())
-			model.add(def.getKey());
+        Map<String, SystemActionDefinition> defs = ModuleRegistry.getSystemActionDefinitions();
+        List<String> model = new ArrayList<String>();
+        for(SystemActionDefinition def : defs.values())
+            model.add(def.getKey());
 
         return new ResponseEntity<>(model, HttpStatus.OK);
-	}
+    }
 
-	@ApiOperation(value = "Perform an Action", notes="Kicks off action and returns temporary URL for status")
-	@ApiResponses({
-		@ApiResponse(code = 500, message = "Internal error", response=ResponseEntity.class),
-		@ApiResponse(code = 404, message = "Not Found", response=ResponseEntity.class),
-	})
-	@RequestMapping(method = RequestMethod.PUT, value = "/trigger/{action}")
+    @ApiOperation(value = "Perform an Action", notes="Kicks off action and returns temporary URL for status")
+    @ApiResponses({
+        @ApiResponse(code = 500, message = "Internal error", response=ResponseEntity.class),
+        @ApiResponse(code = 404, message = "Not Found", response=ResponseEntity.class),
+    })
+    @RequestMapping(method = RequestMethod.PUT, value = "/trigger/{action}")
     public ResponseEntity<SystemActionTemporaryResource> performAction(
-    		@ApiParam(value = "Valid System Action", required = true, allowMultiple = false)
-			@PathVariable String action,
-			@ApiParam(value = "Input for task", required = false, allowMultiple = false)
-    		@RequestBody(required=false)
-    		JsonNode input,
-    		@AuthenticationPrincipal User user,
-    		UriComponentsBuilder builder) {
-	    //Kick off action
+            @ApiParam(value = "Valid System Action", required = true, allowMultiple = false)
+            @PathVariable String action,
+            @ApiParam(value = "Input for task", required = false, allowMultiple = false)
+            @RequestBody(required=false)
+            JsonNode input,
+            @RequestParam(required=false, defaultValue="12000000")
+            Long timeout,
+            @AuthenticationPrincipal User user,
+            UriComponentsBuilder builder) {
+        //Kick off action
         SystemActionDefinition def = ModuleRegistry.getSystemActionDefinition(action);
         if(def == null)
             throw new NotFoundRestException();
-        
+
         String resourceId = resources.generateResourceId();
-        SystemActionTemporaryResource resource = new SystemActionTemporaryResource(resourceId, def.getTask(user, input), resources, new Date(System.currentTimeMillis() + 600000));
-        
+        SystemActionTemporaryResource resource = new SystemActionTemporaryResource(resourceId, def.getTask(user, input), resources, new Date(System.currentTimeMillis() + timeout));
+
         //Resource can live for up to 10 minutes (TODO Configurable?)
         resources.put(resourceId, resource);
         URI location = builder.path("/actions/status/{resourceId}").buildAndExpand(resourceId).toUri();
@@ -104,37 +107,37 @@ public class SystemActionRestV2Controller extends AbstractMangoRestV2Controller{
         headers.setLocation(location);
 
         return new ResponseEntity<>(resource, headers, HttpStatus.OK);
-	}
+    }
 
-	@ApiOperation(value = "Get Action Progress", notes = "Polls temporary resource for results.")
-	@ApiResponses({
-		@ApiResponse(code = 401, message = "Unauthorized user access", response=ResponseEntity.class),
-		@ApiResponse(code = 404, message = "No resource exists with given id", response=ResponseEntity.class),
-		@ApiResponse(code = 500, message = "Error processing request", response=ResponseEntity.class)
-	})
-	@RequestMapping( method = {RequestMethod.GET}, value = {"/status/{resourceId}"})
-	public ResponseEntity<SystemActionTemporaryResource> getStatus(HttpServletRequest request, 
-			@ApiParam(value="Resource id", required=true, allowMultiple=false) @PathVariable String resourceId,
-			@AuthenticationPrincipal User user) {
-	    
-		SystemActionTemporaryResource resource = resources.get(resourceId);
-		return new ResponseEntity<>(resource, HttpStatus.OK);
-	}
+    @ApiOperation(value = "Get Action Progress", notes = "Polls temporary resource for results.")
+    @ApiResponses({
+        @ApiResponse(code = 401, message = "Unauthorized user access", response=ResponseEntity.class),
+        @ApiResponse(code = 404, message = "No resource exists with given id", response=ResponseEntity.class),
+        @ApiResponse(code = 500, message = "Error processing request", response=ResponseEntity.class)
+    })
+    @RequestMapping( method = {RequestMethod.GET}, value = {"/status/{resourceId}"})
+    public ResponseEntity<SystemActionTemporaryResource> getStatus(HttpServletRequest request,
+            @ApiParam(value="Resource id", required=true, allowMultiple=false) @PathVariable String resourceId,
+            @AuthenticationPrincipal User user) {
 
-	@ApiOperation(value = "Cancel Action", notes = "No Guarantees that the cancel will work, this is task dependent.")
-	@ApiResponses({
-		@ApiResponse(code = 401, message = "Unauthorized user access", response=ResponseEntity.class),
-		@ApiResponse(code = 404, message = "No resource exists with given id", response=ResponseEntity.class),
-		@ApiResponse(code = 500, message = "Error processing request", response=ResponseEntity.class)
-	})
-	@RequestMapping( method = {RequestMethod.PUT}, value = {"/cancel/{resourceId}"})
-	public ResponseEntity<SystemActionTemporaryResource> cancel(HttpServletRequest request, 
-			@ApiParam(value="Resource id", required=true, allowMultiple=false) @PathVariable String resourceId,
-			@AuthenticationPrincipal User user) {
-
-		SystemActionTemporaryResource resource = resources.get(resourceId);
-		resource.cancel();
+        SystemActionTemporaryResource resource = resources.get(resourceId);
         return new ResponseEntity<>(resource, HttpStatus.OK);
-	}
+    }
+
+    @ApiOperation(value = "Cancel Action", notes = "No Guarantees that the cancel will work, this is task dependent.")
+    @ApiResponses({
+        @ApiResponse(code = 401, message = "Unauthorized user access", response=ResponseEntity.class),
+        @ApiResponse(code = 404, message = "No resource exists with given id", response=ResponseEntity.class),
+        @ApiResponse(code = 500, message = "Error processing request", response=ResponseEntity.class)
+    })
+    @RequestMapping( method = {RequestMethod.PUT}, value = {"/cancel/{resourceId}"})
+    public ResponseEntity<SystemActionTemporaryResource> cancel(HttpServletRequest request,
+            @ApiParam(value="Resource id", required=true, allowMultiple=false) @PathVariable String resourceId,
+            @AuthenticationPrincipal User user) {
+
+        SystemActionTemporaryResource resource = resources.get(resourceId);
+        resource.cancel();
+        return new ResponseEntity<>(resource, HttpStatus.OK);
+    }
 
 }
