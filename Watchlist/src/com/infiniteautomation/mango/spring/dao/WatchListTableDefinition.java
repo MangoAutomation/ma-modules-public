@@ -27,7 +27,7 @@ import com.infiniteautomation.mango.spring.db.UserTableDefinition;
 @Component
 public class WatchListTableDefinition extends AbstractTableDefinition {
 
-    public static final String TABLE_NAME = "watchlists";
+    public static final String TABLE_NAME = "watchLists";
 
     public final Field<Integer> USER_ID = DSL.field(DSL.name("userId"), SQLDataType.INTEGER.nullable(false));
     public final Field<String> TYPE = DSL.field(DSL.name("type"), SQLDataType.VARCHAR(20));
