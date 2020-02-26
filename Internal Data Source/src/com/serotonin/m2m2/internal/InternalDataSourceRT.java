@@ -30,7 +30,6 @@ import com.serotonin.m2m2.rt.dataSource.PollingDataSource;
 import com.serotonin.m2m2.view.text.AnalogRenderer;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
-import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 
 /**

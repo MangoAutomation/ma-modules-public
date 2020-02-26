@@ -9,10 +9,14 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import javax.measure.unit.NonSI;
+import javax.measure.unit.SI;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.infiniteautomation.mango.monitor.ValueMonitor;
+import com.infiniteautomation.mango.spring.components.DiskUsageMonitoringService;
 import com.infiniteautomation.mango.spring.components.ServerMonitoringService;
 import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.m2m2.Common;
@@ -79,6 +83,16 @@ public class InternalLifecycle extends LifecycleDefinition {
     public static final String EXCEL_REPORTS_COUNT_POINT_XID = "internal_mango_num_excel_reports";
     public static final String EXCEL_REPORT_TEMPLATES_COUNT_POINT_XID = "internal_mango_num_excel_report_templates";
 
+    //System metrics
+    public static final String SQL_DATABASE_SIZE_POINT_XID = "internal_mango_sql_db_size";
+    public static final String NOSQL_DATABASE_SIZE_POINT_XID = "internal_mango_no_sql_db_size";
+    public static final String MA_HOME_PARTITION_TOTAL_SPACE_XID = "internal_mango_disk_total_space";
+    public static final String MA_HOME_PARTITION_USED_SPACE_XID = "internal_mango_disk_used_space";
+    public static final String JVM_USED_MEMORY_XID = "internal_jvm_used_memory";
+    public static final String JVM_MAX_MEMORY_XID = "internal_jvm_max_memory";
+    public static final String CPU_SYSTEM_LOAD_XID = "internal_cpu_system_load";
+    public static final String CPU_PROCESS_LOAD_XID = "internal_cpu_process_load";
+
     /**
      *
      * @return Map of Home Page Monitor XIDs to Home Page Monitors
@@ -121,6 +135,16 @@ public class InternalLifecycle extends LifecycleDefinition {
         monitors.put(SCHEDULED_EVENTS_COUNT_POINT_XID, Common.MONITORED_VALUES.getMonitor(SCHEDULED_EVENTS_COUNT_MONITOR_ID));
         monitors.put(EXCEL_REPORTS_COUNT_POINT_XID, Common.MONITORED_VALUES.getMonitor(EXCEL_REPORTS_COUNT_MONITOR_ID));
         monitors.put(EXCEL_REPORT_TEMPLATES_COUNT_POINT_XID, Common.MONITORED_VALUES.getMonitor(EXCEL_REPORT_TEMPLATES_COUNT_MONITOR_ID));
+
+        //System metrics
+        monitors.put(SQL_DATABASE_SIZE_POINT_XID, Common.MONITORED_VALUES.getMonitor(DiskUsageMonitoringService.SQL_PARTITION_USED_SPACE));
+        monitors.put(NOSQL_DATABASE_SIZE_POINT_XID, Common.MONITORED_VALUES.getMonitor(DiskUsageMonitoringService.NOSQL_PARTITION_USED_SPACE));
+        monitors.put(MA_HOME_PARTITION_TOTAL_SPACE_XID, Common.MONITORED_VALUES.getMonitor(DiskUsageMonitoringService.MA_HOME_PARTITION_TOTAL_SPACE));
+        monitors.put(MA_HOME_PARTITION_USED_SPACE_XID, Common.MONITORED_VALUES.getMonitor(DiskUsageMonitoringService.MA_HOME_PARTITION_USED_SPACE));
+        monitors.put(JVM_USED_MEMORY_XID, Common.MONITORED_VALUES.getMonitor(ServerMonitoringService.USED_MEMORY_ID));
+        monitors.put(JVM_MAX_MEMORY_XID, Common.MONITORED_VALUES.getMonitor(ServerMonitoringService.FREE_MEMORY_ID));
+        monitors.put(CPU_SYSTEM_LOAD_XID, Common.MONITORED_VALUES.getMonitor(ServerMonitoringService.OS_CPU_LOAD_TOTAL_ID));
+        monitors.put(CPU_PROCESS_LOAD_XID, Common.MONITORED_VALUES.getMonitor(ServerMonitoringService.OS_CPU_LOAD_PROCESS_ID));
 
         return monitors;
     }
@@ -190,22 +214,37 @@ public class InternalLifecycle extends LifecycleDefinition {
                     dp.setEnabled(true);
                     dp.setChartColour("");
 
-                    //If we are numeric then we want to log on change
                     if (pl.getDataTypeId() == DataTypes.NUMERIC) {
-                        if (SYSTEM_UPTIME_POINT_XID.equals(xid)) { //This changes every time, so just do an interval instant
-                            dp.setLoggingType(LoggingTypes.INTERVAL);
-                            dp.setIntervalLoggingPeriodType(Common.TimePeriods.MINUTES);
-                            dp.setIntervalLoggingPeriod(5);
-                            dp.setIntervalLoggingType(DataPointVO.IntervalLoggingTypes.INSTANT);
-
-                            AnalogRenderer renderer = new AnalogRenderer("0.0", "", true);
-                            dp.setTextRenderer(renderer);
-                        } else {
-                            //Setup to Log on Change
-                            dp.setLoggingType(LoggingTypes.ON_CHANGE);
-
-                            AnalogRenderer renderer = new AnalogRenderer("0", "", true);
-                            dp.setTextRenderer(renderer);
+                        switch(xid) {
+                            case SQL_DATABASE_SIZE_POINT_XID:
+                            case NOSQL_DATABASE_SIZE_POINT_XID:
+                            case MA_HOME_PARTITION_TOTAL_SPACE_XID:
+                            case MA_HOME_PARTITION_USED_SPACE_XID:
+                                dp.setUnit(NonSI.BYTE);
+                                dp.setRenderedUnit(SI.MEGA(NonSI.BYTE));
+                                dp.setUseRenderedUnit(true);
+                                dp.setLoggingType(LoggingTypes.ON_CHANGE);
+                                dp.setTextRenderer(new AnalogRenderer("0.00", "MB", false));
+                                break;
+                            case CPU_SYSTEM_LOAD_XID:
+                            case CPU_PROCESS_LOAD_XID:
+                                dp.setUnit(NonSI.PERCENT);
+                                dp.setLoggingType(LoggingTypes.ON_CHANGE);
+                                dp.setTextRenderer(new AnalogRenderer("0.00", "", true));
+                                break;
+                            case SYSTEM_UPTIME_POINT_XID:
+                                //This value changes often, log interval instance
+                                dp.setLoggingType(LoggingTypes.INTERVAL);
+                                dp.setIntervalLoggingPeriodType(Common.TimePeriods.MINUTES);
+                                dp.setIntervalLoggingPeriod(5);
+                                dp.setIntervalLoggingType(DataPointVO.IntervalLoggingTypes.INSTANT);
+                                dp.setTextRenderer(new AnalogRenderer("0.0", "", true));
+                                break;
+                            default:
+                                //If we are numeric then we want to log on change
+                                dp.setLoggingType(LoggingTypes.ON_CHANGE);
+                                dp.setTextRenderer(new AnalogRenderer("0", "", true));
+                                break;
                         }
                     }
 

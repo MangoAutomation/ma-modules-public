@@ -3,6 +3,7 @@
 * Remove ability to log Point Link count (module removed)
 * Remove ability to log Report count (module removed)
 * Remove ability to log Report instance count (module removed)
+* Adding more metrics to the defaul mango internal data source: disk usage, memory and cpu load
 
 *Version 3.7.0*
 * Upgraded to work with core version 3.7.x
