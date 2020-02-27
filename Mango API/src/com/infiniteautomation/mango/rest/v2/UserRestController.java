@@ -5,14 +5,17 @@
 package com.infiniteautomation.mango.rest.v2;
 
 import java.net.URI;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.BiFunction;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.jooq.Field;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -39,6 +42,7 @@ import com.infiniteautomation.mango.rest.v2.model.user.ApprovedUsersModel;
 import com.infiniteautomation.mango.rest.v2.model.user.UserModel;
 import com.infiniteautomation.mango.rest.v2.patch.PatchVORequestBody;
 import com.infiniteautomation.mango.rest.v2.patch.PatchVORequestBody.PatchIdField;
+import com.infiniteautomation.mango.spring.db.UserTableDefinition;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.spring.service.UsersService;
 import com.infiniteautomation.mango.util.RQLUtils;
@@ -65,11 +69,17 @@ public class UserRestController {
     private final BiFunction<User, User, UserModel> map = (vo, user) -> {return new UserModel(vo);};
     private final UsersService service;
     private final MangoSessionRegistry sessionRegistry;
+    private final Map<String, Field<?>> fieldMap;
 
     @Autowired
-    public UserRestController(UsersService service, MangoSessionRegistry sessionRegistry) {
+    public UserRestController(UsersService service, MangoSessionRegistry sessionRegistry, UserTableDefinition userTable) {
         this.service = service;
         this.sessionRegistry = sessionRegistry;
+
+        this.fieldMap = new HashMap<>(3);
+        this.fieldMap.put("lastPasswordChange", userTable.getAlias("passwordChangeTimestamp"));
+        this.fieldMap.put("created", userTable.getAlias("createdTs"));
+        this.fieldMap.put("emailVerified", userTable.getAlias("emailVerifiedTs"));
     }
 
     @ApiOperation(
@@ -356,11 +366,11 @@ public class UserRestController {
     public StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
 
         if (user.hasAdminRole()) {
-            return new StreamedVORqlQueryWithTotal<>(service, rql, null, null, vo -> map.apply(vo, user));
+            return new StreamedVORqlQueryWithTotal<>(service, rql, this.fieldMap, null, vo -> map.apply(vo, user));
         } else {
             // Add some conditions to restrict based on user permissions
             rql = RQLUtils.addAndRestriction(rql, new ASTNode("eq", "id", user.getId()));
-            return new StreamedVORqlQueryWithTotal<>(service, rql, null, null, vo -> map.apply(vo, user));
+            return new StreamedVORqlQueryWithTotal<>(service, rql, this.fieldMap, null, vo -> map.apply(vo, user));
         }
     }
 }
