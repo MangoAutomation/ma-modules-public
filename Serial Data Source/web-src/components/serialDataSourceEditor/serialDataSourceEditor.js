@@ -31,7 +31,17 @@ class serialDataSourceEditorController {
         };        
 
         this.maSerialDsEditor.validateString(this.dataSource.xid, data).then(response => {
-            this.testValues = response;
+            this.testResponse = {
+                success: [],
+                errors: []
+            }
+            response.forEach(res => {
+                res.pointName == null 
+                    ? this.testResponse.errors.push(res) 
+                    : this.testResponse.success.push(res)
+            });
+            console.log('test response', this.testResponse);
+
         }, error => {
             this.maDialogHelper.errorToast(['dsEdit.serial.testStringError', error.data.localizedMessage]);
         });

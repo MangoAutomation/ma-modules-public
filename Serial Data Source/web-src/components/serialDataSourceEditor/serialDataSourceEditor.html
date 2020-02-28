@@ -7,13 +7,15 @@
 
 <div layout="row" layout-wrap layout-align="space-between start" class="ma-inputs-container">
     <div flex="100" flex-gt-md="50">
-        <ma-serial-port-select name="commPortId" show-icon="true" ng-model="$ctrl.dataSource.commPortId" required></ma-serial-port-select>
+        <ma-serial-port-select name="commPortId" show-icon="true" ng-model="$ctrl.dataSource.commPortId" required>
+        </ma-serial-port-select>
     </div>
 
     <md-input-container flex="100" flex-gt-md="50">
         <md-icon>storage</md-icon>
         <label ma-tr="dsEdit.serial.baud"></label>
-        <md-select name="baudRate" ng-model="$ctrl.dataSource.baudRate" required ma-get-ctrl="baudRateModelCtrl = $ngModel">
+        <md-select name="baudRate" ng-model="$ctrl.dataSource.baudRate" required
+            ma-get-ctrl="baudRateModelCtrl = $ngModel">
             <md-option ng-value="110">110</md-option>
             <md-option ng-value="300">300</md-option>
             <md-option ng-value="1200">1200</md-option>
@@ -37,7 +39,8 @@
     <md-input-container flex="100" flex-gt-md="50">
         <md-icon>arrow_forward</md-icon>
         <label ma-tr="dsEdit.serial.flowIn"></label>
-        <md-select name="flowControlIn" ng-model="$ctrl.dataSource.flowControlIn" required ma-get-ctrl="flowControlInModelCtrl = $ngModel">
+        <md-select name="flowControlIn" ng-model="$ctrl.dataSource.flowControlIn" required
+            ma-get-ctrl="flowControlInModelCtrl = $ngModel">
             <md-option ng-value="'NONE'" ma-tr="dsEdit.serial.flow.none"></md-option>
             <md-option ng-value="'RTSCTS'" ma-tr="dsEdit.serial.flow.rtsCts"></md-option>
             <md-option ng-value="'XONXOFF'" ma-tr="dsEdit.serial.flow.xonXoff"></md-option>
@@ -51,7 +54,8 @@
     <md-input-container flex="100" flex-gt-md="50">
         <md-icon>arrow_back</md-icon>
         <label ma-tr="dsEdit.serial.flowOut"></label>
-        <md-select name="flowControlOut" ng-model="$ctrl.dataSource.flowControlOut" required ma-get-ctrl="flowControlOutModelCtrl = $ngModel">
+        <md-select name="flowControlOut" ng-model="$ctrl.dataSource.flowControlOut" required
+            ma-get-ctrl="flowControlOutModelCtrl = $ngModel">
             <md-option ng-value="'NONE'" ma-tr="dsEdit.serial.flow.none"></md-option>
             <md-option ng-value="'RTSCTS'" ma-tr="dsEdit.serial.flow.rtsCts"></md-option>
             <md-option ng-value="'XONXOFF'" ma-tr="dsEdit.serial.flow.xonXoff"></md-option>
@@ -65,7 +69,8 @@
     <md-input-container flex="100" flex-gt-md="50">
         <md-icon>looks_one</md-icon>
         <label ma-tr="dsEdit.serial.dataBits"></label>
-        <md-select name="dataBits" ng-model="$ctrl.dataSource.dataBits" required ma-get-ctrl="dataBitsModelCtrl = $ngModel">
+        <md-select name="dataBits" ng-model="$ctrl.dataSource.dataBits" required
+            ma-get-ctrl="dataBitsModelCtrl = $ngModel">
             <md-option ng-value="'DATA_BITS_5'" ma-tr="dsEdit.serial.dataBits5"></md-option>
             <md-option ng-value="'DATA_BITS_6'" ma-tr="dsEdit.serial.dataBits6"></md-option>
             <md-option ng-value="'DATA_BITS_7'" ma-tr="dsEdit.serial.dataBits7"></md-option>
@@ -80,7 +85,8 @@
     <md-input-container flex="100" flex-gt-md="50">
         <md-icon>looks_one</md-icon>
         <label ma-tr="dsEdit.serial.stopBits"></label>
-        <md-select name="stopBits" ng-model="$ctrl.dataSource.stopBits" required ma-get-ctrl="stopBitsModelCtrl = $ngModel">
+        <md-select name="stopBits" ng-model="$ctrl.dataSource.stopBits" required
+            ma-get-ctrl="stopBitsModelCtrl = $ngModel">
             <md-option ng-value="'STOP_BITS_1'" ma-tr="dsEdit.serial.stopBits1"></md-option>
             <md-option ng-value="'STOP_BITS_1_5'" ma-tr="dsEdit.serial.stopBits15"></md-option>
             <md-option ng-value="'STOP_BITS_2'" ma-tr="dsEdit.serial.stopBits2"></md-option>
@@ -90,7 +96,7 @@
             <div ng-message="validationMessage" ng-bind="stopBitsModelCtrl.validationMessage"></div>
         </div>
     </md-input-container>
-    
+
     <md-input-container flex="100" flex-gt-md="50">
         <md-icon>looks_two</md-icon>
         <label ma-tr="dsEdit.serial.parity"></label>
@@ -110,7 +116,8 @@
     <md-input-container flex="100" flex-gt-md="50">
         <md-icon>timer</md-icon>
         <label ma-tr="dsEdit.serial.readTimeout"></label>
-        <input name="readTimeout" type="number" ng-model="$ctrl.dataSource.readTimeout" required ma-get-ctrl="readTimeoutModelCtrl = $ngModel">
+        <input name="readTimeout" type="number" ng-model="$ctrl.dataSource.readTimeout" required
+            ma-get-ctrl="readTimeoutModelCtrl = $ngModel">
         <div ng-messages="readTimeoutModelCtrl.$error">
             <div ng-message="required" ma-tr="validate.required"></div>
             <div ng-message="validationMessage" ng-bind="readTimeoutModelCtrl.validationMessage"></div>
@@ -120,7 +127,8 @@
     <md-input-container flex="100" flex-gt-md="50">
         <md-icon>autorenew</md-icon>
         <label ma-tr="dsEdit.serial.retries"></label>
-        <input name="retries" type="number" ng-model="$ctrl.dataSource.retries" required ma-get-ctrl="retriesModelCtrl = $ngModel">
+        <input name="retries" type="number" ng-model="$ctrl.dataSource.retries" required
+            ma-get-ctrl="retriesModelCtrl = $ngModel">
         <div ng-messages="retriesModelCtrl.$error">
             <div ng-message="required" ma-tr="validate.required"></div>
             <div ng-message="validationMessage" ng-bind="retriesModelCtrl.validationMessage"></div>
@@ -136,7 +144,8 @@
     <md-input-container flex="100" flex-gt-md="50" ng-if="$ctrl.dataSource.useTerminator">
         <md-icon>last_page</md-icon>
         <label ma-tr="dsEdit.serial.messageTerminator"></label>
-        <input name="messageTerminator" ng-model="$ctrl.dataSource.messageTerminator" required ma-get-ctrl="messageTerminatorModelCtrl = $ngModel">
+        <input name="messageTerminator" ng-model="$ctrl.dataSource.messageTerminator" required
+            ma-get-ctrl="messageTerminatorModelCtrl = $ngModel">
         <div ng-messages="messageTerminatorModelCtrl.$error">
             <div ng-message="required" ma-tr="validate.required"></div>
             <div ng-message="validationMessage" ng-bind="messageTerminatorModelCtrl.validationMessage"></div>
@@ -146,7 +155,8 @@
     <md-input-container flex="100" flex-gt-md="50" ng-if="$ctrl.dataSource.useTerminator">
         <md-icon>settings_ethernet</md-icon>
         <label ma-tr="dsEdit.serial.messageRegex"></label>
-        <input name="messageRegex" ng-model="$ctrl.dataSource.messageRegex" required ma-get-ctrl="messageRegexModelCtrl = $ngModel">
+        <input name="messageRegex" ng-model="$ctrl.dataSource.messageRegex" required
+            ma-get-ctrl="messageRegexModelCtrl = $ngModel">
         <div ng-messages="messageRegexModelCtrl.$error">
             <div ng-message="required" ma-tr="validate.required"></div>
             <div ng-message="validationMessage" ng-bind="messageRegexModelCtrl.validationMessage"></div>
@@ -156,7 +166,8 @@
     <md-input-container flex="100" flex-gt-md="50">
         <md-icon>call_received</md-icon>
         <label ma-tr="dsEdit.serial.pointIdentifierIndex"></label>
-        <input name="pointIdentifierIndex" min="0" type="number" ng-model="$ctrl.dataSource.pointIdentifierIndex" required ma-get-ctrl="pointIdentifierIndexModelCtrl = $ngModel">
+        <input name="pointIdentifierIndex" min="0" type="number" ng-model="$ctrl.dataSource.pointIdentifierIndex"
+            required ma-get-ctrl="pointIdentifierIndexModelCtrl = $ngModel">
         <div ng-messages="pointIdentifierIndexModelCtrl.$error">
             <div ng-message="required" ma-tr="validate.required"></div>
             <div ng-message="validationMessage" ng-bind="pointIdentifierIndexModelCtrl.validationMessage"></div>
@@ -172,7 +183,8 @@
     <md-input-container flex="100" flex-gt-md="50">
         <md-icon>vertical_align_top</md-icon>
         <label ma-tr="dsEdit.serial.maxMessageSize"></label>
-        <input name="maxMessageSize" min="0" type="number" ng-model="$ctrl.dataSource.maxMessageSize" required ma-get-ctrl="maxMessageSizeModelCtrl = $ngModel">
+        <input name="maxMessageSize" min="0" type="number" ng-model="$ctrl.dataSource.maxMessageSize" required
+            ma-get-ctrl="maxMessageSizeModelCtrl = $ngModel">
         <div ng-messages="maxMessageSizeModelCtrl.$error">
             <div ng-message="required" ma-tr="validate.required"></div>
             <div ng-message="validationMessage" ng-bind="maxMessageSizeModelCtrl.validationMessage"></div>
@@ -188,7 +200,8 @@
     <md-input-container flex="100" flex-gt-md="50" ng-if="$ctrl.dataSource.logIO">
         <md-icon>photo_size_select_small</md-icon>
         <label ma-tr="dsEdit.serial.logIOFileSize"></label>
-        <input name="ioLogFileSizeMBytes" type="number" ng-model="$ctrl.dataSource.ioLogFileSizeMBytes" required ma-get-ctrl="ioLogFileSizeMBytesModelCtrl = $ngModel">
+        <input name="ioLogFileSizeMBytes" type="number" ng-model="$ctrl.dataSource.ioLogFileSizeMBytes" required
+            ma-get-ctrl="ioLogFileSizeMBytesModelCtrl = $ngModel">
         <div ng-messages="ioLogFileSizeMBytesModelCtrl.$error">
             <div ng-message="required" ma-tr="validate.required"></div>
             <div ng-message="validationMessage" ng-bind="ioLogFileSizeMBytesModelCtrl.validationMessage"></div>
@@ -198,7 +211,8 @@
     <md-input-container flex="100" flex-gt-md="50" ng-if="$ctrl.dataSource.logIO">
         <md-icon>filter_none</md-icon>
         <label ma-tr="dsEdit.serial.logIOFiles"></label>
-        <input name="maxHistoricalIOLogs" type="number" ng-model="$ctrl.dataSource.maxHistoricalIOLogs" required ma-get-ctrl="maxHistoricalIOLogsModelCtrl = $ngModel">
+        <input name="maxHistoricalIOLogs" type="number" ng-model="$ctrl.dataSource.maxHistoricalIOLogs" required
+            ma-get-ctrl="maxHistoricalIOLogsModelCtrl = $ngModel">
         <div ng-messages="maxHistoricalIOLogsModelCtrl.$error">
             <div ng-message="required" ma-tr="validate.required"></div>
             <div ng-message="validationMessage" ng-bind="maxHistoricalIOLogsModelCtrl.validationMessage"></div>
@@ -211,7 +225,8 @@
         <span ma-tr="dsEdit.serial.submitTestString"></span>
     </md-tab-label>
     <md-tab-body>
-        <div class="md-padding ma-no-padding-bottom ma-inputs-container" layout="row" layout-wrap layout-align="space-between start">
+        <div class="md-padding ma-no-padding-bottom ma-inputs-container" layout="row" layout-wrap
+            layout-align="space-between start">
             <div flex="100" flex-gt-md="50">
                 <md-checkbox class="ma-margin-input-container" name="hex" ng-model="$ctrl.dataSource.hex">
                     <span ma-tr="dsEdit.serial.hex"></span>
@@ -219,41 +234,46 @@
             </div>
 
             <div flex="100" flex-gt-md="50">
-                <md-checkbox class="ma-margin-input-container" name="useTerminator" ng-model="$ctrl.dataSource.useTerminator">
+                <md-checkbox class="ma-margin-input-container" name="useTerminator"
+                    ng-model="$ctrl.dataSource.useTerminator">
                     <span ma-tr="dsEdit.serial.useTerminator"></span>
                 </md-checkbox>
             </div>
-            
+
             <md-input-container flex="100" flex-gt-md="50" ng-if="$ctrl.dataSource.useTerminator">
                 <md-icon>last_page</md-icon>
                 <label ma-tr="dsEdit.serial.messageTerminator"></label>
-                <input name="messageTerminator" ng-model="$ctrl.dataSource.messageTerminator" required ma-get-ctrl="messageTerminatorModelCtrl = $ngModel">
+                <input name="messageTerminator" ng-model="$ctrl.dataSource.messageTerminator" required
+                    ma-get-ctrl="messageTerminatorModelCtrl = $ngModel">
                 <div ng-messages="messageTerminatorModelCtrl.$error">
                     <div ng-message="required" ma-tr="validate.required"></div>
                     <div ng-message="validationMessage" ng-bind="messageTerminatorModelCtrl.validationMessage"></div>
                 </div>
             </md-input-container>
-        
+
             <md-input-container flex="100" flex-gt-md="50" ng-if="$ctrl.dataSource.useTerminator">
                 <md-icon>settings_ethernet</md-icon>
                 <label ma-tr="dsEdit.serial.messageRegex"></label>
-                <input name="messageRegex" ng-model="$ctrl.dataSource.messageRegex" required ma-get-ctrl="messageRegexModelCtrl = $ngModel">
+                <input name="messageRegex" ng-model="$ctrl.dataSource.messageRegex" required
+                    ma-get-ctrl="messageRegexModelCtrl = $ngModel">
                 <div ng-messages="messageRegexModelCtrl.$error">
                     <div ng-message="required" ma-tr="validate.required"></div>
                     <div ng-message="validationMessage" ng-bind="messageRegexModelCtrl.validationMessage"></div>
                 </div>
             </md-input-container>
-        
+
             <md-input-container flex="100" flex-gt-md="50">
                 <md-icon>call_received</md-icon>
                 <label ma-tr="dsEdit.serial.pointIdentifierIndex"></label>
-                <input name="pointIdentifierIndex" min="0" type="number" ng-model="$ctrl.dataSource.pointIdentifierIndex" required ma-get-ctrl="pointIdentifierIndexModelCtrl = $ngModel">
+                <input name="pointIdentifierIndex" min="0" type="number"
+                    ng-model="$ctrl.dataSource.pointIdentifierIndex" required
+                    ma-get-ctrl="pointIdentifierIndexModelCtrl = $ngModel">
                 <div ng-messages="pointIdentifierIndexModelCtrl.$error">
                     <div ng-message="required" ma-tr="validate.required"></div>
                     <div ng-message="validationMessage" ng-bind="pointIdentifierIndexModelCtrl.validationMessage"></div>
                 </div>
             </md-input-container>
-        
+
             <div flex="100" layout="row" layout-wrap layout-align="center center">
                 <md-input-container flex>
                     <md-icon>insert_drive_file</md-icon>
@@ -265,34 +285,50 @@
                 </md-button>
             </div>
 
-            <div ng-if="$ctrl.testValues" flex="100" class="ma-table-container">
+            <div ng-if="$ctrl.testResponse.errors.length > 0" flex="100" class="ma-table-container">
+                <md-table-container>
+                    <table md-table>
+                        <thead md-head>
+                            <tr md-row>
+                                <th md-column ma-tr="common.logging.error"></th>
+                            </tr>
+                        </thead>
+                        <tbody md-body>
+                            <tr md-row ng-repeat="error in $ctrl.testResponse.errors">
+                                <td md-cell ng-bind="error.error"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </md-table-container>
+            </div>
+
+            <div ng-if="$ctrl.testResponse.success.length > 0" flex="100" class="ma-table-container">
                 <md-table-container>
                     <table md-table ng-model="$ctrl.page.selected">
                         <thead md-head>
                             <tr md-row>
                                 <th md-column ma-tr="common.pointName"></th>
                                 <th md-column ma-tr="dsEdit.file.pointIdentifier"></th>
-                                <th md-column ma-tr="common.stats.value"></th>
+                                <th md-column ma-tr="serial.test.valueAtTimestamp"></th>
                                 <th md-column ma-tr="dsEdit.status"></th>
                             </tr>
                         </thead>
                         <tbody md-body>
-                            <tr md-row ng-repeat="items in $ctrl.testValues | limitTo: $ctrl.query.limit: ($ctrl.query.page - 1) * $ctrl.query.limit">
+                            <tr md-row
+                                ng-repeat="items in $ctrl.testResponse.success | limitTo: $ctrl.query.limit: ($ctrl.query.page - 1) * $ctrl.query.limit">
                                 <td md-cell ng-bind="items.pointName"></td>
-                                <td md-cell ng-bind="items.identifier"></td>
-                                <td md-cell>{{ items.value }}@{{ items.timestamp | maMoment:'format':'dddd, MMMM Do YYYY, h:mm:ss a' }}</td>
+                                <td md-cell ng-if="items.identifier" ng-bind="items.identifier"></td>
+                                <td md-cell ng-if="!items.identifier" ma-tr="serial.test.noIdentifierFound"></td>
+                                <td md-cell ng-if="items.value" ng-bind="items.value + ' @ ' + (items.timestamp | maMoment:'format':'dddd, MMMM Do YYYY, h:mm:ss a')"></td>
+                                <td md-cell ng-if="!items.value" ma-tr="serial.test.noValue"></td>
                                 <td md-cell ng-if="items.success" ma-tr="dsEdit.file.test.match"></td>
                                 <td md-cell ng-if="!items.success" ma-tr="dsEdit.file.test.noMatch"></td>
                             </tr>
                         </tbody>
                     </table>
                 </md-table-container>
-                <md-table-pagination 
-                    md-limit="$ctrl.query.limit" 
-                    md-limit-options="[5, 10, 20]" 
-                    md-page="$ctrl.query.page" 
-                    md-total="{{$ctrl.testValues.length}}" 
-                    md-on-paginate="$ctrl.getBound"
+                <md-table-pagination md-limit="$ctrl.query.limit" md-limit-options="[5, 10, 20]"
+                    md-page="$ctrl.query.page" md-total="{{$ctrl.testValues.length}}" md-on-paginate="$ctrl.getBound"
                     md-page-select>
                 </md-table-pagination>
             </div>
