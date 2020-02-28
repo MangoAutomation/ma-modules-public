@@ -15,10 +15,12 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.infiniteautomation.mango.rest.v2.model.AbstractVoModel;
 import com.infiniteautomation.mango.rest.v2.model.dataPoint.textRenderer.BaseTextRendererModel;
 import com.infiniteautomation.mango.spring.service.PermissionService;
+import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataPointTagsDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
+import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.util.UnitUtil;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
@@ -200,7 +202,10 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
             try {
                 point.setUnit(UnitUtil.parseLocal(unit));
             } catch(IllegalArgumentException e) {
-                point.setUnit(null); //Signal to use the unit string
+                //TODO  Mango 4.0 unmap
+                ProcessResult result = new ProcessResult();
+                result.addContextualMessage("unit", "validate.unitInvalid", e.getMessage());
+                throw new ValidationException(result);
             }
         }
         if (useIntegralUnit != null) {
@@ -210,7 +215,10 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
             try {
                 point.setIntegralUnit(UnitUtil.parseLocal(integralUnit));
             } catch(IllegalArgumentException e) {
-                point.setIntegralUnit(null);
+                //TODO  Mango 4.0 unmap
+                ProcessResult result = new ProcessResult();
+                result.addContextualMessage("integralUnit", "validate.unitInvalid", e.getMessage());
+                throw new ValidationException(result);
             }
         }
         if (useRenderedUnit != null) {
@@ -220,7 +228,10 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
             try {
                 point.setRenderedUnit(UnitUtil.parseLocal(renderedUnit));
             } catch(IllegalArgumentException e) {
-                point.setRenderedUnit(null);
+                //TODO  Mango 4.0 unmap
+                ProcessResult result = new ProcessResult();
+                result.addContextualMessage("renderedUnit", "validate.unitInvalid", e.getMessage());
+                throw new ValidationException(result);
             }
         }
         if (chartColour != null) {
