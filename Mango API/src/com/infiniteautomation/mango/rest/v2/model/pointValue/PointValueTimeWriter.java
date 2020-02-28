@@ -141,7 +141,7 @@ public abstract class PointValueTimeWriter {
                         writeIntegerField(name, value.getIntegerValue());
                         break;
                     case DataTypes.NUMERIC:
-                        if(vo.getRenderedUnit() != Unit.ONE)
+                        if(rendered && vo.getRenderedUnit() != Unit.ONE)
                             writeDoubleField(name, vo.getUnit().getConverterTo(vo.getRenderedUnit()).convert(value.getDoubleValue()));
                         else
                             writeDoubleField(name, value.getDoubleValue());
