@@ -40,7 +40,6 @@ class serialDataSourceEditorController {
                     ? this.testResponse.errors.push(res) 
                     : this.testResponse.success.push(res)
             });
-            console.log('test response', this.testResponse);
 
         }, error => {
             this.maDialogHelper.errorToast(['dsEdit.serial.testStringError', error.data.localizedMessage]);
