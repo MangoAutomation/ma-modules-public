@@ -60,12 +60,10 @@ public abstract class AbstractDataSourceModel<T extends DataSourceVO> extends Ab
      */
     public abstract String getModelType();
 
-
-    @SuppressWarnings("unchecked")
     @Override
     protected T newVO() {
         DataSourceDefinition<T> def = getDefinition();
-        T vo = (T) def.baseCreateDataSourceVO();
+        T vo = def.baseCreateDataSourceVO();
         vo.setDefinition(def);
         return vo;
     }

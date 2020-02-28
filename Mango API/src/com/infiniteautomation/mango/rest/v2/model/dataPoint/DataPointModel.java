@@ -175,7 +175,7 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
                 point.setDataSourceId(ds.getId());
                 point.setDataSourceName(ds.getName());
                 point.setDataSourceXid(ds.getXid());
-                point.setDataSourceTypeName(ds.getTypeKey());
+                point.setDataSourceTypeName(ds.getDefinition().getDataSourceTypeName());
             }
         }
         //TODO Mango 4.0 Use ModelMapper.unmap
