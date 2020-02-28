@@ -5,6 +5,7 @@
 package com.infiniteautomation.mango.rest.v2;
 
 import java.net.URI;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -48,6 +50,7 @@ import com.infiniteautomation.mango.spring.service.UsersService;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.infiniteautomation.mango.util.exception.TranslatableExceptionI;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
+import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.role.Role;
 import com.serotonin.m2m2.web.mvc.spring.security.MangoSessionRegistry;
@@ -70,6 +73,7 @@ public class UserRestController {
     private final UsersService service;
     private final MangoSessionRegistry sessionRegistry;
     private final Map<String, Field<?>> fieldMap;
+    private final Map<String, Function<Object, Object>> valueConverterMap;
 
     @Autowired
     public UserRestController(UsersService service, MangoSessionRegistry sessionRegistry, UserTableDefinition userTable) {
@@ -80,6 +84,13 @@ public class UserRestController {
         this.fieldMap.put("lastPasswordChange", userTable.getAlias("passwordChangeTimestamp"));
         this.fieldMap.put("created", userTable.getAlias("createdTs"));
         this.fieldMap.put("emailVerified", userTable.getAlias("emailVerifiedTs"));
+
+        this.valueConverterMap = Collections.singletonMap("receiveAlarmEmails", v -> {
+            if (v instanceof String) {
+                return AlarmLevels.fromName((String) v).value();
+            }
+            return v;
+        });
     }
 
     @ApiOperation(
@@ -366,11 +377,13 @@ public class UserRestController {
     public StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
 
         if (user.hasAdminRole()) {
-            return new StreamedVORqlQueryWithTotal<>(service, rql, this.fieldMap, null, vo -> map.apply(vo, user));
+            return new StreamedVORqlQueryWithTotal<>(service, rql, this.fieldMap,
+                    this.valueConverterMap, vo -> map.apply(vo, user));
         } else {
             // Add some conditions to restrict based on user permissions
             rql = RQLUtils.addAndRestriction(rql, new ASTNode("eq", "id", user.getId()));
-            return new StreamedVORqlQueryWithTotal<>(service, rql, this.fieldMap, null, vo -> map.apply(vo, user));
+            return new StreamedVORqlQueryWithTotal<>(service, rql, this.fieldMap,
+                    this.valueConverterMap, vo -> map.apply(vo, user));
         }
     }
 }
