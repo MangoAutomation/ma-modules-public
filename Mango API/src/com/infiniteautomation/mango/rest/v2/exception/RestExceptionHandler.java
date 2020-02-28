@@ -34,6 +34,7 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import com.infiniteautomation.mango.db.query.RQLToCondition.RQLVisitException;
+import com.infiniteautomation.mango.io.messaging.MessageSendException;
 import com.infiniteautomation.mango.io.messaging.email.EmailFailedException;
 import com.infiniteautomation.mango.rest.v2.advice.MangoRequestBodyAdvice;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
@@ -128,10 +129,15 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler({
-        EmailFailedException.class
+        MessageSendException.class
     })
     public ResponseEntity<Object> handleEmailFailedException(HttpServletRequest request, HttpServletResponse response, Exception ex, WebRequest req) {
-        return handleExceptionInternal(ex, new SendEmailFailedRestException(ex, ((EmailFailedException)ex).getSession()), new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, req);
+        if(ex instanceof EmailFailedException) {
+            EmailFailedException e = (EmailFailedException)ex;
+            return handleExceptionInternal(ex, new SendEmailFailedRestException(e, e.getSession()), new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, req);
+        }else {
+            return handleExceptionInternal(ex, new SendMessageFailedRestException((MessageSendException)ex), new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, req);
+        }
     }
 
     @ExceptionHandler({
