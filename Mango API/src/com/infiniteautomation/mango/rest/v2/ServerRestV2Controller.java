@@ -21,6 +21,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -140,7 +141,7 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
     public CompletableFuture<TranslatableMessage> sendTestEmail(
             @RequestParam(value = "email", required = true, defaultValue = "") String email,
             @RequestParam(value = "username", required = true, defaultValue = "") String username,
-            HttpServletRequest request) throws TemplateException, IOException {
+            HttpServletRequest request) throws TemplateException, IOException, AddressException {
 
         Translations translations = Common.getTranslations();
         Map<String, Object> model = new HashMap<>();
@@ -160,7 +161,7 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
     public CompletableFuture<TranslatableMessage> sendEmail(
             @RequestBody EmailContentModel contentModel,
             @RequestParam(value = "username", required = true) String username,
-            @AuthenticationPrincipal User user) throws TemplateException, IOException {
+            @AuthenticationPrincipal User user) throws TemplateException, IOException, AddressException {
 
         contentModel.ensureValid();
 
@@ -197,12 +198,15 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
         });
     }
 
-    private CompletableFuture<TranslatableMessage> sendTestEmail(Set<String> to, String from, String subject, EmailContent content, Function<SentMessage, TranslatableMessage> done){
-        EmailMessage message = new EmailMessage(subject, content);
-        return Common.messageManager.sendMessageUsingFirstAvailableTransport(
-                to,
-                from,
-                message).thenApply(done).toCompletableFuture();
+    private CompletableFuture<TranslatableMessage> sendTestEmail(Set<String> to, String from, String subject, EmailContent content, Function<SentMessage, TranslatableMessage> done) throws AddressException{
+        Set<InternetAddress> toAddresses = new HashSet<>();
+        for(String toAddress : to) {
+            toAddresses.add(new InternetAddress(toAddress));
+        }
+
+        EmailMessage message = new EmailMessage(null, toAddresses, subject, content);
+        return Common.messageManager.sendMessageUsingFirstAvailableTransport(message)
+                .thenApply(done).toCompletableFuture();
     }
 
     @PreAuthorize("isAdmin()")
