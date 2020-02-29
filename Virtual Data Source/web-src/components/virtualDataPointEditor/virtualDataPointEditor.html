@@ -80,6 +80,8 @@
             <input name="value" type="number" ng-value="$ctrl.pointValue" ma-tr="common.value" ma-form-exclude>
         </md-chips>
 
+        <div class="hint" ma-tr="dsEdit.virtual.multistateChipHint"></div>
+
         <div ng-messages="values.$error">
             <div ng-message="required" ma-tr="validate.required"></div>
             <div ng-message="validationMessage" ng-bind="valuesModelCtrl.validationMessage"></div>
