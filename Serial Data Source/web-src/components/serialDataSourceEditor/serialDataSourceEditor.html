@@ -285,23 +285,6 @@
                 </md-button>
             </div>
 
-            <div ng-if="$ctrl.testResponse.errors.length > 0" flex="100" class="ma-table-container">
-                <md-table-container>
-                    <table md-table>
-                        <thead md-head>
-                            <tr md-row>
-                                <th md-column ma-tr="common.logging.error"></th>
-                            </tr>
-                        </thead>
-                        <tbody md-body>
-                            <tr md-row ng-repeat="error in $ctrl.testResponse.errors">
-                                <td md-cell ng-bind="error.error"></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </md-table-container>
-            </div>
-
             <div ng-if="$ctrl.testResponse.success.length > 0" flex="100" class="ma-table-container">
                 <md-table-container>
                     <table md-table ng-model="$ctrl.page.selected">

@@ -41,6 +41,10 @@ class serialDataSourceEditorController {
                     : this.testResponse.success.push(res)
             });
 
+            if (this.testResponse.errors.length > 0) {
+            this.maDialogHelper.errorToast(['serial.test.noTerminator']);
+                
+            }
         }, error => {
             this.maDialogHelper.errorToast(['dsEdit.serial.testStringError', error.data.localizedMessage]);
         });
