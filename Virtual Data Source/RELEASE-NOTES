@@ -1,6 +1,7 @@
 *Version 4.0.0*
 * Upgraded to work with core version 4.0.x
 * Remove v1 REST support
+* Added hint text indicating which keyboard key adds a value to the Multistate values chips
 
 *Version 3.7.0*
 * Upgraded to work with core version 3.7.x
