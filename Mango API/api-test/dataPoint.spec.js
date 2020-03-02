@@ -188,8 +188,10 @@ describe('Data point service', function() {
         
         let ws;
         const socketOpenDeferred = defer();
-        const actionFinishedDeferred = defer();
+        const gotMessageDeferred = defer();
         const dsXid = this.ds.xid;
+        const dpName = uuid();
+        
         return Promise.resolve().then(() => {
             ws = client.openWebSocket({
                 path: '/rest/v2/websocket/data-points'
@@ -200,35 +202,31 @@ describe('Data point service', function() {
             });
             
             ws.on('error', error => {
+                console.log('Got error', error);
                 const msg = new Error(`WebSocket error, error: ${error}`);
                 socketOpenDeferred.reject(msg);
-                actionFinishedDeferred.reject(msg);
+                gotMessageDeferred.reject(msg);
             });
             
             ws.on('close', (code, reason) => {
                 const msg = new Error(`WebSocket closed, code: ${code}, reason: ${reason}`);
                 socketOpenDeferred.reject(msg);
-                actionFinishedDeferred.reject(msg);
+                gotMessageDeferred.reject(msg);
             });
 
             ws.on('message', msgStr => {
-                assert.isString(msgStr);
                 const msg = JSON.parse(msgStr);
-                if(msg.payload.action === 'add'){
-                    assert.strictEqual(msg.payload.object.name, 'Node mango client ws');
-                    assert.strictEqual(msg.payload.object.pointLocator.dataType, 'NUMERIC');
-                    assert.strictEqual(msg.payload.object.pointLocator.modelType, 'PL.VIRTUAL');
-                    actionFinishedDeferred.resolve();
-                }else{
-                    actionFinishedDeferred.reject();
+                if (msg.payload.action === 'add' && msg.payload.object.name === dpName) {
+                    gotMessageDeferred.resolve(msg);
                 }
             });
 
-            return socketOpenDeferred.promise;
-        }).then(function() { delay(1000); }).then(function() {
             //TODO Fix DaoNotificationWebSocketHandler so we can remove this delay, only required for cold start
+            return socketOpenDeferred.promise.then(() => delay(1000));
+        }).then(() => {
+            // WebSocket is open and raring to go
             const dp = new DataPoint({
-                name: 'Node mango client ws',
+                name: dpName,
                 dataSourceXid : dsXid,
                 pointLocator : {
                     startValue : '0',
@@ -241,20 +239,20 @@ describe('Data point service', function() {
                     min: 0
                 }
             });
-            return client.restRequest({
-                path: '/rest/v2/data-points',
-                method: 'POST',
-                data: dp
-            }).then(response => {
-                
-            }, error =>{
-                actionFinishedDeferred.reject(error);
-            });
             
-        }).then(() => actionFinishedDeferred.promise ).then((r) => {
-            //Close websocket 
-            ws.close();
-            return r;
+            return dp.save();
+        }).then(() => {
+            // data point was saved, wait for the WebSocket message
+            return gotMessageDeferred.promise;
+        }).then(msg => {
+            assert.strictEqual(msg.payload.object.name, dpName);
+            assert.strictEqual(msg.payload.object.pointLocator.dataType, 'NUMERIC');
+            assert.strictEqual(msg.payload.object.pointLocator.modelType, 'PL.VIRTUAL');
+        }).finally(() => {
+            if (ws) {
+                // Close websocket 
+                ws.close();
+            }
         });
     });
 
