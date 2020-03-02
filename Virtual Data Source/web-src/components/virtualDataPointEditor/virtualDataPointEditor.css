@@ -10,3 +10,9 @@ ma-virtual-data-point-editor .close-icon {
 ma-virtual-data-point-editor ma-filtering-point-list {
     margin-left: 10px;
 }
+
+ma-virtual-data-point-editor .ma-hint {
+    font-size: 16px;
+    display: block;
+    margin-top: 8px;
+  }
