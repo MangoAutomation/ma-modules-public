@@ -56,18 +56,21 @@ class VirtualDataPointEditorController {
     }
 
     chipsChanged() {
-        let values = this.dataPoint.pointLocator.values; 
-
+        let values = this.dataPoint.pointLocator.values;
         if (!Array.isArray(values)) {
             values = this.dataPoint.pointLocator.values = [];
         }
-
-        let lastValue = this.dataPoint.pointLocator.values[values.length - 1] = Number(values[values.length - 1]);
-
-        if (values.length === 0) {
-            this.pointValue = 1;
-        } else {
+        
+        if (values.length) {
+            // remove the value which was added to the array, parse it, and add it back if
+            // not already in the array
+            const lastValue = Number(values.pop());
+            if (!values.includes(lastValue)) {
+                values.push(lastValue);
+            }
             this.pointValue = lastValue + 1;
+        } else {
+            this.pointValue = 1;
         }
     }
 }
