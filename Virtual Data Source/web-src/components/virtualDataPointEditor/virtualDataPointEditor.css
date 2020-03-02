@@ -11,9 +11,8 @@ ma-virtual-data-point-editor ma-filtering-point-list {
     margin-left: 10px;
 }
 
-ma-virtual-data-point-editor .hint {
+ma-virtual-data-point-editor .ma-hint {
     font-size: 16px;
-    color: #c0c0c0;
     display: block;
     margin-top: 8px;
   }
