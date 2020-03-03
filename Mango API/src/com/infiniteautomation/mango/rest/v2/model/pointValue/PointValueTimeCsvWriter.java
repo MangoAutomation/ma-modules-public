@@ -64,33 +64,33 @@ public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter {
     }
 
     @Override
-    public void writeAllStatistics(StatisticsGenerator statisticsGenerator, DataPointVO vo, boolean rendered)
+    public void writeAllStatistics(StatisticsGenerator statisticsGenerator, DataPointVO vo, boolean rendered, boolean raw)
             throws IOException {
         if(info.isMultiplePointsPerArray()) {
             if (statisticsGenerator instanceof ValueChangeCounter) {
                 //We only need the timestamp here for image links
                 ValueChangeCounter stats = (ValueChangeCounter) statisticsGenerator;
-                writeDataValue(vo.getXid() + DOT + RollupEnum.START.name(), vo, stats.getStartValue(), stats.getPeriodStartTime(), rendered);
-                writeDataValue(vo.getXid() + DOT + RollupEnum.FIRST.name(), vo, stats.getFirstValue(), stats.getFirstTime(), rendered);
-                writeDataValue(vo.getXid() + DOT + RollupEnum.LAST.name(), vo, stats.getLastValue(), stats.getLastTime(), rendered);
+                writeDataValue(vo.getXid() + DOT + RollupEnum.START.name(), vo, stats.getStartValue(), stats.getPeriodStartTime(), rendered, raw);
+                writeDataValue(vo.getXid() + DOT + RollupEnum.FIRST.name(), vo, stats.getFirstValue(), stats.getFirstTime(), rendered, raw);
+                writeDataValue(vo.getXid() + DOT + RollupEnum.LAST.name(), vo, stats.getLastValue(), stats.getLastTime(), rendered, raw);
                 writeIntegerField(vo.getXid() + DOT + RollupEnum.COUNT.name(), stats.getCount());
             } else if (statisticsGenerator instanceof StartsAndRuntimeList) {
                 StartsAndRuntimeList stats = (StartsAndRuntimeList)statisticsGenerator;
-                writeDataValue(vo.getXid() + DOT + RollupEnum.START.name(), vo, stats.getStartValue(), stats.getPeriodStartTime(), rendered);
-                writeDataValue(vo.getXid() + DOT + RollupEnum.FIRST.name(), vo, stats.getFirstValue(), stats.getFirstTime(), rendered);
-                writeDataValue(vo.getXid() + DOT + RollupEnum.LAST.name(), vo, stats.getLastValue(), stats.getLastTime(), rendered);
+                writeDataValue(vo.getXid() + DOT + RollupEnum.START.name(), vo, stats.getStartValue(), stats.getPeriodStartTime(), rendered, raw);
+                writeDataValue(vo.getXid() + DOT + RollupEnum.FIRST.name(), vo, stats.getFirstValue(), stats.getFirstTime(), rendered, raw);
+                writeDataValue(vo.getXid() + DOT + RollupEnum.LAST.name(), vo, stats.getLastValue(), stats.getLastTime(), rendered, raw);
                 writeIntegerField(vo.getXid() + DOT + RollupEnum.COUNT.name(), stats.getCount());
             } else if (statisticsGenerator instanceof AnalogStatistics) {
                 AnalogStatistics stats = (AnalogStatistics) statisticsGenerator;
-                writeAccumulator(vo.getXid() + DOT + RollupEnum.ACCUMULATOR.name(), vo, stats, rendered);
-                writeAnalogStatistic(vo.getXid() + DOT + RollupEnum.AVERAGE.name(), vo, stats.getAverage(), rendered);
-                writeAnalogStatistic(vo.getXid() + DOT + RollupEnum.DELTA.name(), vo, stats.getDelta(), rendered);
-                writeAnalogStatistic(vo.getXid() + DOT + RollupEnum.MINIMUM.name(), vo, stats.getMinimumValue(), rendered);
-                writeAnalogStatistic(vo.getXid() + DOT + RollupEnum.MAXIMUM.name(), vo, stats.getMaximumValue(), rendered);
-                writeAnalogStatistic(vo.getXid() + DOT + RollupEnum.SUM.name(), vo, stats.getSum(), rendered);
-                writeAnalogStatistic(vo.getXid() + DOT + RollupEnum.START.name(), vo, stats.getStartValue(), rendered);
-                writeAnalogStatistic(vo.getXid() + DOT + RollupEnum.FIRST.name(), vo, stats.getFirstValue(), rendered);
-                writeAnalogStatistic(vo.getXid() + DOT + RollupEnum.LAST.name(), vo, stats.getLastValue(), rendered);
+                writeAccumulator(vo.getXid() + DOT + RollupEnum.ACCUMULATOR.name(), vo, stats, rendered, raw);
+                writeAnalogStatistic(vo.getXid() + DOT + RollupEnum.AVERAGE.name(), vo, stats.getAverage(), rendered, raw);
+                writeAnalogStatistic(vo.getXid() + DOT + RollupEnum.DELTA.name(), vo, stats.getDelta(), rendered, raw);
+                writeAnalogStatistic(vo.getXid() + DOT + RollupEnum.MINIMUM.name(), vo, stats.getMinimumValue(), rendered, raw);
+                writeAnalogStatistic(vo.getXid() + DOT + RollupEnum.MAXIMUM.name(), vo, stats.getMaximumValue(), rendered, raw);
+                writeAnalogStatistic(vo.getXid() + DOT + RollupEnum.SUM.name(), vo, stats.getSum(), rendered, raw);
+                writeAnalogStatistic(vo.getXid() + DOT + RollupEnum.START.name(), vo, stats.getStartValue(), rendered, raw);
+                writeAnalogStatistic(vo.getXid() + DOT + RollupEnum.FIRST.name(), vo, stats.getFirstValue(), rendered, raw);
+                writeAnalogStatistic(vo.getXid() + DOT + RollupEnum.LAST.name(), vo, stats.getLastValue(), rendered, raw);
                 writeIntegral(vo.getXid() + DOT + RollupEnum.INTEGRAL.name(), vo, stats.getIntegral(), rendered);
                 writeIntegerField(vo.getXid() + DOT + RollupEnum.COUNT.name(), stats.getCount());
             }
@@ -98,27 +98,27 @@ public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter {
             if (statisticsGenerator instanceof ValueChangeCounter) {
                 //We only need the timestamp here for image links
                 ValueChangeCounter stats = (ValueChangeCounter) statisticsGenerator;
-                writeDataValue(RollupEnum.START.name(), vo, stats.getStartValue(), stats.getPeriodStartTime(), rendered);
-                writeDataValue(RollupEnum.FIRST.name(), vo, stats.getFirstValue(), stats.getFirstTime(), rendered);
-                writeDataValue(RollupEnum.LAST.name(), vo, stats.getLastValue(), stats.getLastTime(), rendered);
+                writeDataValue(RollupEnum.START.name(), vo, stats.getStartValue(), stats.getPeriodStartTime(), rendered, raw);
+                writeDataValue(RollupEnum.FIRST.name(), vo, stats.getFirstValue(), stats.getFirstTime(), rendered, raw);
+                writeDataValue(RollupEnum.LAST.name(), vo, stats.getLastValue(), stats.getLastTime(), rendered, raw);
                 writeIntegerField(RollupEnum.COUNT.name(), stats.getCount());
             } else if (statisticsGenerator instanceof StartsAndRuntimeList) {
                 StartsAndRuntimeList stats = (StartsAndRuntimeList)statisticsGenerator;
-                writeDataValue(RollupEnum.START.name(), vo, stats.getStartValue(), stats.getPeriodStartTime(), rendered);
-                writeDataValue(RollupEnum.FIRST.name(), vo, stats.getFirstValue(), stats.getFirstTime(), rendered);
-                writeDataValue(RollupEnum.LAST.name(), vo, stats.getLastValue(), stats.getLastTime(), rendered);
+                writeDataValue(RollupEnum.START.name(), vo, stats.getStartValue(), stats.getPeriodStartTime(), rendered, raw);
+                writeDataValue(RollupEnum.FIRST.name(), vo, stats.getFirstValue(), stats.getFirstTime(), rendered, raw);
+                writeDataValue(RollupEnum.LAST.name(), vo, stats.getLastValue(), stats.getLastTime(), rendered, raw);
                 writeIntegerField(RollupEnum.COUNT.name(), stats.getCount());
             } else if (statisticsGenerator instanceof AnalogStatistics) {
                 AnalogStatistics stats = (AnalogStatistics) statisticsGenerator;
-                writeAccumulator(RollupEnum.ACCUMULATOR.name(), vo, stats, rendered);
-                writeAnalogStatistic(RollupEnum.AVERAGE.name(), vo, stats.getAverage(), rendered);
-                writeAnalogStatistic(RollupEnum.DELTA.name(), vo, stats.getDelta(), rendered);
-                writeAnalogStatistic(RollupEnum.MINIMUM.name(), vo, stats.getMinimumValue(), rendered);
-                writeAnalogStatistic(RollupEnum.MAXIMUM.name(), vo, stats.getMaximumValue(), rendered);
-                writeAnalogStatistic(RollupEnum.SUM.name(), vo, stats.getSum(), rendered);
-                writeAnalogStatistic(RollupEnum.START.name(), vo, stats.getStartValue(), rendered);
-                writeAnalogStatistic(RollupEnum.FIRST.name(), vo, stats.getFirstValue(), rendered);
-                writeAnalogStatistic(RollupEnum.LAST.name(), vo, stats.getLastValue(), rendered);
+                writeAccumulator(RollupEnum.ACCUMULATOR.name(), vo, stats, rendered, raw);
+                writeAnalogStatistic(RollupEnum.AVERAGE.name(), vo, stats.getAverage(), rendered, raw);
+                writeAnalogStatistic(RollupEnum.DELTA.name(), vo, stats.getDelta(), rendered, raw);
+                writeAnalogStatistic(RollupEnum.MINIMUM.name(), vo, stats.getMinimumValue(), rendered, raw);
+                writeAnalogStatistic(RollupEnum.MAXIMUM.name(), vo, stats.getMaximumValue(), rendered, raw);
+                writeAnalogStatistic(RollupEnum.SUM.name(), vo, stats.getSum(), rendered, raw);
+                writeAnalogStatistic(RollupEnum.START.name(), vo, stats.getStartValue(), rendered, raw);
+                writeAnalogStatistic(RollupEnum.FIRST.name(), vo, stats.getFirstValue(), rendered, raw);
+                writeAnalogStatistic(RollupEnum.LAST.name(), vo, stats.getLastValue(), rendered, raw);
                 writeIntegral(RollupEnum.INTEGRAL.name(), vo, stats.getIntegral(), rendered);
                 writeIntegerField(RollupEnum.COUNT.name(), stats.getCount());
             }

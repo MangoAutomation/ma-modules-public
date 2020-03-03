@@ -116,14 +116,15 @@ public abstract class PointValueTimeWriter {
     public abstract void writeDataPointValue(DataPointValueTime value) throws IOException;
 
     /**
-     *
      * @param name
      * @param vo
      * @param value
      * @param timestamp - Only used for generating Image File Links
+     * @param rendered
+     * @param raw - do not use the rendered unit for conversion
      * @throws IOException
      */
-    protected void writeDataValue(String name, DataPointVO vo, DataValue value, Long timestamp, boolean rendered) throws IOException{
+    protected void writeDataValue(String name, DataPointVO vo, DataValue value, Long timestamp, boolean rendered, boolean raw) throws IOException{
         if(rendered) {
             writeStringField(name, info.getRenderedString(vo, value));
         }else {
@@ -141,7 +142,7 @@ public abstract class PointValueTimeWriter {
                         writeIntegerField(name, value.getIntegerValue());
                         break;
                     case DataTypes.NUMERIC:
-                        if(vo.getRenderedUnit() != Unit.ONE)
+                        if(vo.getRenderedUnit() != Unit.ONE && !raw)
                             writeDoubleField(name, vo.getUnit().getConverterTo(vo.getRenderedUnit()).convert(value.getDoubleValue()));
                         else
                             writeDoubleField(name, value.getDoubleValue());
@@ -178,14 +179,14 @@ public abstract class PointValueTimeWriter {
         }
     }
 
-    public void writeAnalogStatistic(String name, DataPointVO vo, Double value, boolean rendered) throws IOException {
+    public void writeAnalogStatistic(String name, DataPointVO vo, Double value, boolean rendered, boolean raw) throws IOException {
         if(rendered) {
             writeStringField(name, info.getRenderedString(vo, value));
         }else {
             if (value == null) {
                 writeNullField(name);
             } else {
-                if(vo.getRenderedUnit() != Unit.ONE)
+                if(vo.getRenderedUnit() != Unit.ONE && !raw)
                     writeDoubleField(name, vo.getUnit().getConverterTo(vo.getRenderedUnit()).convert(value));
                 else
                     writeDoubleField(name, value);
@@ -193,15 +194,15 @@ public abstract class PointValueTimeWriter {
         }
     }
 
-    public void writeAccumulator(String name, DataPointVO vo, AnalogStatistics stats, boolean rendered) throws IOException {
+    public void writeAccumulator(String name, DataPointVO vo, AnalogStatistics stats, boolean rendered, boolean raw) throws IOException {
         Double accumulatorValue = stats.getLastValue();
         if (accumulatorValue == null) {
             accumulatorValue = stats.getMaximumValue();
         }
-        writeAnalogStatistic(name, vo, accumulatorValue, rendered);
+        writeAnalogStatistic(name, vo, accumulatorValue, rendered, raw);
     }
 
-    public void writeAllStatistics(StatisticsGenerator statisticsGenerator, DataPointVO vo, boolean rendered)
+    public void writeAllStatistics(StatisticsGenerator statisticsGenerator, DataPointVO vo, boolean rendered, boolean raw)
             throws IOException {
 
         if (statisticsGenerator instanceof ValueChangeCounter) {
@@ -212,9 +213,9 @@ public abstract class PointValueTimeWriter {
                 // when accessed because the ImageValueServlet requires a time stamp to match a value in the database.
                 writeStartObject(START);
                 writeTimestamp(stats.getPeriodStartTime());
-                writeDataValue(VALUE, vo, stats.getStartValue(), stats.getPeriodStartTime(), false);
+                writeDataValue(VALUE, vo, stats.getStartValue(), stats.getPeriodStartTime(), false, raw);
                 if(rendered)
-                    writeDataValue(RENDERED, vo, stats.getStartValue(), stats.getPeriodStartTime(), true);
+                    writeDataValue(RENDERED, vo, stats.getStartValue(), stats.getPeriodStartTime(), true, raw);
                 writeEndObject();
             }else {
                 writeNullField(START);
@@ -224,9 +225,9 @@ public abstract class PointValueTimeWriter {
                 writeStartObject(FIRST);
                 writeTimestamp(stats.getFirstTime());
                 if(rendered)
-                    writeDataValue(VALUE, vo, stats.getFirstValue(), stats.getFirstTime(), false);
+                    writeDataValue(VALUE, vo, stats.getFirstValue(), stats.getFirstTime(), false, false);
                 if(rendered)
-                    writeDataValue(RENDERED, vo, stats.getFirstValue(), stats.getFirstTime(), true);
+                    writeDataValue(RENDERED, vo, stats.getFirstValue(), stats.getFirstTime(), true, false);
                 writeEndObject();
             }else {
                 writeNullField(FIRST);
@@ -235,9 +236,9 @@ public abstract class PointValueTimeWriter {
             if(stats.getLastValue() != null) {
                 writeStartObject(LAST);
                 writeTimestamp(stats.getLastTime());
-                writeDataValue(VALUE, vo, stats.getLastValue(), stats.getLastTime(), false);
+                writeDataValue(VALUE, vo, stats.getLastValue(), stats.getLastTime(), false, false);
                 if(rendered)
-                    writeDataValue(RENDERED, vo, stats.getLastValue(), stats.getLastTime(), true);
+                    writeDataValue(RENDERED, vo, stats.getLastValue(), stats.getLastTime(), true, false);
                 writeEndObject();
             }else {
                 writeNullField(LAST);
@@ -248,9 +249,9 @@ public abstract class PointValueTimeWriter {
             if(stats.getStartValue() != null) {
                 writeStartObject(START);
                 writeTimestamp(stats.getPeriodStartTime());
-                writeDataValue(VALUE, vo, stats.getStartValue(), stats.getPeriodStartTime(), false);
+                writeDataValue(VALUE, vo, stats.getStartValue(), stats.getPeriodStartTime(), false, false);
                 if(rendered)
-                    writeDataValue(RENDERED, vo, stats.getStartValue(), stats.getPeriodStartTime(), true);
+                    writeDataValue(RENDERED, vo, stats.getStartValue(), stats.getPeriodStartTime(), true, false);
                 writeEndObject();
             }else {
                 writeNullField(START);
@@ -259,9 +260,9 @@ public abstract class PointValueTimeWriter {
             if(stats.getFirstValue() != null) {
                 writeStartObject(FIRST);
                 writeTimestamp(stats.getFirstTime());
-                writeDataValue(VALUE, vo, stats.getFirstValue(), stats.getFirstTime(), false);
+                writeDataValue(VALUE, vo, stats.getFirstValue(), stats.getFirstTime(), false, false);
                 if(rendered)
-                    writeDataValue(RENDERED, vo, stats.getFirstValue(), stats.getFirstTime(), true);
+                    writeDataValue(RENDERED, vo, stats.getFirstValue(), stats.getFirstTime(), true, false);
                 writeEndObject();
             }else {
                 writeNullField(FIRST);
@@ -270,9 +271,9 @@ public abstract class PointValueTimeWriter {
             if(stats.getLastValue() != null) {
                 writeStartObject(LAST);
                 writeTimestamp(stats.getLastTime());
-                writeDataValue(VALUE, vo, stats.getLastValue(), stats.getLastTime(), false);
+                writeDataValue(VALUE, vo, stats.getLastValue(), stats.getLastTime(), false, false);
                 if(rendered)
-                    writeDataValue(RENDERED, vo, stats.getLastValue(), stats.getLastTime(), true);
+                    writeDataValue(RENDERED, vo, stats.getLastValue(), stats.getLastTime(), true, false);
                 writeEndObject();
             }else {
                 writeNullField(LAST);
@@ -282,9 +283,9 @@ public abstract class PointValueTimeWriter {
                 writeStartArray(STARTS_AND_RUNTIMES);
                 for(StartsAndRuntime item : stats.getData()) {
                     writeStartObject();
-                    writeDataValue(VALUE, vo, item.getDataValue(), stats.getPeriodStartTime(), false);
+                    writeDataValue(VALUE, vo, item.getDataValue(), stats.getPeriodStartTime(), false, false);
                     if(rendered)
-                        writeDataValue(RENDERED, vo, item.getDataValue(), stats.getPeriodStartTime(), true);
+                        writeDataValue(RENDERED, vo, item.getDataValue(), stats.getPeriodStartTime(), true, false);
                     writeIntegerField(STARTS, item.getStarts());
                     writeLongField(RUNTIME, item.getRuntime());
                     writeDoubleField(PROPORTION, item.getProportion());
@@ -304,9 +305,9 @@ public abstract class PointValueTimeWriter {
             if(accumulatorValue != null) {
                 writeStartObject(ACCUMULATOR);
                 writeTimestamp(stats.getPeriodStartTime());
-                writeAnalogStatistic(VALUE, vo, accumulatorValue, false);
+                writeAnalogStatistic(VALUE, vo, accumulatorValue, false, raw);
                 if(rendered)
-                    writeAnalogStatistic(RENDERED, vo, accumulatorValue, true);
+                    writeAnalogStatistic(RENDERED, vo, accumulatorValue, true, raw);
                 writeEndObject();
             }else {
                 writeNullField(ACCUMULATOR);
@@ -315,9 +316,9 @@ public abstract class PointValueTimeWriter {
             if(stats.getAverage() != null) {
                 writeStartObject(AVERAGE);
                 writeTimestamp(stats.getPeriodStartTime());
-                writeAnalogStatistic(VALUE, vo, stats.getAverage(), false);
+                writeAnalogStatistic(VALUE, vo, stats.getAverage(), false, raw);
                 if(rendered)
-                    writeAnalogStatistic(RENDERED, vo, stats.getAverage(), true);
+                    writeAnalogStatistic(RENDERED, vo, stats.getAverage(), true, raw);
                 writeEndObject();
             }else {
                 writeNullField(AVERAGE);
@@ -325,17 +326,17 @@ public abstract class PointValueTimeWriter {
 
             writeStartObject(DELTA);
             writeTimestamp(stats.getPeriodStartTime());
-            writeAnalogStatistic(VALUE, vo, stats.getDelta(), false);
+            writeAnalogStatistic(VALUE, vo, stats.getDelta(), false, raw);
             if(rendered)
-                writeAnalogStatistic(RENDERED, vo, stats.getDelta(), true);
+                writeAnalogStatistic(RENDERED, vo, stats.getDelta(), true, raw);
             writeEndObject();
 
             if(stats.getMinimumValue() != null) {
                 writeStartObject(MINIMUM);
                 writeTimestamp(stats.getMinimumTime());
-                writeAnalogStatistic(VALUE, vo, stats.getMinimumValue(), false);
+                writeAnalogStatistic(VALUE, vo, stats.getMinimumValue(), false, raw);
                 if(rendered)
-                    writeAnalogStatistic(RENDERED, vo, stats.getMinimumValue(), true);
+                    writeAnalogStatistic(RENDERED, vo, stats.getMinimumValue(), true, raw);
                 writeEndObject();
             }else {
                 writeNullField(MINIMUM);
@@ -343,9 +344,9 @@ public abstract class PointValueTimeWriter {
             if(stats.getMaximumValue() != null) {
                 writeStartObject(MAXIMUM);
                 writeTimestamp(stats.getMaximumTime());
-                writeAnalogStatistic(VALUE, vo, stats.getMaximumValue(), false);
+                writeAnalogStatistic(VALUE, vo, stats.getMaximumValue(), false, raw);
                 if(rendered)
-                    writeAnalogStatistic(RENDERED, vo, stats.getMaximumValue(), true);
+                    writeAnalogStatistic(RENDERED, vo, stats.getMaximumValue(), true, raw);
                 writeEndObject();
             }else {
                 writeNullField(MAXIMUM);
@@ -353,17 +354,17 @@ public abstract class PointValueTimeWriter {
 
             writeStartObject(SUM);
             writeTimestamp(stats.getPeriodStartTime());
-            writeAnalogStatistic(VALUE, vo, stats.getSum(), false);
+            writeAnalogStatistic(VALUE, vo, stats.getSum(), false, raw);
             if(rendered)
-                writeAnalogStatistic(RENDERED, vo, stats.getSum(), true);
+                writeAnalogStatistic(RENDERED, vo, stats.getSum(), true, raw);
             writeEndObject();
 
             if(stats.getStartValue() != null) {
                 writeStartObject(START);
                 writeTimestamp(stats.getPeriodStartTime());
-                writeAnalogStatistic(VALUE, vo, stats.getStartValue(), false);
+                writeAnalogStatistic(VALUE, vo, stats.getStartValue(), false, raw);
                 if(rendered)
-                    writeAnalogStatistic(RENDERED, vo, stats.getStartValue(), true);
+                    writeAnalogStatistic(RENDERED, vo, stats.getStartValue(), true, raw);
                 writeEndObject();
             }else {
                 writeNullField(START);
@@ -372,9 +373,9 @@ public abstract class PointValueTimeWriter {
             if(stats.getFirstValue() != null) {
                 writeStartObject(FIRST);
                 writeTimestamp(stats.getFirstTime());
-                writeAnalogStatistic(VALUE, vo, stats.getFirstValue(), false);
+                writeAnalogStatistic(VALUE, vo, stats.getFirstValue(), false, raw);
                 if(rendered)
-                    writeAnalogStatistic(RENDERED, vo, stats.getFirstValue(), true);
+                    writeAnalogStatistic(RENDERED, vo, stats.getFirstValue(), true, raw);
                 writeEndObject();
             }else {
                 writeNullField(FIRST);
@@ -383,9 +384,9 @@ public abstract class PointValueTimeWriter {
             if(stats.getLastValue() != null) {
                 writeStartObject(LAST);
                 writeTimestamp(stats.getLastTime());
-                writeAnalogStatistic(VALUE, vo, stats.getLastValue(), false);
+                writeAnalogStatistic(VALUE, vo, stats.getLastValue(), false, raw);
                 if(rendered)
-                    writeAnalogStatistic(RENDERED, vo, stats.getLastValue(), true);
+                    writeAnalogStatistic(RENDERED, vo, stats.getLastValue(), true, raw);
                 writeEndObject();
             }else {
                 writeNullField(LAST);
@@ -394,7 +395,7 @@ public abstract class PointValueTimeWriter {
             if(stats.getIntegral() != null) {
                 writeStartObject(INTEGRAL);
                 writeTimestamp(stats.getPeriodStartTime());
-                writeAnalogStatistic(VALUE, vo, stats.getIntegral(), false);
+                writeAnalogStatistic(VALUE, vo, stats.getIntegral(), false, raw);
                 if(rendered)
                     writeStringField(RENDERED, info.getIntegralString(vo, stats.getIntegral()));
                 writeEndObject();
@@ -405,15 +406,15 @@ public abstract class PointValueTimeWriter {
         }
     }
 
-    public void writeStatistic(String name, StatisticsGenerator statisticsGenerator, DataPointVO vo, boolean rendered) throws IOException{
+    public void writeStatistic(String name, StatisticsGenerator statisticsGenerator, DataPointVO vo, boolean rendered, boolean raw) throws IOException{
 
         if(info.getRollup() == RollupEnum.ALL) {
-            writeAllStatistics(statisticsGenerator, vo, rendered);
+            writeAllStatistics(statisticsGenerator, vo, rendered, raw);
             return;
         }else if(info.getRollup() == RollupEnum.POINT_DEFAULT){
-            writeStatistic(name, statisticsGenerator, vo, rendered, RollupEnum.convertTo(vo.getRollup()));
+            writeStatistic(name, statisticsGenerator, vo, rendered, raw, RollupEnum.convertTo(vo.getRollup()));
         }else {
-            writeStatistic(name, statisticsGenerator, vo, rendered, info.getRollup());
+            writeStatistic(name, statisticsGenerator, vo, rendered, raw, info.getRollup());
         }
     }
 
@@ -428,19 +429,19 @@ public abstract class PointValueTimeWriter {
      * @throws IOException
      */
     protected void writeStatistic(String name, StatisticsGenerator statisticsGenerator,
-            DataPointVO vo, boolean rendered, RollupEnum rollup) throws IOException {
+            DataPointVO vo, boolean rendered, boolean raw, RollupEnum rollup) throws IOException {
         if (statisticsGenerator instanceof ValueChangeCounter) {
             //We only need the timestamp here for image links
             ValueChangeCounter stats = (ValueChangeCounter) statisticsGenerator;
             switch(rollup){
                 case START:
-                    writeDataValue(name, vo, stats.getStartValue(), stats.getPeriodStartTime(), rendered);
+                    writeDataValue(name, vo, stats.getStartValue(), stats.getPeriodStartTime(), rendered, raw);
                     break;
                 case FIRST:
-                    writeDataValue(name, vo, stats.getFirstValue(), stats.getFirstTime() == null ? 0 : stats.getFirstTime(), rendered);
+                    writeDataValue(name, vo, stats.getFirstValue(), stats.getFirstTime() == null ? 0 : stats.getFirstTime(), rendered, raw);
                     break;
                 case LAST:
-                    writeDataValue(name, vo, stats.getLastValue(), stats.getLastTime() == null ? 0 : stats.getLastTime(), rendered);
+                    writeDataValue(name, vo, stats.getLastValue(), stats.getLastTime() == null ? 0 : stats.getLastTime(), rendered, raw);
                     break;
                 case COUNT:
                     writeIntegerField(name, stats.getCount());
@@ -452,13 +453,13 @@ public abstract class PointValueTimeWriter {
             StartsAndRuntimeList stats = (StartsAndRuntimeList) statisticsGenerator;
             switch(rollup){
                 case START:
-                    writeDataValue(name, vo, stats.getStartValue(), stats.getPeriodStartTime(), rendered);
+                    writeDataValue(name, vo, stats.getStartValue(), stats.getPeriodStartTime(), rendered, raw);
                     break;
                 case FIRST:
-                    writeDataValue(name, vo, stats.getFirstValue(), stats.getFirstTime() == null ? 0 : stats.getFirstTime(), rendered);
+                    writeDataValue(name, vo, stats.getFirstValue(), stats.getFirstTime() == null ? 0 : stats.getFirstTime(), rendered, raw);
                     break;
                 case LAST:
-                    writeDataValue(name, vo, stats.getLastValue(), stats.getLastTime() == null ? 0 : stats.getLastTime(), rendered);
+                    writeDataValue(name, vo, stats.getLastValue(), stats.getLastTime() == null ? 0 : stats.getLastTime(), rendered, raw);
                     break;
                 case COUNT:
                     writeIntegerField(name, stats.getCount());
@@ -470,31 +471,31 @@ public abstract class PointValueTimeWriter {
             AnalogStatistics stats = (AnalogStatistics) statisticsGenerator;
             switch(rollup){
                 case AVERAGE:
-                    writeAnalogStatistic(name, vo, stats.getAverage(), rendered);
+                    writeAnalogStatistic(name, vo, stats.getAverage(), rendered, raw);
                     break;
                 case DELTA:
-                    writeAnalogStatistic(name, vo, stats.getDelta(), rendered);
+                    writeAnalogStatistic(name, vo, stats.getDelta(), rendered, raw);
                     break;
                 case MINIMUM:
-                    writeAnalogStatistic(name, vo, stats.getMinimumValue(), rendered);
+                    writeAnalogStatistic(name, vo, stats.getMinimumValue(), rendered, raw);
                     break;
                 case MAXIMUM:
-                    writeAnalogStatistic(name, vo, stats.getMaximumValue(), rendered);
+                    writeAnalogStatistic(name, vo, stats.getMaximumValue(), rendered, raw);
                     break;
                 case ACCUMULATOR:
-                    writeAccumulator(name, vo, stats, rendered);
+                    writeAccumulator(name, vo, stats, rendered, raw);
                     break;
                 case SUM:
-                    writeAnalogStatistic(name, vo, stats.getSum(), rendered);
+                    writeAnalogStatistic(name, vo, stats.getSum(), rendered, raw);
                     break;
                 case START:
-                    writeAnalogStatistic(name, vo, stats.getStartValue(), rendered);
+                    writeAnalogStatistic(name, vo, stats.getStartValue(), rendered, raw);
                     break;
                 case FIRST:
-                    writeAnalogStatistic(name, vo, stats.getFirstValue(), rendered);
+                    writeAnalogStatistic(name, vo, stats.getFirstValue(), rendered, raw);
                     break;
                 case LAST:
-                    writeAnalogStatistic(name, vo, stats.getLastValue(), rendered);
+                    writeAnalogStatistic(name, vo, stats.getLastValue(), rendered, raw);
                     break;
                 case COUNT:
                     writeIntegerField(name, stats.getCount());
@@ -509,7 +510,7 @@ public abstract class PointValueTimeWriter {
             NoStatisticsGenerator stats = (NoStatisticsGenerator)statisticsGenerator;
             if(stats.getValues().size() > 0) {
                 for(IValueTime v : stats.getValues()) {
-                    writeDataValue(name, vo, v.getValue(), v.getTime(), rendered);
+                    writeDataValue(name, vo, v.getValue(), v.getTime(), rendered, raw);
                 }
             }else {
                 writeNullField(name);

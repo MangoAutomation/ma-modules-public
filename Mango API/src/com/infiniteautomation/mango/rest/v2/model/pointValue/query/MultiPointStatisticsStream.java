@@ -31,7 +31,7 @@ import com.serotonin.m2m2.vo.DataPointVO;
 public class MultiPointStatisticsStream extends MultiPointTimeRangeDatabaseStream<Map<String, Object>, ZonedDateTimeStatisticsQueryInfo> {
 
     private Map<Integer, StatisticsGenerator> statsMap;
-    
+
     /**
      * @param info
      * @param voMap
@@ -46,7 +46,7 @@ public class MultiPointStatisticsStream extends MultiPointTimeRangeDatabaseStrea
     @Override
     protected void processRow(IdPointValueTime value, int index, boolean firstBookend,
             boolean lastBookend, boolean cached) throws IOException {
-        
+
         final DataPointVO vo = voMap.get(value.getId());
         if(info.isUseCache() != PointValueTimeCacheControl.NONE && !cached)
             if(!processValueThroughCache(value, index, firstBookend, lastBookend))
@@ -57,7 +57,7 @@ public class MultiPointStatisticsStream extends MultiPointTimeRangeDatabaseStrea
                     case DataTypes.BINARY:
                     case DataTypes.MULTISTATE:
                         v = new StartsAndRuntimeList(info.getFromMillis(), info.getToMillis(), value);
-                    break;
+                        break;
                     case DataTypes.ALPHANUMERIC:
                     case DataTypes.IMAGE:
                         v = new ValueChangeCounter(info.getFromMillis(), info.getToMillis(), value);
@@ -74,12 +74,12 @@ public class MultiPointStatisticsStream extends MultiPointTimeRangeDatabaseStrea
             }
             return v;
         });
-        
+
         if(lastBookend) {
             generator.done();
             this.writer.writeStartObject(vo.getXid());
             DataPointStatisticsGenerator gen = new DataPointStatisticsGenerator(vo, generator);
-            
+
             //Pre-process the fields
             boolean rendered = false;
             Set<PointValueField> fields = new HashSet<>();
@@ -92,19 +92,19 @@ public class MultiPointStatisticsStream extends MultiPointTimeRangeDatabaseStrea
                     fields.add(field);
                 }
             }
-            
+
             //Remove the Value field we will write it after
             fields.remove(PointValueField.VALUE);
-            
+
             for(PointValueField field: fields) {
-               field.writeValue(gen, info, Common.getTranslations(), false, writer);
+                field.writeValue(gen, info, Common.getTranslations(), false, writer);
             }
-            this.writer.writeAllStatistics(generator, vo, rendered);
-            
+            this.writer.writeAllStatistics(generator, vo, rendered, fields.contains(PointValueField.RAW));
+
             this.writer.writeEndObject();
         }
     }
-    
+
     @Override
     public void start(PointValueTimeWriter writer) throws IOException {
         this.writer = writer;

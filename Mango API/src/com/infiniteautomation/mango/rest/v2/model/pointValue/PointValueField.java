@@ -15,35 +15,36 @@ import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.rt.dataImage.IAnnotated;
 
 /**
- * Information that can optionally be returned 
+ * Information that can optionally be returned
  * in point value query results.
  * @author Terry Packer
  */
 public enum PointValueField {
-    
+
     VALUE("value"),
     TIMESTAMP("timestamp"),
     ANNOTATION("annotation"),
     CACHED("cached"),
     BOOKEND("bookend"),
     RENDERED("rendered"),
-    
+    RAW("raw"), //unconverted value if the point has a rendered unit
+
     XID("xid"),
     NAME("name"),
     DEVICE_NAME("deviceName"),
     DATA_SOURCE_NAME("dataSourceName");
-    
+
     private final String fieldName;
     private PointValueField(String fieldName) {
         this.fieldName = fieldName;
     }
-    
+
     public String getFieldName() {
         return this.fieldName;
     }
 
     /**
-     * 
+     *
      * @param value
      * @param info
      * @param translations
@@ -51,7 +52,7 @@ public enum PointValueField {
      * @param writer
      * @throws IOException
      */
-    public void writeValue(DataPointVOPointValueTimeBookend value, LatestQueryInfo info, 
+    public void writeValue(DataPointVOPointValueTimeBookend value, LatestQueryInfo info,
             Translations translations, boolean useXid, PointValueTimeWriter writer) throws IOException {
         switch(this) {
             case TIMESTAMP:
@@ -59,9 +60,15 @@ public enum PointValueField {
                 break;
             case VALUE:
                 if(useXid)
-                    writer.writeDataValue(value.getVo().getXid(), value.getVo(), value.getPvt().getValue(),value.getPvt().getTime(), false);
+                    writer.writeDataValue(value.getVo().getXid(), value.getVo(), value.getPvt().getValue(),value.getPvt().getTime(), false, false);
                 else
-                    writer.writeDataValue(this.fieldName, value.getVo(), value.getPvt().getValue(),value.getPvt().getTime(), false);
+                    writer.writeDataValue(this.fieldName, value.getVo(), value.getPvt().getValue(),value.getPvt().getTime(), false, false);
+                break;
+            case RAW:
+                if(useXid)
+                    writer.writeDataValue(value.getVo().getXid(), value.getVo(), value.getPvt().getValue(),value.getPvt().getTime(), false, true);
+                else
+                    writer.writeDataValue(this.fieldName, value.getVo(), value.getPvt().getValue(),value.getPvt().getTime(), false, true);
                 break;
             case ANNOTATION:
                 if(value.getPvt() instanceof IAnnotated) {
@@ -89,9 +96,9 @@ public enum PointValueField {
                 break;
             case RENDERED:
                 if(useXid)
-                    writer.writeDataValue(value.getVo().getXid() + PointValueTimeWriter.DOT + this.fieldName, value.getVo(), value.getPvt().getValue(),value.getPvt().getTime(), true);
+                    writer.writeDataValue(value.getVo().getXid() + PointValueTimeWriter.DOT + this.fieldName, value.getVo(), value.getPvt().getValue(),value.getPvt().getTime(), true, false);
                 else
-                    writer.writeDataValue(this.fieldName, value.getVo(), value.getPvt().getValue(),value.getPvt().getTime(), true);
+                    writer.writeDataValue(this.fieldName, value.getVo(), value.getPvt().getValue(),value.getPvt().getTime(), true, false);
                 break;
             case XID:
                 if(useXid)
@@ -118,17 +125,17 @@ public enum PointValueField {
                     writer.writeStringField(this.fieldName, value.getVo().getDataSourceName());
                 break;
             default:
-                throw new ShouldNeverHappenException("Unknown data point field."); 
+                throw new ShouldNeverHappenException("Unknown data point field.");
         }
     }
-    
+
     /**
      * @param periodStats
      * @param info
      * @param translations
      * @param useXid
      * @param writer
-     * @throws IOException 
+     * @throws IOException
      */
     public void writeValue(DataPointStatisticsGenerator periodStats, LatestQueryInfo info,
             Translations translations, boolean useXid, PointValueTimeWriter writer) throws IOException {
@@ -138,9 +145,15 @@ public enum PointValueField {
                 break;
             case VALUE:
                 if(useXid)
-                    writer.writeStatistic(periodStats.getVo().getXid(), periodStats.getGenerator(), periodStats.getVo(), false);
+                    writer.writeStatistic(periodStats.getVo().getXid(), periodStats.getGenerator(), periodStats.getVo(), false, false);
                 else
-                    writer.writeStatistic(this.fieldName, periodStats.getGenerator(), periodStats.getVo(), false);
+                    writer.writeStatistic(this.fieldName, periodStats.getGenerator(), periodStats.getVo(), false, false);
+                break;
+            case RAW:
+                if(useXid)
+                    writer.writeStatistic(periodStats.getVo().getXid(), periodStats.getGenerator(), periodStats.getVo(), false, true);
+                else
+                    writer.writeStatistic(this.fieldName, periodStats.getGenerator(), periodStats.getVo(), false, true);
                 break;
             case ANNOTATION:
                 break;
@@ -150,9 +163,9 @@ public enum PointValueField {
                 break;
             case RENDERED:
                 if(useXid)
-                    writer.writeStatistic(periodStats.getVo().getXid() + PointValueTimeWriter.DOT + this.fieldName, periodStats.getGenerator(), periodStats.getVo(), true);
+                    writer.writeStatistic(periodStats.getVo().getXid() + PointValueTimeWriter.DOT + this.fieldName, periodStats.getGenerator(), periodStats.getVo(), true, false);
                 else
-                    writer.writeStatistic(this.fieldName, periodStats.getGenerator(), periodStats.getVo(), true);
+                    writer.writeStatistic(this.fieldName, periodStats.getGenerator(), periodStats.getVo(), true, false);
                 break;
             case XID:
                 if(useXid)
@@ -179,7 +192,7 @@ public enum PointValueField {
                     writer.writeStringField(this.fieldName, periodStats.getVo().getDataSourceName());
                 break;
             default:
-                throw new ShouldNeverHappenException("Unknown data point field."); 
+                throw new ShouldNeverHappenException("Unknown data point field.");
         }
     }
 
@@ -194,6 +207,12 @@ public enum PointValueField {
             case VALUE:
                 if(xid != null)
                     builder.addColumn(xid, ColumnType.NUMBER_OR_STRING);
+                else
+                    builder.addColumn(this.fieldName, ColumnType.NUMBER_OR_STRING);
+                break;
+            case RAW:
+                if(xid != null)
+                    builder.addColumn(xid + PointValueTimeWriter.DOT + this.fieldName, ColumnType.NUMBER_OR_STRING);
                 else
                     builder.addColumn(this.fieldName, ColumnType.NUMBER_OR_STRING);
                 break;
@@ -246,7 +265,7 @@ public enum PointValueField {
                     builder.addColumn(this.fieldName, ColumnType.STRING);
                 break;
             default:
-                throw new ShouldNeverHappenException("Unknown data point field."); 
+                throw new ShouldNeverHappenException("Unknown data point field.");
         }
     }
 }
