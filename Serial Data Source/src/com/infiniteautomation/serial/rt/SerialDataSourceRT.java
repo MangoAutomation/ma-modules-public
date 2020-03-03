@@ -592,17 +592,11 @@ public class SerialDataSourceRT extends EventDataSource<SerialDataSourceVO> impl
             this.rt = rt;
         }
 
-        /* (non-Javadoc)
-         * @see com.serotonin.m2m2.util.timeout.TimeoutClient#scheduleTimeout(long)
-         */
         @Override
         public void scheduleTimeout(long fireTime) {
             rt.serialEvent(new TimeoutSerialEvent(fireTime));
         }
 
-        /* (non-Javadoc)
-         * @see com.serotonin.m2m2.util.timeout.TimeoutClient#getThreadName()
-         */
         @Override
         public String getThreadName() {
             return "Serial DS Timeout Detector " + rt.getVo().getXid();
@@ -667,6 +661,8 @@ public class SerialDataSourceRT extends EventDataSource<SerialDataSourceVO> impl
             }else{
                 callback.pointNotIdentified(msg, messageRegex, pointIdentifierIndex);
             }
+        }else {
+            callback.messagePatternMismatch(msg, messageRegex);
         }
     }
 

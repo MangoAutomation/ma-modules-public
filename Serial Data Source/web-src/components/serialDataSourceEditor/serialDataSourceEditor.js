@@ -5,15 +5,17 @@
 
 import componentTemplate from './serialDataSourceEditor.html';
 
-const $inject = Object.freeze(['maDialogHelper']);
+const $inject = Object.freeze(['maDialogHelper', 'maSerialDsEditor']);
 
 class serialDataSourceEditorController {
 
     static get $inject() { return $inject; }
     static get $$ngIsClass() { return true; }
 
-    constructor(maDialogHelper) {
+    constructor(maDialogHelper, maSerialDsEditor) {
         this.maDialogHelper = maDialogHelper;
+        this.maSerialDsEditor = maSerialDsEditor;
+        this.testValues = null;
    }
 
     $onInit() {}
@@ -26,12 +28,23 @@ class serialDataSourceEditorController {
             messageTerminator: this.dataSource.messageTerminator,
             pointIdentifierIndex: this.dataSource.pointIdentifierIndex,
             useTerminator: this.dataSource.useTerminator
-        };
+        };        
 
-        this.testValues = null;
+        this.maSerialDsEditor.validateString(this.dataSource.xid, data).then(response => {
+            this.testResponse = {
+                success: [],
+                errors: []
+            }
+            response.forEach(res => {
+                res.pointName == null 
+                    ? this.testResponse.errors.push(res) 
+                    : this.testResponse.success.push(res)
+            });
 
-        this.maSerialDataSource.validateString(this.dataSource.xid, data).then(response => {
-            this.testValues = response;
+            if (this.testResponse.errors.length > 0) {
+            this.maDialogHelper.errorToast(['serial.test.noTerminator']);
+                
+            }
         }, error => {
             this.maDialogHelper.errorToast(['dsEdit.serial.testStringError', error.data.localizedMessage]);
         });
