@@ -6,9 +6,11 @@ package com.infiniteautomation.mango.rest.v2;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.nio.file.Files;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -27,7 +29,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
+import com.infiniteautomation.mango.rest.v2.model.FilteredStreamWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.JSONStreamedArray;
+import com.infiniteautomation.mango.rest.v2.model.StreamWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.filestore.FileModel;
 import com.infiniteautomation.mango.rest.v2.model.logging.LogMessageModel;
 import com.infiniteautomation.mango.rest.v2.model.logging.LogQueryArrayStream;
@@ -58,37 +62,63 @@ public class LoggingRestController {
     public LoggingRestController(FileStoreService service) {
         this.service = service;
     }
+
     @PreAuthorize("isAdmin()")
     @ApiOperation(value = "List Log Files", notes = "Returns a list of logfile metadata")
     @RequestMapping(method = RequestMethod.GET, value = "/files")
-    public ResponseEntity<List<FileModel>> list (
+    public List<FileModel> list(
             @RequestParam(value = "limit", required = false) Integer limit,
-            HttpServletRequest request) throws IOException{
+            HttpServletRequest request) throws IOException {
 
-        List<FileModel> modelList = new ArrayList<FileModel>();
         File logsDir = Common.getLogsDir();
-        int count = 0;
-        for(File file : logsDir.listFiles()){
-            if((limit != null)&&(count >= limit.intValue()))
-                break;
-            if(!file.getName().startsWith(".")) {
-                FileModel model = new FileModel(
-                        service.relativePath(logsDir, file.getParentFile()),
-                        file.getName(),
-                        "text/plain",
-                        new Date(file.lastModified()),
-                        file.isDirectory() ? 0 : file.length(),
-                                file.isDirectory());
-                model.setMimeType("text/plain");
-                modelList.add(model);
-                count++;
-            }
+        Stream<FileModel> models = Files.list(logsDir.toPath()).filter(p -> {
+            return Files.isRegularFile(p) && Files.isReadable(p) && !p.startsWith(".") &&
+                    (p.endsWith(".log") || p.endsWith(".txt"));
+        }).map(p -> {
+            File file = p.toFile();
+            return new FileModel(
+                    "",
+                    file.getName(),
+                    "text/plain",
+                    new Date(file.lastModified()),
+                    file.length(),
+                    false);
+        });
+
+        if (limit != null) {
+            models = models.limit(limit);
         }
-        return ResponseEntity.ok(modelList);
+
+        return models.collect(Collectors.toList());
     }
 
     @PreAuthorize("isAdmin()")
-    @ApiOperation(value = "Query ma.log logs", response = LogMessageModel.class, responseContainer = "List")
+    @ApiOperation(value = "Query log files", notes = "Returns a list of log files")
+    @RequestMapping(method = RequestMethod.GET, value = "/log-files")
+    public StreamWithTotal<FileModel> queryFiles(HttpServletRequest request) throws IOException {
+
+        ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
+
+        File logsDir = Common.getLogsDir();
+        List<FileModel> models = Files.list(logsDir.toPath()).filter(p -> {
+            return Files.isRegularFile(p) && Files.isReadable(p) && !p.startsWith(".") &&
+                    (p.endsWith(".log") || p.endsWith(".txt"));
+        }).map(p -> {
+            File file = p.toFile();
+            return new FileModel(
+                    "",
+                    file.getName(),
+                    "text/plain",
+                    new Date(file.lastModified()),
+                    file.length(),
+                    false);
+        }).collect(Collectors.toList());
+
+        return new FilteredStreamWithTotal<>(models, query);
+    }
+
+    @PreAuthorize("isAdmin()")
+    @ApiOperation(value = "Query inside a ma.log logfile", response = LogMessageModel.class, responseContainer = "List")
     @ApiImplicitParams({
         @ApiImplicitParam(name = "level", paramType="query", allowableValues = "ALL,TRACE,DEBUG,INFO,WARN,ERROR,FATAL,OFF"),
         @ApiImplicitParam(name = "classname", paramType="query"),
