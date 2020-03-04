@@ -21,12 +21,21 @@ class InternalDataPointEditorController {
     $onInit() {
         this.label = this.Translate.trSync('dsEdit.internal.attribute');
         this.getInternalMetrics();
+        if (this.dataPoint.pointLocator.monitorId) {
+            this.selectedMonitor = this.dataPoint.name
+        }
     }
 
     getInternalMetrics() {
         this.maSystemStatus.getInternalMetrics().then(response => {
             this.monitorIds = response.data;
         });
+    }
+
+    inputChanged(monitor) {
+        if (monitor) {
+            this.dataPoint.pointLocator.monitorId = monitor.id
+        }
     }
 }
 

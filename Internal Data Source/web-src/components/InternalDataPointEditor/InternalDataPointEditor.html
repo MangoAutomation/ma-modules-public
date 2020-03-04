@@ -6,7 +6,7 @@
 </h3>
 
 <div layout="row" layout-wrap layout-align="space-between start" class="ma-inputs-container">
-    <md-input-container flex="100" flex-gt-md="50">
+    <!-- <md-input-container flex="100" flex-gt-md="50">
         <md-icon>show_chart</md-icon>
         <label ma-tr="dsEdit.internal.attribute"></label>
         <md-select name="pointLocator.monitorId" ng-model="$ctrl.dataPoint.pointLocator.monitorId" required ma-get-ctrl="monitorIdModelCtrl = $ngModel">
@@ -19,10 +19,11 @@
             <div ng-message="required" ma-tr="validate.required"></div>
             <div ng-message="validationMessage" ng-bind="monitorIdModelCtrl.validationMessage"></div>
         </div>
-    </md-input-container>
-    <md-input-container flex="100" flex-gt-md="50">
+    </md-input-container> -->
+    <div flex="100" flex-gt-md="50">
         <md-autocomplete
-            md-selected-item="$ctrl.dataPoint.pointLocator.monitorId"
+            md-selected-item-change="$ctrl.inputChanged(monitorId)"
+            md-selected-item="$ctrl.selectedMonitor"
             md-search-text="searchText"
             md-items="monitorId in $ctrl.monitorIds | filter: searchText"
             md-item-text="monitorId.name"
@@ -42,5 +43,5 @@
                 <div ng-message="validationMessage" ng-bind="monitorIdModelCtrl.validationMessage"></div>
             </div>
         </md-autocomplete>
-</md-input-container>
+    </div>
 </div>
