@@ -7,6 +7,7 @@ package com.infiniteautomation.mango.rest.v2;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -63,6 +64,28 @@ public class LoggingRestController {
         this.service = service;
     }
 
+    private FileModel toModel(Path p) {
+        File file = p.toFile();
+        return new FileModel(
+                "",
+                file.getName(),
+                "text/plain",
+                new Date(file.lastModified()),
+                file.length(),
+                false);
+    }
+
+    private boolean filterFiles(Path p) {
+        if (!Files.isRegularFile(p) || !Files.isReadable(p)) {
+            return false;
+        }
+
+        String filename = p.getFileName().toString();
+
+        return !filename.startsWith(".") &&
+                (filename.endsWith(".log") || filename.endsWith(".txt"));
+    }
+
     @PreAuthorize("isAdmin()")
     @ApiOperation(value = "List Log Files", notes = "Returns a list of logfile metadata")
     @RequestMapping(method = RequestMethod.GET, value = "/files")
@@ -71,19 +94,9 @@ public class LoggingRestController {
             HttpServletRequest request) throws IOException {
 
         File logsDir = Common.getLogsDir();
-        Stream<FileModel> models = Files.list(logsDir.toPath()).filter(p -> {
-            return Files.isRegularFile(p) && Files.isReadable(p) && !p.startsWith(".") &&
-                    (p.endsWith(".log") || p.endsWith(".txt"));
-        }).map(p -> {
-            File file = p.toFile();
-            return new FileModel(
-                    "",
-                    file.getName(),
-                    "text/plain",
-                    new Date(file.lastModified()),
-                    file.length(),
-                    false);
-        });
+        Stream<FileModel> models = Files.list(logsDir.toPath())
+                .filter(this::filterFiles)
+                .map(this::toModel);
 
         if (limit != null) {
             models = models.limit(limit);
@@ -100,19 +113,10 @@ public class LoggingRestController {
         ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
 
         File logsDir = Common.getLogsDir();
-        List<FileModel> models = Files.list(logsDir.toPath()).filter(p -> {
-            return Files.isRegularFile(p) && Files.isReadable(p) && !p.startsWith(".") &&
-                    (p.endsWith(".log") || p.endsWith(".txt"));
-        }).map(p -> {
-            File file = p.toFile();
-            return new FileModel(
-                    "",
-                    file.getName(),
-                    "text/plain",
-                    new Date(file.lastModified()),
-                    file.length(),
-                    false);
-        }).collect(Collectors.toList());
+        List<FileModel> models = Files.list(logsDir.toPath())
+                .filter(this::filterFiles)
+                .map(this::toModel)
+                .collect(Collectors.toList());
 
         return new FilteredStreamWithTotal<>(models, query);
     }
