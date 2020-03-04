@@ -22,7 +22,7 @@ class InternalDataPointEditorController {
         this.label = this.Translate.trSync('dsEdit.internal.attribute');
         this.getInternalMetrics();
         if (this.dataPoint.pointLocator.monitorId) {
-            this.selectedMonitor = this.dataPoint.name
+            this.selectedMonitor = this.dataPoint.pointLocator.configurationDescription
         }
     }
 
