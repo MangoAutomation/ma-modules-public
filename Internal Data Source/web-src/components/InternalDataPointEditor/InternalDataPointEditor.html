@@ -20,4 +20,27 @@
             <div ng-message="validationMessage" ng-bind="monitorIdModelCtrl.validationMessage"></div>
         </div>
     </md-input-container>
+    <md-input-container flex="100" flex-gt-md="50">
+        <md-autocomplete
+            md-selected-item="$ctrl.dataPoint.pointLocator.monitorId"
+            md-search-text="searchText"
+            md-items="monitorId in $ctrl.monitorIds | filter: searchText"
+            md-item-text="monitorId.name"
+            md-floating-label="{{$ctrl.label}}"
+            md-clear-button="true"
+            md-no-cache="true"
+            ma-get-ctrl="monitorIdModelCtrl = $ngModel"
+            required>
+            <md-item-template>
+                <span md-highlight-text="searchText" md-highlight-flags="gi">{{monitorId.name}}</span>
+            </md-item-template>
+            <md-not-found>
+                <span ma-tr="ui.app.noPointsFound" ma-tr-args="[searchText]"></span>
+            </md-not-found>
+            <div ng-messages="monitorIdModelCtrl.$error">
+                <div ng-message="required" ma-tr="validate.required"></div>
+                <div ng-message="validationMessage" ng-bind="monitorIdModelCtrl.validationMessage"></div>
+            </div>
+        </md-autocomplete>
+</md-input-container>
 </div>
