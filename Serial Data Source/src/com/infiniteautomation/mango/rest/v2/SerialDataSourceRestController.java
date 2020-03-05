@@ -53,6 +53,20 @@ public class SerialDataSourceRestController {
         this.service = service;
     }
 
+    @ApiOperation(
+            value = "Get logfile name",
+            notes = "Must have permission to edit the data source"
+            )
+    @RequestMapping(method = RequestMethod.GET, value="/log-file-path/{xid}")
+    public String getLogFilePath(
+            @ApiParam(value = "XID of Data Source", required = true, allowMultiple = false)
+            @PathVariable String xid,
+            @AuthenticationPrincipal User user) {
+
+        DataSourceVO vo = service.get(xid);
+        return SerialDataSourceRT.getIOLogFileName(vo.getId());
+    }
+
     @ApiOperation(value = "Validate Serial Data", notes = "")
     @RequestMapping(method = RequestMethod.POST, value = "/validate-ascii/{xid}")
     public List<SerialTestResultModel> validateSerialData(
