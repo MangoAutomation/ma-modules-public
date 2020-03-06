@@ -58,7 +58,10 @@ public class SystemMetricsRestController {
     public List<ValueMonitorModel> query(@AuthenticationPrincipal User user) {
         MangoPermission permission = definition.getPermission();
         service.ensurePermission(user, permission);
-        return Common.MONITORED_VALUES.getMonitors().stream().map(m -> new ValueMonitorModel(m)).collect(Collectors.toList());
+        return Common.MONITORED_VALUES.getMonitors()
+                .stream()
+                .sorted((a,b) -> a.getName().translate(user.getTranslations()).compareTo(b.getName().translate(user.getTranslations())))
+                .map(m -> new ValueMonitorModel(m)).collect(Collectors.toList());
     }
 
     @ApiOperation(
