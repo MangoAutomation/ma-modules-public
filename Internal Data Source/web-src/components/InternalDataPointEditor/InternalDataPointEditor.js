@@ -37,6 +37,12 @@ class InternalDataPointEditorController {
             this.dataPoint.pointLocator.monitorId = monitor.id
         }
     }
+
+    autocompleteClicked(){
+        if (this.selectedMonitor === this.searchText) {
+            this.searchText = ' '
+        }
+    }
 }
 
 export default {

@@ -10,19 +10,21 @@
         <md-autocomplete
             md-selected-item-change="$ctrl.inputChanged(monitorId)"
             md-selected-item="$ctrl.selectedMonitor"
-            md-search-text="searchText"
-            md-items="monitorId in $ctrl.monitorIds | filter: searchText"
+            md-search-text="$ctrl.searchText"
+            md-items="monitorId in $ctrl.monitorIds | filter: $ctrl.searchText"
             md-item-text="monitorId.name"
             md-floating-label="{{$ctrl.label}}"
             md-clear-button="true"
             md-no-cache="true"
             ma-get-ctrl="monitorIdModelCtrl = $ngModel"
+            md-min-length="0"
+            ng-click="$ctrl.autocompleteClicked()"
             required>
             <md-item-template>
-                <span md-highlight-text="searchText" md-highlight-flags="gi">{{monitorId.name}}</span>
+                <span md-highlight-text="$ctrl.searchText" md-highlight-flags="gi">{{monitorId.name}}</span>
             </md-item-template>
             <md-not-found>
-                <span ma-tr="ui.app.noPointsFound" ma-tr-args="[searchText]"></span>
+                <span ma-tr="ui.app.noPointsFound" ma-tr-args="[$ctrl.searchText]"></span>
             </md-not-found>
             <div ng-messages="monitorIdModelCtrl.$error">
                 <div ng-message="required" ma-tr="validate.required"></div>
