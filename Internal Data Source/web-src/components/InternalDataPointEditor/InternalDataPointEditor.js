@@ -5,20 +5,25 @@
 
 import componentTemplate from './InternalDataPointEditor.html';
 
-const $inject = Object.freeze(['$scope', 'maSystemStatus']);
+const $inject = Object.freeze(['$scope', 'maSystemStatus', 'maTranslate']);
 
 class InternalDataPointEditorController {
 
     static get $inject() { return $inject; }
     static get $$ngIsClass() { return true; }
 
-    constructor($scope, maSystemStatus) {
+    constructor($scope, maSystemStatus, Translate) {
         this.$scope = $scope;
         this.maSystemStatus = maSystemStatus;
+        this.Translate = Translate;
    }
 
     $onInit() {
+        this.label = this.Translate.trSync('dsEdit.internal.attribute');
         this.getInternalMetrics();
+        if (this.dataPoint.pointLocator.monitorId) {
+            this.selectedMonitor = this.dataPoint.pointLocator.configurationDescription
+        }
     }
 
     getInternalMetrics() {
@@ -27,6 +32,17 @@ class InternalDataPointEditorController {
         });
     }
 
+    inputChanged(monitor) {
+        if (monitor) {
+            this.dataPoint.pointLocator.monitorId = monitor.id
+        }
+    }
+
+    autocompleteClicked(){
+        if (this.selectedMonitor === this.searchText) {
+            this.searchText = ' '
+        }
+    }
 }
 
 export default {
