@@ -10,7 +10,6 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.infiniteautomation.mango.permission.MangoPermission;
 import com.infiniteautomation.mango.rest.v2.model.AbstractVoModel;
 import com.infiniteautomation.mango.rest.v2.model.time.TimePeriod;
 import com.infiniteautomation.mango.rest.v2.model.time.TimePeriodType;
@@ -251,12 +250,7 @@ public class UserModel extends AbstractVoModel<User> {
         this.sessionExpirationOverride = vo.isSessionExpirationOverride();
         if(sessionExpirationOverride)
             this.sessionExpirationPeriod = new TimePeriod(vo.getSessionExpirationPeriods(), TimePeriodType.valueOf(vo.getSessionExpirationPeriodType()));
-        Set<MangoPermission> granted = vo.getGrantedPermissions();
-        if(granted != null) {
-            this.grantedPermissions = new HashSet<>(granted.size());
-            for(MangoPermission grant : granted)
-                this.grantedPermissions.add(grant.getPermissionType());
-        }
+        this.grantedPermissions = vo.getGrantedPermissions();
         this.organization = vo.getOrganization();
         this.organizationalRole = vo.getOrganizationalRole();
         this.created = vo.getCreated();
