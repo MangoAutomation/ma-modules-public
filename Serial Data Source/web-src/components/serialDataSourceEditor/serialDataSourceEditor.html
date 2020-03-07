@@ -195,6 +195,7 @@
         <md-checkbox class="ma-margin-input-container" name="logIO" ng-model="$ctrl.dataSource.logIO">
             <span ma-tr="dsEdit.serial.logIO"></span>
         </md-checkbox>
+        <ma-log-file-view ng-if="$ctrl.dataSource.logIO && !$ctrl.dataSource.isNew()" url="$ctrl.logFilePath"></ma-log-file-view>
     </div>
 
     <md-input-container flex="100" flex-gt-md="50" ng-if="$ctrl.dataSource.logIO">

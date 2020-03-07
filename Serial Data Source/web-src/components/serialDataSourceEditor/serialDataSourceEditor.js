@@ -16,9 +16,15 @@ class serialDataSourceEditorController {
         this.maDialogHelper = maDialogHelper;
         this.maSerialDsEditor = maSerialDsEditor;
         this.testValues = null;
-   }
+    }
 
-    $onInit() {}
+    $onInit() {
+        this.logFilePath = `/serial-data-source/log-file-path/${encodeURIComponent(this.dataSource.xid)}`
+    }
+
+    $onChanges() {
+        this.logFilePath = `/serial-data-source/log-file-path/${encodeURIComponent(this.dataSource.xid)}`
+    }
     
     validateString() {
         const data = {
