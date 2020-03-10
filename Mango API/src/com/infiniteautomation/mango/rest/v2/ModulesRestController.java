@@ -545,7 +545,7 @@ public class ModulesRestController {
                 }
 
                 List<Path> potentialUpgrades = Files.list(tempDir)
-                        .filter(p -> p.endsWith(".zip"))
+                        .filter(p -> p.toString().endsWith(".zip"))
                         .collect(Collectors.toList());
 
                 boolean didUpgrade = false;
