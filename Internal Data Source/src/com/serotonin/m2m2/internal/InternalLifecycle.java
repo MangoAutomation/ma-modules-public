@@ -15,6 +15,7 @@ import javax.measure.unit.SI;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.github.zafarkhaja.semver.Version;
 import com.infiniteautomation.mango.monitor.ValueMonitor;
 import com.infiniteautomation.mango.spring.components.DiskUsageMonitoringService;
 import com.infiniteautomation.mango.spring.components.ServerMonitoringService;
@@ -52,7 +53,7 @@ public class InternalLifecycle extends LifecycleDefinition {
     private static Log LOG = LogFactory.getLog(InternalLifecycle.class);
 
     @Override
-    public void postInitialize(boolean install, boolean upgrade) {
+    public void postInitialize(Version previousVersion, Version curren) {
         IMangoLifecycle lifecycle = Providers.get(IMangoLifecycle.class);
         maybeInstallSystemMonitor(lifecycle.isSafeMode());
     }
