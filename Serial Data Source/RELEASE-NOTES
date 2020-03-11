@@ -2,6 +2,7 @@
 * Upgraded to work with core version 4.0.x
 * Fix string test tool to work
 * Change behavior to correctly raise pattern mismatch events when a message does not match the regex
+* Added redirect button to logging console when log IO is on
 
 *Version 3.7.0*
 * Upgraded to work with core version 3.7.x
