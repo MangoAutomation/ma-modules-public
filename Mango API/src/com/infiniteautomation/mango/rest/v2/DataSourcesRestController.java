@@ -31,6 +31,7 @@ import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedVORqlQueryWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.datasource.AbstractDataSourceModel;
+import com.infiniteautomation.mango.rest.v2.model.datasource.ReadOnlyDataSourceModel;
 import com.infiniteautomation.mango.rest.v2.model.datasource.RuntimeStatusModel;
 import com.infiniteautomation.mango.rest.v2.model.datasource.RuntimeStatusModel.PollStatus;
 import com.infiniteautomation.mango.rest.v2.patch.PatchVORequestBody;
@@ -67,7 +68,11 @@ public class DataSourcesRestController {
     public DataSourcesRestController(final DataSourceService service, final RestModelMapper modelMapper) {
         this.service = service;
         this.map = (vo, user) -> {
-            return modelMapper.map(vo, AbstractDataSourceModel.class, user);
+            if(service.hasEditPermission(user, vo)) {
+                return modelMapper.map(vo, AbstractDataSourceModel.class, user);
+            }else {
+                return modelMapper.map(vo, ReadOnlyDataSourceModel.class, user);
+            }
         };
     }
 
