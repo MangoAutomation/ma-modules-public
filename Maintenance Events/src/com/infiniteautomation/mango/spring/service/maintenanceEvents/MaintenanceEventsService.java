@@ -249,7 +249,7 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
                             DataSourceVO newDs = dataSourceDao.get(k);
                             return newDs;
                         });
-                        if(!permissionService.hasDataSourcePermission(user, source))
+                        if(!permissionService.hasDataSourceEditPermission(user, source))
                             hasPermission.setFalse();
                     }
                 }else {
@@ -257,7 +257,7 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
                         DataSourceVO newDs = dataSourceDao.get(k);
                         return newDs;
                     });
-                    if(!permissionService.hasDataSourcePermission(user, source))
+                    if(!permissionService.hasDataSourceEditPermission(user, source))
                         hasPermission.setFalse();
                 }
             }
@@ -289,7 +289,7 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
                 //short circuit the logic if we already failed
                 return;
             }else {
-                if(!permissionService.hasDataSourcePermission(user, source))
+                if(!permissionService.hasDataSourceEditPermission(user, source))
                     hasPermission.setFalse();
             }
         }

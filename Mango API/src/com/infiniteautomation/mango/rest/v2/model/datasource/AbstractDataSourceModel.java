@@ -49,6 +49,7 @@ public abstract class AbstractDataSourceModel<T extends DataSourceVO> extends Ab
     private List<EventTypeAlarmLevelModel> eventAlarmLevels;
     private PurgeSettings purgeSettings;
     private Set<String> editPermission;
+    private Set<String> readPermission;
 
     public AbstractDataSourceModel() {
 
@@ -102,6 +103,10 @@ public abstract class AbstractDataSourceModel<T extends DataSourceVO> extends Ab
         for(Role role : vo.getEditRoles()) {
             this.editPermission.add(role.getXid());
         }
+        this.readPermission = new HashSet<>();
+        for(Role role : vo.getReadRoles()) {
+            this.readPermission.add(role.getXid());
+        }
     }
 
     @Override
@@ -118,6 +123,7 @@ public abstract class AbstractDataSourceModel<T extends DataSourceVO> extends Ab
             purgeSettings.toVO(vo);
         PermissionService service = Common.getBean(PermissionService.class);
         vo.setEditRoles(service.explodeLegacyPermissionGroupsToRoles(editPermission));
+        vo.setReadRoles(service.explodeLegacyPermissionGroupsToRoles(readPermission));
         return vo;
     }
 
@@ -199,6 +205,14 @@ public abstract class AbstractDataSourceModel<T extends DataSourceVO> extends Ab
      */
     public void setEditPermission(Set<String> editPermission) {
         this.editPermission = editPermission;
+    }
+
+    public Set<String> getReadPermission() {
+        return readPermission;
+    }
+
+    public void setReadPermission(Set<String> readPermission) {
+        this.readPermission = readPermission;
     }
 
 }

@@ -263,7 +263,7 @@ public class DataPointTagsRestController {
             DataPointVO dataPoint = dataPointService.get(xid);
 
             PermissionHolder user = Common.getUser();
-            permissionService.ensureDataSourcePermission(user, dataPoint.getDataSourceId());
+            permissionService.ensureDataSourceEditPermission(user, dataPoint.getDataSourceId());
 
             dataPoint.setTags(tags);
             dataPointTagsDao.saveDataPointTags(dataPoint);
@@ -285,7 +285,7 @@ public class DataPointTagsRestController {
         return dataPointTagsDao.doInTransaction(txStatus -> {
             DataPointVO dataPoint = dataPointService.get(xid);
             PermissionHolder user = Common.getUser();
-            permissionService.ensureDataSourcePermission(user, dataPoint.getDataSourceId());
+            permissionService.ensureDataSourceEditPermission(user, dataPoint.getDataSourceId());
 
             Map<String, String> existingTags = dataPointTagsDao.getTagsForDataPointId(dataPoint.getId());
 

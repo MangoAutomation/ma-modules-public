@@ -112,7 +112,7 @@ public class MaintenanceEventType extends EventType {
             return false;
         else {
             for(int dsId : vo.getDataSources())
-                if(!service.hasDataSourcePermission(user, dsId))
+                if(!service.hasDataSourceEditPermission(user, dsId))
                     return false;
 
             for(int dpId : vo.getDataPoints()) {

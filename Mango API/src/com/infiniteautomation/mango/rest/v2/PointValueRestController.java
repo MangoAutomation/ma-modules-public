@@ -1195,7 +1195,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
                                 throw new NotFoundException();
 
                             //Ensure edit permission
-                            permissionService.ensureDataSourcePermission(user, ds);
+                            permissionService.ensureDataSourceEditPermission(user, ds);
 
                             //Do purge based on settings
                             if(model.isPurgeAll())
