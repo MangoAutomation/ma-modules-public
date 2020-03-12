@@ -7,6 +7,7 @@ package com.infiniteautomation.mango.spring.service;
 import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -128,5 +129,39 @@ public class WatchListServiceTest extends AbstractVOServiceWithPermissionsTest<W
         getService().permissionService.runAs(editUser, () -> {
             service.insert(vo);
         });
+    }
+
+    @Override
+    @Test
+    public void testAddReadRoleUserDoesNotHave() {
+        runTest(() -> {
+            WatchListVO vo = newVO(readUser);
+
+            //Change Owner
+            vo.setUserId(this.allUser.getId());
+
+            setReadRoles(Collections.singleton(roleService.getUserRole()), vo);
+            setEditRoles(Collections.singleton(roleService.getUserRole()), vo);
+            getService().permissionService.runAsSystemAdmin(() -> {
+                service.insert(vo);
+            });
+            getService().permissionService.runAs(readUser, () -> {
+                WatchListVO fromDb = service.get(vo.getId());
+                assertVoEqual(vo, fromDb);
+                setReadRoles(Collections.singleton(roleService.getSuperadminRole()), fromDb);
+                service.update(fromDb.getId(), fromDb);
+            });
+
+        }, getReadRolesContextKey(), getReadRolesContextKey());
+    }
+
+    @Override
+    String getReadRolesContextKey() {
+        return "readRoles";
+    }
+
+    @Override
+    String getEditRolesContextKey() {
+        return "editRoles";
     }
 }

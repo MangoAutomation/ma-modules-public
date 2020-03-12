@@ -7,6 +7,7 @@ package com.infiniteautomation.mango.spring.service;
 import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -139,5 +140,35 @@ public class MaintenanceEventsServiceTest extends AbstractVOServiceWithPermissio
     }
 
     //TODO Test Add/Remove/Use Toggle Permission
+
+    @Override
+    String getReadRolesContextKey() {
+        return "toggleRoles";
+    }
+
+    @Override
+    String getEditRolesContextKey() {
+        return "toggleRoles";
+    }
+
+    @Test
+    @Override
+    public void testAddReadRoleUserDoesNotHave() {
+        runTest(() -> {
+            MaintenanceEventVO vo = newVO(readUser);
+            setReadRoles(Collections.singleton(roleService.getUserRole()), vo);
+            setEditRoles(Collections.singleton(roleService.getUserRole()), vo);
+            getService().permissionService.runAsSystemAdmin(() -> {
+                service.insert(vo);
+            });
+            getService().permissionService.runAs(readUser, () -> {
+                MaintenanceEventVO fromDb = service.get(vo.getId());
+                assertVoEqual(vo, fromDb);
+                vo.setToggleRoles(Collections.singleton(roleService.getSuperadminRole()));
+                service.update(fromDb.getId(), fromDb);
+            });
+
+        }, getReadRolesContextKey(), getReadRolesContextKey());
+    }
 
 }
