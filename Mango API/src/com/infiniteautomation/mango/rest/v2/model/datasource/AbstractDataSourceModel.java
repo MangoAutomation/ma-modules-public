@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
 import com.infiniteautomation.mango.rest.v2.model.AbstractVoModel;
 import com.infiniteautomation.mango.spring.service.PermissionService;
@@ -50,6 +51,7 @@ public abstract class AbstractDataSourceModel<T extends DataSourceVO> extends Ab
     private PurgeSettings purgeSettings;
     private Set<String> editPermission;
     private Set<String> readPermission;
+    private JsonNode data;
 
     public AbstractDataSourceModel() {
 
@@ -107,6 +109,8 @@ public abstract class AbstractDataSourceModel<T extends DataSourceVO> extends Ab
         for(Role role : vo.getReadRoles()) {
             this.readPermission.add(role.getXid());
         }
+
+        this.data = vo.getData();
     }
 
     @Override
@@ -124,6 +128,8 @@ public abstract class AbstractDataSourceModel<T extends DataSourceVO> extends Ab
         PermissionService service = Common.getBean(PermissionService.class);
         vo.setEditRoles(service.explodeLegacyPermissionGroupsToRoles(editPermission));
         vo.setReadRoles(service.explodeLegacyPermissionGroupsToRoles(readPermission));
+        vo.setData(data);
+
         return vo;
     }
 
@@ -213,6 +219,14 @@ public abstract class AbstractDataSourceModel<T extends DataSourceVO> extends Ab
 
     public void setReadPermission(Set<String> readPermission) {
         this.readPermission = readPermission;
+    }
+
+    public JsonNode getData() {
+        return data;
+    }
+
+    public void setData(JsonNode data) {
+        this.data = data;
     }
 
 }

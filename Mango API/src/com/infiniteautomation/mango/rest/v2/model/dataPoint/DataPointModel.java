@@ -12,6 +12,7 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.infiniteautomation.mango.rest.v2.model.AbstractVoModel;
 import com.infiniteautomation.mango.rest.v2.model.dataPoint.textRenderer.BaseTextRendererModel;
 import com.infiniteautomation.mango.spring.service.PermissionService;
@@ -67,6 +68,7 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
     Double setExtremeLowLimit;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     Double setExtremeHighLimit;
+    JsonNode data;
 
     Integer dataSourceId;
     String dataSourceXid;
@@ -143,6 +145,7 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
             }
         }
         this.extendedName = point.getExtendedName();
+        this.data = point.getData();
     }
 
     @Override
@@ -302,6 +305,10 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
         if (this.setExtremeHighLimit != null) {
             point.setSetExtremeHighLimit(this.setExtremeHighLimit);
         }
+        if(this.data != null) {
+            point.setData(data);
+        }
+
         return point;
     }
 
@@ -572,6 +579,14 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
 
     public String getExtendedName() {
         return extendedName;
+    }
+
+    public JsonNode getData() {
+        return data;
+    }
+
+    public void setData(JsonNode data) {
+        this.data = data;
     }
 
     @Override
