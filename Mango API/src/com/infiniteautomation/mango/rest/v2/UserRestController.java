@@ -5,6 +5,7 @@
 package com.infiniteautomation.mango.rest.v2;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -14,6 +15,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -22,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -35,24 +38,42 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.permission.UserRolesDetails;
+import com.infiniteautomation.mango.rest.v2.bulk.BulkRequest;
+import com.infiniteautomation.mango.rest.v2.bulk.BulkResponse;
+import com.infiniteautomation.mango.rest.v2.bulk.VoAction;
+import com.infiniteautomation.mango.rest.v2.bulk.VoIndividualRequest;
+import com.infiniteautomation.mango.rest.v2.bulk.VoIndividualResponse;
+import com.infiniteautomation.mango.rest.v2.exception.AbstractRestV2Exception;
 import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
+import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
+import com.infiniteautomation.mango.rest.v2.model.ActionAndModel;
+import com.infiniteautomation.mango.rest.v2.model.FilteredStreamWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedVORqlQueryWithTotal;
+import com.infiniteautomation.mango.rest.v2.model.datasource.RuntimeStatusModel;
 import com.infiniteautomation.mango.rest.v2.model.permissions.UserRolesDetailsModel;
 import com.infiniteautomation.mango.rest.v2.model.user.ApproveUsersModel;
 import com.infiniteautomation.mango.rest.v2.model.user.ApprovedUsersModel;
 import com.infiniteautomation.mango.rest.v2.model.user.UserModel;
 import com.infiniteautomation.mango.rest.v2.patch.PatchVORequestBody;
 import com.infiniteautomation.mango.rest.v2.patch.PatchVORequestBody.PatchIdField;
+import com.infiniteautomation.mango.rest.v2.temporaryResource.MangoTaskTemporaryResourceManager;
+import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource;
+import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource.TemporaryResourceStatus;
+import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceManager;
+import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceStatusUpdate;
+import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceWebSocketHandler;
 import com.infiniteautomation.mango.spring.db.UserTableDefinition;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.spring.service.UsersService;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.infiniteautomation.mango.util.exception.TranslatableExceptionI;
+import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.role.Role;
+import com.serotonin.m2m2.web.MediaTypes;
 import com.serotonin.m2m2.web.mvc.spring.security.MangoSessionRegistry;
 
 import io.swagger.annotations.Api;
@@ -69,6 +90,14 @@ import net.jazdw.rql.parser.ASTNode;
 @RequestMapping("/users")
 public class UserRestController {
 
+    //Bulk management
+    private static final String RESOURCE_TYPE_BULK_USER = "BULK_USER";
+    public static class UserIndividualRequest extends VoIndividualRequest<UserModel> { }
+    public static class UserIndividualResponse extends VoIndividualResponse<UserModel> { }
+    public static class UserBulkRequest extends BulkRequest<VoAction, UserModel, UserIndividualRequest> { }
+    public static class UserBulkResponse extends BulkResponse<UserIndividualResponse> { }
+    private final TemporaryResourceManager<UserBulkResponse, AbstractRestV2Exception> bulkResourceManager;
+
     private final BiFunction<User, User, UserModel> map = (vo, user) -> {return new UserModel(vo);};
     private final UsersService service;
     private final MangoSessionRegistry sessionRegistry;
@@ -76,7 +105,9 @@ public class UserRestController {
     private final Map<String, Function<Object, Object>> valueConverterMap;
 
     @Autowired
-    public UserRestController(UsersService service, MangoSessionRegistry sessionRegistry, UserTableDefinition userTable) {
+    public UserRestController(UsersService service, TemporaryResourceWebSocketHandler websocket, MangoSessionRegistry sessionRegistry, UserTableDefinition userTable) {
+        this.bulkResourceManager = new MangoTaskTemporaryResourceManager<>(service.getPermissionService(), websocket);
+
         this.service = service;
         this.sessionRegistry = sessionRegistry;
 
@@ -375,15 +406,317 @@ public class UserRestController {
     }
 
     public StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
+        return doQuery(rql, user, null);
+    }
 
+    protected StreamedArrayWithTotal doQuery(ASTNode rql, User user, Function<UserModel, ?> toModel) {
+        final Function<User, Object> transformUser = item -> {
+            UserModel model = map.apply(item, user);
+
+            // option to apply a further transformation
+            if (toModel != null) {
+                return toModel.apply(model);
+            }
+
+            return model;
+        };
         if (user.hasAdminRole()) {
             return new StreamedVORqlQueryWithTotal<>(service, rql, this.fieldMap,
-                    this.valueConverterMap, vo -> map.apply(vo, user));
+                    this.valueConverterMap, transformUser);
         } else {
             // Add some conditions to restrict based on user permissions
             rql = RQLUtils.addAndRestriction(rql, new ASTNode("eq", "id", user.getId()));
             return new StreamedVORqlQueryWithTotal<>(service, rql, this.fieldMap,
-                    this.valueConverterMap, vo -> map.apply(vo, user));
+                    this.valueConverterMap, transformUser);
         }
+    }
+
+    //Bulk operations
+    @ApiOperation(value = "Gets a list of users for bulk import via CSV", notes = "Adds an additional action and originalXid column")
+    @RequestMapping(method = RequestMethod.GET, produces=MediaTypes.CSV_VALUE)
+    public StreamedArrayWithTotal queryCsv(
+            HttpServletRequest request,
+            @AuthenticationPrincipal User user) {
+
+        ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
+        return this.queryCsvPost(rql, user);
+    }
+
+    @ApiOperation(value = "Gets a list of users for bulk import via CSV", notes = "Adds an additional action and originalXid column")
+    @RequestMapping(method = RequestMethod.POST, value = "/query", produces=MediaTypes.CSV_VALUE)
+    public StreamedArrayWithTotal queryCsvPost(
+            @ApiParam(value="RQL query AST", required = true)
+            @RequestBody ASTNode rql,
+
+            @AuthenticationPrincipal User user) {
+
+        return doQuery(rql, user, userModel -> {
+            ActionAndModel<UserModel> actionAndModel = new ActionAndModel<>();
+            actionAndModel.setAction(VoAction.UPDATE);
+            actionAndModel.setOriginalXid(userModel.getXid());
+            actionAndModel.setModel(userModel);
+            return actionAndModel;
+        });
+    }
+
+
+    @ApiOperation(value = "Bulk get/create/update/delete users",
+            notes = "User must have read/edit permission for the user",
+            consumes=MediaTypes.CSV_VALUE)
+    @RequestMapping(method = RequestMethod.POST, value="/bulk", consumes=MediaTypes.CSV_VALUE)
+    public ResponseEntity<TemporaryResource<UserBulkResponse, AbstractRestV2Exception>> bulkUserOperationCSV(
+            @RequestBody
+            List<ActionAndModel<UserModel>> users,
+
+            @AuthenticationPrincipal
+            User user,
+            HttpServletRequest servletRequest,
+            UriComponentsBuilder builder,
+            Authentication authentication) {
+
+        UserBulkRequest bulkRequest = new UserBulkRequest();
+
+        bulkRequest.setRequests(users.stream().map(actionAndModel -> {
+            UserModel u = actionAndModel.getModel();
+            VoAction action = actionAndModel.getAction();
+            String originalXid = actionAndModel.getOriginalXid();
+            if (originalXid == null && u != null) {
+                originalXid = u.getXid();
+            }
+
+            UserIndividualRequest request = new UserIndividualRequest();
+            request.setAction(action == null ? VoAction.UPDATE : action);
+            request.setXid(originalXid);
+            request.setBody(u);
+            return request;
+        }).collect(Collectors.toList()));
+
+        return this.bulkUserOperation(bulkRequest, user, servletRequest, authentication, builder);
+    }
+
+    @ApiOperation(value = "Bulk get/create/update/delete users", notes = "User must have read/edit permission for the user")
+    @RequestMapping(method = RequestMethod.POST, value="/bulk")
+    public ResponseEntity<TemporaryResource<UserBulkResponse, AbstractRestV2Exception>> bulkUserOperation(
+            @RequestBody
+            UserBulkRequest requestBody,
+
+            @AuthenticationPrincipal
+            User user,
+            HttpServletRequest servletRequest,
+            Authentication authentication,
+            UriComponentsBuilder builder) {
+
+        VoAction defaultAction = requestBody.getAction();
+        UserModel defaultBody = requestBody.getBody();
+        List<UserIndividualRequest> requests = requestBody.getRequests();
+
+        if (requests == null) {
+            throw new BadRequestException(new TranslatableMessage("rest.error.mustNotBeNull", "requests"));
+        } else if (requests.isEmpty()) {
+            throw new BadRequestException(new TranslatableMessage("rest.error.cantBeEmpty", "requests"));
+        }
+
+        String resourceId = requestBody.getId();
+        Long expiration = requestBody.getExpiration();
+        Long timeout = requestBody.getTimeout();
+
+        TemporaryResource<UserBulkResponse, AbstractRestV2Exception> responseBody = bulkResourceManager.newTemporaryResource(
+                RESOURCE_TYPE_BULK_USER, resourceId, user.getId(), expiration, timeout, (resource) -> {
+
+                    UserBulkResponse bulkResponse = new UserBulkResponse();
+                    int i = 0;
+
+                    resource.progressOrSuccess(bulkResponse, i++, requests.size());
+
+                    for (UserIndividualRequest request : requests) {
+                        UriComponentsBuilder reqBuilder = UriComponentsBuilder.newInstance();
+                        User resourceUser = (User) Common.getUser();
+                        UserIndividualResponse individualResponse = doIndividualRequest(request, defaultAction, defaultBody, resourceUser, servletRequest, authentication, reqBuilder);
+                        bulkResponse.addResponse(individualResponse);
+
+                        resource.progressOrSuccess(bulkResponse, i++, requests.size());
+                    }
+
+                    return null;
+                });
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setLocation(builder.path("/users/bulk/{id}").buildAndExpand(responseBody.getId()).toUri());
+        return new ResponseEntity<TemporaryResource<UserBulkResponse, AbstractRestV2Exception>>(responseBody, headers, HttpStatus.CREATED);
+    }
+
+    @ApiOperation(
+            value = "Get a list of current bulk user operations",
+            notes = "User can only get their own bulk operations unless they are an admin")
+    @RequestMapping(method = RequestMethod.GET, value="/bulk")
+    public MappingJacksonValue getBulkUserOperations(
+            @AuthenticationPrincipal
+            User user,
+
+            HttpServletRequest request) {
+
+        ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
+
+        // hide result property by setting a view
+        MappingJacksonValue resultWithView = new MappingJacksonValue(new FilteredStreamWithTotal<>(() -> {
+            return bulkResourceManager.list().stream()
+                    .filter((tr) -> user.hasAdminRole() || user.getId() == tr.getUserId());
+        }, query));
+
+        resultWithView.setSerializationView(Object.class);
+        return resultWithView;
+    }
+
+    @ApiOperation(value = "Update a bulk user operation using its id", notes = "Only allowed operation is to change the status to CANCELLED. " +
+            "User can only update their own bulk operations unless they are an admin.")
+    @RequestMapping(method = RequestMethod.PUT, value="/bulk/{id}")
+    public TemporaryResource<UserBulkResponse, AbstractRestV2Exception> updateBulkUserOperation(
+            @ApiParam(value = "Temporary resource id", required = true, allowMultiple = false)
+            @PathVariable String id,
+
+            @RequestBody
+            TemporaryResourceStatusUpdate body,
+
+            @AuthenticationPrincipal
+            User user) {
+
+        TemporaryResource<UserBulkResponse, AbstractRestV2Exception> resource = bulkResourceManager.get(id);
+
+        if (!user.hasAdminRole() && user.getId() != resource.getUserId()) {
+            throw new AccessDeniedException();
+        }
+
+        if (body.getStatus() == TemporaryResourceStatus.CANCELLED) {
+            resource.cancel();
+        } else {
+            throw new BadRequestException(new TranslatableMessage("rest.error.onlyCancel"));
+        }
+
+        return resource;
+    }
+
+    @ApiOperation(value = "Get the status of a bulk user operation using its id", notes = "User can only get their own bulk data point operations unless they are an admin")
+    @RequestMapping(method = RequestMethod.GET, value="/bulk/{id}")
+    public TemporaryResource<UserBulkResponse, AbstractRestV2Exception> getBulkUserOperation(
+            @ApiParam(value = "Temporary resource id", required = true, allowMultiple = false)
+            @PathVariable String id,
+
+            @AuthenticationPrincipal
+            User user) {
+
+        TemporaryResource<UserBulkResponse, AbstractRestV2Exception> resource = bulkResourceManager.get(id);
+
+        if (!user.hasAdminRole() && user.getId() != resource.getUserId()) {
+            throw new AccessDeniedException();
+        }
+
+        return resource;
+    }
+
+    @ApiOperation(value = "Remove a bulk user operation using its id",
+            notes = "Will only remove a bulk operation if it is complete. " +
+            "User can only remove their own bulk operations unless they are an admin.")
+    @RequestMapping(method = RequestMethod.DELETE, value="/bulk/{id}")
+    public void removeBulkUserOperation(
+            @ApiParam(value = "Temporary resource id", required = true, allowMultiple = false)
+            @PathVariable String id,
+
+            @AuthenticationPrincipal
+            User user) {
+
+        TemporaryResource<UserBulkResponse, AbstractRestV2Exception> resource = bulkResourceManager.get(id);
+
+        if (!user.hasAdminRole() && user.getId() != resource.getUserId()) {
+            throw new AccessDeniedException();
+        }
+
+        resource.remove();
+    }
+
+    /**
+     * Perform the individual request operation
+     * @param request
+     * @param defaultAction
+     * @param defaultBody
+     * @param user
+     * @param servletRequest
+     * @param authentication
+     * @param builder
+     * @return
+     */
+    private UserIndividualResponse doIndividualRequest(UserIndividualRequest request,
+            VoAction defaultAction, UserModel defaultBody,
+            User user, HttpServletRequest servletRequest,
+            Authentication authentication, UriComponentsBuilder builder) {
+        UserIndividualResponse result = new UserIndividualResponse();
+
+        try {
+            String xid = request.getXid();
+            result.setXid(xid);
+
+            VoAction action = request.getAction() == null ? defaultAction : request.getAction();
+            if (action == null) {
+                throw new BadRequestException(new TranslatableMessage("rest.error.mustNotBeNull", "action"));
+            }
+            result.setAction(action);
+
+            UserModel body = request.getBody() == null ? defaultBody : request.getBody();
+
+            switch (action) {
+                case GET:
+                    if (xid == null) {
+                        throw new BadRequestException(new TranslatableMessage("rest.error.mustNotBeNull", "xid"));
+                    }
+                    result.setBody(this.getUser(xid, user));
+                    break;
+                case CREATE:
+                    if (body == null) {
+                        throw new BadRequestException(new TranslatableMessage("rest.error.mustNotBeNull", "body"));
+                    }
+                    result.setBody(body);
+                    result.setBody(this.createUser(body, user, builder).getBody());
+                    break;
+                case UPDATE:
+                    if (xid == null) {
+                        throw new BadRequestException(new TranslatableMessage("rest.error.mustNotBeNull", "xid"));
+                    }
+                    if (body == null) {
+                        throw new BadRequestException(new TranslatableMessage("rest.error.mustNotBeNull", "body"));
+                    }
+                    result.setBody(body);
+                    result.setBody(this.updateUser(xid, body, user, servletRequest, builder, authentication).getBody());
+                    break;
+                case DELETE:
+                    if (xid == null) {
+                        throw new BadRequestException(new TranslatableMessage("rest.error.mustNotBeNull", "xid"));
+                    }
+                    result.setBody(this.deleteUser(xid, user));
+                    break;
+            }
+        } catch (Exception e) {
+            result.exceptionCaught(e);
+        }
+
+        return result;
+    }
+
+    @ApiOperation(
+            value = "Export data point(s) formatted for Configuration Import",
+            notes = "User must have read permission",
+            response=RuntimeStatusModel.class)
+    @RequestMapping(method = RequestMethod.GET, value = "/export/{xids}", produces = MediaTypes.SEROTONIN_JSON_VALUE)
+    public Map<String, Object> exportDataSource(
+            @ApiParam(value="Usernames to export.")
+            @PathVariable String[] usernames,
+            @AuthenticationPrincipal User user) {
+
+        Map<String,Object> export = new HashMap<>();
+        List<User> users = new ArrayList<>();
+        for(String xid : usernames) {
+            User u = service.get(xid);
+            users.add(u);
+        }
+        export.put("users", users);
+        return export;
     }
 }
