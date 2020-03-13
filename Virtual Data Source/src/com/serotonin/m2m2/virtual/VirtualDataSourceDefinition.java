@@ -38,7 +38,9 @@ public class VirtualDataSourceDefinition extends PollingDataSourceDefinition<Vir
     }
 
     @Override
-    public void validate(ProcessResult response, VirtualDataSourceVO ds, PermissionHolder user) { }
+    public void validate(ProcessResult response, VirtualDataSourceVO ds, PermissionHolder user) {
+        super.validate(response, ds, user);
+    }
 
     @Override
     public void validate(ProcessResult response, DataPointVO dpvo, DataSourceVO dsvo, PermissionHolder user) {
