@@ -292,7 +292,6 @@ describe('Event detectors CSV format', function() {
     
     it('Can modify xid of existing event detector', function() {
         this.timeout(5000);
-        this.timeout(5000);
         return this.csvClient.eventDetectorsCsv.download(`in(xid,${this.ed1.xid},${this.ed2.xid})&sort(xid)`).then(result => {
             assert.isArray(result);
             const headers = result.shift();

@@ -41,12 +41,9 @@ import com.infiniteautomation.mango.permission.UserRolesDetails;
 import com.infiniteautomation.mango.rest.v2.bulk.BulkRequest;
 import com.infiniteautomation.mango.rest.v2.bulk.BulkResponse;
 import com.infiniteautomation.mango.rest.v2.bulk.VoAction;
-import com.infiniteautomation.mango.rest.v2.bulk.VoIndividualRequest;
-import com.infiniteautomation.mango.rest.v2.bulk.VoIndividualResponse;
 import com.infiniteautomation.mango.rest.v2.exception.AbstractRestV2Exception;
 import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
-import com.infiniteautomation.mango.rest.v2.model.ActionAndModel;
 import com.infiniteautomation.mango.rest.v2.model.FilteredStreamWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedVORqlQueryWithTotal;
@@ -54,6 +51,9 @@ import com.infiniteautomation.mango.rest.v2.model.datasource.RuntimeStatusModel;
 import com.infiniteautomation.mango.rest.v2.model.permissions.UserRolesDetailsModel;
 import com.infiniteautomation.mango.rest.v2.model.user.ApproveUsersModel;
 import com.infiniteautomation.mango.rest.v2.model.user.ApprovedUsersModel;
+import com.infiniteautomation.mango.rest.v2.model.user.UserActionAndModel;
+import com.infiniteautomation.mango.rest.v2.model.user.UserIndividualRequest;
+import com.infiniteautomation.mango.rest.v2.model.user.UserIndividualResponse;
 import com.infiniteautomation.mango.rest.v2.model.user.UserModel;
 import com.infiniteautomation.mango.rest.v2.patch.PatchVORequestBody;
 import com.infiniteautomation.mango.rest.v2.patch.PatchVORequestBody.PatchIdField;
@@ -92,10 +92,10 @@ public class UserRestController {
 
     //Bulk management
     private static final String RESOURCE_TYPE_BULK_USER = "BULK_USER";
-    public static class UserIndividualRequest extends VoIndividualRequest<UserModel> { }
-    public static class UserIndividualResponse extends VoIndividualResponse<UserModel> { }
+
     public static class UserBulkRequest extends BulkRequest<VoAction, UserModel, UserIndividualRequest> { }
     public static class UserBulkResponse extends BulkResponse<UserIndividualResponse> { }
+
     private final TemporaryResourceManager<UserBulkResponse, AbstractRestV2Exception> bulkResourceManager;
 
     private final BiFunction<User, User, UserModel> map = (vo, user) -> {return new UserModel(vo);};
@@ -451,9 +451,9 @@ public class UserRestController {
             @AuthenticationPrincipal User user) {
 
         return doQuery(rql, user, userModel -> {
-            ActionAndModel<UserModel> actionAndModel = new ActionAndModel<>();
+            UserActionAndModel actionAndModel = new UserActionAndModel();
             actionAndModel.setAction(VoAction.UPDATE);
-            actionAndModel.setOriginalXid(userModel.getXid());
+            actionAndModel.setOriginalUsername(userModel.getUsername());
             actionAndModel.setModel(userModel);
             return actionAndModel;
         });
@@ -466,7 +466,7 @@ public class UserRestController {
     @RequestMapping(method = RequestMethod.POST, value="/bulk", consumes=MediaTypes.CSV_VALUE)
     public ResponseEntity<TemporaryResource<UserBulkResponse, AbstractRestV2Exception>> bulkUserOperationCSV(
             @RequestBody
-            List<ActionAndModel<UserModel>> users,
+            List<UserActionAndModel> users,
 
             @AuthenticationPrincipal
             User user,
@@ -479,14 +479,14 @@ public class UserRestController {
         bulkRequest.setRequests(users.stream().map(actionAndModel -> {
             UserModel u = actionAndModel.getModel();
             VoAction action = actionAndModel.getAction();
-            String originalXid = actionAndModel.getOriginalXid();
-            if (originalXid == null && u != null) {
-                originalXid = u.getXid();
+            String originalUsername = actionAndModel.getOriginalUsername();
+            if (originalUsername == null && u != null) {
+                originalUsername = u.getUsername();
             }
 
             UserIndividualRequest request = new UserIndividualRequest();
             request.setAction(action == null ? VoAction.UPDATE : action);
-            request.setXid(originalXid);
+            request.setUsername(originalUsername);
             request.setBody(u);
             return request;
         }).collect(Collectors.toList()));
@@ -651,8 +651,8 @@ public class UserRestController {
         UserIndividualResponse result = new UserIndividualResponse();
 
         try {
-            String xid = request.getXid();
-            result.setXid(xid);
+            String username = request.getUsername();
+            result.setUsername(username);
 
             VoAction action = request.getAction() == null ? defaultAction : request.getAction();
             if (action == null) {
@@ -664,10 +664,10 @@ public class UserRestController {
 
             switch (action) {
                 case GET:
-                    if (xid == null) {
+                    if (username == null) {
                         throw new BadRequestException(new TranslatableMessage("rest.error.mustNotBeNull", "xid"));
                     }
-                    result.setBody(this.getUser(xid, user));
+                    result.setBody(this.getUser(username, user));
                     break;
                 case CREATE:
                     if (body == null) {
@@ -677,20 +677,20 @@ public class UserRestController {
                     result.setBody(this.createUser(body, user, builder).getBody());
                     break;
                 case UPDATE:
-                    if (xid == null) {
+                    if (username == null) {
                         throw new BadRequestException(new TranslatableMessage("rest.error.mustNotBeNull", "xid"));
                     }
                     if (body == null) {
                         throw new BadRequestException(new TranslatableMessage("rest.error.mustNotBeNull", "body"));
                     }
                     result.setBody(body);
-                    result.setBody(this.updateUser(xid, body, user, servletRequest, builder, authentication).getBody());
+                    result.setBody(this.updateUser(username, body, user, servletRequest, builder, authentication).getBody());
                     break;
                 case DELETE:
-                    if (xid == null) {
+                    if (username == null) {
                         throw new BadRequestException(new TranslatableMessage("rest.error.mustNotBeNull", "xid"));
                     }
-                    result.setBody(this.deleteUser(xid, user));
+                    result.setBody(this.deleteUser(username, user));
                     break;
             }
         } catch (Exception e) {
@@ -701,7 +701,7 @@ public class UserRestController {
     }
 
     @ApiOperation(
-            value = "Export data point(s) formatted for Configuration Import",
+            value = "Export user(s) formatted for Configuration Import",
             notes = "User must have read permission",
             response=RuntimeStatusModel.class)
     @RequestMapping(method = RequestMethod.GET, value = "/export/{xids}", produces = MediaTypes.SEROTONIN_JSON_VALUE)
