@@ -71,7 +71,7 @@ public class DataSourcesRestController {
             if(service.hasEditPermission(user, vo)) {
                 return modelMapper.map(vo, AbstractDataSourceModel.class, user);
             }else {
-                return modelMapper.map(vo, ReadOnlyDataSourceModel.class, user);
+                return new ReadOnlyDataSourceModel(vo);
             }
         };
     }
