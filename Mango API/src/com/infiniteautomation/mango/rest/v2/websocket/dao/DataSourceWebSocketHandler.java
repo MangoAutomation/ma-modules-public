@@ -49,9 +49,4 @@ public class DataSourceWebSocketHandler<T extends DataSourceVO> extends DaoNotif
         this.notify(event);
     }
 
-    @Override
-    protected boolean isModelPerUser() {
-        return true;
-    }
-
 }

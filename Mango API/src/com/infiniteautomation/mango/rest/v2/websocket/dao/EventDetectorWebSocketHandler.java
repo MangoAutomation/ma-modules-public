@@ -49,11 +49,4 @@ public class EventDetectorWebSocketHandler <T extends AbstractEventDetectorVO> e
         this.notify(event);
     }
 
-    @Override
-    protected boolean isModelPerUser() {
-        return true;
-    }
-
-
-
 }

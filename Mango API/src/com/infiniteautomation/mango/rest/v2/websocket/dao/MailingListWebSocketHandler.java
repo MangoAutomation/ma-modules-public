@@ -50,9 +50,4 @@ public class MailingListWebSocketHandler extends DaoNotificationWebSocketHandler
     protected void handleDaoEvent(DaoEvent<? extends MailingList> event) {
         this.notify(event);
     }
-
-    @Override
-    protected boolean isModelPerUser() {
-        return true;
-    }
 }

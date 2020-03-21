@@ -26,76 +26,36 @@ public abstract class DaoNotificationWebSocketHandler<T extends AbstractBasicVO>
      * @param originalVo
      */
     public void notify(String action, T vo, T originalVo) {
-        if (sessions.isEmpty()) return;
-
-        Object message = null;
-        String jsonMessage = null;
-
-        if (!this.isModelPerUser()) {
-            message = createNotification(action, vo, originalVo, null);
-
-            if (!this.isViewPerUser()) {
-                ObjectWriter writer;
-                Class<?> view = this.defaultView();
-                if (view != null) {
-                    writer = this.jacksonMapper.writerWithView(view);
-                } else {
-                    writer = this.jacksonMapper.writer();
-                }
-
-                try {
-                    jsonMessage = writer.writeValueAsString(message);
-                } catch (JsonProcessingException e) {
-                    log.warn("Failed to write object as JSON", e);
-                    return;
-                }
-            }
-        }
-
         for (WebSocketSession session : sessions) {
             User user = getUser(session);
+
             if (user != null && hasPermission(user, vo) && isSubscribed(session, action, vo, originalVo)) {
-                Object userMessage = message;
-                String userJsonMessage = jsonMessage;
+                this.permissionService.runAs(user, () -> {
+                    Object userMessage = createNotification(action, vo, originalVo, user);
+                    if (userMessage != null) {
+                        try {
+                            ObjectWriter writer;
+                            Class<?> view = this.viewForUser(user);
+                            if (view != null) {
+                                writer = this.jacksonMapper.writerWithView(view);
+                            } else {
+                                writer = this.jacksonMapper.writer();
+                            }
 
-                if (userMessage == null) {
-                    userMessage = createNotification(action, vo, originalVo, user);
-                    if (userMessage == null) {
-                        continue;
-                    }
-                }
-                if (userJsonMessage == null) {
-                    try {
-                        ObjectWriter writer;
-                        Class<?> view = this.viewForUser(user);
-                        if (view != null) {
-                            writer = this.jacksonMapper.writerWithView(view);
-                        } else {
-                            writer = this.jacksonMapper.writer();
+                            String userJsonMessage = writer.writeValueAsString(userMessage);
+                            notify(session, userJsonMessage);
+                        } catch (JsonProcessingException e) {
+                            log.warn("Failed to write object as JSON", e);
                         }
-
-                        userJsonMessage = writer.writeValueAsString(userMessage);
-                    } catch (JsonProcessingException e) {
-                        log.warn("Failed to write object as JSON", e);
-                        continue;
                     }
-                }
-
-                notify(session, userJsonMessage);
+                });
             }
         }
     }
 
     abstract protected boolean hasPermission(PermissionHolder user, T vo);
+
     abstract protected Object createModel(T vo, PermissionHolder user);
-
-    protected boolean isModelPerUser() {
-        return false;
-    }
-
-    protected boolean isViewPerUser() {
-        return false;
-    }
 
     protected Class<?> defaultView() {
         return null;
@@ -111,6 +71,7 @@ public abstract class DaoNotificationWebSocketHandler<T extends AbstractBasicVO>
 
     /**
      * You must annotate the overridden method with @EventListener in order for this to work
+     *
      * @param event
      */
     abstract protected void handleDaoEvent(DaoEvent<? extends T> event);
@@ -118,10 +79,16 @@ public abstract class DaoNotificationWebSocketHandler<T extends AbstractBasicVO>
     protected void notify(DaoEvent<? extends T> event) {
         DaoEventType type = event.getType();
         String action = null;
-        switch(type) {
-            case CREATE: action = "create"; break;
-            case DELETE: action = "delete"; break;
-            case UPDATE: action = "update"; break;
+        switch (type) {
+            case CREATE:
+                action = "create";
+                break;
+            case DELETE:
+                action = "delete";
+                break;
+            case UPDATE:
+                action = "update";
+                break;
         }
         this.notify(action, event.getVo(), event.getOriginalVo());
     }
@@ -129,7 +96,7 @@ public abstract class DaoNotificationWebSocketHandler<T extends AbstractBasicVO>
     protected void notify(WebSocketSession session, String jsonMessage) {
         try {
             this.sendStringMessageAsync(session, jsonMessage);
-        } catch(WebSocketSendException e) {
+        } catch (WebSocketSendException e) {
             log.warn("Error notifying websocket", e);
         } catch (Exception e) {
             try {

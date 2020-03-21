@@ -61,9 +61,4 @@ public class EventHandlerWebSocketHandler<T extends AbstractEventHandlerVO> exte
     protected void handleDaoEvent(DaoEvent<? extends T> event) {
         this.notify(event);
     }
-
-    @Override
-    protected boolean isModelPerUser() {
-        return true;
-    }
 }

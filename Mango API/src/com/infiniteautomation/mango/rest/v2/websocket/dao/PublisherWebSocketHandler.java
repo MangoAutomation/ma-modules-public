@@ -49,9 +49,4 @@ public class PublisherWebSocketHandler extends DaoNotificationWebSocketHandler<P
     protected void handleDaoEvent(DaoEvent<? extends PublisherVO<? extends PublishedPointVO>> event) {
         this.notify(event);
     }
-
-    @Override
-    protected boolean isModelPerUser() {
-        return true;
-    }
 }
