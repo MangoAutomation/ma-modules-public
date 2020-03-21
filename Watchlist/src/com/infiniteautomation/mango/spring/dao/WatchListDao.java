@@ -33,7 +33,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.infiniteautomation.mango.db.query.ConditionSortLimit;
 import com.infiniteautomation.mango.spring.MangoRuntimeContextConfiguration;
 import com.infiniteautomation.mango.spring.db.UserTableDefinition;
-import com.infiniteautomation.mango.spring.events.DaoEvent;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.LazyInitializer;
 import com.serotonin.ShouldNeverHappenException;
@@ -249,10 +248,5 @@ public class WatchListDao extends AbstractDao<WatchListVO, WatchListTableDefinit
 
     private static class WatchListDbDataModel2 extends WatchListDbDataModel {
 
-    }
-
-    @Override
-    protected void publishEvent(DaoEvent<WatchListVO> event) {
-        // do nothing, want to publish events ourself after points added/removed
     }
 }
