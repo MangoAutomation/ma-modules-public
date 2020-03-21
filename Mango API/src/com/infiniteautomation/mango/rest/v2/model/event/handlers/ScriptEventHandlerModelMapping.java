@@ -8,8 +8,8 @@ import org.springframework.stereotype.Component;
 import com.infiniteautomation.mango.rest.v2.model.RestModelJacksonMapping;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.serotonin.m2m2.module.definitions.event.handlers.ScriptEventHandlerDefinition;
-import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.ScriptEventHandlerVO;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 /**
  * @author Jared Wiltshire
@@ -18,7 +18,7 @@ import com.serotonin.m2m2.vo.event.ScriptEventHandlerVO;
 public class ScriptEventHandlerModelMapping implements RestModelJacksonMapping<ScriptEventHandlerVO, ScriptEventHandlerModel> {
 
     @Override
-    public ScriptEventHandlerModel map(Object o, User user, RestModelMapper mapper) {
+    public ScriptEventHandlerModel map(Object o, PermissionHolder user, RestModelMapper mapper) {
         return new ScriptEventHandlerModel((ScriptEventHandlerVO) o);
     }
 
