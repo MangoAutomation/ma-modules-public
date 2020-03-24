@@ -4,6 +4,7 @@
 package com.infiniteautomation.mango.rest.v2;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -30,21 +31,31 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.db.query.ConditionSortLimit;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
+import com.infiniteautomation.mango.rest.v2.model.StreamedArray;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedVORqlQueryWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.TranslatableMessageModel;
 import com.infiniteautomation.mango.rest.v2.model.event.DataPointEventSummaryModel;
 import com.infiniteautomation.mango.rest.v2.model.event.EventInstanceModel;
 import com.infiniteautomation.mango.rest.v2.model.event.EventLevelSummaryModel;
+import com.infiniteautomation.mango.rest.v2.model.event.EventQueryBySourceType;
 import com.infiniteautomation.mango.spring.db.EventInstanceTableDefinition;
+import com.infiniteautomation.mango.spring.service.DataPointService;
+import com.infiniteautomation.mango.spring.service.DataSourceService;
 import com.infiniteautomation.mango.spring.service.EventInstanceService;
 import com.infiniteautomation.mango.util.RQLUtils;
+import com.infiniteautomation.mango.util.exception.ValidationException;
+import com.serotonin.db.MappedRowCallback;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.event.DataPointEventLevelSummary;
 import com.serotonin.m2m2.rt.event.EventInstance;
 import com.serotonin.m2m2.rt.event.UserEventLevelSummary;
+import com.serotonin.m2m2.rt.event.type.EventType.EventTypeNames;
+import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.event.EventInstanceVO;
 
 import io.swagger.annotations.Api;
@@ -68,9 +79,12 @@ public class EventsRestController {
     private final Map<String, Function<Object, Object>> valueConverters;
     private final Map<String, Field<?>> fieldMap;
 
+    private final DataSourceService dataSourceService;
+    private final DataPointService dataPointService;
+
     @Autowired
     public EventsRestController(RestModelMapper modelMapper, EventInstanceService service,
-            EventInstanceTableDefinition eventTable) {
+            EventInstanceTableDefinition eventTable, DataSourceService dataSourceService, DataPointService dataPointService) {
         this.modelMapper = modelMapper;
         this.service = service;
         this.map = (vo, user) -> {
@@ -79,6 +93,9 @@ public class EventsRestController {
 
         this.valueConverters = new HashMap<>();
         this.fieldMap = new EventTableRqlMappings(eventTable);
+
+        this.dataPointService = dataPointService;
+        this.dataSourceService = dataSourceService;
     }
 
     @ApiOperation(
@@ -211,6 +228,95 @@ public class EventsRestController {
             }
         });
         return total.get();
+    }
+
+    @ApiOperation(
+            value = "Find Events for a set of soucres found by the supplied sourcTyperql query, then query for events with these sources using eventsRql",
+            notes = "",
+            response=EventInstanceModel.class,
+            responseContainer="List"
+            )
+    @RequestMapping(method = RequestMethod.POST, value="/query/events-by-source-type")
+    public StreamedArrayWithTotal queryForEventsBySourceType(@RequestBody
+            EventQueryBySourceType body,
+            @AuthenticationPrincipal User user) {
+
+        ASTNode rql = RQLUtils.parseRQLtoAST(body.getSourceRql());
+        ASTNode query = null;
+
+        List<Object> args = new ArrayList<>();
+        args.add("typeRef1");
+
+        //Query for the sources
+        switch(body.getSourceType()) {
+            case "DATA_POINT":
+                dataPointService.customizedQuery(rql, new MappedRowCallback<DataPointVO>() {
+                    @Override
+                    public void row(DataPointVO vo, int index) {
+                        args.add(Integer.toString(vo.getId()));
+                    }
+                });
+                if(args.size() > 1) {
+                    query = new ASTNode("in", args);
+                    query = addAndRestriction(query, new ASTNode("eq", "typeName", EventTypeNames.DATA_POINT));
+                }
+                break;
+            case "DATA_SOURCE":
+                dataSourceService.customizedQuery(rql, new MappedRowCallback<DataSourceVO>() {
+                    @Override
+                    public void row(DataSourceVO vo, int index) {
+                        args.add(Integer.toString(vo.getId()));
+                    }
+                });
+                if(args.size() > 1) {
+                    query = new ASTNode("in", args);
+                    query = addAndRestriction(query, new ASTNode("eq", "typeName", EventTypeNames.DATA_SOURCE));
+                }
+                break;
+            default:
+                ProcessResult result = new ProcessResult();
+                result.addContextualMessage("sourceType", "validate.invalidValue");
+                throw new ValidationException(result);
+        }
+
+        //Second query the events
+        if(query != null) {
+            //Apply the events query
+            ASTNode eventQuery = RQLUtils.parseRQLtoAST(body.getEventsRql());
+            query = addAndRestriction(query, eventQuery);
+            return doQuery(query, user);
+        }else {
+            return new StreamedArrayWithTotal() {
+                @Override
+                public StreamedArray getItems() {
+                    return null;
+                }
+                @Override
+                public int getTotal() {
+                    return 0;
+                }
+            };
+        }
+    }
+
+    /**
+     * Append an AND Restriction to a query
+     * @param query - can be null
+     * @param restriction
+     * @return
+     */
+    private ASTNode addAndRestriction(ASTNode query, ASTNode restriction){
+        //Root query node
+        ASTNode root = null;
+
+        if(query == null){
+            root = restriction;
+        }else if(query.getName().equalsIgnoreCase("and")){
+            root = query.addArgument(restriction);
+        }else{
+            root = new ASTNode("and", restriction, query);
+        }
+        return root;
     }
 
     private StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
