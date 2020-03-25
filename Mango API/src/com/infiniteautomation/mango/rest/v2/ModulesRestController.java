@@ -35,6 +35,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -112,11 +113,13 @@ public class ModulesRestController {
 
     private final Environment env;
     private final ModulesService service;
+    private final boolean developmentMode;
 
     @Autowired
-    public ModulesRestController(Environment env, ModulesService service) {
+    public ModulesRestController(Environment env, ModulesService service, @Value("${development.enabled:false}") boolean developmentMode) {
         this.env = env;
         this.service = service;
+        this.developmentMode = developmentMode;
     }
 
     public static AngularJSModuleDefinitionGroupModel getAngularJSModules(boolean developmentMode) {
@@ -561,7 +564,7 @@ public class ModulesRestController {
                         } else {
                             do {
                                 String entryName = entry.getName();
-                                if("release.signed".equals(entryName) || "release.properties".equals(entryName)) {
+                                if("release.signed".equals(entryName) || (this.developmentMode && "release.properties".equals(entryName))) {
                                     core = true;
                                     break;
                                 }else if(entry.getName().startsWith(WEB_MODULE_PREFIX)) {
