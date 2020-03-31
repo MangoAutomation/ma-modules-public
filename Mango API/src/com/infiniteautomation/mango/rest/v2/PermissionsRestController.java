@@ -9,7 +9,6 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,8 +22,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.model.permissions.PermissionDefinitionModel;
-import com.infiniteautomation.mango.spring.service.RoleService;
 import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.module.PermissionDefinition;
 import com.serotonin.m2m2.vo.User;
@@ -43,13 +42,6 @@ import io.swagger.annotations.ApiParam;
 @RestController
 @RequestMapping("/permissions")
 public class PermissionsRestController {
-
-    private final RoleService service;
-
-    @Autowired
-    public PermissionsRestController(RoleService service){
-        this.service = service;
-    }
 
     @ApiOperation(
             value = "List permissions, their keys and roles"
@@ -81,14 +73,18 @@ public class PermissionsRestController {
             UriComponentsBuilder builder,
             Authentication authentication){
 
+        PermissionDefinition def = ModuleRegistry.getPermissionDefinition(key);
 
-        //Replace the roles
-        service.replaceAllRolesOnPermission(model.getRoles(), key);
+        if(def == null) {
+            throw new NotFoundRestException();
+        }
+
+        def.setRoles(model.getRoles());
 
         URI location = builder.path("/permissions/{key}").buildAndExpand(key).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
-        return new ResponseEntity<>(new PermissionDefinitionModel(ModuleRegistry.getPermissionDefinition(key)), headers, HttpStatus.OK);
+        return new ResponseEntity<>(new PermissionDefinitionModel(def), headers, HttpStatus.OK);
     }
 
 }
