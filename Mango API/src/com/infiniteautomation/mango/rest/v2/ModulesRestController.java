@@ -67,6 +67,8 @@ import com.infiniteautomation.mango.rest.v2.model.modules.ModuleUpgradeModel;
 import com.infiniteautomation.mango.rest.v2.model.modules.ModuleUpgradesModel;
 import com.infiniteautomation.mango.rest.v2.model.modules.UpdateLicensePayloadModel;
 import com.infiniteautomation.mango.rest.v2.model.modules.UpgradeStatusModel;
+import com.infiniteautomation.mango.rest.v2.model.modules.UpgradeUploadResult;
+import com.infiniteautomation.mango.rest.v2.model.modules.UpgradeUploadResult.InvalidModule;
 import com.infiniteautomation.mango.rest.v2.util.MangoStoreClient;
 import com.infiniteautomation.mango.spring.service.ModulesService;
 import com.infiniteautomation.mango.spring.service.ModulesService.UpgradeStatus;
@@ -490,7 +492,7 @@ public class ModulesRestController {
     @ApiOperation(value = "Upload upgrade zip bundle, to be installed on restart",
     notes = "The bundle can be downloaded from the Mango Store")
     @RequestMapping(method = RequestMethod.POST, value = "/upload-upgrades")
-    public void uploadUpgrades(
+    public UpgradeUploadResult uploadUpgrades(
             @ApiParam(value = "Perform Backup first", required = false, defaultValue = "false", allowMultiple = false)
             @RequestParam(required = false, defaultValue = "false")
             boolean backup,
@@ -508,7 +510,7 @@ public class ModulesRestController {
                 throw new BadRequestException(new TranslatableMessage("rest.error.upgradeUploadInProgress"));
             }
         }
-
+        UpgradeUploadResult result = new UpgradeUploadResult();
         try {
 
             if (backup) {
@@ -551,7 +553,9 @@ public class ModulesRestController {
                         .filter(p -> p.toString().endsWith(".zip"))
                         .collect(Collectors.toList());
 
-                boolean didUpgrade = false;
+                List<String> upgraded = new ArrayList<>();
+                List<String> unsigned = new ArrayList<>();
+
                 for(Path file : potentialUpgrades) {
                     boolean core = false;
                     boolean hasWebModules = false;
@@ -564,7 +568,10 @@ public class ModulesRestController {
                         } else {
                             do {
                                 String entryName = entry.getName();
-                                if("release.signed".equals(entryName) || (this.developmentMode && "release.properties".equals(entryName))) {
+                                if("release.signed".equals(entryName) || "release.properties".equals(entryName)) {
+                                    if(!this.developmentMode && "release.properties".equals(entryName)) {
+                                        throw new BadRequestException(new TranslatableMessage("modules.unsigned.core.development"));
+                                    }
                                     core = true;
                                     break;
                                 }else if(entry.getName().startsWith(WEB_MODULE_PREFIX)) {
@@ -577,7 +584,7 @@ public class ModulesRestController {
                     if(core) {
                         //move file to core directory
                         Files.move(file, Common.MA_HOME_PATH.resolve("m2m2-core-upgrade.zip"));
-                        didUpgrade = true;
+                        upgraded.add(file.getFileName().toString());
                     }else if(hasWebModules) {
                         //This is a zip with modules in web/modules move them all out into the MA_HOME/web/modules dir
                         try (ZipInputStream is = new ZipInputStream(Files.newInputStream(file))) {
@@ -586,16 +593,16 @@ public class ModulesRestController {
                                 if(entry.getName().startsWith(WEB_MODULE_PREFIX)) {
                                     Path newModule = Common.MA_HOME_PATH.resolve(entry.getName());
                                     Files.copy(is, newModule);
-                                    didUpgrade = true;
+                                    upgraded.add(newModule.getFileName().toString());
                                 }
                             }
                         }
                     }else {
                         //if its a module move it to the modules folder
-                        if(isModule(file)) {
+                        if(isModule(file, unsigned)) {
                             //Its extra work but we better check that it is a module from the store:
                             Files.move(file, Common.MODULES.resolve(file.getFileName()));
-                            didUpgrade = true;
+                            upgraded.add(file.getFileName().toString());
                         }else {
                             //Is this a zip of modules?
                             try (ZipInputStream is = new ZipInputStream(Files.newInputStream(file))) {
@@ -605,9 +612,9 @@ public class ModulesRestController {
                                         //Extract it and confirm it is a module
                                         Path newModule = tempDir.resolve(entry.getName());
                                         Files.copy(is, newModule);
-                                        if(isModule(newModule)) {
+                                        if(isModule(newModule, unsigned)) {
                                             Files.move(newModule, Common.MODULES.resolve(newModule.getFileName()));
-                                            didUpgrade = true;
+                                            upgraded.add(newModule.getFileName().toString());
                                         }
                                     }
 
@@ -618,8 +625,18 @@ public class ModulesRestController {
                 }
 
                 // Ensure we have some upgrades
-                if (!didUpgrade)
+                if (upgraded.size() == 0 && unsigned.size() == 0) {
                     throw new BadRequestException(new TranslatableMessage("rest.error.invalidUpgradeFile"));
+                }else if(upgraded.size() == 0 && unsigned.size() > 0) {
+                    throw new BadRequestException(new TranslatableMessage("modules.unsigned.development"));
+                }
+
+                result.setToUpgrade(upgraded);
+                List<InvalidModule> invalid = new ArrayList<>();
+                result.setInvalid(invalid);
+                for(String u : unsigned) {
+                    invalid.add(new InvalidModule(u, new TranslatableMessage("modules.unsigned.development")));
+                }
             }finally {
                 FileUtils.deleteDirectory(tempDir.toFile());
             }
@@ -631,18 +648,24 @@ public class ModulesRestController {
             }
         }
 
-        if (restart) {
+        if (restart && result.getToUpgrade().size() > 0) {
             IMangoLifecycle lifecycle = Providers.get(IMangoLifecycle.class);
             lifecycle.scheduleShutdown(null, true, Common.getUser());
+            result.setRestart(restart);
         }
+        return result;
     }
 
-    private boolean isModule(Path file) throws FileNotFoundException, IOException {
+    private boolean isModule(Path file, List<String> unsigned) throws FileNotFoundException, IOException {
         try (ZipInputStream is = new ZipInputStream(Files.newInputStream(file))) {
             ZipEntry entry;
             while((entry  = is.getNextEntry()) != null) {
                 String entryName = entry.getName();
                 if (ModuleUtils.Constants.MODULE_SIGNED.equals(entryName) || ModuleUtils.Constants.MODULE_PROPERTIES.equals(entryName)) {
+                    if(!this.developmentMode && ModuleUtils.Constants.MODULE_PROPERTIES.equals(entryName)) {
+                        unsigned.add(file.getFileName().toString());
+                        return false;
+                    }
                     return true;
                 }
             }
