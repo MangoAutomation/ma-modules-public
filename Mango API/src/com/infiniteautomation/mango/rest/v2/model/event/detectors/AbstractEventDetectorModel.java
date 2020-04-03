@@ -13,6 +13,7 @@ import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.infiniteautomation.mango.rest.v2.bulk.VoAction;
 import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
 import com.infiniteautomation.mango.rest.v2.model.AbstractVoModel;
@@ -46,6 +47,7 @@ public abstract class AbstractEventDetectorModel<T extends AbstractEventDetector
     protected int sourceId;
     protected Set<String> readPermission;
     protected Set<String> editPermission;
+    protected JsonNode data;
 
     @ApiModelProperty("Read only description of detector")
     protected TranslatableMessage description;
@@ -67,6 +69,7 @@ public abstract class AbstractEventDetectorModel<T extends AbstractEventDetector
         for(Role role : vo.getEditRoles()) {
             this.editPermission.add(role.getXid());
         }
+        this.data = vo.getData();
         this.sourceId = vo.getSourceId();
         this.description = vo.getDescription();
         this.rtnApplicable = vo.isRtnApplicable();
@@ -82,7 +85,7 @@ public abstract class AbstractEventDetectorModel<T extends AbstractEventDetector
         PermissionService service = Common.getBean(PermissionService.class);
         vo.setReadRoles(service.explodeLegacyPermissionGroupsToRoles(readPermission));
         vo.setEditRoles(service.explodeLegacyPermissionGroupsToRoles(editPermission));
-
+        vo.setData(data);
         vo.setAlarmLevel(alarmLevel);
         if(handlerXids != null)
             vo.setEventHandlerXids(handlerXids);
@@ -137,44 +140,34 @@ public abstract class AbstractEventDetectorModel<T extends AbstractEventDetector
         this.editPermission = editPermission;
     }
 
-    /**
-     * @return the alarmLevel
-     */
+    public JsonNode getData() {
+        return data;
+    }
+
+    public void setData(JsonNode data) {
+        this.data = data;
+    }
+
     public AlarmLevels getAlarmLevel() {
         return alarmLevel;
     }
 
-    /**
-     * @param alarmLevel the alarmLevel to set
-     */
     public void setAlarmLevel(AlarmLevels alarmLevel) {
         this.alarmLevel = alarmLevel;
     }
 
-    /**
-     * @return the sourceId
-     */
     public int getSourceId() {
         return sourceId;
     }
 
-    /**
-     * @param sourceId the sourceId to set
-     */
     public void setSourceId(int sourceId) {
         this.sourceId = sourceId;
     }
 
-    /**
-     * @return the handlers
-     */
     public List<String> getHandlerXids() {
         return handlerXids;
     }
 
-    /**
-     * @param handlers the handlers to set
-     */
     public void setHandlerXids(List<String> handlers) {
         this.handlerXids = handlers;
     }
