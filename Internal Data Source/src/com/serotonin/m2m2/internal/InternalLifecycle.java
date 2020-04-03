@@ -144,7 +144,7 @@ public class InternalLifecycle extends LifecycleDefinition {
         monitors.put(MA_HOME_PARTITION_USED_SPACE_XID, Common.MONITORED_VALUES.getMonitor(DiskUsageMonitoringService.MA_HOME_PARTITION_USED_SPACE));
         monitors.put(JVM_USED_MEMORY_XID, Common.MONITORED_VALUES.getMonitor(ServerMonitoringService.USED_MEMORY_ID));
         monitors.put(JVM_MAX_MEMORY_XID, Common.MONITORED_VALUES.getMonitor(ServerMonitoringService.FREE_MEMORY_ID));
-        monitors.put(CPU_SYSTEM_LOAD_XID, Common.MONITORED_VALUES.getMonitor(ServerMonitoringService.OS_CPU_LOAD_TOTAL_ID));
+        monitors.put(CPU_SYSTEM_LOAD_XID, Common.MONITORED_VALUES.getMonitor(ServerMonitoringService.OS_CPU_LOAD_SYSTEM_ID));
         monitors.put(CPU_PROCESS_LOAD_XID, Common.MONITORED_VALUES.getMonitor(ServerMonitoringService.OS_CPU_LOAD_PROCESS_ID));
 
         return monitors;
@@ -222,16 +222,24 @@ public class InternalLifecycle extends LifecycleDefinition {
                             case MA_HOME_PARTITION_TOTAL_SPACE_XID:
                             case MA_HOME_PARTITION_USED_SPACE_XID:
                                 dp.setUnit(NonSI.BYTE);
-                                dp.setRenderedUnit(SI.MEGA(NonSI.BYTE));
-                                dp.setUseRenderedUnit(true);
+                                dp.setRenderedUnit(SI.GIGA(NonSI.BYTE));
+                                dp.setUseRenderedUnit(false);
                                 dp.setLoggingType(LoggingTypes.ON_CHANGE);
-                                dp.setTextRenderer(new AnalogRenderer("0.00", "MB", false));
+                                dp.setTextRenderer(new AnalogRenderer("0.00", "GB", false));
                                 break;
                             case CPU_SYSTEM_LOAD_XID:
                             case CPU_PROCESS_LOAD_XID:
-                                dp.setUnit(NonSI.PERCENT);
+                                dp.setRenderedUnit(NonSI.PERCENT);
+                                dp.setUseRenderedUnit(true);
                                 dp.setLoggingType(LoggingTypes.ON_CHANGE);
                                 dp.setTextRenderer(new AnalogRenderer("0.00", "", true));
+                                break;
+                            case JVM_USED_MEMORY_XID:
+                            case JVM_MAX_MEMORY_XID:
+                                dp.setUnit(NonSI.BYTE);
+                                dp.setRenderedUnit(SI.MEGA(NonSI.BYTE));
+                                dp.setLoggingType(LoggingTypes.ON_CHANGE);
+                                dp.setTextRenderer(new AnalogRenderer("0", "MB", false));
                                 break;
                             case SYSTEM_UPTIME_POINT_XID:
                                 //This value changes often, log interval instance
