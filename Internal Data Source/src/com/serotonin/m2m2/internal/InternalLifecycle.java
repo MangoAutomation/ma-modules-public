@@ -225,14 +225,14 @@ public class InternalLifecycle extends LifecycleDefinition {
                                 dp.setRenderedUnit(SI.GIGA(NonSI.BYTE));
                                 dp.setUseRenderedUnit(false);
                                 dp.setLoggingType(LoggingTypes.ON_CHANGE);
-                                dp.setTextRenderer(new AnalogRenderer("0.00", "GB", false));
+                                dp.setTextRenderer(new AnalogRenderer("0", "GB", false));
                                 break;
                             case CPU_SYSTEM_LOAD_XID:
                             case CPU_PROCESS_LOAD_XID:
                                 dp.setRenderedUnit(NonSI.PERCENT);
                                 dp.setUseRenderedUnit(true);
                                 dp.setLoggingType(LoggingTypes.ON_CHANGE);
-                                dp.setTextRenderer(new AnalogRenderer("0.00", "", true));
+                                dp.setTextRenderer(new AnalogRenderer("0", "", true));
                                 break;
                             case JVM_USED_MEMORY_XID:
                             case JVM_MAX_MEMORY_XID:
