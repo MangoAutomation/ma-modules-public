@@ -44,7 +44,7 @@ describe('system-metrics-rest-controller', function() {
                 if (item.uploadToStore) {
                     assert.isBoolean(item.uploadToStore, 'data[].uploadToStore');
                 }
-                assert.exists(item.value, 'data[].value');
+                assert.isDefined(item.value, 'data[].value');
                 // END MODEL: ValueMonitor«object»
             });
         });
