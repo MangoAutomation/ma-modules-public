@@ -86,7 +86,9 @@ public class InternalLifecycle extends LifecycleDefinition {
 
     //System metrics
     public static final String SQL_DATABASE_SIZE_POINT_XID = "internal_mango_sql_db_size";
+    public static final String SQL_DATABASE_PARTITION_USABLE_SPACE_POINT_XID = "internal_mango_sql_db_usable_space";
     public static final String NOSQL_DATABASE_SIZE_POINT_XID = "internal_mango_no_sql_db_size";
+    public static final String NOSQL_DATABASE_PARTITION_USABLE_SPACE_POINT_XID = "internal_mango_no_sql_db_usable_space";
     public static final String MA_HOME_PARTITION_TOTAL_SPACE_XID = "internal_mango_disk_total_space";
     public static final String MA_HOME_PARTITION_USED_SPACE_XID = "internal_mango_disk_used_space";
     public static final String JVM_USED_MEMORY_XID = "internal_jvm_used_memory";
@@ -138,8 +140,10 @@ public class InternalLifecycle extends LifecycleDefinition {
         monitors.put(EXCEL_REPORT_TEMPLATES_COUNT_POINT_XID, Common.MONITORED_VALUES.getMonitor(EXCEL_REPORT_TEMPLATES_COUNT_MONITOR_ID));
 
         //System metrics
-        monitors.put(SQL_DATABASE_SIZE_POINT_XID, Common.MONITORED_VALUES.getMonitor(DiskUsageMonitoringService.SQL_PARTITION_USED_SPACE));
-        monitors.put(NOSQL_DATABASE_SIZE_POINT_XID, Common.MONITORED_VALUES.getMonitor(DiskUsageMonitoringService.NOSQL_PARTITION_USED_SPACE));
+        monitors.put(SQL_DATABASE_SIZE_POINT_XID, Common.MONITORED_VALUES.getMonitor(DiskUsageMonitoringService.SQL_DATABASE_SIZE));
+        monitors.put(SQL_DATABASE_PARTITION_USABLE_SPACE_POINT_XID, Common.MONITORED_VALUES.getMonitor(DiskUsageMonitoringService.SQL_PARTITION_USABLE_SPACE));
+        monitors.put(NOSQL_DATABASE_SIZE_POINT_XID, Common.MONITORED_VALUES.getMonitor(DiskUsageMonitoringService.NOSQL_DATABASE_SIZE));
+        monitors.put(NOSQL_DATABASE_PARTITION_USABLE_SPACE_POINT_XID, Common.MONITORED_VALUES.getMonitor(DiskUsageMonitoringService.NOSQL_PARTITION_USABLE_SPACE));
         monitors.put(MA_HOME_PARTITION_TOTAL_SPACE_XID, Common.MONITORED_VALUES.getMonitor(DiskUsageMonitoringService.MA_HOME_PARTITION_TOTAL_SPACE));
         monitors.put(MA_HOME_PARTITION_USED_SPACE_XID, Common.MONITORED_VALUES.getMonitor(DiskUsageMonitoringService.MA_HOME_PARTITION_USED_SPACE));
         monitors.put(JVM_USED_MEMORY_XID, Common.MONITORED_VALUES.getMonitor(ServerMonitoringService.USED_MEMORY_ID));
@@ -217,15 +221,23 @@ public class InternalLifecycle extends LifecycleDefinition {
 
                     if (pl.getDataTypeId() == DataTypes.NUMERIC) {
                         switch(xid) {
-                            case SQL_DATABASE_SIZE_POINT_XID:
-                            case NOSQL_DATABASE_SIZE_POINT_XID:
+                            case SQL_DATABASE_PARTITION_USABLE_SPACE_POINT_XID:
+                            case NOSQL_DATABASE_PARTITION_USABLE_SPACE_POINT_XID:
                             case MA_HOME_PARTITION_TOTAL_SPACE_XID:
                             case MA_HOME_PARTITION_USED_SPACE_XID:
                                 dp.setUnit(NonSI.BYTE);
                                 dp.setRenderedUnit(SI.GIGA(NonSI.BYTE));
                                 dp.setUseRenderedUnit(false);
                                 dp.setLoggingType(LoggingTypes.ON_CHANGE);
-                                dp.setTextRenderer(new AnalogRenderer("0", "GB", false));
+                                dp.setTextRenderer(new AnalogRenderer("0.0", "GB", false));
+                                break;
+                            case SQL_DATABASE_SIZE_POINT_XID:
+                            case NOSQL_DATABASE_SIZE_POINT_XID:
+                                dp.setUnit(NonSI.BYTE);
+                                dp.setRenderedUnit(SI.GIGA(NonSI.BYTE));
+                                dp.setUseRenderedUnit(false);
+                                dp.setLoggingType(LoggingTypes.ON_CHANGE);
+                                dp.setTextRenderer(new AnalogRenderer("0.00", "GB", false));
                                 break;
                             case CPU_SYSTEM_LOAD_XID:
                             case CPU_PROCESS_LOAD_XID:
