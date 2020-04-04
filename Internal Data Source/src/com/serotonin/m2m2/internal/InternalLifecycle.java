@@ -232,10 +232,8 @@ public class InternalLifecycle extends LifecycleDefinition {
                                 break;
                             case CPU_SYSTEM_LOAD_XID:
                             case CPU_PROCESS_LOAD_XID:
-                                dp.setRenderedUnit(NonSI.PERCENT);
-                                dp.setUseRenderedUnit(true);
                                 dp.setLoggingType(LoggingTypes.ON_CHANGE);
-                                dp.setTextRenderer(new AnalogRenderer("0", "", true));
+                                dp.setTextRenderer(new AnalogRenderer("0", "", false));
                                 break;
                             case JVM_USED_MEMORY_XID:
                             case JVM_MAX_MEMORY_XID:
@@ -255,7 +253,7 @@ public class InternalLifecycle extends LifecycleDefinition {
                             default:
                                 //If we are numeric then we want to log on change
                                 dp.setLoggingType(LoggingTypes.ON_CHANGE);
-                                dp.setTextRenderer(new AnalogRenderer("0", "", true));
+                                dp.setTextRenderer(new AnalogRenderer("0", "", false));
                                 break;
                         }
                     }
