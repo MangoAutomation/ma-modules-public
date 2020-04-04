@@ -225,19 +225,10 @@ public class InternalLifecycle extends LifecycleDefinition {
                             case NOSQL_DATABASE_PARTITION_USABLE_SPACE_POINT_XID:
                             case MA_HOME_PARTITION_TOTAL_SPACE_XID:
                             case MA_HOME_PARTITION_USED_SPACE_XID:
-                                dp.setUnit(NonSI.BYTE);
-                                dp.setRenderedUnit(SI.GIGA(NonSI.BYTE));
-                                dp.setUseRenderedUnit(false);
-                                dp.setLoggingType(LoggingTypes.ON_CHANGE);
-                                dp.setTextRenderer(new AnalogRenderer("0.0", "GB", false));
-                                break;
                             case SQL_DATABASE_SIZE_POINT_XID:
                             case NOSQL_DATABASE_SIZE_POINT_XID:
-                                dp.setUnit(NonSI.BYTE);
-                                dp.setRenderedUnit(SI.GIGA(NonSI.BYTE));
-                                dp.setUseRenderedUnit(false);
                                 dp.setLoggingType(LoggingTypes.ON_CHANGE);
-                                dp.setTextRenderer(new AnalogRenderer("0.00", "GB", false));
+                                dp.setTextRenderer(new AnalogRenderer("0.0", "GB", false));
                                 break;
                             case CPU_SYSTEM_LOAD_XID:
                             case CPU_PROCESS_LOAD_XID:
