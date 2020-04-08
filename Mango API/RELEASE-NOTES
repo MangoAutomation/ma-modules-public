@@ -7,6 +7,8 @@
 * Add permission management endpoints at /rest/v2/permissions
 * Add option to point value endpoints that supports a field type of RAW which is the unconverted value if the point has a rendered unit
 * Remove module defined queries and replace with /events/query/events-by-source-type
+* Rework /v2/realtime query endpoint since point hierarchy was removed now it only provides access to running data points
+
 *Version 3.7.0*
 * Upgraded to work with core version 3.7.x
 * Expose organization and organizationalRole field in User REST v1 and v2 models
