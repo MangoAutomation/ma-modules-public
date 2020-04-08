@@ -38,6 +38,7 @@ import com.infiniteautomation.mango.rest.v2.model.event.AbstractEventTypeModel;
 import com.infiniteautomation.mango.rest.v2.model.event.handlers.AbstractEventHandlerModel;
 import com.infiniteautomation.mango.rest.v2.model.javascript.MangoJavaScriptModel;
 import com.infiniteautomation.mango.rest.v2.model.javascript.MangoJavaScriptResultModel;
+import com.infiniteautomation.mango.rest.v2.model.pointValue.DataTypeEnum;
 import com.infiniteautomation.mango.rest.v2.patch.PatchVORequestBody;
 import com.infiniteautomation.mango.spring.db.EventHandlerTableDefinition;
 import com.infiniteautomation.mango.spring.service.EventHandlerService;
@@ -256,7 +257,12 @@ public class EventHandlersRestController {
         model.getAdditionalContext().computeIfAbsent(EventInstanceWrapper.CONTEXT_KEY, (k) -> {
             return new EventInstanceWrapper(new ValidationEventInstance());
         });
-        return validateScript(model);
+
+        model.getAdditionalContext().computeIfAbsent(MangoJavaScriptService.UNCHANGED_KEY, (k) -> {
+            return MangoJavaScriptService.UNCHANGED;
+        });
+
+        return validateScript(model, user, "eventHandlers.setPoint.successNoValueSet");
     }
 
     @ApiOperation(
@@ -300,13 +306,15 @@ public class EventHandlersRestController {
         model.getAdditionalContext().computeIfAbsent("model", (k) -> {
             return emailModel;
         });
-        return validateScript(model);
+        return validateScript(model, user, "eventHandlers.script.successNoEmail");
     }
 
-    private MangoJavaScriptResultModel validateScript(MangoJavaScriptModel model) {
+    private MangoJavaScriptResultModel validateScript(MangoJavaScriptModel model, User user, String noChangeTranslationKey) {
+        //Set to potentially return a String
+        model.setResultDataType(DataTypeEnum.ALPHANUMERIC.name());
         MangoJavaScript jsVo = model.toVO();
         jsVo.setWrapInFunction(true);
-        return new MangoJavaScriptResultModel(javaScriptService.testScript(jsVo));
+        return new MangoJavaScriptResultModel(javaScriptService.testScript(jsVo, noChangeTranslationKey));
     }
 
     private StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
