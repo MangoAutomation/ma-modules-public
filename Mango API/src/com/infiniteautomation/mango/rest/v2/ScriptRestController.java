@@ -7,13 +7,14 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import javax.script.ScriptEngineFactory;
-import javax.script.ScriptEngineManager;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.infiniteautomation.mango.spring.script.ScriptService;
 
 /**
  * @author Jared Wiltshire
@@ -23,16 +24,16 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/script")
 public class ScriptRestController {
 
-    final ScriptEngineManager manager;
+    final ScriptService scriptService;
 
     @Autowired
-    public ScriptRestController(ScriptEngineManager manager) {
-        this.manager = manager;
+    public ScriptRestController(ScriptService scriptService) {
+        this.scriptService = scriptService;
     }
 
     @RequestMapping(method = {RequestMethod.GET}, value = "/engines")
     public Stream<ScriptEngineModel> getEngines() {
-        return this.manager.getEngineFactories().stream().map(f -> new ScriptEngineModel(f));
+        return this.scriptService.getEngineFactories().stream().map(f -> new ScriptEngineModel(f));
     }
 
     public static class ScriptEngineModel {
