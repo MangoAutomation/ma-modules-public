@@ -4,24 +4,19 @@
 package com.infiniteautomation.mango.rest.v2.model.mailingList;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapping;
+import com.infiniteautomation.mango.rest.v2.model.permissions.MangoPermissionModel;
 import com.infiniteautomation.mango.spring.service.MailingListService;
-import com.infiniteautomation.mango.spring.service.RoleService;
-import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.infiniteautomation.mango.util.exception.ValidationException;
-import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.vo.mailingList.MailingList;
 import com.serotonin.m2m2.vo.mailingList.MailingListRecipient;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
-import com.serotonin.m2m2.vo.role.Role;
 
 /**
  * @author Terry Packer
@@ -30,13 +25,11 @@ import com.serotonin.m2m2.vo.role.Role;
 @Component
 public class MailingListModelMapping implements RestModelMapping<MailingList, MailingListModel> {
 
-    private final RoleService roleService;
     private final MailingListService mailingListService;
 
     @Autowired
-    public MailingListModelMapping(MailingListService mailingListService, RoleService service) {
+    public MailingListModelMapping(MailingListService mailingListService) {
         this.mailingListService = mailingListService;
-        this.roleService = service;
     }
 
     @Override
@@ -74,16 +67,9 @@ public class MailingListModelMapping implements RestModelMapping<MailingList, Ma
         } else {
             model = new MailingListModel(vo);
         }
-        Set<String> readPermissions = new HashSet<>();
-        model.setReadPermissions(readPermissions);
-        for(Role role : vo.getReadRoles()) {
-            readPermissions.add(role.getXid());
-        }
-        Set<String> editPermissions = new HashSet<>();
-        model.setEditPermissions(editPermissions);
-        for(Role role : vo.getEditRoles()) {
-            editPermissions.add(role.getXid());
-        }
+        model.setReadPermissions(new MangoPermissionModel(vo.getReadPermission()));
+        model.setEditPermissions(new MangoPermissionModel(vo.getEditPermission()));
+
         return model;
     }
 
@@ -91,33 +77,6 @@ public class MailingListModelMapping implements RestModelMapping<MailingList, Ma
     public MailingList unmap(Object from, PermissionHolder user, RestModelMapper mapper) throws ValidationException {
         MailingListModel model = (MailingListModel)from;
         MailingList vo = model.toVO();
-        ProcessResult result = new ProcessResult();
-        if(model.getReadPermissions() != null) {
-            Set<Role> roles = new HashSet<>();
-            vo.setReadRoles(roles);
-            for(String role : model.getReadPermissions()) {
-                try {
-                    roles.add(roleService.get(role).getRole());
-                }catch(NotFoundException e) {
-                    result.addContextualMessage("readPermissions", "roles.roleNotFound", role);
-                }
-            }
-        }
-
-        if(model.getEditPermissions() != null) {
-            Set<Role> roles = new HashSet<>();
-            vo.setEditRoles(roles);
-            for(String role : model.getEditPermissions()) {
-                try {
-                    roles.add(roleService.get(role).getRole());
-                }catch(NotFoundException e) {
-                    result.addContextualMessage("editPermissions", "roles.roleNotFound", role);
-                }
-            }
-        }
-        if(!result.isValid()) {
-            throw new ValidationException(result);
-        }
         return vo;
     }
 

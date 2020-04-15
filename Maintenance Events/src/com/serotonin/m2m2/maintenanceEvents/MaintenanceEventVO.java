@@ -7,13 +7,12 @@ package com.serotonin.m2m2.maintenanceEvents;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 
+import com.infiniteautomation.mango.permission.MangoPermission;
 import com.infiniteautomation.mango.util.Functions;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.json.JsonException;
@@ -35,7 +34,6 @@ import com.serotonin.m2m2.vo.AbstractVO;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.event.EventTypeVO;
-import com.serotonin.m2m2.vo.role.Role;
 
 public class MaintenanceEventVO extends AbstractVO {
 
@@ -102,7 +100,7 @@ public class MaintenanceEventVO extends AbstractVO {
     private int timeoutPeriods = 0;
     private int timeoutPeriodType = TimePeriods.HOURS;
     @JsonProperty
-    private Set<Role> toggleRoles = Collections.unmodifiableSet(Collections.emptySet());
+    private MangoPermission togglePermission = new MangoPermission();
 
     @Override
     public boolean isNew() {
@@ -301,12 +299,12 @@ public class MaintenanceEventVO extends AbstractVO {
         this.timeoutPeriodType = timeoutPeriodType;
     }
 
-    public Set<Role> getToggleRoles() {
-        return toggleRoles;
+    public MangoPermission getTogglePermission() {
+        return togglePermission;
     }
 
-    public void setToggleRoles(Set<Role> toggleRoles) {
-        this.toggleRoles = toggleRoles;
+    public void setTogglePermission(MangoPermission togglePermission) {
+        this.togglePermission = togglePermission;
     }
 
     public EventTypeVO getEventType() {
@@ -528,8 +526,5 @@ public class MaintenanceEventVO extends AbstractVO {
                 throw new TranslatableJsonException("emport.error.maintenanceEvent.invalid", "timeoutPeriodType", text,
                         Common.TIME_PERIOD_CODES.getCodeList());
         }
-
-        this.toggleRoles = readLegacyPermissions("togglePermissions", this.toggleRoles, jsonObject);
-
     }
 }

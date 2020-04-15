@@ -96,7 +96,7 @@ public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO, Mainten
         vo.setDataPoints(queryForList(SELECT_POINT_IDS, new Object[] {vo.getId()}, Integer.class));
         vo.setDataSources(queryForList(SELECT_DATA_SOURCE_IDS, new Object[] {vo.getId()}, Integer.class));
         //Populate permissions
-        vo.setToggleRoles(RoleDao.getInstance().getRoles(vo, "TOGGLE"));
+        vo.setTogglePermission(RoleDao.getInstance().getPermission(vo, "TOGGLE"));
 
     }
 
@@ -269,7 +269,7 @@ public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO, Mainten
         }
 
         //Replace the role mappings
-        RoleDao.getInstance().replaceRolesOnVoPermission(vo.getToggleRoles(), vo, "TOGGLE", insert);
+        RoleDao.getInstance().replaceRolesOnVoPermission(vo.getTogglePermission(), vo, "TOGGLE", insert);
 
     }
 

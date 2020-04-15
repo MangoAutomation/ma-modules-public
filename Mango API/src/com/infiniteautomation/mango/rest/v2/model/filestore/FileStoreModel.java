@@ -5,8 +5,7 @@ package com.infiniteautomation.mango.rest.v2.model.filestore;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import com.infiniteautomation.mango.rest.v2.model.RoleViews;
-import com.infiniteautomation.mango.spring.service.PermissionService;
-import com.serotonin.m2m2.Common;
+import com.infiniteautomation.mango.rest.v2.model.permissions.MangoPermissionModel;
 import com.serotonin.m2m2.vo.FileStore;
 
 public class FileStoreModel {
@@ -14,9 +13,9 @@ public class FileStoreModel {
     private int id;
     private String storeName;
     @JsonView(RoleViews.ShowRoles.class)
-    private String readPermission;
+    private MangoPermissionModel readPermission;
     @JsonView(RoleViews.ShowRoles.class)
-    private String writePermission;
+    private MangoPermissionModel writePermission;
 
     public FileStoreModel(FileStore vo) {
         fromVO(vo);
@@ -40,36 +39,36 @@ public class FileStoreModel {
         this.storeName = storeName;
     }
 
-    public String getReadPermission() {
+    public MangoPermissionModel getReadPermission() {
         return readPermission;
     }
 
-    public void setReadPermission(String readPermission) {
+    public void setReadPermission(MangoPermissionModel readPermission) {
         this.readPermission = readPermission;
     }
 
-    public String getWritePermission() {
+    public MangoPermissionModel getWritePermission() {
         return writePermission;
     }
 
-    public void setWritePermission(String writePermission) {
+    public void setWritePermission(MangoPermissionModel writePermission) {
         this.writePermission = writePermission;
     }
 
     public void fromVO(FileStore vo) {
         this.id = vo.getId();
         this.storeName = vo.getStoreName();
-        this.readPermission = PermissionService.implodeRoles(vo.getReadRoles());
-        this.writePermission = PermissionService.implodeRoles(vo.getWriteRoles());
+        this.readPermission = new MangoPermissionModel(vo.getReadPermission());
+        this.writePermission = new MangoPermissionModel(vo.getWritePermission());
     }
 
     public FileStore toVO() {
         FileStore store = new FileStore();
         store.setId(id);
         store.setStoreName(storeName);
-        PermissionService service = Common.getBean(PermissionService.class);
-        store.setReadRoles(service.explodeLegacyPermissionGroupsToRoles(readPermission));
-        store.setWriteRoles(service.explodeLegacyPermissionGroupsToRoles(writePermission));
+
+        store.setReadPermission(readPermission != null ? readPermission.getPermission() : null);
+        store.setWritePermission(writePermission != null ? writePermission.getPermission() : null);
         return store;
     }
 

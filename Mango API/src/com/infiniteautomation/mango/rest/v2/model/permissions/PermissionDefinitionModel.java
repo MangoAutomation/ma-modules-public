@@ -4,12 +4,9 @@
 
 package com.infiniteautomation.mango.rest.v2.model.permissions;
 
-import java.util.HashSet;
-import java.util.Set;
-
+import com.infiniteautomation.mango.permission.MangoPermission;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.PermissionDefinition;
-import com.serotonin.m2m2.vo.role.Role;
 
 /**
  * @author Terry Packer
@@ -17,24 +14,20 @@ import com.serotonin.m2m2.vo.role.Role;
 public class PermissionDefinitionModel {
     String systemSettingName;
     TranslatableMessage description;
-    Set<String> roles;
+    MangoPermissionModel permission;
 
     public PermissionDefinitionModel() {}
 
-    public PermissionDefinitionModel(String systemSettingName, TranslatableMessage description, Set<String> roles) {
+    public PermissionDefinitionModel(String systemSettingName, TranslatableMessage description, MangoPermission permission) {
         this.systemSettingName = systemSettingName;
         this.description = description;
-        this.roles = roles;
+        this.permission = new MangoPermissionModel(permission);
     }
 
     public PermissionDefinitionModel(PermissionDefinition def) {
         this.systemSettingName = def.getPermissionTypeName();
         this.description = def.getDescription();
-        Set<Role> defRoles = def.getRoles();
-        this.roles = new HashSet<>();
-        for(Role role : defRoles) {
-            this.roles.add(role.getXid());
-        }
+        this.permission = new MangoPermissionModel(def.getPermission());
     }
 
     public String getSystemSettingName() {
@@ -53,11 +46,11 @@ public class PermissionDefinitionModel {
         this.description = description;
     }
 
-    public Set<String> getRoles() {
-        return roles;
+    public MangoPermissionModel getPermission() {
+        return permission;
     }
 
-    public void setRoles(Set<String> roles) {
-        this.roles = roles;
+    public void setPermission(MangoPermissionModel roles) {
+        this.permission = roles;
     }
 }

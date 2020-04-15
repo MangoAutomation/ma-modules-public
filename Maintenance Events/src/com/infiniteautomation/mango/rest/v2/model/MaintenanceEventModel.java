@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.infiniteautomation.mango.spring.service.PermissionService;
+import com.infiniteautomation.mango.rest.v2.model.permissions.MangoPermissionModel;
 import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;
@@ -49,7 +49,7 @@ public class MaintenanceEventModel extends AbstractVoModel<MaintenanceEventVO> {
     private String inactiveCron;
     private Integer timeoutPeriods;
     private String timeoutPeriodType;
-    private String togglePermission;
+    private MangoPermissionModel togglePermission;
 
     public MaintenanceEventModel() {
         super();
@@ -107,7 +107,7 @@ public class MaintenanceEventModel extends AbstractVoModel<MaintenanceEventVO> {
         vo.setInactiveCron(inactiveCron);
         vo.setTimeoutPeriods(timeoutPeriods == null ? 0 : timeoutPeriods);
         vo.setTimeoutPeriodType(Common.TIME_PERIOD_CODES.getId(timeoutPeriodType));
-        vo.setToggleRoles(Common.getBean(PermissionService.class).explodeLegacyPermissionGroupsToRoles(togglePermission));
+        vo.setTogglePermission(togglePermission != null ? togglePermission.getPermission() : null);
         return vo;
     }
 
@@ -151,7 +151,7 @@ public class MaintenanceEventModel extends AbstractVoModel<MaintenanceEventVO> {
         inactiveCron = vo.getInactiveCron();
         timeoutPeriods = vo.getTimeoutPeriods();
         timeoutPeriodType = Common.TIME_PERIOD_CODES.getCode(vo.getTimeoutPeriodType());
-        togglePermission = PermissionService.implodeRoles(vo.getToggleRoles());
+        togglePermission = new MangoPermissionModel(vo.getTogglePermission());
     }
 
     @Override
@@ -327,11 +327,11 @@ public class MaintenanceEventModel extends AbstractVoModel<MaintenanceEventVO> {
         this.timeoutPeriodType = timeoutPeriodType;
     }
 
-    public String getTogglePermission() {
+    public MangoPermissionModel getTogglePermission() {
         return togglePermission;
     }
 
-    public void setTogglePermission(String togglePermission) {
+    public void setTogglePermission(MangoPermissionModel togglePermission) {
         this.togglePermission = togglePermission;
     }
 }

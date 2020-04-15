@@ -30,7 +30,7 @@ public class JsonDataWebSocketHandlerV2 extends SubscriptionDaoWebSocketHandler<
 
     @Override
     protected boolean hasPermission(PermissionHolder user, JsonDataVO vo) {
-        return service.hasAnyRole(user, vo.getReadRoles());
+        return service.hasPermission(user, vo.getReadPermission());
     }
 
     @Override

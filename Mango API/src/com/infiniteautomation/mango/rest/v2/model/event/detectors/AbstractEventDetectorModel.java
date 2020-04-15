@@ -3,9 +3,7 @@
  */
 package com.infiniteautomation.mango.rest.v2.model.event.detectors;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.springframework.http.HttpStatus;
 
@@ -17,14 +15,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.infiniteautomation.mango.rest.v2.bulk.VoAction;
 import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
 import com.infiniteautomation.mango.rest.v2.model.AbstractVoModel;
-import com.infiniteautomation.mango.spring.service.PermissionService;
-import com.serotonin.m2m2.Common;
+import com.infiniteautomation.mango.rest.v2.model.permissions.MangoPermissionModel;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.EventDetectorDefinition;
 import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.vo.event.detector.AbstractEventDetectorVO;
-import com.serotonin.m2m2.vo.role.Role;
 
 import io.swagger.annotations.ApiModelProperty;
 
@@ -45,8 +41,8 @@ public abstract class AbstractEventDetectorModel<T extends AbstractEventDetector
     protected String originalXid;
 
     protected int sourceId;
-    protected Set<String> readPermission;
-    protected Set<String> editPermission;
+    protected MangoPermissionModel readPermission;
+    protected MangoPermissionModel editPermission;
     protected JsonNode data;
 
     @ApiModelProperty("Read only description of detector")
@@ -61,14 +57,9 @@ public abstract class AbstractEventDetectorModel<T extends AbstractEventDetector
     @Override
     public void fromVO(T vo) {
         super.fromVO(vo);
-        this.readPermission = new HashSet<>();
-        for(Role role : vo.getReadRoles()) {
-            this.readPermission.add(role.getXid());
-        }
-        this.editPermission = new HashSet<>();
-        for(Role role : vo.getEditRoles()) {
-            this.editPermission.add(role.getXid());
-        }
+        this.readPermission = new MangoPermissionModel(vo.getReadPermission());
+        this.editPermission = new MangoPermissionModel(vo.getEditPermission());
+
         this.data = vo.getData();
         this.sourceId = vo.getSourceId();
         this.description = vo.getDescription();
@@ -82,9 +73,8 @@ public abstract class AbstractEventDetectorModel<T extends AbstractEventDetector
     @Override
     public T toVO() {
         T vo = super.toVO();
-        PermissionService service = Common.getBean(PermissionService.class);
-        vo.setReadRoles(service.explodeLegacyPermissionGroupsToRoles(readPermission));
-        vo.setEditRoles(service.explodeLegacyPermissionGroupsToRoles(editPermission));
+        vo.setReadPermission(readPermission != null ? readPermission.getPermission() : null);
+        vo.setEditPermission(editPermission != null ? editPermission.getPermission() : null);
         vo.setData(data);
         vo.setAlarmLevel(alarmLevel);
         if(handlerXids != null)
@@ -124,19 +114,19 @@ public abstract class AbstractEventDetectorModel<T extends AbstractEventDetector
         return description;
     }
 
-    public Set<String> getReadPermission() {
+    public MangoPermissionModel getReadPermission() {
         return readPermission;
     }
 
-    public void setReadPermission(Set<String> readPermission) {
+    public void setReadPermission(MangoPermissionModel readPermission) {
         this.readPermission = readPermission;
     }
 
-    public Set<String> getEditPermission() {
+    public MangoPermissionModel getEditPermission() {
         return editPermission;
     }
 
-    public void setEditPermission(Set<String> editPermission) {
+    public void setEditPermission(MangoPermissionModel editPermission) {
         this.editPermission = editPermission;
     }
 

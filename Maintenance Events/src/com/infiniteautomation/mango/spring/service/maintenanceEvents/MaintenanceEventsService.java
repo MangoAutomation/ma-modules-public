@@ -209,7 +209,7 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
         else if(permissionService.hasDataSourcePermission(user))
             //TODO Review how this permission works
             return;
-        else if(!permissionService.hasAnyRole(user, vo.getToggleRoles()));
+        else if(!permissionService.hasPermission(user, vo.getTogglePermission()));
         throw new PermissionException(new TranslatableMessage("maintenanceEvents.permission.unableToToggleEvent"), user);
     }
 
@@ -353,7 +353,7 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
     @Override
     public ProcessResult validate(MaintenanceEventVO vo, PermissionHolder user) {
         ProcessResult response = commonValidation(vo, user);
-        permissionService.validateVoRoles(response, "toggleRoles", user, false, null, vo.getToggleRoles());
+        permissionService.validateVoRoles(response, "togglePermission", user, false, null, vo.getTogglePermission());
         return response;
     }
 
@@ -361,7 +361,7 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
     public ProcessResult validate(MaintenanceEventVO existing, MaintenanceEventVO vo,
             PermissionHolder user) {
         ProcessResult result = commonValidation(vo, user);
-        permissionService.validateVoRoles(result, "toggleRoles", user, false, existing.getToggleRoles(), vo.getToggleRoles());
+        permissionService.validateVoRoles(result, "togglePermission", user, false, existing.getTogglePermission(), vo.getTogglePermission());
         return result;
     }
 

@@ -6,9 +6,8 @@ package com.infiniteautomation.mango.rest.v2.model.jsondata;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.infiniteautomation.mango.rest.v2.model.AbstractVoModel;
-import com.infiniteautomation.mango.spring.service.PermissionService;
+import com.infiniteautomation.mango.rest.v2.model.permissions.MangoPermissionModel;
 import com.infiniteautomation.mango.util.exception.ValidationException;
-import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.vo.json.JsonDataVO;
 
 /**
@@ -17,8 +16,8 @@ import com.serotonin.m2m2.vo.json.JsonDataVO;
  */
 public class JsonDataModel extends AbstractVoModel<JsonDataVO> {
 
-    private String readPermission;
-    private String editPermission;
+    private MangoPermissionModel readPermission;
+    private MangoPermissionModel editPermission;
     private boolean publicData;
     private JsonNode jsonData;
 
@@ -28,19 +27,19 @@ public class JsonDataModel extends AbstractVoModel<JsonDataVO> {
 
     public JsonDataModel() { }
 
-    public String getReadPermission() {
+    public MangoPermissionModel getReadPermission() {
         return readPermission;
     }
 
-    public void setReadPermission(String readPermission) {
+    public void setReadPermission(MangoPermissionModel readPermission) {
         this.readPermission = readPermission;
     }
 
-    public String getEditPermission() {
+    public MangoPermissionModel getEditPermission() {
         return editPermission;
     }
 
-    public void setEditPermission(String editPermission) {
+    public void setEditPermission(MangoPermissionModel editPermission) {
         this.editPermission = editPermission;
     }
 
@@ -63,8 +62,8 @@ public class JsonDataModel extends AbstractVoModel<JsonDataVO> {
     @Override
     public void fromVO(JsonDataVO vo) {
         super.fromVO(vo);
-        this.readPermission = PermissionService.implodeRoles(vo.getReadRoles());
-        this.editPermission = PermissionService.implodeRoles(vo.getEditRoles());
+        this.readPermission = new MangoPermissionModel(vo.getReadPermission());
+        this.editPermission = new MangoPermissionModel(vo.getEditPermission());
         this.publicData = vo.isPublicData();
         this.jsonData = vo.getJsonData();
     }
@@ -72,9 +71,8 @@ public class JsonDataModel extends AbstractVoModel<JsonDataVO> {
     @Override
     public JsonDataVO toVO() throws ValidationException {
         JsonDataVO vo = super.toVO();
-        PermissionService service = Common.getBean(PermissionService.class);
-        vo.setReadRoles(service.explodeLegacyPermissionGroupsToRoles(readPermission));
-        vo.setEditRoles(service.explodeLegacyPermissionGroupsToRoles(editPermission));
+        vo.setReadPermission(readPermission != null ? readPermission.getPermission() : null);
+        vo.setEditPermission(editPermission != null ? editPermission.getPermission() : null);
         vo.setPublicData(publicData);
         vo.setJsonData(jsonData);
         return vo;

@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import com.infiniteautomation.mango.rest.v2.model.AbstractVoModel;
+import com.infiniteautomation.mango.rest.v2.model.permissions.MangoPermissionModel;
 import com.infiniteautomation.mango.scheduling.util.DailySchedule;
 import com.infiniteautomation.mango.scheduling.util.ScheduleUtils;
 import com.infiniteautomation.mango.scheduling.util.TimeValue;
@@ -20,15 +21,15 @@ import com.serotonin.m2m2.vo.mailingList.MailingList;
 
 /**
  * Permissions are not filled in the to/from VO methods
- * 
+ *
  * @author Terry Packer
  *
  */
 public class MailingListModel extends AbstractVoModel<MailingList> {
 
     private AlarmLevels receiveAlarmEmails;
-    private Set<String> readPermissions;
-    private Set<String> editPermissions;
+    private MangoPermissionModel readPermissions;
+    private MangoPermissionModel editPermissions;
     private WeeklySchedule inactiveSchedule;
 
     public MailingListModel() { }
@@ -54,28 +55,28 @@ public class MailingListModel extends AbstractVoModel<MailingList> {
     /**
      * @return the readPermissions
      */
-    public Set<String> getReadPermissions() {
+    public MangoPermissionModel getReadPermissions() {
         return readPermissions;
     }
 
     /**
      * @param readPermissions the readPermissions to set
      */
-    public void setReadPermissions(Set<String> readPermissions) {
+    public void setReadPermissions(MangoPermissionModel readPermissions) {
         this.readPermissions = readPermissions;
     }
 
     /**
      * @return the editPermissions
      */
-    public Set<String> getEditPermissions() {
+    public MangoPermissionModel getEditPermissions() {
         return editPermissions;
     }
 
     /**
      * @param editPermissions the editPermissions to set
      */
-    public void setEditPermissions(Set<String> editPermissions) {
+    public void setEditPermissions(MangoPermissionModel editPermissions) {
         this.editPermissions = editPermissions;
     }
 
@@ -107,6 +108,9 @@ public class MailingListModel extends AbstractVoModel<MailingList> {
         vo.setInactiveIntervals(weeklyScheduleToInactiveIntervals(inactiveSchedule));
         if(vo.getEntries() == null)
             vo.setEntries(new ArrayList<>());
+
+        vo.setReadPermission(readPermissions != null ? readPermissions.getPermission() : null);
+        vo.setEditPermission(editPermissions != null ? editPermissions.getPermission() : null);
         return vo;
     }
 

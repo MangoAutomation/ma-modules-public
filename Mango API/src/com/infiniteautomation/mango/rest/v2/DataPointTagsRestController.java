@@ -124,9 +124,9 @@ public class DataPointTagsRestController {
             @AuthenticationPrincipal User user) {
 
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
-        ConditionSortLimitWithTagKeys conditions = (ConditionSortLimitWithTagKeys) dataPointService.getDao().rqlToCondition(rql, null, null, user);
+        ConditionSortLimitWithTagKeys conditions = (ConditionSortLimitWithTagKeys) dataPointService.getDao().rqlToCondition(rql, null, null);
 
-        return new StreamedVORqlQueryWithTotal<>(dataPointService, conditions, item -> true, dataPoint -> {
+        return new StreamedVORqlQueryWithTotal<>(dataPointService, conditions, dataPoint -> {
             Map<String, String> tags = dataPointTagsDao.getTagsForDataPointId(dataPoint.getId());
 
             // we set the tags on the data point then retrieve them so that the device and name tags are removed
@@ -148,9 +148,9 @@ public class DataPointTagsRestController {
             @AuthenticationPrincipal User user) {
 
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
-        ConditionSortLimitWithTagKeys conditions = (ConditionSortLimitWithTagKeys) dataPointService.getDao().rqlToCondition(rql, null, null, user);
+        ConditionSortLimitWithTagKeys conditions = (ConditionSortLimitWithTagKeys) dataPointService.getDao().rqlToCondition(rql, null, null);
 
-        return new StreamedVORqlQueryWithTotal<>(dataPointService, conditions, item -> true, dataPoint -> {
+        return new StreamedVORqlQueryWithTotal<>(dataPointService, conditions, dataPoint -> {
             Map<String, String> tags = dataPointTagsDao.getTagsForDataPointId(dataPoint.getId());
 
             // we set the tags on the data point then retrieve them so that the device and name tags are removed
@@ -179,11 +179,11 @@ public class DataPointTagsRestController {
 
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
 
-        ConditionSortLimitWithTagKeys conditions = (ConditionSortLimitWithTagKeys) dataPointService.getDao().rqlToCondition(rql, null, null, user);
+        ConditionSortLimitWithTagKeys conditions = (ConditionSortLimitWithTagKeys) dataPointService.getDao().rqlToCondition(rql, null, null);
 
         AtomicInteger count = new AtomicInteger();
 
-        dataPointService.getDao().customizedQuery(conditions, (dataPoint, index) -> {
+        dataPointService.getDao().customizedEditQuery(conditions, user, (dataPoint, index) -> {
             dataPoint.setTags(tags);
             dataPointTagsDao.saveDataPointTags(dataPoint);
             count.incrementAndGet();
@@ -206,11 +206,11 @@ public class DataPointTagsRestController {
 
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
 
-        ConditionSortLimitWithTagKeys conditions = (ConditionSortLimitWithTagKeys) dataPointService.getDao().rqlToCondition(rql, null, null, user, PermissionService.EDIT);
+        ConditionSortLimitWithTagKeys conditions = (ConditionSortLimitWithTagKeys) dataPointService.getDao().rqlToCondition(rql, null, null);
 
         AtomicInteger count = new AtomicInteger();
 
-        dataPointService.getDao().customizedQuery(conditions, (dataPoint, index) -> {
+        dataPointService.getDao().customizedEditQuery(conditions, user, (dataPoint, index) -> {
             dataPointTagsDao.doInTransaction(txStatus -> {
                 Map<String, String> existingTags = dataPointTagsDao.getTagsForDataPointId(dataPoint.getId());
 

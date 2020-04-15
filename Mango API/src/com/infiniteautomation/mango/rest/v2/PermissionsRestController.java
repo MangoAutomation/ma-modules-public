@@ -79,7 +79,7 @@ public class PermissionsRestController {
             throw new NotFoundRestException();
         }
 
-        def.setRoles(model.getRoles());
+        def.update(model.getPermission() != null ? model.getPermission().getPermission() : null);
 
         URI location = builder.path("/permissions/{key}").buildAndExpand(key).toUri();
         HttpHeaders headers = new HttpHeaders();

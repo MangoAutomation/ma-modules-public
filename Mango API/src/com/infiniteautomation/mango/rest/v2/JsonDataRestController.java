@@ -12,7 +12,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.function.BiFunction;
 
 import javax.servlet.http.HttpServletRequest;
@@ -34,11 +33,11 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.infiniteautomation.mango.permission.MangoPermission;
 import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.model.jsondata.JsonDataModel;
 import com.infiniteautomation.mango.spring.service.JsonDataService;
-import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.User;
@@ -70,12 +69,10 @@ public class JsonDataRestController {
 
     private final BiFunction<JsonDataVO, User, JsonDataModel> map = (vo, user) -> {return new JsonDataModel(vo);};
     private final JsonDataService service;
-    private final PermissionService permissionService;
 
     @Autowired
-    public JsonDataRestController(JsonDataService service, PermissionService permissionService) {
+    public JsonDataRestController(JsonDataService service) {
         this.service = service;
-        this.permissionService = permissionService;
     }
 
     @ApiOperation(
@@ -151,10 +148,10 @@ public class JsonDataRestController {
             @PathVariable String xid,
 
             @ApiParam(value = "Read Permissions", required = false, defaultValue="", allowMultiple = true)
-            @RequestParam(required=false, defaultValue="") Set<String> readPermission,
+            @RequestParam(required=false, defaultValue="") MangoPermission readPermission,
 
             @ApiParam(value = "Edit Permissions", required = false, defaultValue="", allowMultiple = true)
-            @RequestParam(required=false, defaultValue="") Set<String> editPermission,
+            @RequestParam(required=false, defaultValue="") MangoPermission editPermission,
 
             @ApiParam(value = "Name", required = true, allowMultiple = false, defaultValue="")
             @RequestParam(required=false, defaultValue="") String name,
@@ -202,10 +199,10 @@ public class JsonDataRestController {
             @PathVariable String path,
 
             @ApiParam(value = "Read Permissions", required = false, defaultValue="", allowMultiple = true)
-            @RequestParam(required=false, defaultValue="") Set<String> readPermission,
+            @RequestParam(required=false, defaultValue="") MangoPermission readPermission,
 
             @ApiParam(value = "Edit Permissions", required = false, defaultValue="", allowMultiple = true)
-            @RequestParam(required=false, defaultValue="") Set<String> editPermission,
+            @RequestParam(required=false, defaultValue="") MangoPermission editPermission,
 
             @ApiParam(value = "Name", required = true, allowMultiple = false, defaultValue="")
             @RequestParam(required=false, defaultValue="") String name,
@@ -250,10 +247,10 @@ public class JsonDataRestController {
             @PathVariable String xid,
 
             @ApiParam(value = "Read Permissions", required = false, defaultValue="", allowMultiple = true)
-            @RequestParam(required=false, defaultValue="") Set<String> readPermission,
+            @RequestParam(required=false, defaultValue="") MangoPermission readPermission,
 
             @ApiParam(value = "Edit Permissions", required = false, defaultValue="", allowMultiple = true)
-            @RequestParam(required=false, defaultValue="") Set<String> editPermission,
+            @RequestParam(required=false, defaultValue="") MangoPermission editPermission,
 
             @ApiParam(value = "Name", required = true, allowMultiple = false, defaultValue="")
             @RequestParam(required=false, defaultValue="") String name,
@@ -298,10 +295,10 @@ public class JsonDataRestController {
             @PathVariable String path,
 
             @ApiParam(value = "Read Permissions", required = false, defaultValue="", allowMultiple = true)
-            @RequestParam(required=false, defaultValue="") Set<String> readPermission,
+            @RequestParam(required=false, defaultValue="") MangoPermission readPermission,
 
             @ApiParam(value = "Edit Permissions", required = false, defaultValue="", allowMultiple = true)
-            @RequestParam(required=false, defaultValue="") Set<String> editPermission,
+            @RequestParam(required=false, defaultValue="") MangoPermission editPermission,
 
             @ApiParam(value = "Name", required = true, allowMultiple = false, defaultValue="")
             @RequestParam(required=false, defaultValue="") String name,
@@ -398,7 +395,7 @@ public class JsonDataRestController {
      * @return
      */
     private ResponseEntity<JsonDataModel> modifyJsonData(MapOperation operation,
-            String xid, String[] pathParts, Set<String> readPermissions, Set<String> editPermissions, String name, boolean publicData,
+            String xid, String[] pathParts, MangoPermission readPermissions, MangoPermission editPermissions, String name, boolean publicData,
             JsonNode data, User user, UriComponentsBuilder builder, HttpServletRequest request, HttpStatus successStatus) {
 
         // check we are using this method only for replace and append
@@ -411,8 +408,8 @@ public class JsonDataRestController {
             //Replace the data
             vo.setName(name);
             vo.setPublicData(publicData);
-            vo.setReadRoles(permissionService.explodeLegacyPermissionGroupsToRoles(readPermissions));
-            vo.setEditRoles(permissionService.explodeLegacyPermissionGroupsToRoles(editPermissions));
+            vo.setReadPermission(readPermissions);
+            vo.setEditPermission(editPermissions);
 
             JsonNode existingData = vo.getJsonData();
 
@@ -433,8 +430,8 @@ public class JsonDataRestController {
             vo.setXid(xid);
             vo.setName(name);
             vo.setPublicData(publicData);
-            vo.setReadRoles(permissionService.explodeLegacyPermissionGroupsToRoles(readPermissions));
-            vo.setEditRoles(permissionService.explodeLegacyPermissionGroupsToRoles(editPermissions));
+            vo.setReadPermission(readPermissions);
+            vo.setEditPermission(editPermissions);
             vo.setJsonData(data);
             this.service.insert(vo);
         }

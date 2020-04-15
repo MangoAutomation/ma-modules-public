@@ -9,11 +9,11 @@ import static org.junit.Assert.assertEquals;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.infiniteautomation.mango.permission.MangoPermission;
 import com.infiniteautomation.mango.spring.service.maintenanceEvents.MaintenanceEventsService;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;
@@ -51,46 +51,46 @@ public class MaintenanceEventsServiceTest extends AbstractVOServiceWithPermissio
     }
 
     @Override
-    void setReadRoles(Set<Role> roles, MaintenanceEventVO vo) {
+    void setReadPermission(MangoPermission permission, MaintenanceEventVO vo) {
         //A user with read permission for all data points (and sources) in this event has read permission
-        if(roles != null) {
+        if(permission != null) {
             getService().permissionService.runAsSystemAdmin(() -> {
                 //Get the data points and add our roles to the read roles
                 for(int dpId : vo.getDataPoints()) {
                     DataPointVO dp = DataPointDao.getInstance().get(dpId);
-                    dp.setReadRoles(roles);
+                    dp.setReadPermission(permission);
                     DataPointDao.getInstance().update(dp.getId(), dp);
                 }
             });
         }
-        vo.setToggleRoles(roles);
+        vo.setTogglePermission(permission);
     }
 
     @Override
     void addReadRoleToFail(Role role, MaintenanceEventVO vo) {
-        vo.getToggleRoles().add(role);
+        vo.getTogglePermission().getRoles().add(Collections.singleton(role));
     }
 
     @Override
-    void setEditRoles(Set<Role> roles, MaintenanceEventVO vo) {
+    void setEditPermission(MangoPermission permission, MaintenanceEventVO vo) {
         //A user with edit permission for the sources of all points (and all data sources sources) in this event has edit permission
-        if(roles != null) {
+        if(permission != null) {
             getService().permissionService.runAsSystemAdmin(() -> {
                 //Get the data points and add our roles to the read roles
                 for(int dpId : vo.getDataPoints()) {
                     DataPointVO dp = DataPointDao.getInstance().get(dpId);
                     DataSourceVO ds = DataSourceDao.getInstance().get(dp.getDataSourceId());
-                    ds.setEditRoles(roles);
+                    ds.setEditPermission(permission);
                     DataSourceDao.getInstance().update(ds.getId(), ds);
                 }
             });
         }
-        vo.setToggleRoles(roles);
+        vo.setTogglePermission(permission);
     }
 
     @Override
     void addEditRoleToFail(Role role, MaintenanceEventVO vo) {
-        vo.getToggleRoles().add(role);
+        vo.getTogglePermission().getRoles().add(Collections.singleton(role));
     }
 
     @Override
@@ -156,15 +156,15 @@ public class MaintenanceEventsServiceTest extends AbstractVOServiceWithPermissio
     public void testAddReadRoleUserDoesNotHave() {
         runTest(() -> {
             MaintenanceEventVO vo = newVO(readUser);
-            setReadRoles(Collections.singleton(roleService.getUserRole()), vo);
-            setEditRoles(Collections.singleton(roleService.getUserRole()), vo);
+            setReadPermission(MangoPermission.createOrSet(roleService.getUserRole()), vo);
+            setEditPermission(MangoPermission.createOrSet(roleService.getUserRole()), vo);
             getService().permissionService.runAsSystemAdmin(() -> {
                 service.insert(vo);
             });
             getService().permissionService.runAs(readUser, () -> {
                 MaintenanceEventVO fromDb = service.get(vo.getId());
                 assertVoEqual(vo, fromDb);
-                vo.setToggleRoles(Collections.singleton(roleService.getSuperadminRole()));
+                vo.setTogglePermission(MangoPermission.createOrSet(roleService.getSuperadminRole()));
                 service.update(fromDb.getId(), fromDb);
             });
 

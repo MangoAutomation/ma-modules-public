@@ -311,7 +311,7 @@ public class EventHandlersRestController {
 
     private MangoJavaScriptResultModel validateScript(MangoJavaScriptModel model, User user, String noChangeTranslationKey) {
         //Set to potentially return a String
-        model.setResultDataType(DataTypeEnum.ALPHANUMERIC.name());
+        model.setResultDataType(DataTypeEnum.NUMERIC.name());
         MangoJavaScript jsVo = model.toVO();
         jsVo.setWrapInFunction(true);
         return new MangoJavaScriptResultModel(javaScriptService.testScript(jsVo, noChangeTranslationKey));

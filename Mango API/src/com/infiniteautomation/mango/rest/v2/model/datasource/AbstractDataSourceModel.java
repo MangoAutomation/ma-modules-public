@@ -4,9 +4,7 @@
 package com.infiniteautomation.mango.rest.v2.model.datasource;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.springframework.http.HttpStatus;
 
@@ -16,8 +14,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
 import com.infiniteautomation.mango.rest.v2.model.AbstractVoModel;
-import com.infiniteautomation.mango.spring.service.PermissionService;
-import com.serotonin.m2m2.Common;
+import com.infiniteautomation.mango.rest.v2.model.permissions.MangoPermissionModel;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.DataSourceDefinition;
 import com.serotonin.m2m2.module.ModuleRegistry;
@@ -25,7 +22,6 @@ import com.serotonin.m2m2.rt.event.type.DataSourceEventType;
 import com.serotonin.m2m2.util.ExportCodes;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.event.EventTypeVO;
-import com.serotonin.m2m2.vo.role.Role;
 
 import io.swagger.annotations.ApiModelProperty;
 
@@ -49,8 +45,8 @@ public abstract class AbstractDataSourceModel<T extends DataSourceVO> extends Ab
     private boolean enabled;
     private List<EventTypeAlarmLevelModel> eventAlarmLevels;
     private PurgeSettings purgeSettings;
-    private Set<String> editPermission;
-    private Set<String> readPermission;
+    private MangoPermissionModel editPermission;
+    private MangoPermissionModel readPermission;
     private JsonNode data;
 
     public AbstractDataSourceModel() {
@@ -101,14 +97,8 @@ public abstract class AbstractDataSourceModel<T extends DataSourceVO> extends Ab
         }
 
         this.purgeSettings = new PurgeSettings(vo);
-        this.editPermission = new HashSet<>();
-        for(Role role : vo.getEditRoles()) {
-            this.editPermission.add(role.getXid());
-        }
-        this.readPermission = new HashSet<>();
-        for(Role role : vo.getReadRoles()) {
-            this.readPermission.add(role.getXid());
-        }
+        this.editPermission = new MangoPermissionModel(vo.getEditPermission());
+        this.readPermission = new MangoPermissionModel(vo.getReadPermission());
 
         this.data = vo.getData();
     }
@@ -125,9 +115,9 @@ public abstract class AbstractDataSourceModel<T extends DataSourceVO> extends Ab
 
         if(purgeSettings != null)
             purgeSettings.toVO(vo);
-        PermissionService service = Common.getBean(PermissionService.class);
-        vo.setEditRoles(service.explodeLegacyPermissionGroupsToRoles(editPermission));
-        vo.setReadRoles(service.explodeLegacyPermissionGroupsToRoles(readPermission));
+
+        vo.setEditPermission(editPermission != null ? editPermission.getPermission() : null);
+        vo.setReadPermission(readPermission != null ? readPermission.getPermission() : null);
         vo.setData(data);
 
         return vo;
@@ -202,22 +192,22 @@ public abstract class AbstractDataSourceModel<T extends DataSourceVO> extends Ab
     /**
      * @return the editPermission
      */
-    public Set<String> getEditPermission() {
+    public MangoPermissionModel getEditPermission() {
         return editPermission;
     }
 
     /**
      * @param editPermission the editPermission to set
      */
-    public void setEditPermission(Set<String> editPermission) {
+    public void setEditPermission(MangoPermissionModel editPermission) {
         this.editPermission = editPermission;
     }
 
-    public Set<String> getReadPermission() {
+    public MangoPermissionModel getReadPermission() {
         return readPermission;
     }
 
-    public void setReadPermission(Set<String> readPermission) {
+    public void setReadPermission(MangoPermissionModel readPermission) {
         this.readPermission = readPermission;
     }
 
