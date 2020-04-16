@@ -3,6 +3,7 @@
  */
 package com.infiniteautomation.mango.rest.v2.model.event.handlers;
 
+import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -26,7 +27,7 @@ public class ScriptEventHandlerModel extends AbstractEventHandlerModel<ScriptEve
 
     String script;
     String engineName;
-    Set<String> scriptRoles;
+    Set<String> scriptRoles = Collections.emptySet();
 
     public ScriptEventHandlerModel() {
     }
