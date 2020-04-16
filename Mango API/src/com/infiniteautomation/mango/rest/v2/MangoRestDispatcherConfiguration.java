@@ -16,6 +16,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.format.FormatterRegistry;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -43,6 +44,8 @@ import com.infiniteautomation.mango.rest.v2.genericcsv.GenericCSVMessageConverte
 import com.infiniteautomation.mango.rest.v2.mapping.HtmlHttpMessageConverter;
 import com.infiniteautomation.mango.rest.v2.mapping.JScienceModule;
 import com.infiniteautomation.mango.rest.v2.mapping.JsonStreamMessageConverter;
+import com.infiniteautomation.mango.rest.v2.mapping.MangoPermissionModelConverter;
+import com.infiniteautomation.mango.rest.v2.mapping.MangoPermissionModelDeserializer;
 import com.infiniteautomation.mango.rest.v2.mapping.MangoRestV2JacksonModule;
 import com.infiniteautomation.mango.rest.v2.mapping.PointValueTimeStreamCsvMessageConverter;
 import com.infiniteautomation.mango.rest.v2.mapping.SerotoninJsonMessageConverter;
@@ -186,5 +189,10 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
         resolvers.add(resolver);
+    }
+
+    @Override
+    public void addFormatters(FormatterRegistry registry) {
+        registry.addConverter(new MangoPermissionModelConverter(mapper, new MangoPermissionModelDeserializer()));
     }
 }

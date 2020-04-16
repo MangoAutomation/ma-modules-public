@@ -33,18 +33,22 @@ public class MangoPermissionModelDeserializer extends StdDeserializer<MangoPermi
     private static final long serialVersionUID = 1L;
     private final RoleDao dao;
 
-    protected MangoPermissionModelDeserializer() {
+    public MangoPermissionModelDeserializer() {
         super(MangoPermissionModel.class);
         this.dao = RoleDao.getInstance();
     }
 
-    @SuppressWarnings("unchecked")
+
     @Override
     public MangoPermissionModel deserialize(JsonParser jp, DeserializationContext ctxt)
             throws IOException, JsonProcessingException {
         ObjectMapper mapper = (ObjectMapper) jp.getCodec();
         JsonNode tree = jp.readValueAsTree();
+        return nodeToModel(tree, mapper);
+    }
 
+    @SuppressWarnings("unchecked")
+    public MangoPermissionModel nodeToModel(JsonNode tree, ObjectMapper mapper) throws JsonProcessingException {
         Set<Set<Role>> roles = new HashSet<>();
         if(tree instanceof ArrayNode) {
             Set<Object> outerSet = mapper.treeToValue(tree, Set.class);

@@ -14,7 +14,9 @@ public class MangoPermissionModel {
 
     private MangoPermission permission;
 
-    public MangoPermissionModel() { }
+    public MangoPermissionModel() {
+        this.permission = new MangoPermission();
+    }
 
     public MangoPermissionModel(MangoPermission permission) {
         this.permission = permission;
