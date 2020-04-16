@@ -30,7 +30,7 @@ const validateSchema = {
     'WatchListSummaryModel': function(item, path) {
         assert.isObject(item, path);
         assert.isObject(item.data, path + '.data');
-        assert.isString(item.editPermission, path + '.editPermission');
+        assert.isArray(item.editPermission, path + '.editPermission');
         if (item.folderIds != null) {
             assert.isArray(item.folderIds, path + '.folderIds');
             item.folderIds.forEach((item, index) => {
@@ -50,7 +50,7 @@ const validateSchema = {
         if (item.query) {
             assert.isString(item.query, path + '.query');
         }
-        assert.isString(item.readPermission, path + '.readPermission');
+        assert.isArray(item.readPermission, path + '.readPermission');
         assert.isString(item.type, path + '.type');
         if (item.username) {
             assert.isString(item.username, path + '.username');
@@ -83,8 +83,8 @@ const validateSchema = {
         assert.isObject(item, path);
         assert.isString(item.deviceName, path + '.deviceName');
         assert.isString(item.name, path + '.name');
-        assert.isString(item.readPermission, path + '.readPermission');
-        assert.isString(item.setPermission, path + '.setPermission');
+        assert.isArray(item.readPermission, path + '.readPermission');
+        assert.isArray(item.setPermission, path + '.setPermission');
         assert.isString(item.xid, path + '.xid');
     },
     'QueryAttribute': function(item, path) {
@@ -114,8 +114,8 @@ describe('watch-list-rest-controller', function() {
         if (!this.currentTest.hasOwnProperty('createObject')) {
             this.currentTest.createObject = {
                 name: 'Test watchlist',
-                editPermission: '',
-                readPermission: '',
+                editPermission: ['superadmin'],
+                readPermission: ['user'],
                 type: 'query',
                 params: [],
                 query: 'limit(1)',
@@ -183,8 +183,8 @@ describe('watch-list-rest-controller', function() {
         const requestBody = {
             xid: this.test.xid,
             name: 'Test watchlist',
-            editPermission: '',
-            readPermission: '',
+            editPermission: ['superadmin'],
+            readPermission: ['user'],
             type: 'query',
             folderIds: null,
             params: [],
@@ -233,8 +233,8 @@ describe('watch-list-rest-controller', function() {
         const requestBody = this.test.expectedResult = {
             xid: this.test.xid,
             name: 'Test watchlist - renamed',
-            editPermission: '',
-            readPermission: '',
+            editPermission: [],
+            readPermission: [],
             type: 'query',
             params: [],
             query: 'limit(1)',
