@@ -157,11 +157,11 @@ public class WatchListServiceTest extends AbstractVOServiceWithPermissionsTest<W
 
     @Override
     String getReadRolesContextKey() {
-        return "readRoles";
+        return "readPermission";
     }
 
     @Override
     String getEditRolesContextKey() {
-        return "editRoles";
+        return "editPermission";
     }
 }
