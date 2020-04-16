@@ -5,6 +5,7 @@ package com.infiniteautomation.mango.rest.v2;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -79,7 +80,7 @@ public class PermissionsRestController {
             throw new NotFoundRestException();
         }
 
-        def.update(model.getPermission() != null ? model.getPermission().getPermission() : null);
+        def.update(model.getPermission() != null ? model.getPermission().getPermission().getRoles() : new HashSet<>());
 
         URI location = builder.path("/permissions/{key}").buildAndExpand(key).toUri();
         HttpHeaders headers = new HttpHeaders();

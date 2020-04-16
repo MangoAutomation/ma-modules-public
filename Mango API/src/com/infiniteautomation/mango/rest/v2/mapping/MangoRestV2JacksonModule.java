@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.infiniteautomation.mango.io.serial.virtual.VirtualSerialPortConfig;
 import com.infiniteautomation.mango.rest.v2.exception.ExceptionMixin;
 import com.infiniteautomation.mango.rest.v2.model.JSONStreamedArray;
+import com.infiniteautomation.mango.rest.v2.model.permissions.MangoPermissionModel;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 
@@ -33,7 +34,8 @@ public class MangoRestV2JacksonModule extends SimpleModule {
         this.addSerializer(TranslatableMessage.class, new TranslatableMessageSerializer());
         this.addDeserializer(VirtualSerialPortConfig.class, new VirtualSerialPortConfigDeserializer());
         this.addSerializer(PointValueTimeStream.class, new PointValueTimeStreamJsonSerializer());
-
+        this.addSerializer(MangoPermissionModel.class, new MangoPermissionModelSerializer());
+        this.addDeserializer(MangoPermissionModel.class, new MangoPermissionModelDeserializer());
         super.setupModule(context);
     }
 }

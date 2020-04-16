@@ -5,6 +5,7 @@
 package com.infiniteautomation.mango.rest.v2.model.jsondata;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.infiniteautomation.mango.permission.MangoPermission;
 import com.infiniteautomation.mango.rest.v2.model.AbstractVoModel;
 import com.infiniteautomation.mango.rest.v2.model.permissions.MangoPermissionModel;
 import com.infiniteautomation.mango.util.exception.ValidationException;
@@ -71,8 +72,8 @@ public class JsonDataModel extends AbstractVoModel<JsonDataVO> {
     @Override
     public JsonDataVO toVO() throws ValidationException {
         JsonDataVO vo = super.toVO();
-        vo.setReadPermission(readPermission != null ? readPermission.getPermission() : null);
-        vo.setEditPermission(editPermission != null ? editPermission.getPermission() : null);
+        vo.setReadPermission(readPermission != null ? readPermission.getPermission() : new MangoPermission());
+        vo.setEditPermission(editPermission != null ? editPermission.getPermission() : new MangoPermission());
         vo.setPublicData(publicData);
         vo.setJsonData(jsonData);
         return vo;

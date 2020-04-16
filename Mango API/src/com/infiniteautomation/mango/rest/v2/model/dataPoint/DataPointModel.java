@@ -11,9 +11,9 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.infiniteautomation.mango.permission.MangoPermission;
 import com.infiniteautomation.mango.rest.v2.model.AbstractVoModel;
 import com.infiniteautomation.mango.rest.v2.model.dataPoint.textRenderer.BaseTextRendererModel;
+import com.infiniteautomation.mango.rest.v2.model.permissions.MangoPermissionModel;
 import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;
@@ -39,8 +39,8 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
     Boolean enabled;
 
     String deviceName;
-    MangoPermission readPermission;
-    MangoPermission setPermission;
+    MangoPermissionModel readPermission;
+    MangoPermissionModel setPermission;
     Boolean purgeOverride;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     TimePeriodModel purgePeriod;
@@ -71,7 +71,7 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
     String dataSourceXid;
     String dataSourceName;
     String dataSourceTypeName;
-    MangoPermission dataSourceEditRoles;
+    MangoPermissionModel dataSourceEditRoles;
 
     boolean mergeTags = false;
     Map<String, String> tags;
@@ -98,8 +98,8 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
         this.enabled = point.isEnabled();
 
         this.deviceName = point.getDeviceName();
-        this.readPermission = point.getReadPermission();
-        this.setPermission = point.getSetPermission();
+        this.readPermission = new MangoPermissionModel(point.getReadPermission());
+        this.setPermission = new MangoPermissionModel(point.getSetPermission());
         this.purgeOverride = point.isPurgeOverride();
         if (this.purgeOverride) {
             this.purgePeriod = new TimePeriodModel(point.getPurgePeriod(), point.getPurgeType());
@@ -135,7 +135,7 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
             this.setExtremeLowLimit = point.getSetExtremeLowLimit();
             this.setExtremeHighLimit = point.getSetExtremeHighLimit();
         }
-        this.dataSourceEditRoles = point.getDataSourceEditRoles();
+        this.dataSourceEditRoles = new MangoPermissionModel(point.getDataSourceEditRoles());
         this.extendedName = point.getExtendedName();
         this.data = point.getData();
     }
@@ -158,11 +158,11 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
         }
         //TODO Mango 4.0 Use ModelMapper.unmap
         if (readPermission != null) {
-            point.setReadPermission(readPermission);
+            point.setReadPermission(readPermission.getPermission());
         }
         //TODO Mango 4.0 Use ModelMapper.unmap
         if (setPermission != null) {
-            point.setSetPermission(setPermission);
+            point.setSetPermission(setPermission.getPermission());
         }
         //TODO Mango 4.0 Use ModelMapper.unmap
         if(StringUtils.isNotEmpty(dataSourceXid)) {
@@ -348,19 +348,19 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
         this.deviceName = deviceName;
     }
 
-    public MangoPermission getReadPermission() {
+    public MangoPermissionModel getReadPermission() {
         return readPermission;
     }
 
-    public void setReadPermission(MangoPermission readPermission) {
+    public void setReadPermission(MangoPermissionModel readPermission) {
         this.readPermission = readPermission;
     }
 
-    public MangoPermission getSetPermission() {
+    public MangoPermissionModel getSetPermission() {
         return setPermission;
     }
 
-    public void setSetPermission(MangoPermission setPermission) {
+    public void setSetPermission(MangoPermissionModel setPermission) {
         this.setPermission = setPermission;
     }
 
@@ -560,11 +560,11 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
         this.setExtremeHighLimit = setExtremeHighLimit;
     }
 
-    public MangoPermission getDataSourceEditRoles() {
+    public MangoPermissionModel getDataSourceEditRoles() {
         return dataSourceEditRoles;
     }
 
-    public void setDataSourceEditRoles(MangoPermission dataSourceEditRoles) {
+    public void setDataSourceEditRoles(MangoPermissionModel dataSourceEditRoles) {
         //No-op
     }
 

@@ -12,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.infiniteautomation.mango.permission.MangoPermission;
 import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
 import com.infiniteautomation.mango.rest.v2.model.AbstractVoModel;
 import com.infiniteautomation.mango.rest.v2.model.permissions.MangoPermissionModel;
@@ -116,8 +117,8 @@ public abstract class AbstractDataSourceModel<T extends DataSourceVO> extends Ab
         if(purgeSettings != null)
             purgeSettings.toVO(vo);
 
-        vo.setEditPermission(editPermission != null ? editPermission.getPermission() : null);
-        vo.setReadPermission(readPermission != null ? readPermission.getPermission() : null);
+        vo.setEditPermission(editPermission != null ? editPermission.getPermission() : new MangoPermission());
+        vo.setReadPermission(readPermission != null ? readPermission.getPermission() : new MangoPermission());
         vo.setData(data);
 
         return vo;

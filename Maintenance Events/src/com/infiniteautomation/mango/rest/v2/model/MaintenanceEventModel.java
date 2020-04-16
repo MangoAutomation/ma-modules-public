@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.infiniteautomation.mango.permission.MangoPermission;
 import com.infiniteautomation.mango.rest.v2.model.permissions.MangoPermissionModel;
 import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.m2m2.Common;
@@ -107,7 +108,7 @@ public class MaintenanceEventModel extends AbstractVoModel<MaintenanceEventVO> {
         vo.setInactiveCron(inactiveCron);
         vo.setTimeoutPeriods(timeoutPeriods == null ? 0 : timeoutPeriods);
         vo.setTimeoutPeriodType(Common.TIME_PERIOD_CODES.getId(timeoutPeriodType));
-        vo.setTogglePermission(togglePermission != null ? togglePermission.getPermission() : null);
+        vo.setTogglePermission(togglePermission != null ? togglePermission.getPermission() :  new MangoPermission());
         return vo;
     }
 
