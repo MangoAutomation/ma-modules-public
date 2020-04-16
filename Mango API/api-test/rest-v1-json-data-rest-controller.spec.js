@@ -92,7 +92,7 @@ describe('json-data-rest-controller', function() {
             // MODEL: JsonData
             // DESCRIPTION: Json Data Model
             assert.isObject(response.data, 'data');
-            assert.isString(response.data.editPermission, 'data.editPermission');
+            assert.isArray(response.data.editPermission, 'data.editPermission');
             // DESCRIPTION: ID of object in database
             assert.isNumber(response.data.id, 'data.id');
             // MODEL: ArbitraryJsonData
@@ -104,7 +104,7 @@ describe('json-data-rest-controller', function() {
             // DESCRIPTION: Name of object
             assert.isString(response.data.name, 'data.name');
             assert.isBoolean(response.data.publicData, 'data.publicData');
-            assert.isString(response.data.readPermission, 'data.readPermission');
+            assert.isArray(response.data.readPermission, 'data.readPermission');
             // DESCRIPTION: XID of object
             assert.isString(response.data.xid, 'data.xid');
             // END MODEL: JsonData
@@ -132,7 +132,7 @@ describe('json-data-rest-controller', function() {
             // MODEL: JsonData
             // DESCRIPTION: Json Data Model
             assert.isObject(response.data, 'data');
-            assert.isString(response.data.editPermission, 'data.editPermission');
+            assert.isArray(response.data.editPermission, 'data.editPermission');
             // DESCRIPTION: ID of object in database
             assert.isNumber(response.data.id, 'data.id');
             // MODEL: ArbitraryJsonData
@@ -144,7 +144,7 @@ describe('json-data-rest-controller', function() {
             // DESCRIPTION: Name of object
             assert.isString(response.data.name, 'data.name');
             assert.isBoolean(response.data.publicData, 'data.publicData');
-            assert.isString(response.data.readPermission, 'data.readPermission');
+            assert.isArray(response.data.readPermission, 'data.readPermission');
             // DESCRIPTION: XID of object
             assert.isString(response.data.xid, 'data.xid');
             // END MODEL: JsonData
@@ -185,7 +185,7 @@ describe('json-data-rest-controller', function() {
             // MODEL: JsonData
             // DESCRIPTION: Json Data Model
             assert.isObject(response.data, 'data');
-            assert.isString(response.data.editPermission, 'data.editPermission');
+            assert.isArray(response.data.editPermission, 'data.editPermission');
             // DESCRIPTION: ID of object in database
             assert.isNumber(response.data.id, 'data.id');
             // MODEL: ArbitraryJsonData
@@ -197,7 +197,7 @@ describe('json-data-rest-controller', function() {
             // DESCRIPTION: Name of object
             assert.isString(response.data.name, 'data.name');
             assert.isBoolean(response.data.publicData, 'data.publicData');
-            assert.isString(response.data.readPermission, 'data.readPermission');
+            assert.isArray(response.data.readPermission, 'data.readPermission');
             // DESCRIPTION: XID of object
             assert.isString(response.data.xid, 'data.xid');
             // END MODEL: JsonData
@@ -242,7 +242,7 @@ describe('json-data-rest-controller', function() {
             // MODEL: JsonData
             // DESCRIPTION: Json Data Model
             assert.isObject(response.data, 'data');
-            assert.isString(response.data.editPermission, 'data.editPermission');
+            assert.isArray(response.data.editPermission, 'data.editPermission');
             // DESCRIPTION: ID of object in database
             assert.isNumber(response.data.id, 'data.id');
             // MODEL: ArbitraryJsonData
@@ -255,7 +255,7 @@ describe('json-data-rest-controller', function() {
             // DESCRIPTION: Name of object
             assert.isString(response.data.name, 'data.name');
             assert.isBoolean(response.data.publicData, 'data.publicData');
-            assert.isString(response.data.readPermission, 'data.readPermission');
+            assert.isArray(response.data.readPermission, 'data.readPermission');
             // DESCRIPTION: XID of object
             assert.isString(response.data.xid, 'data.xid');
             // END MODEL: JsonData
@@ -296,7 +296,7 @@ describe('json-data-rest-controller', function() {
             // MODEL: JsonData
             // DESCRIPTION: Json Data Model
             assert.isObject(response.data, 'data');
-            assert.isString(response.data.editPermission, 'data.editPermission');
+            assert.isArray(response.data.editPermission, 'data.editPermission');
             // DESCRIPTION: ID of object in database
             assert.isNumber(response.data.id, 'data.id');
             // MODEL: ArbitraryJsonData
@@ -308,7 +308,7 @@ describe('json-data-rest-controller', function() {
             // DESCRIPTION: Name of object
             assert.isString(response.data.name, 'data.name');
             assert.isBoolean(response.data.publicData, 'data.publicData');
-            assert.isString(response.data.readPermission, 'data.readPermission');
+            assert.isArray(response.data.readPermission, 'data.readPermission');
             // DESCRIPTION: XID of object
             assert.isString(response.data.xid, 'data.xid');
             // END MODEL: JsonData
@@ -336,7 +336,7 @@ describe('json-data-rest-controller', function() {
             // MODEL: JsonData
             // DESCRIPTION: Json Data Model
             assert.isObject(response.data, 'data');
-            assert.isString(response.data.editPermission, 'data.editPermission');
+            assert.isArray(response.data.editPermission, 'data.editPermission');
             // DESCRIPTION: ID of object in database
             assert.isNumber(response.data.id, 'data.id');
             // MODEL: ArbitraryJsonData
@@ -346,7 +346,7 @@ describe('json-data-rest-controller', function() {
             // DESCRIPTION: Name of object
             assert.isString(response.data.name, 'data.name');
             assert.isBoolean(response.data.publicData, 'data.publicData');
-            assert.isString(response.data.readPermission, 'data.readPermission');
+            assert.isArray(response.data.readPermission, 'data.readPermission');
             // DESCRIPTION: XID of object
             assert.isString(response.data.xid, 'data.xid');
             // END MODEL: JsonData
@@ -375,7 +375,7 @@ describe('json-data-rest-controller', function() {
             // MODEL: JsonData
             // DESCRIPTION: Json Data Model
             assert.isObject(response.data, 'data');
-            assert.isString(response.data.editPermission, 'data.editPermission');
+            assert.isArray(response.data.editPermission, 'data.editPermission');
             // DESCRIPTION: ID of object in database
             assert.isNumber(response.data.id, 'data.id');
             // MODEL: ArbitraryJsonData
@@ -387,7 +387,7 @@ describe('json-data-rest-controller', function() {
             // DESCRIPTION: Name of object
             assert.isString(response.data.name, 'data.name');
             assert.isBoolean(response.data.publicData, 'data.publicData');
-            assert.isString(response.data.readPermission, 'data.readPermission');
+            assert.isArray(response.data.readPermission, 'data.readPermission');
             // DESCRIPTION: XID of object
             assert.isString(response.data.xid, 'data.xid');
             // END MODEL: JsonData
@@ -432,7 +432,7 @@ describe('json-data-rest-controller', function() {
             // MODEL: JsonData
             // DESCRIPTION: Json Data Model
             assert.isObject(response.data, 'data');
-            assert.isString(response.data.editPermission, 'data.editPermission');
+            assert.isArray(response.data.editPermission, 'data.editPermission');
             // DESCRIPTION: ID of object in database
             assert.isNumber(response.data.id, 'data.id');
             // MODEL: ArbitraryJsonData
@@ -444,7 +444,7 @@ describe('json-data-rest-controller', function() {
             // DESCRIPTION: Name of object
             assert.isString(response.data.name, 'data.name');
             assert.isBoolean(response.data.publicData, 'data.publicData');
-            assert.isString(response.data.readPermission, 'data.readPermission');
+            assert.isArray(response.data.readPermission, 'data.readPermission');
             // DESCRIPTION: XID of object
             assert.isString(response.data.xid, 'data.xid');
             // END MODEL: JsonData
@@ -488,7 +488,7 @@ describe('json-data-rest-controller', function() {
             // MODEL: JsonData
             // DESCRIPTION: Json Data Model
             assert.isObject(response.data, 'data');
-            assert.isString(response.data.editPermission, 'data.editPermission');
+            assert.isArray(response.data.editPermission, 'data.editPermission');
             // DESCRIPTION: ID of object in database
             assert.isNumber(response.data.id, 'data.id');
             // MODEL: ArbitraryJsonData
@@ -501,7 +501,7 @@ describe('json-data-rest-controller', function() {
             // DESCRIPTION: Name of object
             assert.isString(response.data.name, 'data.name');
             assert.isBoolean(response.data.publicData, 'data.publicData');
-            assert.isString(response.data.readPermission, 'data.readPermission');
+            assert.isArray(response.data.readPermission, 'data.readPermission');
             // DESCRIPTION: XID of object
             assert.isString(response.data.xid, 'data.xid');
             // END MODEL: JsonData
@@ -532,7 +532,7 @@ describe('json-data-rest-controller', function() {
             // MODEL: JsonData
             // DESCRIPTION: Json Data Model
             assert.isObject(response.data, 'data');
-            assert.isString(response.data.editPermission, 'data.editPermission');
+            assert.isArray(response.data.editPermission, 'data.editPermission');
             // DESCRIPTION: ID of object in database
             assert.isNumber(response.data.id, 'data.id');
             // MODEL: ArbitraryJsonData
@@ -543,7 +543,7 @@ describe('json-data-rest-controller', function() {
             // DESCRIPTION: Name of object
             assert.isString(response.data.name, 'data.name');
             assert.isBoolean(response.data.publicData, 'data.publicData');
-            assert.isString(response.data.readPermission, 'data.readPermission');
+            assert.isArray(response.data.readPermission, 'data.readPermission');
             // DESCRIPTION: XID of object
             assert.isString(response.data.xid, 'data.xid');
             // END MODEL: JsonData
