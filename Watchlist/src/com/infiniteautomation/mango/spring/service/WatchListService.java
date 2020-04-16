@@ -7,7 +7,6 @@ package com.infiniteautomation.mango.spring.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.function.Consumer;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +22,7 @@ import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.module.ModuleRegistry;
+import com.serotonin.m2m2.module.PermissionDefinition;
 import com.serotonin.m2m2.rt.event.type.EventType.EventTypeNames;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.IDataPoint;
@@ -31,7 +30,6 @@ import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.EventInstanceVO;
 import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
-import com.serotonin.m2m2.vo.role.Role;
 import com.serotonin.m2m2.watchlist.WatchListCreatePermission;
 import com.serotonin.m2m2.watchlist.WatchListVO;
 
@@ -47,17 +45,20 @@ public class WatchListService extends AbstractVOService<WatchListVO, WatchListTa
     private final UserDao userDao;
     private final DataPointService dataPointService;
     private final EventInstanceService eventService;
+    private final WatchListCreatePermission createPermission;
 
     @Autowired
     public WatchListService(WatchListDao dao,
             PermissionService permissionService,
             UserDao userDao,
             DataPointService dataPointService,
-            EventInstanceService eventService) {
+            EventInstanceService eventService,
+            WatchListCreatePermission createPermission) {
         super(dao, permissionService);
         this.userDao = userDao;
         this.dataPointService = dataPointService;
         this.eventService = eventService;
+        this.createPermission = createPermission;
     }
 
     @Override
@@ -91,7 +92,7 @@ public class WatchListService extends AbstractVOService<WatchListVO, WatchListTa
         if(user instanceof User && ((User)user).getId() == vo.getUserId()) {
             return true;
         }else {
-            return permissionService.hasAnyRole(user, vo.getEditRoles());
+            return permissionService.hasPermission(user, vo.getEditPermission());
         }
     }
 
@@ -100,13 +101,13 @@ public class WatchListService extends AbstractVOService<WatchListVO, WatchListTa
         if(user instanceof User && ((User)user).getId() == vo.getUserId()) {
             return true;
         }else {
-            return permissionService.hasAnyRole(user, vo.getReadRoles());
+            return permissionService.hasPermission(user, vo.getReadPermission());
         }
     }
 
     @Override
-    public Set<Role> getCreatePermissionRoles() {
-        return ModuleRegistry.getPermissionDefinition(WatchListCreatePermission.PERMISSION).getRoles();
+    public PermissionDefinition getCreatePermission() {
+        return createPermission;
     }
 
     @Override
@@ -129,8 +130,8 @@ public class WatchListService extends AbstractVOService<WatchListVO, WatchListTa
             savedByOwner = true;
         }
 
-        permissionService.validateVoRoles(response, "readRoles", user, savedByOwner, null, vo.getReadRoles());
-        permissionService.validateVoRoles(response, "editRoles", user, savedByOwner, null, vo.getEditRoles());
+        permissionService.validateVoRoles(response, "readPermission", user, savedByOwner, null, vo.getReadPermission());
+        permissionService.validateVoRoles(response, "editPermission", user, savedByOwner, null, vo.getEditPermission());
         return response;
 
     }
@@ -148,8 +149,8 @@ public class WatchListService extends AbstractVOService<WatchListVO, WatchListTa
             response.addContextualMessage("userId","validate.cannotChangeOwner");
         }
 
-        permissionService.validateVoRoles(response, "readRoles", savingUser, savedByOwner, existing.getReadRoles(), vo.getReadRoles());
-        permissionService.validateVoRoles(response, "editRoles", savingUser, savedByOwner, existing.getEditRoles(), vo.getEditRoles());
+        permissionService.validateVoRoles(response, "readPermission", savingUser, savedByOwner, existing.getReadPermission(), vo.getReadPermission());
+        permissionService.validateVoRoles(response, "editPermission", savingUser, savedByOwner, existing.getEditPermission(), vo.getEditPermission());
 
         return response;
     }

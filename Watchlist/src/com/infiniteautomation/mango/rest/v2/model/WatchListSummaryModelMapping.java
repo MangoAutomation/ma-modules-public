@@ -7,9 +7,8 @@ package com.infiniteautomation.mango.rest.v2.model;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
-import com.infiniteautomation.mango.rest.v2.model.RestModelMapping;
-import com.infiniteautomation.mango.spring.service.PermissionService;
+import com.infiniteautomation.mango.permission.MangoPermission;
+import com.infiniteautomation.mango.rest.v2.model.permissions.MangoPermissionModel;
 import com.infiniteautomation.mango.spring.service.UsersService;
 import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
@@ -23,11 +22,9 @@ import com.serotonin.m2m2.watchlist.WatchListVO;
 public class WatchListSummaryModelMapping implements RestModelMapping<WatchListVO, WatchListSummaryModel> {
 
     private final UsersService userService;
-    private final PermissionService permissionService;
 
     @Autowired
-    public WatchListSummaryModelMapping(PermissionService permissionService, UsersService userService) {
-        this.permissionService = permissionService;
+    public WatchListSummaryModelMapping(UsersService userService) {
         this.userService = userService;
     }
 
@@ -46,8 +43,8 @@ public class WatchListSummaryModelMapping implements RestModelMapping<WatchListV
         WatchListVO vo = (WatchListVO)from;
         WatchListSummaryModel model = new WatchListSummaryModel(vo);
         model.setUsername(userService.getDao().getXidById(vo.getUserId()));
-        model.setReadPermission(PermissionService.implodeRoles(vo.getReadRoles()));
-        model.setEditPermission(PermissionService.implodeRoles(vo.getEditRoles()));
+        model.setReadPermission(new MangoPermissionModel(vo.getReadPermission()));
+        model.setEditPermission(new MangoPermissionModel(vo.getEditPermission()));
         return model;
     }
 
@@ -62,8 +59,8 @@ public class WatchListSummaryModelMapping implements RestModelMapping<WatchListV
             vo.setUserId(userId);
         }
 
-        vo.setReadRoles(permissionService.explodeLegacyPermissionGroupsToRoles(model.getReadPermission()));
-        vo.setEditRoles(permissionService.explodeLegacyPermissionGroupsToRoles(model.getEditPermission()));
+        vo.setReadPermission(model.getReadPermission() != null ? model.getReadPermission().getPermission() : new MangoPermission());
+        vo.setEditPermission(model.getEditPermission() != null ? model.getEditPermission().getPermission() : new MangoPermission());
 
         return vo;
     }

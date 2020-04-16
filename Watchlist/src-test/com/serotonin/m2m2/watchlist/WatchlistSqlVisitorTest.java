@@ -17,6 +17,7 @@ import org.jooq.Field;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.infiniteautomation.mango.permission.MangoPermission;
 import com.infiniteautomation.mango.spring.dao.WatchListDao;
 import com.infiniteautomation.mango.spring.db.UserTableDefinition;
 import com.infiniteautomation.mango.spring.service.PermissionService;
@@ -68,7 +69,7 @@ public class WatchlistSqlVisitorTest extends MangoTestBase {
             wl.setXid(WatchListDao.getInstance().generateUniqueXid());
             wl.setName("Watchilst " + i);
             wl.setUserId(users.get(0).getId());
-            wl.setReadRoles(users.get(0).getRoles());
+            wl.setReadPermission(MangoPermission.createOrSet(users.get(0).getRoles()));
             WatchListDao.getInstance().insert(wl);
         }
 
@@ -87,7 +88,7 @@ public class WatchlistSqlVisitorTest extends MangoTestBase {
             service.customizedQuery(query, (wl,index) -> {
                 selectCounter.incrementAndGet();
                 assertEquals(users.get(0).getId(), wl.getUserId());
-                assertEquals(2, wl.getReadRoles().size());
+                assertEquals(2, wl.getReadPermission().getUniqueRoles().size());
             });
             assertEquals(5, service.customizedCount(query));
         });

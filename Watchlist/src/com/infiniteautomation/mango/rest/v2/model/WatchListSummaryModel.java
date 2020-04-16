@@ -7,7 +7,7 @@ package com.infiniteautomation.mango.rest.v2.model;
 import java.util.List;
 import java.util.Map;
 
-import com.infiniteautomation.mango.rest.v2.model.AbstractVoModel;
+import com.infiniteautomation.mango.rest.v2.model.permissions.MangoPermissionModel;
 import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.m2m2.watchlist.WatchListParameter;
 import com.serotonin.m2m2.watchlist.WatchListVO;
@@ -19,8 +19,8 @@ import com.serotonin.m2m2.watchlist.WatchListVO;
 public class WatchListSummaryModel extends AbstractVoModel<WatchListVO>  {
 
     private String username;
-    private String readPermission;
-    private String editPermission;
+    private MangoPermissionModel readPermission;
+    private MangoPermissionModel editPermission;
     private String type;
     private String query;
     private List<WatchListParameter> params;
@@ -60,16 +60,16 @@ public class WatchListSummaryModel extends AbstractVoModel<WatchListVO>  {
     public void setUsername(String username) {
         this.username = username;
     }
-    public String getReadPermission() {
+    public MangoPermissionModel getReadPermission() {
         return readPermission;
     }
-    public void setReadPermission(String readPermission) {
+    public void setReadPermission(MangoPermissionModel readPermission) {
         this.readPermission = readPermission;
     }
-    public String getEditPermission() {
+    public MangoPermissionModel getEditPermission() {
         return editPermission;
     }
-    public void setEditPermission(String editPermission) {
+    public void setEditPermission(MangoPermissionModel editPermission) {
         this.editPermission = editPermission;
     }
     public String getType() {

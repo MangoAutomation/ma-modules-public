@@ -6,14 +6,13 @@ package com.serotonin.m2m2.watchlist;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.infiniteautomation.mango.permission.MangoPermission;
 import com.serotonin.json.JsonException;
 import com.serotonin.json.JsonReader;
 import com.serotonin.json.ObjectWriter;
@@ -27,7 +26,6 @@ import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.vo.AbstractVO;
 import com.serotonin.m2m2.vo.DataPointSummary;
 import com.serotonin.m2m2.vo.IDataPoint;
-import com.serotonin.m2m2.vo.role.Role;
 
 /**
  * @author Matthew Lohbihler
@@ -46,9 +44,9 @@ public class WatchListVO extends AbstractVO {
     private int userId;
     private final List<IDataPoint> pointList = new CopyOnWriteArrayList<>();
     @JsonProperty
-    private Set<Role> readRoles = Collections.emptySet();
+    private MangoPermission readPermission = new MangoPermission();
     @JsonProperty
-    private Set<Role> editRoles = Collections.emptySet();
+    private MangoPermission editPermission = new MangoPermission();
     @JsonProperty
     private String type;
     @JsonProperty
@@ -106,20 +104,20 @@ public class WatchListVO extends AbstractVO {
         this.userId = userId;
     }
 
-    public Set<Role> getReadRoles() {
-        return readRoles;
+    public MangoPermission getReadPermission() {
+        return readPermission;
     }
 
-    public void setReadRoles(Set<Role> readRoles) {
-        this.readRoles = readRoles;
+    public void setReadPermission(MangoPermission readPermission) {
+        this.readPermission = readPermission;
     }
 
-    public Set<Role> getEditRoles() {
-        return editRoles;
+    public MangoPermission getEditPermission() {
+        return editPermission;
     }
 
-    public void setEditRoles(Set<Role> editRoles) {
-        this.editRoles = editRoles;
+    public void setEditPermission(MangoPermission editPermission) {
+        this.editPermission = editPermission;
     }
 
     public String getType() {
@@ -197,11 +195,6 @@ public class WatchListVO extends AbstractVO {
         JsonObject o = jsonObject.getJsonObject("data");
         if(o != null)
             this.data = o.toMap();
-
-        //Legacy permissions support
-        this.readRoles = readLegacyPermissions("readPermissions", this.readRoles, jsonObject);
-        this.editRoles = readLegacyPermissions("editPermissions", this.editRoles, jsonObject);
-
     }
 
     @Override

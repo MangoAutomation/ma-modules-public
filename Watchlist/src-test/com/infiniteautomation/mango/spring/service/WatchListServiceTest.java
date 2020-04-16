@@ -11,12 +11,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.infiniteautomation.mango.permission.MangoPermission;
 import com.infiniteautomation.mango.spring.dao.WatchListDao;
 import com.infiniteautomation.mango.spring.dao.WatchListTableDefinition;
 import com.serotonin.m2m2.Common;
@@ -50,13 +50,13 @@ public class WatchListServiceTest extends AbstractVOServiceWithPermissionsTest<W
     }
 
     @Override
-    void setReadRoles(Set<Role> roles, WatchListVO vo) {
-        vo.setReadRoles(roles);
+    void setReadPermission(MangoPermission permission, WatchListVO vo) {
+        vo.setReadPermission(permission);
     }
 
     @Override
-    void setEditRoles(Set<Role> roles, WatchListVO vo) {
-        vo.setEditRoles(roles);
+    void setEditPermission(MangoPermission permission, WatchListVO vo) {
+        vo.setEditPermission(permission);
     }
 
     @Override
@@ -90,7 +90,7 @@ public class WatchListServiceTest extends AbstractVOServiceWithPermissionsTest<W
         vo.setName(UUID.randomUUID().toString());
         vo.setType(WatchListVO.STATIC_TYPE);
         vo.setUserId(owner.getId());
-        for(IDataPoint point : createMockDataPoints(5, false, owner.getRoles(), owner.getRoles())) {
+        for(IDataPoint point : createMockDataPoints(5, false, MangoPermission.createOrSet(owner.getRoles()), MangoPermission.createOrSet(owner.getRoles()))) {
             vo.getPointList().add(point);
         }
         Map<String, Object> randomData = new HashMap<>();
@@ -112,12 +112,12 @@ public class WatchListServiceTest extends AbstractVOServiceWithPermissionsTest<W
 
     @Override
     void addReadRoleToFail(Role role, WatchListVO vo) {
-        vo.getReadRoles().add(role);
+        vo.getReadPermission().getRoles().add(Collections.singleton(role));
     }
 
     @Override
     void addEditRoleToFail(Role role, WatchListVO vo) {
-        vo.getEditRoles().add(role);
+        vo.getEditPermission().getRoles().add(Collections.singleton(role));
     }
 
     @Test(expected = PermissionException.class)
@@ -140,15 +140,15 @@ public class WatchListServiceTest extends AbstractVOServiceWithPermissionsTest<W
             //Change Owner
             vo.setUserId(this.allUser.getId());
 
-            setReadRoles(Collections.singleton(roleService.getUserRole()), vo);
-            setEditRoles(Collections.singleton(roleService.getUserRole()), vo);
+            setReadPermission(MangoPermission.createOrSet(roleService.getUserRole()), vo);
+            setEditPermission(MangoPermission.createOrSet(roleService.getUserRole()), vo);
             getService().permissionService.runAsSystemAdmin(() -> {
                 service.insert(vo);
             });
             getService().permissionService.runAs(readUser, () -> {
                 WatchListVO fromDb = service.get(vo.getId());
                 assertVoEqual(vo, fromDb);
-                setReadRoles(Collections.singleton(roleService.getSuperadminRole()), fromDb);
+                setReadPermission(MangoPermission.createOrSet(roleService.getSuperadminRole()), fromDb);
                 service.update(fromDb.getId(), fromDb);
             });
 

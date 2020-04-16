@@ -10,8 +10,9 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.infiniteautomation.mango.permission.MangoPermission;
+import com.infiniteautomation.mango.rest.v2.model.permissions.MangoPermissionModel;
 import com.infiniteautomation.mango.spring.service.DataPointService;
-import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.spring.service.UsersService;
 import com.infiniteautomation.mango.spring.service.WatchListService;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
@@ -30,16 +31,13 @@ public class WatchListModelMapping implements RestModelMapping<WatchListVO, Watc
 
     private final WatchListService watchListService;
     private final UsersService userService;
-    private final PermissionService permissionService;
     private final DataPointService dataPointService;
 
     @Autowired
     public WatchListModelMapping(WatchListService watchListService,
-            PermissionService permissionService,
             UsersService userService,
             DataPointService dataPointService) {
         this.watchListService = watchListService;
-        this.permissionService = permissionService;
         this.userService = userService;
         this.dataPointService = dataPointService;
     }
@@ -59,8 +57,8 @@ public class WatchListModelMapping implements RestModelMapping<WatchListVO, Watc
         WatchListVO vo = (WatchListVO)from;
         WatchListModel model = new WatchListModel(vo);
         model.setUsername(userService.getDao().getXidById(vo.getUserId()));
-        model.setReadPermission(PermissionService.implodeRoles(vo.getReadRoles()));
-        model.setEditPermission(PermissionService.implodeRoles(vo.getEditRoles()));
+        model.setReadPermission(new MangoPermissionModel(vo.getReadPermission()));
+        model.setEditPermission(new MangoPermissionModel(vo.getEditPermission()));
 
         //Set the point summaries
         List<WatchListDataPointModel> points = new ArrayList<>();
@@ -82,8 +80,8 @@ public class WatchListModelMapping implements RestModelMapping<WatchListVO, Watc
             vo.setUserId(userId);
         }
 
-        vo.setReadRoles(permissionService.explodeLegacyPermissionGroupsToRoles(model.getReadPermission()));
-        vo.setEditRoles(permissionService.explodeLegacyPermissionGroupsToRoles(model.getEditPermission()));
+        vo.setReadPermission(model.getReadPermission() != null ? model.getReadPermission().getPermission() : new MangoPermission());
+        vo.setEditPermission(model.getEditPermission() != null ? model.getEditPermission().getPermission() : new MangoPermission());
 
         ProcessResult result = new ProcessResult();
         if(model.getPoints() != null) {

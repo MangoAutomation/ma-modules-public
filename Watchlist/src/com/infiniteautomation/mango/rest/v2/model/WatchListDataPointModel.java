@@ -4,7 +4,7 @@
  */
 package com.infiniteautomation.mango.rest.v2.model;
 
-import com.infiniteautomation.mango.spring.service.PermissionService;
+import com.infiniteautomation.mango.rest.v2.model.permissions.MangoPermissionModel;
 import com.serotonin.m2m2.vo.IDataPoint;
 
 /**
@@ -16,8 +16,8 @@ public class WatchListDataPointModel {
     private String xid;
     private String name;
     private String deviceName;
-    private String readPermission;
-    private String setPermission;
+    private MangoPermissionModel readPermission;
+    private MangoPermissionModel setPermission;
 
     public WatchListDataPointModel(){ }
 
@@ -25,8 +25,8 @@ public class WatchListDataPointModel {
         this.xid = vo.getXid();
         this.name = vo.getName();
         this.deviceName = vo.getDeviceName();
-        this.readPermission = PermissionService.implodeRoles(vo.getReadRoles());
-        this.setPermission = PermissionService.implodeRoles(vo.getSetRoles());
+        this.readPermission = new MangoPermissionModel(vo.getReadPermission());
+        this.setPermission = new MangoPermissionModel(vo.getSetPermission());
     }
 
     public String getXid() {
@@ -53,17 +53,17 @@ public class WatchListDataPointModel {
         this.deviceName = deviceName;
     }
 
-    public String getReadPermission() {
+    public MangoPermissionModel getReadPermission() {
         return readPermission;
     }
-    public void setReadPermission(String readPermission) {
+    public void setReadPermission(MangoPermissionModel readPermission) {
         this.readPermission = readPermission;
     }
 
-    public String getSetPermission() {
+    public MangoPermissionModel getSetPermission() {
         return setPermission;
     }
-    public void setSetPermission(String setPermission) {
+    public void setSetPermission(MangoPermissionModel setPermission) {
         this.setPermission = setPermission;
     }
 
