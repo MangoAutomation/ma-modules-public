@@ -143,12 +143,12 @@ public class MaintenanceEventsServiceTest extends AbstractVOServiceWithPermissio
 
     @Override
     String getReadRolesContextKey() {
-        return "toggleRoles";
+        return "togglePermission";
     }
 
     @Override
     String getEditRolesContextKey() {
-        return "toggleRoles";
+        return "togglePermission";
     }
 
     @Test
