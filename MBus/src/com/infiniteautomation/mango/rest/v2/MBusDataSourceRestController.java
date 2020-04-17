@@ -203,7 +203,7 @@ public class MBusDataSourceRestController {
             @AuthenticationPrincipal User user) {
 
         return this.temporaryResourceManager.list().stream()
-                .filter((tr) -> user.hasAdminRole() || user.getId() == tr.getUserId())
+                .filter((tr) -> service.getPermissionService().hasAdminRole(user) || user.getId() == tr.getUserId())
                 .collect(Collectors.toList());
     }
 
@@ -216,7 +216,7 @@ public class MBusDataSourceRestController {
 
         TemporaryResource<MBusScanResult, AbstractRestV2Exception> resource = temporaryResourceManager.get(id);
 
-        if (!user.hasAdminRole() && user.getId() != resource.getUserId()) {
+        if (!service.getPermissionService().hasAdminRole(user) && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
 
@@ -239,7 +239,7 @@ public class MBusDataSourceRestController {
 
         TemporaryResource<MBusScanResult, AbstractRestV2Exception> resource = temporaryResourceManager.get(id);
 
-        if (!user.hasAdminRole() && user.getId() != resource.getUserId()) {
+        if (!service.getPermissionService().hasAdminRole(user) && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
 
@@ -264,7 +264,7 @@ public class MBusDataSourceRestController {
 
         TemporaryResource<MBusScanResult, AbstractRestV2Exception> resource = temporaryResourceManager.get(id);
 
-        if (!user.hasAdminRole() && user.getId() != resource.getUserId()) {
+        if (!service.getPermissionService().hasAdminRole(user) && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
 
