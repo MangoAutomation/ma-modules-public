@@ -152,7 +152,7 @@ public class ModulesRestController {
             info.setVersion(version);
             info.setName(module.getName());
             info.setSupportsBundling(def.supportsBundling());
-            info.setPriority(def.priority());
+            info.setPriority(def.getOrder());
             info.setAngularJsModuleNames(def.angularJsModuleNames());
             info.setAmdModuleNames(def.amdModuleNames());
 
