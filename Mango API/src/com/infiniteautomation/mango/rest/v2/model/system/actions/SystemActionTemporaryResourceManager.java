@@ -74,7 +74,7 @@ public class SystemActionTemporaryResourceManager {
                 service.ensurePermission(user, def.getPermission());
             }
         }else {
-            user.ensureHasAdminRole();
+            service.ensureAdminRole(user);
         }
 
         @SuppressWarnings("unchecked")
@@ -95,7 +95,7 @@ public class SystemActionTemporaryResourceManager {
     public TemporaryResource<SystemActionResult, AbstractRestV2Exception> getStatus(String id, User user) {
         TemporaryResource<SystemActionResult, AbstractRestV2Exception> resource = resourceManager.get(id);
 
-        if (!user.hasAdminRole() && user.getId() != resource.getUserId()) {
+        if (!service.hasAdminRole(user) && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
 
@@ -111,7 +111,7 @@ public class SystemActionTemporaryResourceManager {
     public TemporaryResource<SystemActionResult, AbstractRestV2Exception> cancel(String id, User user) {
         TemporaryResource<SystemActionResult, AbstractRestV2Exception> resource = resourceManager.get(id);
 
-        if (!user.hasAdminRole() && user.getId() != resource.getUserId()) {
+        if (!service.hasAdminRole(user) && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
 

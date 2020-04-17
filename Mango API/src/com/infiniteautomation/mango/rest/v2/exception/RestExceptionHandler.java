@@ -40,6 +40,7 @@ import com.infiniteautomation.mango.rest.v2.advice.MangoRequestBodyAdvice;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.views.AdminView;
 import com.infiniteautomation.mango.spring.components.EmailAddressVerificationService.EmailAddressInUseException;
+import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.exception.FeatureDisabledException;
 import com.infiniteautomation.mango.util.exception.InvalidRQLException;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
@@ -68,16 +69,19 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     final RequestMatcher browserHtmlRequestMatcher;
     final HandlerExceptionResolver handlerExceptionResolver;
     final RestModelMapper mapper;
+    final PermissionService service;
 
     @Autowired
     public RestExceptionHandler(
             @Qualifier("browserHtmlRequestMatcher")
             RequestMatcher browserHtmlRequestMatcher,
             HandlerExceptionResolver handlerExceptionResolver,
-            RestModelMapper mapper) {
+            RestModelMapper mapper,
+            PermissionService service) {
         this.browserHtmlRequestMatcher = browserHtmlRequestMatcher;
         this.handlerExceptionResolver = handlerExceptionResolver;
         this.mapper = mapper;
+        this.service = service;
     }
 
     /**
@@ -286,7 +290,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
             //Add admin view if necessary
             PermissionHolder user = Common.getUser();
             MappingJacksonValue value = new MappingJacksonValue(body);
-            if(user != null && user.hasAdminRole())
+            if(user != null && service.hasAdminRole(user))
                 value.setSerializationView(AdminView.class);
             else
                 value.setSerializationView(Object.class);

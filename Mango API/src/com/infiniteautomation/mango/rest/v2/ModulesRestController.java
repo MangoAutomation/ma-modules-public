@@ -72,6 +72,7 @@ import com.infiniteautomation.mango.rest.v2.model.modules.UpgradeUploadResult.In
 import com.infiniteautomation.mango.rest.v2.util.MangoStoreClient;
 import com.infiniteautomation.mango.spring.service.ModulesService;
 import com.infiniteautomation.mango.spring.service.ModulesService.UpgradeStatus;
+import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.serotonin.db.pair.StringStringPair;
 import com.serotonin.json.type.JsonArray;
@@ -115,13 +116,15 @@ public class ModulesRestController {
 
     private final Environment env;
     private final ModulesService service;
+    private final PermissionService permissionService;
     private final boolean developmentMode;
 
     @Autowired
-    public ModulesRestController(Environment env, ModulesService service, @Value("${development.enabled:false}") boolean developmentMode) {
+    public ModulesRestController(Environment env, ModulesService service, @Value("${development.enabled:false}") boolean developmentMode, PermissionService permissionService) {
         this.env = env;
         this.service = service;
         this.developmentMode = developmentMode;
+        this.permissionService = permissionService;
     }
 
     public static AngularJSModuleDefinitionGroupModel getAngularJSModules(boolean developmentMode) {
@@ -179,7 +182,7 @@ public class ModulesRestController {
         coreModel.setUpgradeVersionState(SystemSettingsDao.instance.getIntValue(SystemSettingsDao.UPGRADE_VERSION_STATE));
 
         MappingJacksonValue jacksonValue = new MappingJacksonValue(coreModel);
-        if (user.hasAdminRole()) {
+        if (permissionService.hasAdminRole(user)) {
             jacksonValue.setSerializationView(ModuleModel.AdminView.class);
         } else {
             jacksonValue.setSerializationView(Object.class);
@@ -190,7 +193,7 @@ public class ModulesRestController {
     @ApiOperation(value = "List Current Installed Modules", notes = "List all installed")
     @RequestMapping(method = RequestMethod.GET, value = "/list")
     public List<ModuleModel> listModules(@AuthenticationPrincipal User user) {
-        user.ensureHasAdminRole();
+        permissionService.ensureAdminRole(user);
 
         List<ModuleModel> models = new ArrayList<ModuleModel>();
         List<Module> modules = ModuleRegistry.getModules();
@@ -220,14 +223,14 @@ public class ModulesRestController {
     @ApiOperation(value = "List Current Missing Module Dependencies", notes = "List all installed")
     @RequestMapping(method = RequestMethod.GET, value = "/list-missing-dependencies")
     public Map<String, String> listMissingModuleDependencies(@AuthenticationPrincipal User user) {
-        user.ensureHasAdminRole();
+        permissionService.ensureAdminRole(user);
         return ModuleRegistry.getMissingDependencies();
     }
 
     @ApiOperation(value = "Get Available Upgrades", notes = "Check the store for Upgrades")
     @RequestMapping(method = RequestMethod.GET, value = "/upgrades-available")
     public ModuleUpgradesModel getUpgrades(@AuthenticationPrincipal User user) {
-        user.ensureHasAdminRole();
+        permissionService.ensureAdminRole(user);
         // Do the check
         try {
             JsonValue jsonResponse = null;
@@ -296,7 +299,7 @@ public class ModulesRestController {
 
             @ApiParam(value = "Desired Upgrades", required = true) @RequestBody(required = true) ModuleUpgradesModel model,
             @AuthenticationPrincipal User user) {
-        user.ensureHasAdminRole();
+        permissionService.ensureAdminRole(user);
         // Start Downloads
         String status = service.startDownloads(model.fullModulesList(), backup, restart);
         if (status == null) {
@@ -312,7 +315,7 @@ public class ModulesRestController {
     @ApiOperation(value = "Cancel Download of Upgrades", notes = "")
     @RequestMapping(method = RequestMethod.PUT, value = "/upgrade")
     public ResponseEntity<TranslatableMessage> cancelUpgrade(@AuthenticationPrincipal User user) {
-        user.ensureHasAdminRole();
+        permissionService.ensureAdminRole(user);
         // Cancel if possible
         if (service.tryCancelUpgrade()) {
             //headers are for compatibility with v1 for the UI
@@ -330,7 +333,7 @@ public class ModulesRestController {
     @ApiOperation(value = "Get Current Upgrade Task Status", notes = "")
     @RequestMapping(method = RequestMethod.GET, value = "/upgrade-status")
     public UpgradeStatusModel getUpgradeStatus(@AuthenticationPrincipal User user) {
-        user.ensureHasAdminRole();
+        permissionService.ensureAdminRole(user);
         UpgradeStatus status = service.monitorDownloads();
         UpgradeStatusModel model = new UpgradeStatusModel();
         if (status.getStage() == UpgradeState.IDLE) {
@@ -360,7 +363,7 @@ public class ModulesRestController {
             @RequestBody() ModuleModel model,
             @AuthenticationPrincipal User user,
             HttpServletRequest request) {
-        user.ensureHasAdminRole();
+        permissionService.ensureAdminRole(user);
         Module module = ModuleRegistry.getModule(model.getName());
         if(module == null)
             throw new NotFoundException();

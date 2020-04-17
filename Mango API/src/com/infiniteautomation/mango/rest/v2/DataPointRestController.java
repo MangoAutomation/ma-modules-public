@@ -357,7 +357,7 @@ public class DataPointRestController {
         // hide result property by setting a view
         MappingJacksonValue resultWithView = new MappingJacksonValue(new FilteredStreamWithTotal<>(() -> {
             return bulkResourceManager.list().stream()
-                    .filter((tr) -> user.hasAdminRole() || user.getId() == tr.getUserId());
+                    .filter((tr) -> service.getPermissionService().hasAdminRole(user) || user.getId() == tr.getUserId());
         }, query));
 
         resultWithView.setSerializationView(Object.class);
@@ -379,7 +379,7 @@ public class DataPointRestController {
 
         TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception> resource = bulkResourceManager.get(id);
 
-        if (!user.hasAdminRole() && user.getId() != resource.getUserId()) {
+        if (!service.getPermissionService().hasAdminRole(user) && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
 
@@ -403,7 +403,7 @@ public class DataPointRestController {
 
         TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception> resource = bulkResourceManager.get(id);
 
-        if (!user.hasAdminRole() && user.getId() != resource.getUserId()) {
+        if (!service.getPermissionService().hasAdminRole(user) && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
 
@@ -423,7 +423,7 @@ public class DataPointRestController {
 
         TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception> resource = bulkResourceManager.get(id);
 
-        if (!user.hasAdminRole() && user.getId() != resource.getUserId()) {
+        if (!service.getPermissionService().hasAdminRole(user) && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
 

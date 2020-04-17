@@ -153,7 +153,7 @@ public class EventTypesRestController {
 
         //Module defined
         for (EventTypeDefinition def : ModuleRegistry.getDefinitions(EventTypeDefinition.class)) {
-            if(!def.hasCreatePermission(user))
+            if(!def.hasCreatePermission(user, permissionService))
                 continue;
 
             EventType et = def.createDefaultEventType();
@@ -330,7 +330,7 @@ public class EventTypesRestController {
                     throw new BadRequestException();
 
                 //There are no permissions for publishers
-                if(!user.hasAdminRole())
+                if(!permissionService.hasAdminRole(user))
                     break;
 
                 for(PublisherVO<?> vo : publisherDao.getAll()) {
@@ -435,7 +435,7 @@ public class EventTypesRestController {
                     throw new BadRequestException();
 
                 //There are no permissions for publishers
-                if(!user.hasAdminRole())
+                if(!permissionService.hasAdminRole(user))
                     throw new PermissionException(new TranslatableMessage("permission.exception.doesNotHaveRequiredPermission", user), user);
 
                 PublisherVO<?> pub = publisherDao.get(referenceId1);

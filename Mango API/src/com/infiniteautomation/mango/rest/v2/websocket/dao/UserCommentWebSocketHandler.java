@@ -25,7 +25,7 @@ public class UserCommentWebSocketHandler extends DaoNotificationWebSocketHandler
 
     @Override
     protected boolean hasPermission(PermissionHolder user, UserCommentVO vo) {
-        if(user.hasAdminRole()) {
+        if(permissionService.hasAdminRole(user)) {
             return true;
         }else if(user instanceof User && ((User)user).getId() == vo.getUserId()){
             return true;

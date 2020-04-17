@@ -37,7 +37,7 @@ public class EventInstanceWebSocketHandler extends DaoNotificationWebSocketHandl
 
     @Override
     protected boolean hasPermission(PermissionHolder user, EventInstanceVO vo) {
-        if(user.hasAdminRole()) {
+        if(permissionService.hasAdminRole(user)) {
             return true;
         }else {
             return false;

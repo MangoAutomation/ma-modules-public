@@ -210,7 +210,7 @@ public class PublishersRestController {
      * @return
      */
     private StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
-        if (user.hasAdminRole()) {
+        if (service.getPermissionService().hasAdminRole(user)) {
             return new StreamedVORqlQueryWithTotal<>(service, rql, null, null, vo -> map.apply(vo, user));
         } else {
             return new StreamedVORqlQueryWithTotal<>(service, rql, null, null, vo -> service.hasReadPermission(user, vo), vo -> map.apply(vo, user));

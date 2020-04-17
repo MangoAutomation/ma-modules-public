@@ -293,7 +293,7 @@ public class SetPointEventHandlerModel extends AbstractEventHandlerModel<SetPoin
 
         if(vo.getScriptRoles() != null) {
             this.scriptPermissions = new HashSet<>();
-            for(Role role : vo.getScriptRoles().getRoles()) {
+            for(Role role : vo.getScriptRoles().getAllInheritedRoles()) {
                 this.scriptPermissions.add(role.getXid());
             }
         }
