@@ -34,8 +34,8 @@ public class MaintenanceEventTypeDefinition extends EventTypeDefinition {
     }
 
     @Override
-    public boolean hasCreatePermission(PermissionHolder user) {
-        return user.hasAdminRole();
+    public boolean hasCreatePermission(PermissionHolder user, PermissionService service) {
+        return service.hasAdminRole(user);
     }
 
     @Override
@@ -59,7 +59,7 @@ public class MaintenanceEventTypeDefinition extends EventTypeDefinition {
     }
 
     @Override
-    public List<String> getEventSubTypes(PermissionHolder user) {
+    public List<String> getEventSubTypes(PermissionHolder user, PermissionService service) {
         return Collections.emptyList();
     }
 
