@@ -42,6 +42,8 @@
 		<module>Virtual Data Source</module>
 		<module>VMStat data source</module>
 		<module>Watchlist</module>
+		<module>graaljs</module>
+		<module>groovy</module>
 	</modules>
 	<repositories>
 		<repository>
