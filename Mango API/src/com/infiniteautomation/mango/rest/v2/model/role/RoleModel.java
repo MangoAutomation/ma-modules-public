@@ -3,6 +3,8 @@
  */
 package com.infiniteautomation.mango.rest.v2.model.role;
 
+import java.util.Set;
+
 import com.infiniteautomation.mango.rest.v2.model.AbstractVoModel;
 import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.m2m2.Common;
@@ -14,12 +16,19 @@ import com.serotonin.m2m2.vo.role.RoleVO;
  */
 public class RoleModel extends AbstractVoModel<RoleVO> {
 
+    private Set<String> inherited;
+
     public RoleModel(RoleVO vo) {
         fromVO(vo);
     }
 
     public RoleModel() {
 
+    }
+
+    @Override
+    public void fromVO(RoleVO vo) {
+        super.fromVO(vo);
     }
 
     @Override
@@ -30,6 +39,14 @@ public class RoleModel extends AbstractVoModel<RoleVO> {
     @Override
     protected RoleVO newVO() {
         throw new UnsupportedOperationException("not implemented");
+    }
+
+    public Set<String> getInherited() {
+        return inherited;
+    }
+
+    public void setInherited(Set<String> inherited) {
+        this.inherited = inherited;
     }
 
 }
