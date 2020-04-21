@@ -33,7 +33,7 @@ public class JsonConfigImportWebSocketHandler extends MultiSessionWebSocketHandl
         User user = this.getUser(session);
         if (user == null) {
             return;
-        } else if (!user.hasAdminRole()) {
+        } else if (!permissionService.hasAdminRole(user)) {
             if (session.isOpen()) {
                 session.close(MangoWebSocketHandler.NOT_AUTHORIZED);
             }
@@ -49,7 +49,7 @@ public class JsonConfigImportWebSocketHandler extends MultiSessionWebSocketHandl
             User user = this.getUser(session);
             if (user == null) {
                 return;
-            } else if (!user.hasAdminRole()) {
+            } else if (!permissionService.hasAdminRole(user)) {
                 if (session.isOpen()) {
                     session.close(MangoWebSocketHandler.NOT_AUTHORIZED);
                 }

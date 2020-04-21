@@ -1240,7 +1240,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
 
         TemporaryResource<PurgePointValuesResponseModel, AbstractRestV2Exception> resource = resourceManager.get(id);
 
-        if (!user.hasAdminRole() && user.getId() != resource.getUserId()) {
+        if (!permissionService.hasAdminRole(user) && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
 
@@ -1265,7 +1265,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
 
         TemporaryResource<PurgePointValuesResponseModel, AbstractRestV2Exception> resource = resourceManager.get(id);
 
-        if (!user.hasAdminRole() && user.getId() != resource.getUserId()) {
+        if (!permissionService.hasAdminRole(user) && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
 
@@ -1285,7 +1285,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
 
         TemporaryResource<PurgePointValuesResponseModel, AbstractRestV2Exception> resource = resourceManager.get(id);
 
-        if (!user.hasAdminRole() && user.getId() != resource.getUserId()) {
+        if (!permissionService.hasAdminRole(user) && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
 

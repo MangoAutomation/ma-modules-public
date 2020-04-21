@@ -10,6 +10,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.infiniteautomation.mango.rest.v2.exception.ServerErrorException;
 import com.infiniteautomation.mango.rest.v2.views.AdminView;
+import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.User;
@@ -42,6 +44,13 @@ public class SessionExceptionRestV2Controller extends AbstractMangoRestV2Control
     //Session Keys for all stored exceptions
     private final String [] exceptionKeys = {Common.SESSION_USER_EXCEPTION,  WebAttributes.AUTHENTICATION_EXCEPTION, WebAttributes.ACCESS_DENIED_403};
 
+    private final PermissionService permissionService;
+
+    @Autowired
+    public SessionExceptionRestV2Controller(PermissionService permissionService) {
+        this.permissionService = permissionService;
+    }
+
     @ApiOperation(value = "Get Last Exception for your session", notes = "")
     @ApiResponses({
         @ApiResponse(code = 401, message = "Unauthorized user access", response=ResponseEntity.class),
@@ -63,7 +72,7 @@ public class SessionExceptionRestV2Controller extends AbstractMangoRestV2Control
         }
 
         MappingJacksonValue jacksonValue = new MappingJacksonValue(exceptionMap);
-        if(user.hasAdminRole())
+        if(permissionService.hasAdminRole(user))
             jacksonValue.setSerializationView(AdminView.class);
         else
             jacksonValue.setSerializationView(Object.class);

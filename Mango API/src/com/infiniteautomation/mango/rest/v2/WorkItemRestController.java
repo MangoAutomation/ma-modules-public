@@ -11,6 +11,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.infiniteautomation.mango.rest.v2.model.workitem.BackgroundProcessingQueueCounts;
 import com.infiniteautomation.mango.rest.v2.model.workitem.BackgroundProcessingRejectedTaskStats;
 import com.infiniteautomation.mango.rest.v2.model.workitem.BackgroundProcessingRunningStats;
+import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.WorkItemInfo;
 import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.m2m2.Common;
@@ -42,12 +44,19 @@ import io.swagger.annotations.ApiParam;
 @RequestMapping("/work-items")
 public class WorkItemRestController {
 
+    private final PermissionService permissionService;
+
+    @Autowired
+    public WorkItemRestController(PermissionService permissionService) {
+        this.permissionService = permissionService;
+    }
+
     @ApiOperation(value = "Get all work items", notes = "Returns a list of all work items, optionally filterable on classname")
     @RequestMapping(method = RequestMethod.GET)
     public List<WorkItemInfo> getAll(
             @RequestParam(value = "classname", required = false, defaultValue="") String classname,
             @AuthenticationPrincipal User user) {
-        user.ensureHasAdminRole();
+        permissionService.ensureAdminRole(user);
 
         List<WorkItemInfo> modelList = new ArrayList<>();
         modelList.addAll(Common.backgroundProcessing.getHighPriorityServiceItems());
@@ -73,7 +82,7 @@ public class WorkItemRestController {
             @PathVariable String priority,
             @RequestParam(value = "classname", required = false, defaultValue="") String classname,
             @AuthenticationPrincipal User user) {
-        user.ensureHasAdminRole();
+        permissionService.ensureAdminRole(user);
 
         List<WorkItemInfo> list;
         if(priority.equalsIgnoreCase("HIGH")){

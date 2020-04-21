@@ -12,6 +12,7 @@ import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,6 +24,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.infiniteautomation.mango.rest.v2.model.system.SystemSettingTypeEnum;
+import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.m2m2.db.dao.SystemSettingsDao;
@@ -44,6 +46,12 @@ import io.swagger.annotations.ApiParam;
 public class SystemSettingsRestController {
 
     private SystemSettingsDao dao = SystemSettingsDao.instance;
+    private final PermissionService permissionService;
+
+    @Autowired
+    public SystemSettingsRestController(PermissionService permissionService) {
+        this.permissionService = permissionService;
+    }
 
     @ApiOperation(
             value = "Get System Setting By key",
@@ -56,7 +64,7 @@ public class SystemSettingsRestController {
             @ApiParam(value = "Return Type", required = false, defaultValue="STRING", allowMultiple = false)
             @RequestParam(required=false, defaultValue="STRING") SystemSettingTypeEnum type,
             @AuthenticationPrincipal User user) throws IOException {
-        user.ensureHasAdminRole();
+        permissionService.ensureAdminRole(user);
         Object value = null;
         switch(type){
             case BOOLEAN:
@@ -96,7 +104,7 @@ public class SystemSettingsRestController {
             )
     @RequestMapping(method = RequestMethod.GET)
     public Map<String, Object> getAll(@AuthenticationPrincipal User user) {
-        user.ensureHasAdminRole();
+        permissionService.ensureAdminRole(user);
         return dao.getAllSystemSettingsAsCodes();
     }
 
@@ -111,7 +119,7 @@ public class SystemSettingsRestController {
             @RequestBody(required=true) JsonNode model,
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder, HttpServletRequest request) {
-        user.ensureHasAdminRole();
+        permissionService.ensureAdminRole(user);
         ProcessResult response = new ProcessResult();
         Map<String, Object> settings = Collections.singletonMap(key, convertValue(model));
 
@@ -155,7 +163,7 @@ public class SystemSettingsRestController {
             @ApiParam(value = "Updated settings", required = true)
             @RequestBody(required=true) Map<String, JsonNode> body,
             @AuthenticationPrincipal User user) {
-        user.ensureHasAdminRole();
+        permissionService.ensureAdminRole(user);
         ProcessResult response = new ProcessResult();
         Map<String, Object> settings = convertValues(body);
 

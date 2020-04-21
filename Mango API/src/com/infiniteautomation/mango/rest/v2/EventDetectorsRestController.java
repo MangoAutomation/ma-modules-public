@@ -370,7 +370,7 @@ public class EventDetectorsRestController {
 
         List<TemporaryResource<EventDetectorBulkResponse, AbstractRestV2Exception>> preFiltered =
                 this.bulkResourceManager.list().stream()
-                .filter((tr) -> user.hasAdminRole() || user.getId() == tr.getUserId())
+                .filter((tr) -> service.getPermissionService().hasAdminRole(user) || user.getId() == tr.getUserId())
                 .collect(Collectors.toList());
 
         ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
@@ -396,7 +396,7 @@ public class EventDetectorsRestController {
 
         TemporaryResource<EventDetectorBulkResponse, AbstractRestV2Exception> resource = bulkResourceManager.get(id);
 
-        if (!user.hasAdminRole() && user.getId() != resource.getUserId()) {
+        if (!service.getPermissionService().hasAdminRole(user) && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
 
@@ -420,7 +420,7 @@ public class EventDetectorsRestController {
 
         TemporaryResource<EventDetectorBulkResponse, AbstractRestV2Exception> resource = bulkResourceManager.get(id);
 
-        if (!user.hasAdminRole() && user.getId() != resource.getUserId()) {
+        if (!service.getPermissionService().hasAdminRole(user) && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
 
@@ -440,7 +440,7 @@ public class EventDetectorsRestController {
 
         TemporaryResource<EventDetectorBulkResponse, AbstractRestV2Exception> resource = bulkResourceManager.get(id);
 
-        if (!user.hasAdminRole() && user.getId() != resource.getUserId()) {
+        if (!service.getPermissionService().hasAdminRole(user) && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
 
@@ -530,7 +530,7 @@ public class EventDetectorsRestController {
 
     private StreamedArrayWithTotal doQuery(ASTNode rql, User user, Function<AbstractEventDetectorVO, ?> toModel) {
         //If we are admin or have overall data source permission we can view all
-        if (user.hasAdminRole()) {
+        if (service.getPermissionService().hasAdminRole(user)) {
             return new StreamedVORqlQueryWithTotal<>(service, rql, fieldMap, null, toModel);
         } else {
             return new StreamedVORqlQueryWithTotal<>(service, rql, fieldMap, null, vo -> service.hasReadPermission(user, vo), toModel);

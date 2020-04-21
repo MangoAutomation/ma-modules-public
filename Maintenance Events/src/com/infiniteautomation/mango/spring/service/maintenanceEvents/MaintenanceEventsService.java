@@ -177,7 +177,7 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
     public StreamedArrayWithTotal doQuery(ASTNode rql, PermissionHolder user, Function<MaintenanceEventVO, Object> transformVO) {
 
         //If we are admin or have overall data source permission we can view all
-        if (user.hasAdminRole() || permissionService.hasDataSourcePermission(user)) {
+        if (permissionService.hasAdminRole(user) || permissionService.hasDataSourcePermission(user)) {
             return new StreamedVORqlQueryWithTotal<>(this, rql, null, null, transformVO);
         } else {
             return new StreamedVORqlQueryWithTotal<>(this, rql, null, null, item -> {
@@ -204,7 +204,7 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
      * @param vo
      */
     public void ensureTogglePermission(MaintenanceEventVO vo, PermissionHolder user) {
-        if(user.hasAdminRole())
+        if(permissionService.hasAdminRole(user))
             return;
         else if(permissionService.hasDataSourcePermission(user))
             //TODO Review how this permission works
@@ -302,7 +302,7 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
 
     @Override
     public boolean hasEditPermission(PermissionHolder user, MaintenanceEventVO vo) {
-        if(user.hasAdminRole())
+        if(permissionService.hasAdminRole(user))
             return true;
         else if(permissionService.hasDataSourcePermission(user))
             //TODO Review how this permission works
@@ -327,7 +327,7 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
 
     @Override
     public boolean hasReadPermission(PermissionHolder user, MaintenanceEventVO vo) {
-        if(user.hasAdminRole())
+        if(permissionService.hasAdminRole(user))
             return true;
         else if(permissionService.hasDataSourcePermission(user))
             //TODO Review how this permission works

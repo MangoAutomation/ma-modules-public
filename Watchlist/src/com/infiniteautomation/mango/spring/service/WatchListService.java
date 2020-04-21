@@ -115,7 +115,7 @@ public class WatchListService extends AbstractVOService<WatchListVO, WatchListTa
         ProcessResult response = commonValidation(vo, user);
 
         //Only admin can create with different owner
-        if(!user.hasAdminRole()) {
+        if(!permissionService.hasAdminRole(user)) {
             if(user instanceof User) {
                 if(((User)user).getId() !=  vo.getUserId()) {
                     vo.setUserId(((User)user).getId());
@@ -145,7 +145,7 @@ public class WatchListService extends AbstractVOService<WatchListVO, WatchListTa
         }
 
         //only admin can change userId
-        if(!savingUser.hasAdminRole() && existing.getUserId() != vo.getUserId()) {
+        if(!permissionService.hasAdminRole(savingUser) && existing.getUserId() != vo.getUserId()) {
             response.addContextualMessage("userId","validate.cannotChangeOwner");
         }
 

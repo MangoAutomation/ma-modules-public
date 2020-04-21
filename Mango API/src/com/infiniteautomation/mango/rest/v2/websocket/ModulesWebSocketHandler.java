@@ -117,7 +117,7 @@ public class ModulesWebSocketHandler extends MultiSessionWebSocketHandler implem
     }
 
     protected boolean hasPermission(User user){
-        return user.hasAdminRole();
+        return permissionService.hasAdminRole(user);
     }
 
 }

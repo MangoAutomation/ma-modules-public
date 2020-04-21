@@ -94,7 +94,7 @@ public class AuditRestController {
             @AuthenticationPrincipal User user,
             HttpServletRequest request) {
 
-        user.ensureHasAdminRole();
+        service.getPermissionService().ensureAdminRole(user);
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
         return doQuery(rql, user);
     }
@@ -108,7 +108,7 @@ public class AuditRestController {
             @AuthenticationPrincipal User user,
             HttpServletRequest request) {
 
-        user.ensureHasAdminRole();
+        service.getPermissionService().ensureAdminRole(user);
 
         return AuditEventType.getRegisteredEventTypes().stream().map(vo -> {
             EventTypeInfo info = new EventTypeInfo();
@@ -121,7 +121,7 @@ public class AuditRestController {
     }
 
     protected StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
-        if (user.hasAdminRole()) {
+        if (service.getPermissionService().hasAdminRole(user)) {
             return new StreamedBasicVORqlQueryWithTotal<>(service, rql, null, valueConverterMap, vo -> map.apply(vo, user));
         } else {
             // Add some conditions to restrict based on user permissions

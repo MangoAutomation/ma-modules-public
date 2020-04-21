@@ -25,6 +25,7 @@ import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.model.jwt.HeaderClaimsModel;
 import com.infiniteautomation.mango.rest.v2.model.jwt.TokenModel;
 import com.infiniteautomation.mango.spring.components.TokenAuthenticationService;
+import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.User;
@@ -56,11 +57,13 @@ public class AuthenticationTokenRestController {
 
     private final TokenAuthenticationService tokenAuthService;
     private final MangoSessionRegistry sessionRegistry;
+    private final PermissionService service;
 
     @Autowired
-    public AuthenticationTokenRestController(TokenAuthenticationService jwtService, MangoSessionRegistry sessionRegistry) {
+    public AuthenticationTokenRestController(TokenAuthenticationService jwtService, MangoSessionRegistry sessionRegistry, PermissionService service) {
         this.tokenAuthService = jwtService;
         this.sessionRegistry = sessionRegistry;
+        this.service = service;
     }
 
     @ApiOperation(value = "Create auth token", notes = "Creates an authentication token for the current user or for the username specified (admin only)")
@@ -77,7 +80,7 @@ public class AuthenticationTokenRestController {
 
         User user = currentUser;
         if (username != null && !username.equals(currentUser.getUsername())) {
-            if (!currentUser.hasAdminRole()) {
+            if (!service.hasAdminRole(currentUser)) {
                 throw new AccessDeniedException(new TranslatableMessage("rest.error.onlyAdminsCanCreateTokens"));
             }
 

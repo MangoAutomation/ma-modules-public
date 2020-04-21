@@ -420,7 +420,7 @@ public class UserRestController {
 
             return model;
         };
-        if (user.hasAdminRole()) {
+        if (service.getPermissionService().hasAdminRole(user)) {
             return new StreamedVORqlQueryWithTotal<>(service, rql, this.fieldMap,
                     this.valueConverterMap, transformUser);
         } else {
@@ -560,7 +560,7 @@ public class UserRestController {
         // hide result property by setting a view
         MappingJacksonValue resultWithView = new MappingJacksonValue(new FilteredStreamWithTotal<>(() -> {
             return bulkResourceManager.list().stream()
-                    .filter((tr) -> user.hasAdminRole() || user.getId() == tr.getUserId());
+                    .filter((tr) -> service.getPermissionService().hasAdminRole(user) || user.getId() == tr.getUserId());
         }, query));
 
         resultWithView.setSerializationView(Object.class);
@@ -582,7 +582,7 @@ public class UserRestController {
 
         TemporaryResource<UserBulkResponse, AbstractRestV2Exception> resource = bulkResourceManager.get(id);
 
-        if (!user.hasAdminRole() && user.getId() != resource.getUserId()) {
+        if (!service.getPermissionService().hasAdminRole(user) && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
 
@@ -606,7 +606,7 @@ public class UserRestController {
 
         TemporaryResource<UserBulkResponse, AbstractRestV2Exception> resource = bulkResourceManager.get(id);
 
-        if (!user.hasAdminRole() && user.getId() != resource.getUserId()) {
+        if (!service.getPermissionService().hasAdminRole(user) && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
 
@@ -626,7 +626,7 @@ public class UserRestController {
 
         TemporaryResource<UserBulkResponse, AbstractRestV2Exception> resource = bulkResourceManager.get(id);
 
-        if (!user.hasAdminRole() && user.getId() != resource.getUserId()) {
+        if (!service.getPermissionService().hasAdminRole(user) && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
 

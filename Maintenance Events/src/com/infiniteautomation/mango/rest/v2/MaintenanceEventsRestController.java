@@ -478,7 +478,7 @@ public class MaintenanceEventsRestController {
 
     //Helpers for Queries
     private StreamedArrayWithTotal doEventQuery(ASTNode rql, User user) {
-        if (user.hasAdminRole()) {
+        if (eventService.getPermissionService().hasAdminRole(user)) {
             return new StreamedVORqlQueryWithTotal<>(eventService, rql, eventTableFieldMap, eventTableValueConverters, item -> true, vo -> eventMap.apply(vo, user));
         } else {
             return new StreamedVORqlQueryWithTotal<>(eventService, rql, eventTableFieldMap, eventTableValueConverters, item -> eventService.hasReadPermission(user, item), vo -> eventMap.apply(vo, user));

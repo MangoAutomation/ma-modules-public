@@ -482,7 +482,7 @@ public class DataPointTagsRestController {
             HttpServletRequest request) {
 
         List<TemporaryResource<TagBulkResponse, AbstractRestV2Exception>> preFiltered = this.bulkResourceManager.list().stream()
-                .filter((tr) -> user.hasAdminRole() || user.getId() == tr.getUserId())
+                .filter((tr) -> permissionService.hasAdminRole(user) || user.getId() == tr.getUserId())
                 .collect(Collectors.toList());
 
         ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
@@ -508,7 +508,7 @@ public class DataPointTagsRestController {
 
         TemporaryResource<TagBulkResponse, AbstractRestV2Exception> resource = bulkResourceManager.get(id);
 
-        if (!user.hasAdminRole() && user.getId() != resource.getUserId()) {
+        if (!permissionService.hasAdminRole(user) && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
 
@@ -532,7 +532,7 @@ public class DataPointTagsRestController {
 
         TemporaryResource<TagBulkResponse, AbstractRestV2Exception> resource = bulkResourceManager.get(id);
 
-        if (!user.hasAdminRole() && user.getId() != resource.getUserId()) {
+        if (!permissionService.hasAdminRole(user) && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
 
@@ -552,7 +552,7 @@ public class DataPointTagsRestController {
 
         TemporaryResource<TagBulkResponse, AbstractRestV2Exception> resource = bulkResourceManager.get(id);
 
-        if (!user.hasAdminRole() && user.getId() != resource.getUserId()) {
+        if (!permissionService.hasAdminRole(user) && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
         }
 
