@@ -174,14 +174,14 @@ describe('Log file query tests', function(){
         return client.restRequest({
             path: '/rest/v2/testing/log-error-message',
             method: 'POST',
-            data: 'REST api log query test '
+            data: 'REST api log query test'
         }).then(()=> {
             return client.restRequest({
-                path: '/rest/v2/logging/by-filename/ma.log?message=eq=' + encodeURIComponent('REST api log query test ') + '&limit(1)',
+                path: '/rest/v2/logging/by-filename/ma.log?message=eq=' + encodeURIComponent('REST api log query test') + '&limit(1)',
                 method: 'GET'
             }).then(response => {
                 assert.isAtLeast(response.data.length, 1);
-                assert.equal(response.data[0].message, 'REST api log query test ');
+                assert.equal(response.data[0].message, 'REST api log query test');
             });              
         });
     });
@@ -198,7 +198,7 @@ describe('Log file query tests', function(){
                 method: 'GET'
             }).then(response => {
                 assert.isAtLeast(response.data.length, 1);
-                assert.equal(response.data[0].message, 'REST api log query test ');
+                assert.equal(response.data[0].message, 'REST api log query test');
             });              
         });
     });
