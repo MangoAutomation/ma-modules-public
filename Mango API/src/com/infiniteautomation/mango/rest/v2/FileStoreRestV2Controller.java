@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -69,6 +70,7 @@ import com.infiniteautomation.mango.rest.v2.model.filestore.FileStoreModel;
 import com.infiniteautomation.mango.spring.script.PathMangoScript;
 import com.infiniteautomation.mango.spring.script.ScriptService;
 import com.infiniteautomation.mango.spring.service.FileStoreService;
+import com.infiniteautomation.mango.spring.service.RoleService;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -94,14 +96,17 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller {
     private final String cacheControlHeader;
     private final RequestUtils requestUtils;
     private final ScriptService scriptService;
+    private final RoleService roleService;
 
     @Autowired
-    public FileStoreRestV2Controller(FileStoreService fileStoreService, @Value("${web.cache.maxAge.rest:0}") long maxAge, RequestUtils requestUtils, ScriptService scriptService) {
+    public FileStoreRestV2Controller(FileStoreService fileStoreService, @Value("${web.cache.maxAge.rest:0}") long maxAge, RequestUtils requestUtils,
+            ScriptService scriptService, RoleService roleService) {
         // use the rest max age setting but dont honor the nocache setting
-        cacheControlHeader = CacheControl.maxAge(maxAge, TimeUnit.SECONDS).getHeaderValue();
+        this.cacheControlHeader = CacheControl.maxAge(maxAge, TimeUnit.SECONDS).getHeaderValue();
         this.service = fileStoreService;
         this.requestUtils = requestUtils;
         this.scriptService = scriptService;
+        this.roleService = roleService;
     }
 
     @ApiOperation(
@@ -472,8 +477,7 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller {
 
         Set<Role> roles;
         if (model != null && model.roles != null) {
-            // TODO
-            roles = Collections.emptySet();
+            roles = model.roles.stream().map(xid -> this.roleService.get(xid).getRole()).collect(Collectors.toSet());
         } else {
             roles = user.getRoles();
         }
