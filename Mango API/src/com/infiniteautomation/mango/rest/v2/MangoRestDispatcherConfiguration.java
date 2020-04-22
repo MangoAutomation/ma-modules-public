@@ -52,6 +52,7 @@ import com.infiniteautomation.mango.rest.v2.mapping.SerotoninJsonMessageConverte
 import com.infiniteautomation.mango.rest.v2.mapping.SqlMessageConverter;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.resolver.PartialUpdateArgumentResolver;
+import com.infiniteautomation.mango.rest.v2.resolver.RemainingPathResolver;
 import com.infiniteautomation.mango.rest.v2.util.MangoRestTemporaryResourceContainer;
 import com.infiniteautomation.mango.spring.MangoCommonConfiguration;
 import com.infiniteautomation.mango.spring.MangoRuntimeContextConfiguration;
@@ -71,7 +72,8 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
     public static final String DISPATCHER_NAME = "restV2DispatcherServlet";
 
     final ObjectMapper mapper;
-    final PartialUpdateArgumentResolver resolver;
+    final PartialUpdateArgumentResolver partialUpdateResolver;
+    final RemainingPathResolver remainingPathResolver;
     final List<HttpMessageConverter<?>> converters;
 
     @Autowired
@@ -79,9 +81,11 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
             @Qualifier(MangoRuntimeContextConfiguration.REST_OBJECT_MAPPER_NAME)
             ObjectMapper mapper,
             PartialUpdateArgumentResolver resolver,
+            RemainingPathResolver remainingPathResolver,
             RestModelMapper modelMapper) {
         this.mapper = mapper;
-        this.resolver = resolver;
+        this.partialUpdateResolver = resolver;
+        this.remainingPathResolver = remainingPathResolver;
         this.converters = new ArrayList<>();
 
         mapper
@@ -188,7 +192,8 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
 
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
-        resolvers.add(resolver);
+        resolvers.add(partialUpdateResolver);
+        resolvers.add(remainingPathResolver);
     }
 
     @Override

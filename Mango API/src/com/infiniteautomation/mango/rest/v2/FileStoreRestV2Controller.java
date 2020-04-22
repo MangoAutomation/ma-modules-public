@@ -67,6 +67,7 @@ import com.infiniteautomation.mango.rest.v2.exception.ResourceNotFoundException;
 import com.infiniteautomation.mango.rest.v2.model.RoleViews;
 import com.infiniteautomation.mango.rest.v2.model.filestore.FileModel;
 import com.infiniteautomation.mango.rest.v2.model.filestore.FileStoreModel;
+import com.infiniteautomation.mango.rest.v2.resolver.RemainingPath;
 import com.infiniteautomation.mango.spring.script.PathMangoScript;
 import com.infiniteautomation.mango.spring.script.ScriptService;
 import com.infiniteautomation.mango.spring.service.FileStoreService;
@@ -94,17 +95,15 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller {
 
     private final FileStoreService service;
     private final String cacheControlHeader;
-    private final RequestUtils requestUtils;
     private final ScriptService scriptService;
     private final RoleService roleService;
 
     @Autowired
-    public FileStoreRestV2Controller(FileStoreService fileStoreService, @Value("${web.cache.maxAge.rest:0}") long maxAge, RequestUtils requestUtils,
+    public FileStoreRestV2Controller(FileStoreService fileStoreService, @Value("${web.cache.maxAge.rest:0}") long maxAge,
             ScriptService scriptService, RoleService roleService) {
         // use the rest max age setting but dont honor the nocache setting
         this.cacheControlHeader = CacheControl.maxAge(maxAge, TimeUnit.SECONDS).getHeaderValue();
         this.service = fileStoreService;
-        this.requestUtils = requestUtils;
         this.scriptService = scriptService;
         this.roleService = roleService;
     }
@@ -133,14 +132,14 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller {
 
             @RequestParam(required=false, defaultValue="false") boolean overwrite,
 
+            @RemainingPath String pathInStore,
+
             MultipartHttpServletRequest multipartRequest,
             HttpServletRequest request) throws IOException {
 
 
         Path rootPath = this.service.getFileStoreRootForWrite(name);
         File root = rootPath.toFile().getCanonicalFile();
-
-        String pathInStore = requestUtils.extractRemainingPath(request);
 
         File outputDirectory = new File(root, pathInStore).getCanonicalFile();
 
@@ -207,13 +206,13 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller {
             @RequestParam(required=false) String moveTo,
             @ApiParam(value = "Copy file/folder to", required = false, allowMultiple = false)
             @RequestParam(required=false) String copyTo,
+            @RemainingPath String pathInStore,
             @AuthenticationPrincipal User user,
             HttpServletRequest request) throws IOException, URISyntaxException {
 
         Path rootPath = this.service.getFileStoreRootForWrite(fileStoreName);
         File root = rootPath.toFile().getCanonicalFile();
 
-        String pathInStore = requestUtils.extractRemainingPath(request);
         File fileOrFolder = new File(root, pathInStore).getCanonicalFile();
 
         if (!fileOrFolder.toPath().startsWith(root.toPath())) {
@@ -277,17 +276,17 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller {
             @PathVariable("name") String name,
             @ApiParam(value = "Recurisve delete of directory", required = false, defaultValue="false", allowMultiple = false)
             @RequestParam(required=false, defaultValue="false") boolean recursive,
+            @RemainingPath String pathInStore,
             @AuthenticationPrincipal User user,
             HttpServletRequest request) throws IOException, HttpMediaTypeNotAcceptableException {
 
         Path rootPath = this.service.getFileStoreRootForWrite(name);
         File root = rootPath.toFile().getCanonicalFile();
 
-        String path = requestUtils.extractRemainingPath(request);
-        File file = new File(root, path).getCanonicalFile();
+        File file = new File(root, pathInStore).getCanonicalFile();
 
         if (!file.toPath().startsWith(root.toPath())) {
-            throw new GenericRestException(HttpStatus.FORBIDDEN, new TranslatableMessage("filestore.belowRoot", path));
+            throw new GenericRestException(HttpStatus.FORBIDDEN, new TranslatableMessage("filestore.belowRoot", pathInStore));
         }
         if(!file.exists())
             throw new NotFoundRestException();
@@ -392,6 +391,7 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller {
             @PathVariable("name") String name,
             @ApiParam(value = "Set content disposition to attachment", required = false, defaultValue="true", allowMultiple = false)
             @RequestParam(required=false, defaultValue="true") boolean download,
+            @RemainingPath String pathInStore,
             @AuthenticationPrincipal User user,
             HttpServletRequest request,
             HttpServletResponse response) throws IOException, HttpMediaTypeNotAcceptableException {
@@ -399,8 +399,7 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller {
         Path rootPath = this.service.getFileStoreRootForRead(name);
         File root = rootPath.toFile().getCanonicalFile();
 
-        String path = requestUtils.extractRemainingPath(request);
-        File file = new File(root, path).getCanonicalFile();
+        File file = new File(root, pathInStore).getCanonicalFile();
 
         if (!file.toPath().startsWith(root.toPath())) {
             throw new AccessDeniedException("Path is below file store root");
@@ -424,6 +423,7 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller {
             @PathVariable("name") String name,
             @ApiParam(value = "Set content disposition to attachment", required = false, defaultValue="true", allowMultiple = false)
             @RequestParam(required=false, defaultValue="true") boolean download,
+            @RemainingPath String pathInStore,
             @AuthenticationPrincipal User user,
             HttpServletRequest request,
             HttpServletResponse response) throws IOException, HttpMediaTypeNotAcceptableException {
@@ -431,8 +431,7 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller {
         Path rootPath = this.service.getFileStoreRootForRead(name);
         File root = rootPath.toFile().getCanonicalFile();
 
-        String path = requestUtils.extractRemainingPath(request);
-        File file = new File(root, path).getCanonicalFile();
+        File file = new File(root, pathInStore).getCanonicalFile();
 
         if (!file.toPath().startsWith(root.toPath())) {
             throw new AccessDeniedException("Path is below file store root");
@@ -445,7 +444,7 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller {
     }
 
     @ApiOperation(value = "Evaluate a filestore file as a script on the backend using a scripting engine")
-    @RequestMapping(method = RequestMethod.POST, value="/eval-script/{filestoreName}/**")
+    @RequestMapping(method = RequestMethod.POST, value="/eval-script/{filestoreName}/**", produces = {MediaType.APPLICATION_OCTET_STREAM_VALUE})
     public void evalScript(
             @ApiParam(value = "Filestore name", required = true, allowMultiple = false)
             @PathVariable("filestoreName") String filestoreName,
@@ -453,13 +452,12 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller {
             @RequestBody(required = false)
             ScriptEvalModel model,
 
-            @AuthenticationPrincipal User user,
+            @RemainingPath String path,
 
-            HttpServletRequest request,
-            HttpServletResponse response) throws IOException {
+            @AuthenticationPrincipal User user) throws IOException {
 
         Path rootPath = service.getFileStoreRootForRead(filestoreName);
-        Path filePath = rootPath.resolve(requestUtils.extractRemainingPath(request));
+        Path filePath = rootPath.resolve(path);
 
         String engineName;
         if (model != null && model.engineName != null) {
