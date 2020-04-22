@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -482,7 +483,14 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller {
             roles = user.getRoles();
         }
 
-        this.scriptService.eval(new PathMangoScript(engineName, roles, filePath, charset));
+        Map<String, Object> bindings;
+        if (model != null && model.bindings != null) {
+            bindings = model.bindings;
+        } else {
+            bindings = Collections.emptyMap();
+        }
+
+        this.scriptService.eval(new PathMangoScript(engineName, roles, filePath, charset), bindings);
     }
 
     protected ResponseEntity<List<FileModel>> listStoreContents(File directory, File root, HttpServletRequest request) throws IOException {

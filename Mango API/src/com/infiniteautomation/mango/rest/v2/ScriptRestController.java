@@ -4,6 +4,7 @@
 package com.infiniteautomation.mango.rest.v2;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -41,6 +42,7 @@ public class ScriptRestController {
         String script;
         String filePath;
         String charset;
+        Map<String, Object> bindings;
 
         public String getEngineName() {
             return engineName;
@@ -71,6 +73,12 @@ public class ScriptRestController {
         }
         public void setCharset(String charset) {
             this.charset = charset;
+        }
+        public Map<String, Object> getBindings() {
+            return bindings;
+        }
+        public void setBindings(Map<String, Object> bindings) {
+            this.bindings = bindings;
         }
     }
 
