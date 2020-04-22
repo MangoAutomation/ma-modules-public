@@ -16,6 +16,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
@@ -25,6 +26,7 @@ import org.springframework.http.converter.ResourceRegionHttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
+import org.springframework.web.servlet.config.annotation.AsyncSupportConfigurer;
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
@@ -75,6 +77,11 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
     final PartialUpdateArgumentResolver partialUpdateResolver;
     final RemainingPathResolver remainingPathResolver;
     final List<HttpMessageConverter<?>> converters;
+    /**
+     * Should be supplied by
+     * com.infiniteautomation.mango.spring.MangoRuntimeContextConfiguration.taskExecutor(ExecutorService)
+     */
+    final AsyncTaskExecutor asyncTaskExecutor;
 
     @Autowired
     public MangoRestDispatcherConfiguration(
@@ -82,11 +89,13 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
             ObjectMapper mapper,
             PartialUpdateArgumentResolver resolver,
             RemainingPathResolver remainingPathResolver,
-            RestModelMapper modelMapper) {
+            RestModelMapper modelMapper,
+            AsyncTaskExecutor asyncTaskExecutor) {
         this.mapper = mapper;
         this.partialUpdateResolver = resolver;
         this.remainingPathResolver = remainingPathResolver;
         this.converters = new ArrayList<>();
+        this.asyncTaskExecutor = asyncTaskExecutor;
 
         mapper
         .registerModule(new MangoRestV2JacksonModule())
@@ -199,5 +208,10 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
     @Override
     public void addFormatters(FormatterRegistry registry) {
         registry.addConverter(new MangoPermissionModelConverter(mapper, new MangoPermissionModelDeserializer()));
+    }
+
+    @Override
+    public void configureAsyncSupport(AsyncSupportConfigurer configurer) {
+        configurer.setTaskExecutor(asyncTaskExecutor);
     }
 }
