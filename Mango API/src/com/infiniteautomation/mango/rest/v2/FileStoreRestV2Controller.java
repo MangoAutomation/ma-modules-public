@@ -42,6 +42,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.MediaTypeFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJacksonValue;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.util.MultiValueMap;
@@ -443,6 +444,7 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller {
         return getFile(file, download, request, response);
     }
 
+    @Async
     @ApiOperation(value = "Evaluate a filestore file as a script on the backend using a scripting engine")
     @RequestMapping(method = RequestMethod.POST, value="/eval-script/{filestoreName}/**", produces = {MediaType.APPLICATION_OCTET_STREAM_VALUE})
     public void evalScript(
