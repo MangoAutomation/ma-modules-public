@@ -45,7 +45,16 @@ public class RoleModelMapping implements RestModelMapping<RoleVO, RoleModel> {
 
     @Override
     public RoleModel map(Object from, PermissionHolder user, RestModelMapper mapper) {
-        return new RoleModel((RoleVO)from);
+        RoleVO role = (RoleVO)from;
+        RoleModel model = new RoleModel(role);
+        if(role.getInherited() != null) {
+            Set<String> inherited = new HashSet<>(role.getInherited().size());
+            model.setInherited(inherited);
+            for(Role inheritedRole : role.getInherited()) {
+                inherited.add(inheritedRole.getXid());
+            }
+        }
+        return model;
     }
 
     @Override
@@ -53,9 +62,11 @@ public class RoleModelMapping implements RestModelMapping<RoleVO, RoleModel> {
         RoleModel model = (RoleModel)from;
         RoleVO vo = model.toVO();
         Set<Role> roles = new HashSet<>();
-        for(String xid : model.getInherited()) {
-            Integer id = dao.getIdByXid(xid);
-            roles.add(new Role(id == null ? Common.NEW_ID : id, xid));
+        if(model.getInherited() != null ) {
+            for(String xid : model.getInherited()) {
+                Integer id = dao.getIdByXid(xid);
+                roles.add(new Role(id == null ? Common.NEW_ID : id, xid));
+            }
         }
         return vo;
     }
