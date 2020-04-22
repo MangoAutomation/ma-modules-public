@@ -4,6 +4,7 @@
 package com.infiniteautomation.mango.rest.v2;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import javax.script.ScriptEngineFactory;
@@ -31,7 +32,46 @@ public class ScriptRestController {
 
     @RequestMapping(method = {RequestMethod.GET}, value = "/engines")
     public Stream<ScriptEngineModel> getEngines() {
-        return this.scriptService.getEngineFactories().stream().map(f -> new ScriptEngineModel(f));
+        return this.scriptService.getEngineFactories().map(f -> new ScriptEngineModel(f));
+    }
+
+    public static class ScriptEvalModel {
+        String engineName;
+        Set<String> roles;
+        String script;
+        String filePath;
+        String charset;
+
+        public String getEngineName() {
+            return engineName;
+        }
+        public void setEngineName(String engineName) {
+            this.engineName = engineName;
+        }
+        public Set<String> getRoles() {
+            return roles;
+        }
+        public void setRoles(Set<String> roles) {
+            this.roles = roles;
+        }
+        public String getScript() {
+            return script;
+        }
+        public void setScript(String script) {
+            this.script = script;
+        }
+        public String getFilePath() {
+            return filePath;
+        }
+        public void setFilePath(String filePath) {
+            this.filePath = filePath;
+        }
+        public String getCharset() {
+            return charset;
+        }
+        public void setCharset(String charset) {
+            this.charset = charset;
+        }
     }
 
     public static class ScriptEngineModel {
