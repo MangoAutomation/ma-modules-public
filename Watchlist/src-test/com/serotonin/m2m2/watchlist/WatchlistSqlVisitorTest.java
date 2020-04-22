@@ -48,6 +48,7 @@ public class WatchlistSqlVisitorTest extends MangoTestBase {
         List<ModuleElementDefinition> definitions = new ArrayList<>();
         definitions.add(new WatchListSchemaDefinition());
         definitions.add(new AuditEvent());
+        definitions.add(new WatchListCreatePermission());
         addModule("watchlist", definitions);
     }
 

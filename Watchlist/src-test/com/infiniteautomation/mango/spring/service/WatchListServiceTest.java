@@ -26,6 +26,7 @@ import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.vo.role.Role;
+import com.serotonin.m2m2.watchlist.AuditEvent;
 import com.serotonin.m2m2.watchlist.WatchListCreatePermission;
 import com.serotonin.m2m2.watchlist.WatchListSchemaDefinition;
 import com.serotonin.m2m2.watchlist.WatchListVO;
@@ -40,6 +41,7 @@ public class WatchListServiceTest extends AbstractVOServiceWithPermissionsTest<W
     public static void setup() {
         List<ModuleElementDefinition> definitions = new ArrayList<>();
         definitions.add(new WatchListSchemaDefinition());
+        definitions.add(new AuditEvent());
         definitions.add(new WatchListCreatePermission());
         addModule("watchList", definitions);
     }
