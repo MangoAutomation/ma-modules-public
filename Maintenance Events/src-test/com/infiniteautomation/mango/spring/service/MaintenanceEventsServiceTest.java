@@ -139,6 +139,30 @@ public class MaintenanceEventsServiceTest extends AbstractVOServiceWithPermissio
         //This test does not apply
     }
 
+    @Override
+    @Test
+    public void testCountQueryReadPermissionEnforcement() {
+        //This test does not apply
+    }
+
+    @Override
+    @Test
+    public void testCountQueryEditPermissionEnforcement() {
+        //This test does not apply
+    }
+
+    @Override
+    @Test
+    public void testQueryReadPermissionEnforcement() {
+        //This test does not apply
+    }
+
+    @Override
+    @Test
+    public void testQueryEditPermissionEnforcement() {
+        //This test does not apply
+    }
+
     //TODO Test Add/Remove/Use Toggle Permission
 
     @Override
