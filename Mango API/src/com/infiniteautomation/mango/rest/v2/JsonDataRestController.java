@@ -33,6 +33,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.infiniteautomation.mango.db.query.ConditionSortLimit;
 import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.model.jsondata.JsonDataModel;
@@ -81,11 +82,10 @@ public class JsonDataRestController {
             )
     @RequestMapping(method = RequestMethod.GET)
     public List<String> list(){
-        List<JsonDataVO> all = service.getAll();
-        List<String> xids = new ArrayList<>(all.size());
-        for(JsonDataVO vo : all) {
-            xids.add(vo.getXid());
-        }
+        List<String> xids = new ArrayList<>();
+        service.customizedQuery(new ConditionSortLimit(null, null, null, null), (item, row) -> {
+            xids.add(item.getXid());
+        });
         return xids;
     }
 
