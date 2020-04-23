@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
@@ -35,6 +36,7 @@ import com.infiniteautomation.mango.spring.script.PathMangoScript;
 import com.infiniteautomation.mango.spring.script.ScriptService;
 import com.infiniteautomation.mango.spring.service.FileStoreService;
 import com.infiniteautomation.mango.spring.service.RoleService;
+import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.role.Role;
 
@@ -85,8 +87,10 @@ public class ScriptRestController {
             HttpServletRequest request,
             HttpServletResponse response) throws IOException {
 
-        Path rootPath = fileStoreService.getFileStoreRootForRead(fileStoreName);
-        Path filePath = rootPath.resolve(path);
+        Path filePath = fileStoreService.getPathForRead(fileStoreName, path);
+        if (!Files.exists(filePath)) {
+            throw new NotFoundException();
+        }
 
         if (engineName == null) {
             engineName = scriptService.findEngineForFile(filePath);

@@ -12,7 +12,6 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -39,7 +38,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.MediaTypeFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJacksonValue;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StreamUtils;
@@ -128,14 +126,8 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller {
             HttpServletRequest request) throws IOException {
 
 
-        Path rootPath = this.service.getFileStoreRootForWrite(name);
-        File root = rootPath.toFile().getCanonicalFile();
-
-        File outputDirectory = new File(root, pathInStore).getCanonicalFile();
-
-        if (!outputDirectory.toPath().startsWith(rootPath)) {
-            throw new GenericRestException(HttpStatus.FORBIDDEN, new TranslatableMessage("filestore.belowRoot", pathInStore));
-        }
+        File outputDirectory = this.service.getPathForWrite(name, pathInStore).toFile();
+        File root = this.service.getPathForWrite(name, "").toFile();
 
         if (outputDirectory.exists() && !outputDirectory.isDirectory()) {
             throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, new TranslatableMessage("filestore.cannotCreateDir",
@@ -200,14 +192,8 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller {
             @AuthenticationPrincipal User user,
             HttpServletRequest request) throws IOException, URISyntaxException {
 
-        Path rootPath = this.service.getFileStoreRootForWrite(fileStoreName);
-        File root = rootPath.toFile().getCanonicalFile();
-
-        File fileOrFolder = new File(root, pathInStore).getCanonicalFile();
-
-        if (!fileOrFolder.toPath().startsWith(root.toPath())) {
-            throw new GenericRestException(HttpStatus.FORBIDDEN, new TranslatableMessage("filestore.belowRoot", pathInStore));
-        }
+        File fileOrFolder = this.service.getPathForWrite(fileStoreName, pathInStore).toFile();
+        File root = this.service.getPathForWrite(fileStoreName, "").toFile();
 
         if (copyTo != null) {
             return copyFileOrFolder(request, fileStoreName, root, fileOrFolder, copyTo);
@@ -270,14 +256,8 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller {
             @AuthenticationPrincipal User user,
             HttpServletRequest request) throws IOException, HttpMediaTypeNotAcceptableException {
 
-        Path rootPath = this.service.getFileStoreRootForWrite(name);
-        File root = rootPath.toFile().getCanonicalFile();
+        File file = this.service.getPathForWrite(name, pathInStore).toFile();
 
-        File file = new File(root, pathInStore).getCanonicalFile();
-
-        if (!file.toPath().startsWith(root.toPath())) {
-            throw new GenericRestException(HttpStatus.FORBIDDEN, new TranslatableMessage("filestore.belowRoot", pathInStore));
-        }
         if(!file.exists())
             throw new NotFoundRestException();
 
@@ -386,14 +366,8 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller {
             HttpServletRequest request,
             HttpServletResponse response) throws IOException, HttpMediaTypeNotAcceptableException {
 
-        Path rootPath = this.service.getFileStoreRootForRead(name);
-        File root = rootPath.toFile().getCanonicalFile();
-
-        File file = new File(root, pathInStore).getCanonicalFile();
-
-        if (!file.toPath().startsWith(root.toPath())) {
-            throw new AccessDeniedException("Path is below file store root");
-        }
+        File file = this.service.getPathForRead(name, pathInStore).toFile();
+        File root = this.service.getPathForRead(name, "").toFile();
 
         // TODO Allow downloading directory as a zip
         if (file.isFile()) {
@@ -418,22 +392,15 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller {
             HttpServletRequest request,
             HttpServletResponse response) throws IOException, HttpMediaTypeNotAcceptableException {
 
-        Path rootPath = this.service.getFileStoreRootForRead(name);
-        File root = rootPath.toFile().getCanonicalFile();
-
-        File file = new File(root, pathInStore).getCanonicalFile();
-
-        if (!file.toPath().startsWith(root.toPath())) {
-            throw new AccessDeniedException("Path is below file store root");
-        }
-
-        if (!file.isFile()) {
-            throw new ResourceNotFoundException("Can't list directory");
-        }
+        File file = this.service.getPathForRead(name, pathInStore).toFile();
         return getFile(file, download, request, response);
     }
 
     protected ResponseEntity<List<FileModel>> listStoreContents(File directory, File root, HttpServletRequest request) throws IOException {
+        if (!directory.exists() || !directory.isDirectory()) {
+            throw new ResourceNotFoundException();
+        }
+
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON_UTF8);
 
@@ -457,6 +424,10 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller {
 
     protected ResponseEntity<FileSystemResource> getFile(File file, boolean download, HttpServletRequest request, HttpServletResponse response)
             throws HttpMediaTypeNotAcceptableException {
+
+        if (!file.exists() || !file.isFile()) {
+            throw new ResourceNotFoundException();
+        }
 
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.set(HttpHeaders.CONTENT_DISPOSITION, download ? "attachment" : "inline");
