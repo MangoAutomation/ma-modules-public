@@ -8,13 +8,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,9 +21,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -44,7 +39,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.MediaTypeFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJacksonValue;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.util.MultiValueMap;
@@ -70,8 +64,6 @@ import com.infiniteautomation.mango.rest.v2.model.RoleViews;
 import com.infiniteautomation.mango.rest.v2.model.filestore.FileModel;
 import com.infiniteautomation.mango.rest.v2.model.filestore.FileStoreModel;
 import com.infiniteautomation.mango.rest.v2.resolver.RemainingPath;
-import com.infiniteautomation.mango.spring.script.EvalContext;
-import com.infiniteautomation.mango.spring.script.PathMangoScript;
 import com.infiniteautomation.mango.spring.script.ScriptService;
 import com.infiniteautomation.mango.spring.service.FileStoreService;
 import com.infiniteautomation.mango.spring.service.RoleService;
@@ -80,7 +72,6 @@ import com.serotonin.m2m2.i18n.TranslatableException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.FileStore;
 import com.serotonin.m2m2.vo.User;
-import com.serotonin.m2m2.vo.role.Role;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -98,8 +89,6 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller {
 
     private final FileStoreService service;
     private final String cacheControlHeader;
-    private final ScriptService scriptService;
-    private final RoleService roleService;
 
     @Autowired
     public FileStoreRestV2Controller(FileStoreService fileStoreService, @Value("${web.cache.maxAge.rest:0}") long maxAge,
@@ -107,8 +96,6 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller {
         // use the rest max age setting but dont honor the nocache setting
         this.cacheControlHeader = CacheControl.maxAge(maxAge, TimeUnit.SECONDS).getHeaderValue();
         this.service = fileStoreService;
-        this.scriptService = scriptService;
-        this.roleService = roleService;
     }
 
     @ApiOperation(
@@ -444,54 +431,6 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller {
             throw new ResourceNotFoundException("Can't list directory");
         }
         return getFile(file, download, request, response);
-    }
-
-    @Async
-    @ApiOperation(value = "Evaluate a filestore file as a script on the backend using a scripting engine")
-    @RequestMapping(method = RequestMethod.POST, value="/eval-script/{filestoreName}/**")
-    public CompletableFuture<Void> evalScript(
-            @ApiParam(value = "File store name", required = true)
-            @PathVariable(required = true) String filestoreName,
-
-            @ApiParam(value = "Script engine name", required = false)
-            @RequestParam(required = false) String engineName,
-
-            @ApiParam(value = "Script file character set", required = false, defaultValue = "UTF-8")
-            @RequestParam(required = false, defaultValue = "UTF-8") String fileCharset,
-
-            @ApiParam(value = "Script roles", required = false, allowMultiple = true)
-            @RequestParam(required = false) String[] roles,
-
-            @RemainingPath String path,
-            @AuthenticationPrincipal User user,
-            HttpServletRequest request,
-            HttpServletResponse response) throws IOException {
-
-        Path rootPath = service.getFileStoreRootForRead(filestoreName);
-        Path filePath = rootPath.resolve(path);
-
-        if (engineName == null) {
-            engineName = scriptService.findEngineForFile(filePath);
-        }
-
-        Charset fileCharsetParsed = Charset.forName(fileCharset);
-
-        Set<Role> roleSet;
-        if (roles != null) {
-            roleSet = Arrays.stream(roles).map(xid -> this.roleService.get(xid).getRole()).collect(Collectors.toSet());
-        } else {
-            roleSet = user.getRoles();
-        }
-
-        EvalContext evalContext = new EvalContext();
-        evalContext.setReader(new InputStreamReader(request.getInputStream(), Charset.forName(request.getCharacterEncoding())));
-        evalContext.setWriter(new OutputStreamWriter(response.getOutputStream(), Charset.forName(response.getCharacterEncoding())));
-        evalContext.addBinding("request", request);
-        evalContext.addBinding("response", response);
-
-        this.scriptService.eval(new PathMangoScript(engineName, roleSet, filePath, fileCharsetParsed), evalContext);
-
-        return CompletableFuture.completedFuture(null);
     }
 
     protected ResponseEntity<List<FileModel>> listStoreContents(File directory, File root, HttpServletRequest request) throws IOException {
