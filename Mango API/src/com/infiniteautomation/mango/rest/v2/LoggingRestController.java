@@ -15,7 +15,6 @@ import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -36,7 +35,6 @@ import com.infiniteautomation.mango.rest.v2.model.StreamWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.filestore.FileModel;
 import com.infiniteautomation.mango.rest.v2.model.logging.LogMessageModel;
 import com.infiniteautomation.mango.rest.v2.model.logging.LogQueryArrayStream;
-import com.infiniteautomation.mango.spring.service.FileStoreService;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.vo.User;
@@ -56,13 +54,6 @@ import net.jazdw.rql.parser.ASTNode;
 @RestController
 @RequestMapping("/logging")
 public class LoggingRestController {
-
-    private final FileStoreService service;
-
-    @Autowired
-    public LoggingRestController(FileStoreService service) {
-        this.service = service;
-    }
 
     private FileModel toModel(Path p) {
         File file = p.toFile();
