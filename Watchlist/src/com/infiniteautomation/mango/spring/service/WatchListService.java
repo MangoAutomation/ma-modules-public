@@ -238,9 +238,7 @@ public class WatchListService extends AbstractVOService<WatchListVO, WatchListTa
                 ASTNode rql = RQLUtils.parseRQLtoAST(vo.getQuery());
                 ConditionSortLimit conditions = dataPointService.rqlToCondition(rql, null, null);
                 dataPointService.customizedQuery(conditions, (dp, index) -> {
-                    if(dataPointService.hasReadPermission(user, dp)) {
-                        callback.accept(dp);
-                    }
+                    callback.accept(dp);
                 });
                 break;
             case WatchListVO.TAGS_TYPE:
