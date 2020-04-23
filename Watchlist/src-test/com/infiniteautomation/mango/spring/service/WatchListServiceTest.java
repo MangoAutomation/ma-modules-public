@@ -16,6 +16,7 @@ import java.util.UUID;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.infiniteautomation.mango.db.query.ConditionSortLimit;
 import com.infiniteautomation.mango.permission.MangoPermission;
 import com.infiniteautomation.mango.spring.dao.WatchListDao;
 import com.infiniteautomation.mango.spring.dao.WatchListTableDefinition;
@@ -155,6 +156,28 @@ public class WatchListServiceTest extends AbstractVOServiceWithPermissionsTest<W
             });
 
         }, getReadRolesContextKey(), getReadRolesContextKey());
+    }
+
+    @Test
+    public void testCountQueryOwnerPermissionEnforcement() {
+        runTest(() -> {
+            WatchListVO vo = newVO(editUser);
+            getService().permissionService.runAsSystemAdmin(() -> {
+                return service.insert(vo);
+            });
+            getService().permissionService.runAs(readUser, () -> {
+                ConditionSortLimit conditions = new ConditionSortLimit(null, null, null, 0);
+                int count = getService().customizedCount(conditions);
+                assertEquals(0, count);
+            });
+        });
+        runTest(() -> {
+            getService().permissionService.runAs(editUser, () -> {
+                ConditionSortLimit conditions = new ConditionSortLimit(null, null, null, 0);
+                int count = getService().customizedCount(conditions);
+                assertEquals(1, count);
+            });
+        });
     }
 
     @Override
