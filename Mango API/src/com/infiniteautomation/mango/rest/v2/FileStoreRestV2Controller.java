@@ -8,12 +8,13 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,9 +22,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -62,7 +63,6 @@ import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.google.common.collect.Sets;
-import com.infiniteautomation.mango.rest.v2.ScriptRestController.ScriptEvalModel;
 import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.exception.ResourceNotFoundException;
@@ -70,6 +70,7 @@ import com.infiniteautomation.mango.rest.v2.model.RoleViews;
 import com.infiniteautomation.mango.rest.v2.model.filestore.FileModel;
 import com.infiniteautomation.mango.rest.v2.model.filestore.FileStoreModel;
 import com.infiniteautomation.mango.rest.v2.resolver.RemainingPath;
+import com.infiniteautomation.mango.spring.script.EvalContext;
 import com.infiniteautomation.mango.spring.script.PathMangoScript;
 import com.infiniteautomation.mango.spring.script.ScriptService;
 import com.infiniteautomation.mango.spring.service.FileStoreService;
@@ -447,50 +448,50 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller {
 
     @Async
     @ApiOperation(value = "Evaluate a filestore file as a script on the backend using a scripting engine")
-    @RequestMapping(method = RequestMethod.POST, value="/eval-script/{filestoreName}/**", produces = {MediaType.APPLICATION_OCTET_STREAM_VALUE})
-    public void evalScript(
-            @ApiParam(value = "Filestore name", required = true, allowMultiple = false)
-            @PathVariable("filestoreName") String filestoreName,
+    @RequestMapping(method = RequestMethod.POST, value="/eval-script/{filestoreName}/**")
+    public CompletableFuture<Void> evalScript(
+            @ApiParam(value = "File store name", required = true)
+            @PathVariable(required = true) String filestoreName,
 
-            @RequestBody(required = false)
-            ScriptEvalModel model,
+            @ApiParam(value = "Script engine name", required = false)
+            @RequestParam(required = false) String engineName,
+
+            @ApiParam(value = "Script file character set", required = false, defaultValue = "UTF-8")
+            @RequestParam(required = false, defaultValue = "UTF-8") String fileCharset,
+
+            @ApiParam(value = "Script roles", required = false, allowMultiple = true)
+            @RequestParam(required = false) String[] roles,
 
             @RemainingPath String path,
-
-            @AuthenticationPrincipal User user) throws IOException {
+            @AuthenticationPrincipal User user,
+            HttpServletRequest request,
+            HttpServletResponse response) throws IOException {
 
         Path rootPath = service.getFileStoreRootForRead(filestoreName);
         Path filePath = rootPath.resolve(path);
 
-        String engineName;
-        if (model != null && model.engineName != null) {
-            engineName = model.engineName;
-        } else {
+        if (engineName == null) {
             engineName = scriptService.findEngineForFile(filePath);
         }
 
-        Charset charset;
-        if (model != null && model.charset != null) {
-            charset = Charset.forName(model.charset);
+        Charset fileCharsetParsed = Charset.forName(fileCharset);
+
+        Set<Role> roleSet;
+        if (roles != null) {
+            roleSet = Arrays.stream(roles).map(xid -> this.roleService.get(xid).getRole()).collect(Collectors.toSet());
         } else {
-            charset = StandardCharsets.UTF_8;
+            roleSet = user.getRoles();
         }
 
-        Set<Role> roles;
-        if (model != null && model.roles != null) {
-            roles = model.roles.stream().map(xid -> this.roleService.get(xid).getRole()).collect(Collectors.toSet());
-        } else {
-            roles = user.getRoles();
-        }
+        EvalContext evalContext = new EvalContext();
+        evalContext.setReader(new InputStreamReader(request.getInputStream(), Charset.forName(request.getCharacterEncoding())));
+        evalContext.setWriter(new OutputStreamWriter(response.getOutputStream(), Charset.forName(response.getCharacterEncoding())));
+        evalContext.addBinding("request", request);
+        evalContext.addBinding("response", response);
 
-        Map<String, Object> bindings;
-        if (model != null && model.bindings != null) {
-            bindings = model.bindings;
-        } else {
-            bindings = Collections.emptyMap();
-        }
+        this.scriptService.eval(new PathMangoScript(engineName, roleSet, filePath, fileCharsetParsed), evalContext);
 
-        this.scriptService.eval(new PathMangoScript(engineName, roles, filePath, charset), bindings);
+        return CompletableFuture.completedFuture(null);
     }
 
     protected ResponseEntity<List<FileModel>> listStoreContents(File directory, File root, HttpServletRequest request) throws IOException {
