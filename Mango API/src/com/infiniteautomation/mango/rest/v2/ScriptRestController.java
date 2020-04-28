@@ -14,7 +14,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -134,52 +133,6 @@ public class ScriptRestController {
         this.scriptService.eval(new PathMangoScript(engineName, roleSet, filePath, fileCharsetParsed), evalContext);
 
         return CompletableFuture.completedFuture(null);
-    }
-
-    public static class ScriptEvalModel {
-        String engineName;
-        Set<String> roles;
-        String script;
-        String filePath;
-        String fileCharset;
-        Map<String, Object> bindings;
-
-        public String getEngineName() {
-            return engineName;
-        }
-        public void setEngineName(String engineName) {
-            this.engineName = engineName;
-        }
-        public Set<String> getRoles() {
-            return roles;
-        }
-        public void setRoles(Set<String> roles) {
-            this.roles = roles;
-        }
-        public String getScript() {
-            return script;
-        }
-        public void setScript(String script) {
-            this.script = script;
-        }
-        public String getFilePath() {
-            return filePath;
-        }
-        public void setFilePath(String filePath) {
-            this.filePath = filePath;
-        }
-        public Map<String, Object> getBindings() {
-            return bindings;
-        }
-        public void setBindings(Map<String, Object> bindings) {
-            this.bindings = bindings;
-        }
-        public String getFileCharset() {
-            return fileCharset;
-        }
-        public void setFileCharset(String fileCharset) {
-            this.fileCharset = fileCharset;
-        }
     }
 
     public static class ScriptEngineModel {
