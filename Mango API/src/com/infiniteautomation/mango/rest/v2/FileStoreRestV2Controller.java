@@ -55,6 +55,7 @@ import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.google.common.collect.Sets;
+import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.exception.ResourceNotFoundException;
@@ -65,6 +66,7 @@ import com.infiniteautomation.mango.rest.v2.resolver.RemainingPath;
 import com.infiniteautomation.mango.spring.script.ScriptService;
 import com.infiniteautomation.mango.spring.service.FileStoreService;
 import com.infiniteautomation.mango.spring.service.RoleService;
+import com.infiniteautomation.mango.util.exception.TranslatableIllegalArgumentException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -126,8 +128,19 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller {
             HttpServletRequest request) throws IOException {
 
 
-        File outputDirectory = this.service.getPathForWrite(name, pathInStore).toFile();
-        File root = this.service.getPathForWrite(name, "").toFile();
+        File outputDirectory;
+        try{
+            outputDirectory = this.service.getPathForWrite(name, pathInStore).toFile();
+        }catch(TranslatableIllegalArgumentException e) {
+            throw new AccessDeniedException(e.getTranslatableMessage());
+        }
+
+        File root;
+        try {
+            root = this.service.getPathForWrite(name, "").toFile();
+        }catch(TranslatableIllegalArgumentException e) {
+            throw new AccessDeniedException(e.getTranslatableMessage());
+        }
 
         if (outputDirectory.exists() && !outputDirectory.isDirectory()) {
             throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, new TranslatableMessage("filestore.cannotCreateDir",
@@ -192,8 +205,19 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller {
             @AuthenticationPrincipal User user,
             HttpServletRequest request) throws IOException, URISyntaxException {
 
-        File fileOrFolder = this.service.getPathForWrite(fileStoreName, pathInStore).toFile();
-        File root = this.service.getPathForWrite(fileStoreName, "").toFile();
+        File fileOrFolder;
+        try{
+            fileOrFolder = this.service.getPathForWrite(fileStoreName, pathInStore).toFile();
+        }catch(TranslatableIllegalArgumentException e) {
+            throw new AccessDeniedException(e.getTranslatableMessage());
+        }
+
+        File root;
+        try{
+            root = this.service.getPathForWrite(fileStoreName, "").toFile();
+        }catch(TranslatableIllegalArgumentException e) {
+            throw new AccessDeniedException(e.getTranslatableMessage());
+        }
 
         if (copyTo != null) {
             return copyFileOrFolder(request, fileStoreName, root, fileOrFolder, copyTo);
@@ -210,7 +234,7 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller {
         try {
             FileModel fileModel = fileToModel(service.moveFileOrFolder(fileStoreName, root, fileOrFolder, moveTo), root, request.getServletContext());
             return new ResponseEntity<>(fileModel, HttpStatus.OK);
-        } catch(TranslatableException e) {
+        } catch(TranslatableException | TranslatableIllegalArgumentException e) {
             throw new GenericRestException(HttpStatus.FORBIDDEN, e.getTranslatableMessage());
         }
     }
@@ -221,7 +245,7 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller {
         try {
             FileModel fileModel = fileToModel(service.copyFileOrFolder(fileStoreName, root, srcFile, dst), root, request.getServletContext());
             return new ResponseEntity<>(fileModel, HttpStatus.OK);
-        } catch(TranslatableException e) {
+        } catch(TranslatableException | TranslatableIllegalArgumentException e) {
             throw new GenericRestException(HttpStatus.FORBIDDEN, e.getTranslatableMessage());
         }
     }
@@ -366,8 +390,19 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller {
             HttpServletRequest request,
             HttpServletResponse response) throws IOException, HttpMediaTypeNotAcceptableException {
 
-        File file = this.service.getPathForRead(name, pathInStore).toFile();
-        File root = this.service.getPathForRead(name, "").toFile();
+        File file;
+        try{
+            file = this.service.getPathForRead(name, pathInStore).toFile();
+        }catch(TranslatableIllegalArgumentException e) {
+            throw new AccessDeniedException(e.getTranslatableMessage());
+        }
+
+        File root;
+        try{
+            root = this.service.getPathForRead(name, "").toFile();
+        }catch(TranslatableIllegalArgumentException e) {
+            throw new AccessDeniedException(e.getTranslatableMessage());
+        }
 
         // TODO Allow downloading directory as a zip
         if (file.isFile()) {
