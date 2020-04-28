@@ -3,9 +3,12 @@
  */
 package com.infiniteautomation.mango.rest.v2;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.io.Writer;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -34,7 +37,9 @@ import com.infiniteautomation.mango.rest.v2.resolver.RemainingPath;
 import com.infiniteautomation.mango.spring.script.EvalContext;
 import com.infiniteautomation.mango.spring.script.PathMangoScript;
 import com.infiniteautomation.mango.spring.script.ScriptService;
+import com.infiniteautomation.mango.spring.script.permissions.RequestResponsePermission;
 import com.infiniteautomation.mango.spring.service.FileStoreService;
+import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.spring.service.RoleService;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.serotonin.m2m2.vo.User;
@@ -53,12 +58,17 @@ public class ScriptRestController {
     final ScriptService scriptService;
     final FileStoreService fileStoreService;
     final RoleService roleService;
+    final PermissionService permissionService;
+    final RequestResponsePermission requestResponsePermission;
 
     @Autowired
-    public ScriptRestController(ScriptService scriptService, FileStoreService fileStoreService, RoleService roleService) {
+    public ScriptRestController(ScriptService scriptService, FileStoreService fileStoreService, RoleService roleService,
+            PermissionService permissionService, RequestResponsePermission requestResponsePermission) {
         this.scriptService = scriptService;
         this.fileStoreService = fileStoreService;
         this.roleService = roleService;
+        this.permissionService = permissionService;
+        this.requestResponsePermission = requestResponsePermission;
     }
 
     @RequestMapping(method = {RequestMethod.GET}, value = "/engines")
@@ -83,7 +93,9 @@ public class ScriptRestController {
             @RequestParam(required = false) String[] roles,
 
             @RemainingPath String path,
+
             @AuthenticationPrincipal User user,
+
             HttpServletRequest request,
             HttpServletResponse response) throws IOException {
 
@@ -106,10 +118,18 @@ public class ScriptRestController {
         }
 
         EvalContext evalContext = new EvalContext();
-        evalContext.setReader(new InputStreamReader(request.getInputStream(), Charset.forName(request.getCharacterEncoding())));
-        evalContext.setWriter(new OutputStreamWriter(response.getOutputStream(), Charset.forName(response.getCharacterEncoding())));
-        evalContext.addBinding("request", request);
-        evalContext.addBinding("response", response);
+
+        Reader reader = new BufferedReader(new InputStreamReader(request.getInputStream(), Charset.forName(request.getCharacterEncoding())));
+        Writer writer = new OutputStreamWriter(response.getOutputStream(), Charset.forName(response.getCharacterEncoding()));
+        evalContext.setReader(reader);
+        evalContext.setWriter(writer);
+        evalContext.addBinding("reader", reader);
+        evalContext.addBinding("writer", writer);
+
+        if (permissionService.hasPermission(user, requestResponsePermission.getPermission())) {
+            evalContext.addBinding("request", request);
+            evalContext.addBinding("response", response);
+        }
 
         this.scriptService.eval(new PathMangoScript(engineName, roleSet, filePath, fileCharsetParsed), evalContext);
 
