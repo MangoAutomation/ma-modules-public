@@ -3,21 +3,25 @@
  */
 package com.infiniteautomation.mango.graaljs;
 
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 
-import javax.script.Bindings;
-import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineFactory;
 
+import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.HostAccess;
+import org.graalvm.polyglot.io.FileSystem;
 import org.graalvm.polyglot.proxy.ProxyArray;
 import org.graalvm.polyglot.proxy.ProxyObject;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.infiniteautomation.mango.permission.MangoPermission;
 import com.infiniteautomation.mango.spring.script.MangoScript;
+import com.infiniteautomation.mango.spring.service.FileStoreService;
 import com.oracle.truffle.js.scriptengine.GraalJSEngineFactory;
+import com.oracle.truffle.js.scriptengine.GraalJSScriptEngine;
 import com.serotonin.m2m2.module.ScriptEngineDefinition;
 
 /**
@@ -27,6 +31,8 @@ public class GraaljsScriptEngineDefinition extends ScriptEngineDefinition {
 
     @Autowired
     GraaljsPermission permission;
+    @Autowired
+    FileStoreService fileStoreService;
 
     @Override
     public boolean supports(ScriptEngineFactory engineFactory) {
@@ -38,14 +44,40 @@ public class GraaljsScriptEngineDefinition extends ScriptEngineDefinition {
         return permission.getPermission();
     }
 
+    /**
+     * No way to obtain the default file system for delegation, remove when <a href="https://github.com/oracle/graal/issues/2190">issue #2190</a> is resolved
+     * @return
+     */
+    private FileSystem newDefaultFileSystem() {
+        try {
+            Class<?> fsClass = GraaljsScriptEngineDefinition.class.getClassLoader().loadClass("com.oracle.truffle.polyglot.FileSystems");
+            Method newDefaultFileSystem = fsClass.getDeclaredMethod("newDefaultFileSystem");
+            newDefaultFileSystem.setAccessible(true);
+            return (FileSystem) newDefaultFileSystem.invoke(null);
+        } catch (Exception e) {
+            throw new RuntimeException("Error getting default filesystem", e);
+        }
+    }
+
     @Override
     public ScriptEngine createEngine(ScriptEngineFactory engineFactory, MangoScript script) {
-        ScriptEngine engine = engineFactory.getScriptEngine();
-        Bindings engineBindings = engine.getBindings(ScriptContext.ENGINE_SCOPE);
+        MangoFileSystem fs = new MangoFileSystem(newDefaultFileSystem(), fileStoreService);
 
-        engineBindings.put("polyglot.js.allowHostAccess", true);
+        ScriptEngine engine;
         if (permissionService.hasAdminRole(script)) {
-            engineBindings.put("polyglot.js.allowAllAccess", true);
+            engine = GraalJSScriptEngine.create(null,
+                    Context.newBuilder("js")
+                    .allowHostAccess(HostAccess.ALL)
+                    .option("js.load-from-url", "true"));
+        } else {
+            engine = GraalJSScriptEngine.create(null,
+                    Context.newBuilder("js")
+                    .allowHostAccess(HostAccess.ALL)
+                    .allowHostClassLookup(null)
+                    .allowIO(true)
+                    .fileSystem(fs)
+                    .allowExperimentalOptions(true)
+                    .option("js.load-from-url", "true"));
         }
 
         return engine;
