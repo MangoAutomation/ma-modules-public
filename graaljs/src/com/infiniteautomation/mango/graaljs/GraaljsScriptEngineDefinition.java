@@ -3,6 +3,7 @@
  */
 package com.infiniteautomation.mango.graaljs;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +34,28 @@ public class GraaljsScriptEngineDefinition extends ScriptEngineDefinition {
     GraaljsPermission permission;
     @Autowired
     FileStoreService fileStoreService;
+
+    public GraaljsScriptEngineDefinition() {
+        // TODO remove when we can
+        try {
+            Class<?> unmodifiableListClazz = Class.forName("java.util.Collections$UnmodifiableList");
+            Field unmodifiableListField = unmodifiableListClazz.getDeclaredField("list");
+            unmodifiableListField.setAccessible(true);
+
+            Field mimeTypesField = GraalJSEngineFactory.class.getDeclaredField("mimeTypes");
+            mimeTypesField.setAccessible(true);
+            @SuppressWarnings("unchecked")
+            List<String> mimeTypes = (List<String>) unmodifiableListField.get(mimeTypesField.get(null));
+            mimeTypes.add("application/javascript+module");
+
+            Field extensionsField = GraalJSEngineFactory.class.getDeclaredField("extensions");
+            extensionsField.setAccessible(true);
+            @SuppressWarnings("unchecked")
+            List<String> extensions = (List<String>) unmodifiableListField.get(extensionsField.get(null));
+            extensions.add("mjs");
+        } catch (Exception e) {
+        }
+    }
 
     @Override
     public boolean supports(ScriptEngineFactory engineFactory) {
