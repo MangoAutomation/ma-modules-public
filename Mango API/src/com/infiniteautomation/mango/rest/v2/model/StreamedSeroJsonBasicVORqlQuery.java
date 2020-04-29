@@ -117,6 +117,7 @@ public class StreamedSeroJsonBasicVORqlQuery <T extends AbstractBasicVO, TABLE e
                         writer.append(',');
                     writer.indent();
                     writer.writeObject(item);
+                    count++;
                 } catch (IOException | JsonException e) {
                     //TODO Mango 4.0 this can mangle the response, perhaps handle in exception handler to reset stream
                     //  also a nice way to cancel this query would be good as it will just keep throwing
