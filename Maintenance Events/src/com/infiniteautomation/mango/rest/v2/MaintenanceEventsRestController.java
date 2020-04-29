@@ -36,19 +36,25 @@ import com.infiniteautomation.mango.rest.v2.model.MaintenanceEventModel;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArray;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
+import com.infiniteautomation.mango.rest.v2.model.StreamedSeroJsonVORqlQuery;
 import com.infiniteautomation.mango.rest.v2.model.StreamedVORqlQueryWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.event.EventInstanceModel;
 import com.infiniteautomation.mango.rest.v2.patch.PatchVORequestBody;
 import com.infiniteautomation.mango.spring.db.EventInstanceTableDefinition;
 import com.infiniteautomation.mango.spring.service.EventInstanceService;
 import com.infiniteautomation.mango.spring.service.maintenanceEvents.MaintenanceEventsService;
+import com.infiniteautomation.mango.spring.service.maintenanceEvents.MaintenanceEventsService.DataPointPermissionsCheckCallback;
+import com.infiniteautomation.mango.spring.service.maintenanceEvents.MaintenanceEventsService.DataSourcePermissionsCheckCallback;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.db.MappedRowCallback;
+import com.serotonin.json.type.JsonStreamedArray;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventDao;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventType;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.EventInstanceVO;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
+import com.serotonin.m2m2.web.MediaTypes;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -214,7 +220,61 @@ public class MaintenanceEventsRestController {
             @AuthenticationPrincipal User user) {
 
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
-        return service.doQuery(rql, user, transformVisit);
+        return doQuery(rql, user, transformVisit);
+    }
+
+    public StreamedArrayWithTotal doQuery(ASTNode rql, PermissionHolder user, Function<MaintenanceEventVO, Object> transformVO) {
+
+        //If we are admin or have overall data source permission we can view all
+        if (service.getPermissionService().hasAdminRole(user) || service.getPermissionService().hasDataSourcePermission(user)) {
+            return new StreamedVORqlQueryWithTotal<>(service, rql, null, null, transformVO);
+        } else {
+            return new StreamedVORqlQueryWithTotal<>(service, rql, null, null, item -> {
+                if(item.getDataPoints().size() > 0) {
+                    DataPointPermissionsCheckCallback callback = new DataPointPermissionsCheckCallback(user, true, this.service.getPermissionService(), this.service.getDataSourceDao());
+                    dao.getPoints(item.getId(), callback);
+                    if(!callback.hasPermission())
+                        return false;
+                }
+                if(item.getDataSources().size() > 0) {
+                    DataSourcePermissionsCheckCallback callback = new DataSourcePermissionsCheckCallback(user, this.service.getPermissionService());
+                    dao.getDataSources(item.getId(), callback);
+                    if(!callback.hasPermission())
+                        return false;
+                }
+                return true;
+            },  transformVO);
+        }
+    }
+
+    @ApiOperation(
+            value = "Export formatted for Configuration Import by supplying an RQL query",
+            notes = "User must have read permission")
+    @RequestMapping(method = RequestMethod.GET, value = "/export", produces = MediaTypes.SEROTONIN_JSON_VALUE)
+    public Map<String, JsonStreamedArray> exportQuery(HttpServletRequest request, @AuthenticationPrincipal User user) {
+        ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
+
+        Map<String, JsonStreamedArray> export = new HashMap<>();
+        if (service.getPermissionService().hasAdminRole(user) || service.getPermissionService().hasDataSourcePermission(user)) {
+            export.put("maintenanceEvents", new StreamedSeroJsonVORqlQuery<>(service, rql, null, null));
+        } else {
+            export.put("maintenanceEvents", new StreamedSeroJsonVORqlQuery<>(service, rql, null, null, item -> {
+                if(item.getDataPoints().size() > 0) {
+                    DataPointPermissionsCheckCallback callback = new DataPointPermissionsCheckCallback(user, true, this.service.getPermissionService(), this.service.getDataSourceDao());
+                    dao.getPoints(item.getId(), callback);
+                    if(!callback.hasPermission())
+                        return false;
+                }
+                if(item.getDataSources().size() > 0) {
+                    DataSourcePermissionsCheckCallback callback = new DataSourcePermissionsCheckCallback(user, this.service.getPermissionService());
+                    dao.getDataSources(item.getId(), callback);
+                    if(!callback.hasPermission())
+                        return false;
+                }
+                return true;
+            }));
+        }
+        return export;
     }
 
     @ApiOperation(
