@@ -3,13 +3,8 @@
  */
 package com.infiniteautomation.mango.graaljs;
 
-import java.util.Collections;
-import java.util.Set;
-
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.PermissionDefinition;
-import com.serotonin.m2m2.vo.permission.PermissionHolder;
-import com.serotonin.m2m2.vo.role.Role;
 
 /**
  * Grants access to use the Graal.js scripting engine
@@ -27,11 +22,6 @@ public class GraaljsPermission extends PermissionDefinition {
     @Override
     public String getPermissionTypeName() {
         return PERMISSION;
-    }
-
-    @Override
-    protected Set<Set<Role>> getDefaultRoles() {
-        return Collections.singleton(Collections.singleton(PermissionHolder.USER_ROLE));
     }
 
 }
