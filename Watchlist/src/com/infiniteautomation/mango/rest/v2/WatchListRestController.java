@@ -38,6 +38,7 @@ import com.infiniteautomation.mango.rest.v2.model.ListWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArray;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
+import com.infiniteautomation.mango.rest.v2.model.StreamedSeroJsonVORqlQuery;
 import com.infiniteautomation.mango.rest.v2.model.StreamedVORqlQueryWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.WatchListModel;
 import com.infiniteautomation.mango.rest.v2.model.WatchListModelMapping;
@@ -49,11 +50,14 @@ import com.infiniteautomation.mango.rest.v2.patch.PatchVORequestBody;
 import com.infiniteautomation.mango.spring.db.UserTableDefinition;
 import com.infiniteautomation.mango.spring.service.WatchListService;
 import com.infiniteautomation.mango.util.RQLUtils;
+import com.serotonin.json.type.JsonStreamedArray;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.EventInstanceVO;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
+import com.serotonin.m2m2.watchlist.WatchListEmportDefinition;
 import com.serotonin.m2m2.watchlist.WatchListVO;
+import com.serotonin.m2m2.web.MediaTypes;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -124,6 +128,17 @@ public class WatchListRestController {
     private interface WatchListEventsResult extends ListWithTotal<EventInstanceModel> {
     }
 
+    @ApiOperation(
+            value = "Export formatted for Configuration Import by supplying an RQL query",
+            notes = "User must have read permission")
+    @RequestMapping(method = RequestMethod.GET, value = "/export", produces = MediaTypes.SEROTONIN_JSON_VALUE)
+    public Map<String, JsonStreamedArray> exportQuery(HttpServletRequest request, @AuthenticationPrincipal User user) {
+        ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
+
+        Map<String, JsonStreamedArray> export = new HashMap<>();
+        export.put(WatchListEmportDefinition.elementId, new StreamedSeroJsonVORqlQuery<>(service, rql, fieldMap, valueConverters));
+        return export;
+    }
 
     @ApiOperation(value = "Query WatchLists", response=WatchListQueryResult.class)
     @RequestMapping(method = RequestMethod.GET)
@@ -351,7 +366,7 @@ public class WatchListRestController {
      * @return
      */
     private StreamedArrayWithTotal doQuery(ASTNode rql, PermissionHolder user) {
-        return new StreamedVORqlQueryWithTotal<>(service, rql, fieldMap, valueConverters, item -> service.hasReadPermission(user, item), (item) -> {
+        return new StreamedVORqlQueryWithTotal<>(service, rql, fieldMap, valueConverters, (item) -> {
             return summaryMapping.map(item, user, mapper);
         });
     }
