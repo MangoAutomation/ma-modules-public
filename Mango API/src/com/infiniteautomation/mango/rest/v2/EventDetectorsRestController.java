@@ -41,6 +41,7 @@ import com.infiniteautomation.mango.rest.v2.model.ActionAndModel;
 import com.infiniteautomation.mango.rest.v2.model.FilteredStreamWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
+import com.infiniteautomation.mango.rest.v2.model.StreamedSeroJsonVORqlQuery;
 import com.infiniteautomation.mango.rest.v2.model.StreamedVORqlQueryWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.event.detectors.AbstractEventDetectorModel;
 import com.infiniteautomation.mango.rest.v2.model.event.detectors.rt.AbstractEventDetectorRTModel;
@@ -56,6 +57,7 @@ import com.infiniteautomation.mango.spring.service.EventDetectorsService;
 import com.infiniteautomation.mango.spring.service.EventHandlerService;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.infiniteautomation.mango.util.exception.TranslatableIllegalStateException;
+import com.serotonin.json.type.JsonStreamedArray;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
@@ -526,6 +528,22 @@ public class EventDetectorsRestController {
         }
 
         return result;
+    }
+
+    @ApiOperation(
+            value = "Export formatted for Configuration Import by supplying an RQL query",
+            notes = "User must have read permission")
+    @RequestMapping(method = RequestMethod.GET, value = "/export", produces = MediaTypes.SEROTONIN_JSON_VALUE)
+    public Map<String, JsonStreamedArray> exportQuery(HttpServletRequest request, @AuthenticationPrincipal User user) {
+        ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
+
+        Map<String, JsonStreamedArray> export = new HashMap<>();
+        if (service.getPermissionService().hasAdminRole(user)) {
+            export.put("eventDetectors", new StreamedSeroJsonVORqlQuery<>(service, rql, fieldMap, null));
+        }else {
+            export.put("eventDetectors", new StreamedSeroJsonVORqlQuery<>(service, rql, fieldMap, null,  vo -> service.hasReadPermission(user, vo)));
+        }
+        return export;
     }
 
     private StreamedArrayWithTotal doQuery(ASTNode rql, User user, Function<AbstractEventDetectorVO, ?> toModel) {

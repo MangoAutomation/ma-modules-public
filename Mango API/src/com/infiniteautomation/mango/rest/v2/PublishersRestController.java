@@ -5,6 +5,7 @@ package com.infiniteautomation.mango.rest.v2;
 
 import java.net.URI;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.BiFunction;
@@ -26,11 +27,13 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
+import com.infiniteautomation.mango.rest.v2.model.StreamedSeroJsonVORqlQuery;
 import com.infiniteautomation.mango.rest.v2.model.StreamedVORqlQueryWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.publisher.AbstractPublisherModel;
 import com.infiniteautomation.mango.rest.v2.patch.PatchVORequestBody;
 import com.infiniteautomation.mango.spring.service.PublisherService;
 import com.infiniteautomation.mango.util.RQLUtils;
+import com.serotonin.json.type.JsonStreamedArray;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.publish.PublisherVO;
 import com.serotonin.m2m2.web.MediaTypes;
@@ -200,6 +203,22 @@ public class PublishersRestController {
         PublisherVO<?> vo = service.get(xid);
         Map<String,Object> export = new LinkedHashMap<>();
         export.put("publishers", Collections.singletonList(vo));
+        return export;
+    }
+
+    @ApiOperation(
+            value = "Export formatted for Configuration Import by supplying an RQL query",
+            notes = "User must have read permission")
+    @RequestMapping(method = RequestMethod.GET, value = "/export", produces = MediaTypes.SEROTONIN_JSON_VALUE)
+    public Map<String, JsonStreamedArray> exportQuery(HttpServletRequest request, @AuthenticationPrincipal User user) {
+        ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
+
+        Map<String, JsonStreamedArray> export = new HashMap<>();
+        if (service.getPermissionService().hasAdminRole(user)) {
+            export.put("publishers", new StreamedSeroJsonVORqlQuery<>(service, rql, null, null));
+        }else {
+            export.put("publishers", new StreamedSeroJsonVORqlQuery<>(service, rql, null, null,  vo -> service.hasReadPermission(user, vo)));
+        }
         return export;
     }
 

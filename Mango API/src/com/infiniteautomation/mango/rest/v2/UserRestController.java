@@ -46,6 +46,7 @@ import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.v2.model.FilteredStreamWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
+import com.infiniteautomation.mango.rest.v2.model.StreamedSeroJsonVORqlQuery;
 import com.infiniteautomation.mango.rest.v2.model.StreamedVORqlQueryWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.datasource.RuntimeStatusModel;
 import com.infiniteautomation.mango.rest.v2.model.permissions.UserRolesDetailsModel;
@@ -68,6 +69,7 @@ import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.spring.service.UsersService;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.infiniteautomation.mango.util.exception.TranslatableExceptionI;
+import com.serotonin.json.type.JsonStreamedArray;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
@@ -403,6 +405,23 @@ public class UserRestController {
             }
         }
         return result;
+    }
+
+    @ApiOperation(
+            value = "Export formatted for Configuration Import by supplying an RQL query",
+            notes = "User must have read permission")
+    @RequestMapping(method = RequestMethod.GET, value = "/export", produces = MediaTypes.SEROTONIN_JSON_VALUE)
+    public Map<String, JsonStreamedArray> exportQuery(HttpServletRequest request, @AuthenticationPrincipal User user) {
+        ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
+
+        Map<String, JsonStreamedArray> export = new HashMap<>();
+        if (service.getPermissionService().hasAdminRole(user)) {
+            export.put("users", new StreamedSeroJsonVORqlQuery<>(service, rql, fieldMap, valueConverterMap));
+        }else {
+            rql = RQLUtils.addAndRestriction(rql, new ASTNode("eq", "id", user.getId()));
+            export.put("users", new StreamedSeroJsonVORqlQuery<>(service, rql, fieldMap, valueConverterMap));
+        }
+        return export;
     }
 
     public StreamedArrayWithTotal doQuery(ASTNode rql, User user) {

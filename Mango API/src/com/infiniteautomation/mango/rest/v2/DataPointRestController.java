@@ -42,6 +42,7 @@ import com.infiniteautomation.mango.rest.v2.model.ActionAndModel;
 import com.infiniteautomation.mango.rest.v2.model.FilteredStreamWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
+import com.infiniteautomation.mango.rest.v2.model.StreamedSeroJsonVORqlQuery;
 import com.infiniteautomation.mango.rest.v2.model.StreamedVORqlQueryWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.dataPoint.DataPointModel;
 import com.infiniteautomation.mango.rest.v2.model.datasource.RuntimeStatusModel;
@@ -55,6 +56,7 @@ import com.infiniteautomation.mango.spring.db.DataSourceTableDefinition;
 import com.infiniteautomation.mango.spring.service.DataPointService;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.RQLUtils;
+import com.serotonin.json.type.JsonStreamedArray;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.DataPointVO;
@@ -488,7 +490,7 @@ public class DataPointRestController {
             notes = "User must have read permission",
             response=RuntimeStatusModel.class)
     @RequestMapping(method = RequestMethod.GET, value = "/export/{xids}", produces = MediaTypes.SEROTONIN_JSON_VALUE)
-    public Map<String, Object> exportDataSource(
+    public Map<String, Object> exportDataPoints(
             @ApiParam(value="Data point xids to export.")
             @PathVariable String[] xids,
             @AuthenticationPrincipal User user) {
@@ -500,6 +502,18 @@ public class DataPointRestController {
             points.add(dataPoint);
         }
         export.put("dataPoints", points);
+        return export;
+    }
+
+    @ApiOperation(
+            value = "Export formatted for Configuration Import by supplying an RQL query",
+            notes = "User must have read permission")
+    @RequestMapping(method = RequestMethod.GET, value = "/export", produces = MediaTypes.SEROTONIN_JSON_VALUE)
+    public Map<String, JsonStreamedArray> exportQuery(HttpServletRequest request, @AuthenticationPrincipal User user) {
+        ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
+
+        Map<String, JsonStreamedArray> export = new HashMap<>();
+        export.put("dataPoints", new StreamedSeroJsonVORqlQuery<>(service, rql, this.fieldMap, this.valueConverters));
         return export;
     }
 
