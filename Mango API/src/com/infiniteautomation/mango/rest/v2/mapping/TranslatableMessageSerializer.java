@@ -15,6 +15,7 @@ import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 /**
@@ -27,7 +28,12 @@ public class TranslatableMessageSerializer extends JsonSerializer<TranslatableMe
     public void serialize(TranslatableMessage msg, JsonGenerator jgen, SerializerProvider provider)
             throws IOException, JsonProcessingException {
         if(msg != null) {
-            PermissionHolder holder = Common.getUser();
+            PermissionHolder holder;
+            try{
+                holder = Common.getUser();
+            }catch(PermissionException e) {
+                holder = null;
+            }
             User user;
             if(!(holder instanceof User)) {
                 user = null;

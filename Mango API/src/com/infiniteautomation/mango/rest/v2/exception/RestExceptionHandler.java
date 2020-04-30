@@ -249,8 +249,13 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
             String uri;
             if (status == HttpStatus.FORBIDDEN) {
                 // browser HTML request
-                PermissionHolder holder = Common.getUser();
+                PermissionHolder holder;
                 User user;
+                try {
+                    holder = Common.getUser();
+                }catch(PermissionException e) {
+                    holder = null;
+                }
                 if(!(holder instanceof User)) {
                     user = null;
                 }else {
@@ -284,7 +289,12 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
                 body = new GenericRestException(status, ex);
 
             //Add admin view if necessary
-            PermissionHolder user = Common.getUser();
+            PermissionHolder user;
+            try{
+                user = Common.getUser();
+            }catch(PermissionException e) {
+                user = null;
+            }
             MappingJacksonValue value = new MappingJacksonValue(body);
             if(user != null && service.hasAdminRole(user))
                 value.setSerializationView(AdminView.class);
