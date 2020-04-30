@@ -102,6 +102,6 @@ public abstract class AbstractRestV2Exception extends RuntimeException implement
 
     @Override
     public String getMessage() {
-        return this.translatableMessage.translate(Common.getTranslations());
+        return getTranslatableMessage().translate(Common.getTranslations());
     }
 }

@@ -5,7 +5,6 @@
 package com.infiniteautomation.mango.rest.v2.exception;
 
 import java.io.IOException;
-import java.util.concurrent.CompletionException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -28,9 +27,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
-import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerExceptionResolver;
-import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import com.infiniteautomation.mango.db.query.RQLToCondition.RQLVisitException;
@@ -40,6 +37,7 @@ import com.infiniteautomation.mango.rest.v2.advice.MangoRequestBodyAdvice;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.views.AdminView;
 import com.infiniteautomation.mango.spring.components.EmailAddressVerificationService.EmailAddressInUseException;
+import com.infiniteautomation.mango.spring.script.MangoScriptException;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.exception.FeatureDisabledException;
 import com.infiniteautomation.mango.util.exception.InvalidRQLException;
@@ -82,14 +80,6 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         this.handlerExceptionResolver = handlerExceptionResolver;
         this.mapper = mapper;
         this.service = service;
-    }
-
-    /**
-     * Work around for CompletionException until this PR is merged https://github.com/spring-projects/spring-framework/pull/22476
-     */
-    @ExceptionHandler(CompletionException.class)
-    public ModelAndView handleCompletionException(HttpServletRequest request, HttpServletResponse response, HandlerMethod handlerMethod, CompletionException ex) {
-        return handlerExceptionResolver.resolveException(request, response, handlerMethod, (Exception) ex.getCause());
     }
 
     //Anything that extends our Base Exception
@@ -216,6 +206,12 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<Object> handleUsernameAuthenticationRateException(HttpServletRequest request, HttpServletResponse response, AuthenticationException ex, WebRequest req) {
         AuthenticationFailedRestException body = AuthenticationFailedRestException.restExceptionFor(ex);
+        return handleExceptionInternal(ex, body, new HttpHeaders(), body.getStatus(), req);
+    }
+
+    @ExceptionHandler(MangoScriptException.class)
+    public ResponseEntity<Object> handleMangoScriptException(HttpServletRequest request, HttpServletResponse response, MangoScriptException ex, WebRequest req) {
+        ScriptRestException body = new ScriptRestException(ex);
         return handleExceptionInternal(ex, body, new HttpHeaders(), body.getStatus(), req);
     }
 
