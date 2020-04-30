@@ -117,7 +117,7 @@ describe('Events v2 tests', function(){
         const gotEventDeferred = defer();
         
         const testId = uuid();
-
+        debugger;
         return Promise.resolve().then(function() {
             ws = client.openWebSocket({
                 path: '/rest/v2/websocket/events'
@@ -149,14 +149,16 @@ describe('Events v2 tests', function(){
                     assert.strictEqual(msg.payload.activeSummary.length, 8);
                     assert.strictEqual(msg.payload.unacknowledgedSummary.length, 8);
                     gotAlarmSummaries.resolve();
-                }
-                if(msg.messageType === 'NOTIFICATION' && msg.payload.message === 'test id ' + testId) {
+                }else if(msg.messageType === 'NOTIFICATION' && msg.payload.message === 'test id ' + testId) {
                     assert.strictEqual(msg.notificationType, 'RAISED');
                     assert.property(msg.payload, 'eventType');
                     assert.strictEqual(msg.payload.eventType.eventType, 'SYSTEM');
                     assert.strictEqual(msg.payload.eventType.subType, 'Test event');
                     assert.strictEqual(msg.payload.alarmLevel, 'NONE');
                     gotEventDeferred.resolve();                    
+                }else if(msg.status === 'ERROR') {
+                    gotAlarmSummaries.reject();
+                    gotEventDeferred.reject(new Error(msg.payload.message));   
                 }
             });
             return socketOpenDeferred.promise;
@@ -248,6 +250,9 @@ describe('Events v2 tests', function(){
                     assert.strictEqual(msg.payload[0].counts.INFORMATION, 1);
                     
                     gotEventQueryResult.resolve();
+                }else if(msg.status === 'ERROR') {
+                    gotAlarmSummaries.reject();
+                    gotEventQueryResult.reject(new Error(msg.payload.message));   
                 }
             });
             return socketOpenDeferred.promise;
