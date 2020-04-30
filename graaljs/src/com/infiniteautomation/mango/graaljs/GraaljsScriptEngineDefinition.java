@@ -5,6 +5,7 @@ package com.infiniteautomation.mango.graaljs;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.security.AccessController;
 import java.util.List;
 import java.util.Map;
 
@@ -21,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.infiniteautomation.mango.permission.MangoPermission;
 import com.infiniteautomation.mango.spring.script.MangoScript;
 import com.infiniteautomation.mango.spring.service.FileStoreService;
+import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.oracle.truffle.js.scriptengine.GraalJSEngineFactory;
 import com.oracle.truffle.js.scriptengine.GraalJSScriptEngine;
 import com.serotonin.m2m2.module.ScriptEngineDefinition;
@@ -34,9 +36,11 @@ public class GraaljsScriptEngineDefinition extends ScriptEngineDefinition {
     GraaljsPermission permission;
     @Autowired
     FileStoreService fileStoreService;
+    @Autowired
+    PermissionService permissionService;
 
     public GraaljsScriptEngineDefinition() {
-        // TODO remove when we can
+        // TODO remove when this issue is resolved https://github.com/graalvm/graaljs/issues/279
         try {
             Class<?> unmodifiableListClazz = Class.forName("java.util.Collections$UnmodifiableList");
             Field unmodifiableListField = unmodifiableListClazz.getDeclaredField("list");
@@ -84,18 +88,32 @@ public class GraaljsScriptEngineDefinition extends ScriptEngineDefinition {
 
     @Override
     public ScriptEngine createEngine(ScriptEngineFactory engineFactory, MangoScript script) {
-        MangoFileSystem fs = new MangoFileSystem(newDefaultFileSystem(), fileStoreService);
+        MangoFileSystem fs = new MangoFileSystem(newDefaultFileSystem(), fileStoreService, permissionService);
 
         ScriptEngine engine;
         if (permissionService.hasAdminRole(script)) {
             engine = GraalJSScriptEngine.create(null,
                     Context.newBuilder("js")
                     .allowHostAccess(HostAccess.ALL)
+                    .allowAllAccess(true)
+                    .fileSystem(fs)
                     .option("js.load-from-url", "true"));
         } else {
+            HostAccess disableReflection = HostAccess.newBuilder()
+                    .allowPublicAccess(true)
+                    .allowAllImplementations(true)
+                    .allowArrayAccess(true)
+                    .allowListAccess(true)
+                    .denyAccess(Class.class, true)
+                    .denyAccess(ClassLoader.class, true)
+                    .denyAccess(System.class)
+                    .denyAccess(SecurityManager.class)
+                    .denyAccess(AccessController.class)
+                    .build();
+
             engine = GraalJSScriptEngine.create(null,
                     Context.newBuilder("js")
-                    .allowHostAccess(HostAccess.ALL)
+                    .allowHostAccess(disableReflection)
                     .allowHostClassLookup(null)
                     .allowIO(true)
                     .fileSystem(fs)

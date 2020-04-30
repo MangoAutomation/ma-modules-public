@@ -22,7 +22,11 @@ import java.util.Set;
 import org.graalvm.polyglot.io.FileSystem;
 
 import com.infiniteautomation.mango.spring.service.FileStoreService;
+import com.infiniteautomation.mango.spring.service.PermissionService;
+import com.infiniteautomation.mango.util.exception.NotFoundException;
+import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.vo.permission.PermissionException;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 /**
  * @author Jared Wiltshire
@@ -31,11 +35,13 @@ public class MangoFileSystem implements FileSystem {
 
     private final FileSystem delegate;
     private final FileStoreService fileStoreService;
+    private final PermissionService permissionService;
 
-    public MangoFileSystem(FileSystem delegate, FileStoreService fileStoreService) {
+    public MangoFileSystem(FileSystem delegate, FileStoreService fileStoreService, PermissionService permissionService) {
         super();
         this.delegate = delegate;
         this.fileStoreService = fileStoreService;
+        this.permissionService = permissionService;
     }
 
     @Override
@@ -64,17 +70,25 @@ public class MangoFileSystem implements FileSystem {
     public void checkAccess(Path path, Set<? extends AccessMode> modes, LinkOption... linkOptions) throws IOException {
         delegate.checkAccess(path, modes, linkOptions);
 
+        PermissionHolder user = Common.getUser();
+        if (permissionService.hasAdminRole(user)) {
+            return;
+        }
+
         try {
-            Path fileStorePath = fileStoreService.relativize(path);
-            String fileStoreName = fileStorePath.getName(0).toString();
-            if (modes.contains(AccessMode.WRITE)) {
-                fileStoreService.getPathForWrite(fileStoreName, "");
-            } else {
-                fileStoreService.getPathForRead(fileStoreName, "");
+            try {
+                Path fileStorePath = fileStoreService.relativize(path);
+                String fileStoreName = fileStorePath.getName(0).toString();
+                if (modes.contains(AccessMode.WRITE)) {
+                    fileStoreService.getPathForWrite(fileStoreName, "");
+                } else {
+                    fileStoreService.getPathForRead(fileStoreName, "");
+                }
+            } catch (IllegalArgumentException | NotFoundException e) {
+                // not a file store path
             }
-        } catch (IllegalArgumentException e) {
-            // not a file store path
-            throw new SecurityException("Only file store paths are allowed");
+
+            permissionService.ensureAdminRole(user);
         } catch (PermissionException e) {
             // file store denied access
             throw new SecurityException(e);
