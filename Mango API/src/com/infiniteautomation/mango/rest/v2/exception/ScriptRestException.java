@@ -21,19 +21,22 @@ public class ScriptRestException extends AbstractRestV2Exception {
     private final String fileName;
     private final Integer lineNumber;
     private final Integer columnNumber;
+    private final String scriptStackTrace;
 
     public ScriptRestException(MangoScriptException cause) {
-        super(HttpStatus.INTERNAL_SERVER_ERROR, null, null, cause);
+        super(HttpStatus.INTERNAL_SERVER_ERROR, MangoRestErrorCode.SCRIPT_EXCEPTION, null, cause);
 
         if (cause instanceof ScriptEvalException) {
             SourceLocation location = ((ScriptEvalException) cause).getSourceLocation();
             this.fileName = location.getFileName();
             this.lineNumber = location.getLineNumber();
             this.columnNumber = location.getColumnNumber();
+            this.scriptStackTrace = location.getStackTrace();
         } else {
             this.fileName = null;
             this.lineNumber = null;
             this.columnNumber = null;
+            this.scriptStackTrace = null;
         }
     }
 
@@ -68,6 +71,11 @@ public class ScriptRestException extends AbstractRestV2Exception {
     @JsonProperty
     public String getFileName() {
         return fileName;
+    }
+
+    @JsonProperty
+    public String getScriptStackTrace() {
+        return scriptStackTrace;
     }
 
 }

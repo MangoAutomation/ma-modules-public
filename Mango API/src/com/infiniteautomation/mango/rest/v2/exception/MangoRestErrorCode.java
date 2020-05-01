@@ -53,7 +53,8 @@ public enum MangoRestErrorCode implements IMangoRestErrorCode {
     FEATURE_DISABLED(4093),
 
     //***** 5000 Series *****
-    GENERIC_500(5000);
+    GENERIC_500(5000),
+    SCRIPT_EXCEPTION(5001);
 
     private final int code;
 
