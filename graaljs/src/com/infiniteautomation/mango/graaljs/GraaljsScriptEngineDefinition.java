@@ -9,14 +9,19 @@ import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.security.AccessController;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineFactory;
+import javax.script.ScriptException;
 
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.HostAccess;
+import org.graalvm.polyglot.PolyglotException;
+import org.graalvm.polyglot.PolyglotException.StackFrame;
+import org.graalvm.polyglot.SourceSection;
 import org.graalvm.polyglot.io.FileSystem;
 import org.graalvm.polyglot.proxy.ProxyArray;
 import org.graalvm.polyglot.proxy.ProxyObject;
@@ -30,6 +35,7 @@ import com.oracle.truffle.js.runtime.JSContextOptions;
 import com.oracle.truffle.js.scriptengine.GraalJSEngineFactory;
 import com.oracle.truffle.js.scriptengine.GraalJSScriptEngine;
 import com.serotonin.m2m2.module.ScriptEngineDefinition;
+import com.serotonin.m2m2.module.SourceLocation;
 
 /**
  * @author Jared Wiltshire
@@ -142,5 +148,31 @@ public class GraaljsScriptEngineDefinition extends ScriptEngineDefinition {
             return ProxyArray.fromArray((Object[]) value);
         }
         return value;
+    }
+
+    @Override
+    public SourceLocation extractSourceLocation(ScriptException e) {
+        Throwable cause = e.getCause();
+        if (cause instanceof PolyglotException) {
+            PolyglotException polyglotException = (PolyglotException) cause;
+            SourceSection location = polyglotException.getSourceLocation();
+
+            if (location == null) {
+                Iterator<StackFrame> stackTrace = polyglotException.getPolyglotStackTrace().iterator();
+                if (stackTrace.hasNext()) {
+                    StackFrame frame = stackTrace.next();
+                    location = frame.getSourceLocation();
+                }
+            }
+
+            if (location != null && location.isAvailable()) {
+                Integer lineNumber = location.hasLines() ? location.getStartLine() : null;
+                Integer columnNumber = location.hasColumns() ? location.getStartColumn() : null;
+                String filename = location.getSource().getName();
+                return new SourceLocation(filename, lineNumber, columnNumber);
+            }
+
+        }
+        return super.extractSourceLocation(e);
     }
 }
