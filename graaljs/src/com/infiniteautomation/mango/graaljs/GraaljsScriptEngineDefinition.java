@@ -3,6 +3,8 @@
  */
 package com.infiniteautomation.mango.graaljs;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
@@ -157,6 +159,11 @@ public class GraaljsScriptEngineDefinition extends ScriptEngineDefinition {
             PolyglotException polyglotException = (PolyglotException) cause;
             SourceSection location = polyglotException.getSourceLocation();
 
+            StringWriter writer = new StringWriter();
+            polyglotException.printStackTrace(new PrintWriter(writer));
+            String stackTraceStr = writer.toString();
+
+            // location is set for syntax errors but is null for errors thrown in code e.g. throw new Error();
             if (location == null) {
                 Iterator<StackFrame> stackTrace = polyglotException.getPolyglotStackTrace().iterator();
                 if (stackTrace.hasNext()) {
@@ -169,7 +176,7 @@ public class GraaljsScriptEngineDefinition extends ScriptEngineDefinition {
                 Integer lineNumber = location.hasLines() ? location.getStartLine() : null;
                 Integer columnNumber = location.hasColumns() ? location.getStartColumn() : null;
                 String filename = location.getSource().getName();
-                return new SourceLocation(filename, lineNumber, columnNumber);
+                return new SourceLocation(filename, lineNumber, columnNumber, stackTraceStr);
             }
 
         }
