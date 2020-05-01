@@ -306,19 +306,22 @@ public class EventsWebSocketHandler extends MangoWebSocketHandler implements Use
     }
 
     protected void notify(EventActionEnum action, EventInstance event, WebSocketSession session) {
-        try {
-            EventInstanceModel instanceModel = modelMapper.map(event, EventInstanceModel.class, user);
-            sendRawMessage(session, new WebSocketNotification<EventInstanceModel>(action.name(), instanceModel));
-        } catch(WebSocketSendException e) {
-            log.warn("Error notifying websocket session", e);
-        } catch (Exception e) {
+        //This is used for serialization where things like the TranslatableMessageSerializer
+        this.permissionService.runAs(user, () -> {
             try {
-                this.sendErrorMessage(session, MangoWebSocketErrorType.SERVER_ERROR,
-                        new TranslatableMessage("rest.error.serverError", e.getMessage()));
-            } catch (Exception e1) {
-                log.error(e1.getMessage(), e1);
+                EventInstanceModel instanceModel = modelMapper.map(event, EventInstanceModel.class, user);
+                sendRawMessage(session, new WebSocketNotification<EventInstanceModel>(action.name(), instanceModel));
+            } catch(WebSocketSendException e) {
+                log.warn("Error notifying websocket session", e);
+            } catch (Exception e) {
+                try {
+                    this.sendErrorMessage(session, MangoWebSocketErrorType.SERVER_ERROR,
+                            new TranslatableMessage("rest.error.serverError", e.getMessage()));
+                } catch (Exception e1) {
+                    log.error(e1.getMessage(), e1);
+                }
             }
-        }
+        });
     }
 
     public void initialize() {
