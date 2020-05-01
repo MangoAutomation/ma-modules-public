@@ -3,8 +3,11 @@
  */
 package com.infiniteautomation.mango.graaljs;
 
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
+import java.lang.reflect.Member;
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.security.AccessController;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +26,7 @@ import com.infiniteautomation.mango.permission.MangoPermission;
 import com.infiniteautomation.mango.spring.script.MangoScript;
 import com.infiniteautomation.mango.spring.service.FileStoreService;
 import com.infiniteautomation.mango.spring.service.PermissionService;
+import com.oracle.truffle.js.runtime.JSContextOptions;
 import com.oracle.truffle.js.scriptengine.GraalJSEngineFactory;
 import com.oracle.truffle.js.scriptengine.GraalJSScriptEngine;
 import com.serotonin.m2m2.module.ScriptEngineDefinition;
@@ -91,22 +95,25 @@ public class GraaljsScriptEngineDefinition extends ScriptEngineDefinition {
         MangoFileSystem fs = new MangoFileSystem(newDefaultFileSystem(), fileStoreService, permissionService);
 
         ScriptEngine engine;
-        if (permissionService.hasAdminRole(script)) {
+        if (!permissionService.hasAdminRole(script)) {
             engine = GraalJSScriptEngine.create(null,
                     Context.newBuilder("js")
                     .allowHostAccess(HostAccess.ALL)
                     .allowAllAccess(true)
                     .fileSystem(fs)
-                    .option("js.load-from-url", "true"));
+                    .option(JSContextOptions.LOAD_FROM_URL_NAME, "true"));
         } else {
             HostAccess disableReflection = HostAccess.newBuilder()
                     .allowPublicAccess(true)
                     .allowAllImplementations(true)
                     .allowArrayAccess(true)
                     .allowListAccess(true)
-                    .denyAccess(Class.class, true)
-                    .denyAccess(ClassLoader.class, true)
-                    .denyAccess(System.class)
+                    .denyAccess(ClassLoader.class)
+                    .denyAccess(Member.class) // includes Method, Field and Constructor
+                    .denyAccess(AnnotatedElement.class) // includes Class
+                    .denyAccess(Proxy.class)
+                    .denyAccess(Object.class, false) // wait(), notify(), getClass()
+                    .denyAccess(System.class) // setProperty(), getProperty(), gc(), exit()
                     .denyAccess(SecurityManager.class)
                     .denyAccess(AccessController.class)
                     .build();
@@ -118,7 +125,7 @@ public class GraaljsScriptEngineDefinition extends ScriptEngineDefinition {
                     .allowIO(true)
                     .fileSystem(fs)
                     .allowExperimentalOptions(true)
-                    .option("js.load-from-url", "true"));
+                    .option(JSContextOptions.LOAD_FROM_URL_NAME, "true"));
         }
 
         return engine;
