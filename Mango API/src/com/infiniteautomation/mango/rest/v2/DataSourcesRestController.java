@@ -37,6 +37,7 @@ import com.infiniteautomation.mango.rest.v2.model.datasource.ReadOnlyDataSourceM
 import com.infiniteautomation.mango.rest.v2.model.datasource.RuntimeStatusModel;
 import com.infiniteautomation.mango.rest.v2.model.datasource.RuntimeStatusModel.PollStatus;
 import com.infiniteautomation.mango.rest.v2.patch.PatchVORequestBody;
+import com.infiniteautomation.mango.spring.service.DataPointService;
 import com.infiniteautomation.mango.spring.service.DataSourceService;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.db.pair.LongLongPair;
@@ -66,9 +67,10 @@ public class DataSourcesRestController {
 
     private final DataSourceService service;
     private final BiFunction<DataSourceVO, User, AbstractDataSourceModel<?>> map;
+    private final DataPointService dataPointService;
 
     @Autowired
-    public DataSourcesRestController(final DataSourceService service, final RestModelMapper modelMapper) {
+    public DataSourcesRestController(final DataSourceService service, final RestModelMapper modelMapper, final DataPointService dataPointService) {
         this.service = service;
         this.map = (vo, user) -> {
             if(service.hasEditPermission(user, vo)) {
@@ -77,6 +79,7 @@ public class DataSourcesRestController {
                 return new ReadOnlyDataSourceModel(vo);
             }
         };
+        this.dataPointService = dataPointService;
     }
 
     @ApiOperation(
@@ -296,6 +299,19 @@ public class DataSourcesRestController {
 
         Map<String, JsonStreamedArray> export = new HashMap<>();
         export.put("dataSources", new StreamedSeroJsonVORqlQuery<>(service, rql, null, null));
+        return export;
+    }
+
+    @ApiOperation(
+            value = "Export formatted for Configuration Import by supplying an RQL query",
+            notes = "User must have read permission")
+    @RequestMapping(method = RequestMethod.GET, value = "/export-with-points", produces = MediaTypes.SEROTONIN_JSON_VALUE)
+    public Map<String, JsonStreamedArray> exportQueryWithPoints(HttpServletRequest request, @AuthenticationPrincipal User user) {
+        ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
+
+        Map<String, JsonStreamedArray> export = new HashMap<>();
+        export.put("dataSources", new StreamedSeroJsonVORqlQuery<>(service, rql, null, null));
+        export.put("dataPoints", new StreamedSeroJsonVORqlQuery<>(dataPointService, rql, null, null));
         return export;
     }
 
