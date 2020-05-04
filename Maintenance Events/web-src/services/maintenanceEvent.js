@@ -57,14 +57,11 @@ function maintenanceEventsFactory(RestResource) {
 
         getByXid() {
             return this.constructor.http({
-                url: '/rest/v1/events/module-defined-query',
+                url: '/rest/v2/maintenance-events/query/get-events-by-rql',
                 method: 'POST',
                 data: {
-                    queryType: 'MAINTENANCE_EVENTS_BY_MAINTENANCE_EVENT_RQL',
-                    parameters: {
-                        rql: 'xid=' + this.xid
-                    }
-                }
+                    maintenanceEventsRql: `xid=${encodeURIComponent(this.xid)}`,
+                },
             });
         }
 
