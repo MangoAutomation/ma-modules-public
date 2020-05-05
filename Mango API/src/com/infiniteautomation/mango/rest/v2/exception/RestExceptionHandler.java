@@ -27,7 +27,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
-import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import com.infiniteautomation.mango.db.query.RQLToCondition.RQLVisitException;
@@ -65,7 +64,6 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     private final Log LOG = LogFactory.getLog(RestExceptionHandler.class);
 
     final RequestMatcher browserHtmlRequestMatcher;
-    final HandlerExceptionResolver handlerExceptionResolver;
     final RestModelMapper mapper;
     final PermissionService service;
 
@@ -73,11 +71,9 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     public RestExceptionHandler(
             @Qualifier("browserHtmlRequestMatcher")
             RequestMatcher browserHtmlRequestMatcher,
-            HandlerExceptionResolver handlerExceptionResolver,
             RestModelMapper mapper,
             PermissionService service) {
         this.browserHtmlRequestMatcher = browserHtmlRequestMatcher;
-        this.handlerExceptionResolver = handlerExceptionResolver;
         this.mapper = mapper;
         this.service = service;
     }
