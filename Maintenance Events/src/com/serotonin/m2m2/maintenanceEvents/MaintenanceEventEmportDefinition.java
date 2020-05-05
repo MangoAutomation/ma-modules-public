@@ -41,11 +41,11 @@ public class MaintenanceEventEmportDefinition extends EmportDefinition {
 
         String xid = maintenanceEvent.getString("xid");
         if (StringUtils.isBlank(xid))
-            xid = service.getDao().generateUniqueXid();
+            xid = service.generateUniqueXid();
 
         MaintenanceEventVO vo = null;
         if (StringUtils.isBlank(xid)) {
-            xid = service.getDao().generateUniqueXid();
+            xid = service.generateUniqueXid();
         }else {
             try {
                 vo = service.get(xid);

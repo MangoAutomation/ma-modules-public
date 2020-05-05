@@ -48,7 +48,7 @@ public class WatchListEmportDefinition extends EmportDefinition {
         String xid = watchListJson.getString("xid");
         WatchListVO vo = null;
         if (StringUtils.isBlank(xid)) {
-            xid = service.getDao().generateUniqueXid();
+            xid = service.generateUniqueXid();
         }else {
             try {
                 vo = service.get(xid);
