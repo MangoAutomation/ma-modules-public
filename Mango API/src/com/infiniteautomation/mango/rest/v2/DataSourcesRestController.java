@@ -33,6 +33,7 @@ import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedSeroJsonVORqlQuery;
 import com.infiniteautomation.mango.rest.v2.model.StreamedVORqlQueryWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.datasource.AbstractDataSourceModel;
+import com.infiniteautomation.mango.rest.v2.model.datasource.DataSourceWithPointsExport;
 import com.infiniteautomation.mango.rest.v2.model.datasource.ReadOnlyDataSourceModel;
 import com.infiniteautomation.mango.rest.v2.model.datasource.RuntimeStatusModel;
 import com.infiniteautomation.mango.rest.v2.model.datasource.RuntimeStatusModel.PollStatus;
@@ -306,13 +307,9 @@ public class DataSourcesRestController {
             value = "Export formatted for Configuration Import by supplying an RQL query",
             notes = "User must have read permission")
     @RequestMapping(method = RequestMethod.GET, value = "/export-with-points", produces = MediaTypes.SEROTONIN_JSON_VALUE)
-    public Map<String, JsonStreamedArray> exportQueryWithPoints(HttpServletRequest request, @AuthenticationPrincipal User user) {
+    public DataSourceWithPointsExport exportQueryWithPoints(HttpServletRequest request, @AuthenticationPrincipal User user) {
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
-
-        Map<String, JsonStreamedArray> export = new HashMap<>();
-        export.put("dataSources", new StreamedSeroJsonVORqlQuery<>(service, rql, null, null));
-        export.put("dataPoints", new StreamedSeroJsonVORqlQuery<>(dataPointService, rql, null, null));
-        return export;
+        return new DataSourceWithPointsExport(service, rql, dataPointService);
     }
 
     /**
@@ -324,4 +321,5 @@ public class DataSourcesRestController {
     private StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
         return new StreamedVORqlQueryWithTotal<>(service, rql, null, null, vo -> map.apply(vo, user));
     }
+
 }
