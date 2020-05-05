@@ -1,8 +1,13 @@
 <div layout="column" layout-gt-md="row" layout-gt-lg="row" flex="noshrink">
     <md-card flex="noshrink" flex-gt-md="25" flex-gt-lg="20" layout="column">
         <md-toolbar class="md-hue-3">
-            <div class="md-toolbar-tools">
+            <div class="md-toolbar-tools" layout layout-align="space-between center">
                 <span ma-tr="maintenanceEvents.select"></span>
+                <md-button class="md-icon-button ma-small-button ma-no-padding-right" ng-href="/rest/v2/maintenance-events/export"
+                    ng-attr-download="maintenance-events.json" hide-xs hide-sm ng-if="$ctrl.maintenanceList.$total !== 0">
+                    <md-tooltip md-direction="left" ma-tr="ui.app.exportAll"></md-tooltip>
+                    <md-icon md-menu-align-target>save_alt</md-icon>
+                </md-button>
             </div>
         </md-toolbar>
 
@@ -28,9 +33,15 @@
     <div flex>
         <md-card>
             <md-toolbar class="md-hue-3">
-                <div class="md-toolbar-tools">
+                <div class="md-toolbar-tools" layout layout-align="space-between center">
                     <span ng-if="!$ctrl.selectedEvent.isNew()" ma-tr="maintenanceEvents.edit" ma-tr-args="[$ctrl.selectedEvent.name]"></span>
                     <span ng-if="$ctrl.selectedEvent.isNew()" ma-tr="maintenanceEvents.createMe"></span>
+                    <md-button class="md-icon-button ma-small-button ma-no-padding-right"
+                        ng-href="/rest/v2/maintenance-events/export?xid={{$ctrl.selectedEvent.xid}}"
+                        ng-attr-download="{{$ctrl.selectedEvent.name}}.json" hide-xs hide-sm ng-if="!$ctrl.selectedEvent.isNew()">
+                        <md-tooltip md-direction="left" ma-tr="emport.export"></md-tooltip>
+                        <md-icon md-menu-align-target>save_alt</md-icon>
+                    </md-button>
                 </div>
             </md-toolbar>
             <ma-maintenance-events-setup 
