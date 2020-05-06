@@ -52,6 +52,7 @@ import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.model.event.RaiseEventModel;
 import com.infiniteautomation.mango.rest.v2.model.session.MangoSessionDataModel;
 import com.infiniteautomation.mango.spring.ConditionalOnProperty;
+import com.infiniteautomation.mango.spring.session.MangoJdbcSessionDataStore;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.LicenseViolatedException;
@@ -89,12 +90,13 @@ public class TestingRestController {
     private final RestModelMapper modelMapper;
 
     @Autowired
-    public TestingRestController(final MangoSessionRegistry sessionRegistry, MangoSessionDataDao sessionDataDao,
-            final SessionContext sessionContext,
+    public TestingRestController(final MangoSessionRegistry sessionRegistry,
+            final MangoSessionDataDao sessionDataDao,
+            final MangoJdbcSessionDataStore sessionDataStore,
             final RestModelMapper modelMapper) {
         this.sessionRegistry = sessionRegistry;
         this.sessionDataDao = sessionDataDao;
-        this.sessionContext = sessionContext;
+        this.sessionContext = sessionDataStore.getSessionContext();
         this.modelMapper = modelMapper;
     }
 
