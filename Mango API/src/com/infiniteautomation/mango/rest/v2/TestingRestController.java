@@ -12,6 +12,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -21,7 +22,9 @@ import java.util.stream.Collectors;
 import javax.annotation.security.RolesAllowed;
 import javax.management.MBeanServer;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
+import org.eclipse.jetty.server.session.SessionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,13 +48,19 @@ import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
+import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.model.event.RaiseEventModel;
+import com.infiniteautomation.mango.rest.v2.model.session.MangoSessionDataModel;
 import com.infiniteautomation.mango.spring.ConditionalOnProperty;
+import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.LicenseViolatedException;
+import com.serotonin.m2m2.db.dao.MangoSessionDataDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
+import com.serotonin.m2m2.vo.MangoSessionDataVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.PermissionException;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.web.mvc.spring.security.MangoSessionRegistry;
 
 import io.swagger.annotations.ApiOperation;
@@ -74,10 +83,19 @@ public class TestingRestController {
             Arrays.asList(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE, PosixFilePermission.GROUP_READ, PosixFilePermission.OTHERS_READ)
             .stream().collect(Collectors.toSet());
 
-    private final MangoSessionRegistry sessionRegistry;;
+    private final MangoSessionRegistry sessionRegistry;
+    private final MangoSessionDataDao sessionDataDao;
+    private final SessionContext sessionContext;
+    private final RestModelMapper modelMapper;
+
     @Autowired
-    public TestingRestController(MangoSessionRegistry sessionRegistry) {
+    public TestingRestController(final MangoSessionRegistry sessionRegistry, MangoSessionDataDao sessionDataDao,
+            final SessionContext sessionContext,
+            final RestModelMapper modelMapper) {
         this.sessionRegistry = sessionRegistry;
+        this.sessionDataDao = sessionDataDao;
+        this.sessionContext = sessionContext;
+        this.modelMapper = modelMapper;
     }
 
     @RequestMapping(method = {RequestMethod.GET}, value = "/location")
@@ -393,5 +411,120 @@ public class TestingRestController {
                 throw new CompletionException(e);
             }
         });
+    }
+
+    @PreAuthorize("isAdmin()")
+    @ApiOperation(value = "Get a persistent session entry")
+    @RequestMapping(method = RequestMethod.GET, value = {"/persistent-session/{sessionId}"})
+    public ResponseEntity<MangoSessionDataModel> getPersistentSession(
+            @PathVariable
+            String sessionId,
+            @RequestParam(required = false)
+            String contextPath,
+            @RequestParam(required = false)
+            String virtualHost,
+            @AuthenticationPrincipal PermissionHolder user,
+            HttpServletRequest request) {
+
+        if(contextPath == null) {
+            contextPath = sessionContext.getCanonicalContextPath();
+        }
+        if(virtualHost == null) {
+            virtualHost = sessionContext.getVhost();
+        }
+        MangoSessionDataVO vo = sessionDataDao.get(sessionId, contextPath, virtualHost);
+        if(vo == null) {
+            throw new NotFoundException();
+        }
+        return new ResponseEntity<>(modelMapper.map(vo, MangoSessionDataModel.class, user), HttpStatus.OK);
+    }
+
+
+    @PreAuthorize("isAdmin()")
+    @ApiOperation(value = "Create a persistent session entry")
+    @RequestMapping(method = RequestMethod.POST, value = {"/persistent-session"})
+    public ResponseEntity<MangoSessionDataModel> insertPersistentSession(
+            @RequestBody
+            MangoSessionDataModel model,
+            @AuthenticationPrincipal PermissionHolder user,
+            HttpServletRequest request) {
+
+        //Fill in some helpful pieces if they are missing
+        if(model.getContextPath() == null) {
+            model.setContextPath(sessionContext.getCanonicalContextPath());
+        }
+        if(model.getVirtualHost() == null) {
+            model.setVirtualHost(sessionContext.getVhost());
+        }
+        HttpSession session = request.getSession(false);
+        if(model.getLastAccessTime() == null) {
+            model.setLastAccessTime(new Date(session.getLastAccessedTime()));
+        }
+        if(model.getCreateTime() == null) {
+            model.setCreateTime(new Date(session.getCreationTime()));
+        }
+
+        sessionDataDao.insert(modelMapper.unMap(model, MangoSessionDataVO.class, user));
+
+        return new ResponseEntity<>(model, HttpStatus.CREATED);
+    }
+
+    @PreAuthorize("isAdmin()")
+    @ApiOperation(value = "Update a persistent session entry")
+    @RequestMapping(method = RequestMethod.PUT, value = {"/persistent-session/{sessionId}"})
+    public ResponseEntity<MangoSessionDataModel> updatePersistentSession(
+            @PathVariable
+            String sessionId,
+            @RequestBody
+            MangoSessionDataModel model,
+            @AuthenticationPrincipal PermissionHolder user,
+            HttpServletRequest request) {
+
+        //Fill in some helpful pieces if they are missing
+        if(model.getContextPath() == null) {
+            model.setContextPath(sessionContext.getCanonicalContextPath());
+        }
+        if(model.getVirtualHost() == null) {
+            model.setVirtualHost(sessionContext.getVhost());
+        }
+        HttpSession session = request.getSession(false);
+        if(model.getLastAccessTime() == null) {
+            model.setLastAccessTime(new Date(session.getLastAccessedTime()));
+        }
+        if(model.getCreateTime() == null) {
+            model.setCreateTime(new Date(session.getCreationTime()));
+        }
+
+        sessionDataDao.update(sessionId,
+                model.getContextPath(), model.getVirtualHost(),
+                modelMapper.unMap(model, MangoSessionDataVO.class, user));
+
+        return new ResponseEntity<>(model, HttpStatus.OK);
+    }
+
+    @PreAuthorize("isAdmin()")
+    @ApiOperation(value = "Delete a persistent session entry")
+    @RequestMapping(method = RequestMethod.DELETE, value = {"/persistent-session/{sessionId}"})
+    public ResponseEntity<Void> deletePersistentSession(
+            @PathVariable
+            String sessionId,
+            @RequestParam(required = false)
+            String contextPath,
+            @RequestParam(required = false)
+            String virtualHost,
+            @AuthenticationPrincipal PermissionHolder user,
+            HttpServletRequest request) {
+
+        if(contextPath == null) {
+            contextPath = sessionContext.getCanonicalContextPath();
+        }
+        if(virtualHost == null) {
+            virtualHost = sessionContext.getVhost();
+        }
+        if(sessionDataDao.delete(sessionId, contextPath, virtualHost)) {
+            throw new NotFoundException();
+        }
+
+        return new ResponseEntity<>(null, HttpStatus.OK);
     }
 }
