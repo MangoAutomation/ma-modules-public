@@ -24,7 +24,6 @@ import javax.management.MBeanServer;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import org.eclipse.jetty.server.session.SessionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,11 +51,10 @@ import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.model.event.RaiseEventModel;
 import com.infiniteautomation.mango.rest.v2.model.session.MangoSessionDataModel;
 import com.infiniteautomation.mango.spring.ConditionalOnProperty;
-import com.infiniteautomation.mango.spring.session.MangoJdbcSessionDataStore;
+import com.infiniteautomation.mango.spring.session.MangoSessionDataStore;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.LicenseViolatedException;
-import com.serotonin.m2m2.db.dao.MangoSessionDataDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.MangoSessionDataVO;
 import com.serotonin.m2m2.vo.User;
@@ -85,18 +83,15 @@ public class TestingRestController {
             .stream().collect(Collectors.toSet());
 
     private final MangoSessionRegistry sessionRegistry;
-    private final MangoSessionDataDao sessionDataDao;
-    private final SessionContext sessionContext;
+    private final MangoSessionDataStore sessionDataStore;
     private final RestModelMapper modelMapper;
 
     @Autowired
     public TestingRestController(final MangoSessionRegistry sessionRegistry,
-            final MangoSessionDataDao sessionDataDao,
-            final MangoJdbcSessionDataStore sessionDataStore,
+            final MangoSessionDataStore sessionDataDao,
             final RestModelMapper modelMapper) {
         this.sessionRegistry = sessionRegistry;
-        this.sessionDataDao = sessionDataDao;
-        this.sessionContext = sessionDataStore.getSessionContext();
+        this.sessionDataStore = sessionDataDao;
         this.modelMapper = modelMapper;
     }
 
@@ -429,12 +424,12 @@ public class TestingRestController {
             HttpServletRequest request) {
 
         if(contextPath == null) {
-            contextPath = sessionContext.getCanonicalContextPath();
+            contextPath = sessionDataStore.getSessionContext().getCanonicalContextPath();
         }
         if(virtualHost == null) {
-            virtualHost = sessionContext.getVhost();
+            virtualHost = sessionDataStore.getSessionContext().getVhost();
         }
-        MangoSessionDataVO vo = sessionDataDao.get(sessionId, contextPath, virtualHost);
+        MangoSessionDataVO vo = sessionDataStore.get(sessionId, contextPath, virtualHost);
         if(vo == null) {
             throw new NotFoundException();
         }
@@ -453,10 +448,10 @@ public class TestingRestController {
 
         //Fill in some helpful pieces if they are missing
         if(model.getContextPath() == null) {
-            model.setContextPath(sessionContext.getCanonicalContextPath());
+            model.setContextPath(sessionDataStore.getSessionContext().getCanonicalContextPath());
         }
         if(model.getVirtualHost() == null) {
-            model.setVirtualHost(sessionContext.getVhost());
+            model.setVirtualHost(sessionDataStore.getSessionContext().getVhost());
         }
         HttpSession session = request.getSession(false);
         if(model.getLastAccessTime() == null) {
@@ -466,7 +461,7 @@ public class TestingRestController {
             model.setCreateTime(new Date(session.getCreationTime()));
         }
 
-        sessionDataDao.insert(modelMapper.unMap(model, MangoSessionDataVO.class, user));
+        sessionDataStore.add(modelMapper.unMap(model, MangoSessionDataVO.class, user));
 
         return new ResponseEntity<>(model, HttpStatus.CREATED);
     }
@@ -484,10 +479,10 @@ public class TestingRestController {
 
         //Fill in some helpful pieces if they are missing
         if(model.getContextPath() == null) {
-            model.setContextPath(sessionContext.getCanonicalContextPath());
+            model.setContextPath(sessionDataStore.getSessionContext().getCanonicalContextPath());
         }
         if(model.getVirtualHost() == null) {
-            model.setVirtualHost(sessionContext.getVhost());
+            model.setVirtualHost(sessionDataStore.getSessionContext().getVhost());
         }
         HttpSession session = request.getSession(false);
         if(model.getLastAccessTime() == null) {
@@ -497,7 +492,7 @@ public class TestingRestController {
             model.setCreateTime(new Date(session.getCreationTime()));
         }
 
-        sessionDataDao.update(sessionId,
+        sessionDataStore.update(sessionId,
                 model.getContextPath(), model.getVirtualHost(),
                 modelMapper.unMap(model, MangoSessionDataVO.class, user));
 
@@ -518,12 +513,12 @@ public class TestingRestController {
             HttpServletRequest request) {
 
         if(contextPath == null) {
-            contextPath = sessionContext.getCanonicalContextPath();
+            contextPath = sessionDataStore.getSessionContext().getCanonicalContextPath();
         }
         if(virtualHost == null) {
-            virtualHost = sessionContext.getVhost();
+            virtualHost = sessionDataStore.getSessionContext().getVhost();
         }
-        if(sessionDataDao.delete(sessionId, contextPath, virtualHost)) {
+        if(sessionDataStore.delete(sessionId, contextPath, virtualHost)) {
             throw new NotFoundException();
         }
 
