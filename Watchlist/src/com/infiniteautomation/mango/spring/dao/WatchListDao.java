@@ -36,9 +36,9 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.infiniteautomation.mango.db.query.ConditionSortLimit;
+import com.infiniteautomation.mango.permission.MangoPermission;
 import com.infiniteautomation.mango.spring.MangoRuntimeContextConfiguration;
 import com.infiniteautomation.mango.spring.db.RoleTableDefinition;
-import com.infiniteautomation.mango.spring.db.RoleTableDefinition.GrantedAccess;
 import com.infiniteautomation.mango.spring.db.UserTableDefinition;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.LazyInitializer;
@@ -46,7 +46,9 @@ import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.AbstractDao;
 import com.serotonin.m2m2.db.dao.DataPointDao;
-import com.serotonin.m2m2.db.dao.RoleDao;
+import com.serotonin.m2m2.db.dao.PermissionDao;
+import com.serotonin.m2m2.db.dao.tables.MintermMappingTable;
+import com.serotonin.m2m2.db.dao.tables.PermissionMappingTable;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
@@ -67,19 +69,22 @@ public class WatchListDao extends AbstractDao<WatchListVO, WatchListTableDefinit
     private final DataPointDao dataPointDao;
     private final UserTableDefinition userTable;
     private final PermissionService permissionService;
+    private final PermissionDao permissionDao;
 
     @Autowired
     private WatchListDao(WatchListTableDefinition table, DataPointDao dataPointDao,
             UserTableDefinition userTable,
             @Qualifier(MangoRuntimeContextConfiguration.DAO_OBJECT_MAPPER_NAME)ObjectMapper mapper,
             ApplicationEventPublisher publisher,
-            PermissionService permissionService) {
+            PermissionService permissionService,
+            PermissionDao permissionDao) {
         super(AuditEvent.TYPE_NAME, table,
                 new TranslatableMessage("internal.monitor.WATCHLIST_COUNT"),
                 mapper, publisher);
         this.dataPointDao = dataPointDao;
         this.userTable = userTable;
         this.permissionService = permissionService;
+        this.permissionDao = permissionDao;
     }
 
     /**
@@ -124,31 +129,51 @@ public class WatchListDao extends AbstractDao<WatchListVO, WatchListTableDefinit
 
         });
     }
+
+    /*
+     * Override to use select distinct due to permissions joins
+     */
     @Override
-    public void loadRelationalData(WatchListVO vo) {
-        //Populate permissions
-        vo.setReadPermission(RoleDao.getInstance().getPermission(vo, PermissionService.READ));
-        vo.setEditPermission(RoleDao.getInstance().getPermission(vo, PermissionService.EDIT));
+    public SelectJoinStep<Record> getSelectQuery(List<Field<?>> fields) {
+        return this.create.selectDistinct(fields)
+                .from(this.table.getTableAsAlias());
     }
 
     @Override
-    public void saveRelationalData(WatchListVO vo, boolean insert) {
-        if(!insert) {
+    public void savePreRelationalData(WatchListVO existing, WatchListVO vo) {
+        permissionDao.permissionId(vo.getReadPermission());
+        permissionDao.permissionId(vo.getEditPermission());
+    }
+
+    @Override
+    public void saveRelationalData(WatchListVO existing, WatchListVO vo) {
+        if(existing != null) {
             ejt.update("DELETE FROM watchListPoints WHERE watchListId=?", new Object[] { vo.getId() });
         }
         if(WatchListVO.STATIC_TYPE.equals(vo.getType())) {
             ejt.batchUpdate("INSERT INTO watchListPoints VALUES (?,?,?)", new InsertPoints(vo));
         }
-
-        //Replace the role mappings
-        RoleDao.getInstance().replaceRolesOnVoPermission(vo.getReadPermission(), vo, PermissionService.READ, insert);
-        RoleDao.getInstance().replaceRolesOnVoPermission(vo.getEditPermission(), vo, PermissionService.EDIT, insert);
+        if(existing != null) {
+            if(!existing.getReadPermission().equals(vo.getReadPermission())) {
+                permissionDao.permissionDeleted(existing.getReadPermission());
+            }
+            if(!existing.getEditPermission().equals(vo.getEditPermission())) {
+                permissionDao.permissionDeleted(existing.getEditPermission());
+            }
+        }
     }
 
     @Override
-    public void deleteRelationalData(WatchListVO vo) {
-        RoleDao.getInstance().deleteRolesForVoPermission(vo, PermissionService.READ);
-        RoleDao.getInstance().deleteRolesForVoPermission(vo, PermissionService.EDIT);
+    public void loadRelationalData(WatchListVO vo) {
+        //Populate permissions
+        vo.setReadPermission(permissionDao.get(vo.getReadPermission().getId()));
+        vo.setEditPermission(permissionDao.get(vo.getEditPermission().getId()));
+    }
+
+    @Override
+    public void deletePostRelationalData(WatchListVO vo) {
+        //Clean permissions
+        permissionDao.permissionDeleted(vo.getReadPermission(), vo.getEditPermission());
     }
 
     @Override
@@ -159,42 +184,23 @@ public class WatchListDao extends AbstractDao<WatchListVO, WatchListTableDefinit
             List<Integer> roleIds = user.getAllInheritedRoles().stream().map(r -> r.getId()).collect(Collectors.toList());
 
             Condition roleIdsIn = RoleTableDefinition.roleIdField.in(roleIds);
-            Field<Boolean> granted = new GrantedAccess(RoleTableDefinition.maskField, roleIdsIn);
 
-            Table<?> readSubselect = this.create.select(
-                    RoleTableDefinition.voIdField,
-                    DSL.inline(1).as("granted"))
-                    .from(RoleTableDefinition.ROLE_MAPPING_TABLE)
-                    .where(RoleTableDefinition.voTypeField.eq(WatchListVO.class.getSimpleName()),
-                            RoleTableDefinition.permissionTypeField.eq(PermissionService.READ))
-                    .groupBy(RoleTableDefinition.voIdField)
-                    .having(granted)
-                    .asTable("wlRead");
+            Table<?> mintermsGranted = this.create.select(MintermMappingTable.MINTERMS_MAPPING.mintermId)
+                    .from(MintermMappingTable.MINTERMS_MAPPING)
+                    .groupBy(MintermMappingTable.MINTERMS_MAPPING.mintermId)
+                    .having(DSL.count().eq(DSL.count(
+                            DSL.case_().when(roleIdsIn, DSL.inline(1))
+                            .else_(DSL.inline((Integer)null))))).asTable("mintermsGranted");
 
-            select = select.leftJoin(readSubselect).on(this.table.getIdAlias().eq(readSubselect.field(RoleTableDefinition.voIdField)));
+            Table<?> permissionsGranted = this.create.selectDistinct(PermissionMappingTable.PERMISSIONS_MAPPING.permissionId)
+                    .from(PermissionMappingTable.PERMISSIONS_MAPPING)
+                    .join(mintermsGranted).on(mintermsGranted.field(MintermMappingTable.MINTERMS_MAPPING.mintermId).eq(PermissionMappingTable.PERMISSIONS_MAPPING.mintermId))
+                    .asTable("permissionsGranted");
 
-            Table<?> editSubselect = this.create.select(
-                    RoleTableDefinition.voIdField,
-                    DSL.inline(1).as("granted"))
-                    .from(RoleTableDefinition.ROLE_MAPPING_TABLE)
-                    .where(RoleTableDefinition.voTypeField.eq(WatchListVO.class.getSimpleName()),
-                            RoleTableDefinition.permissionTypeField.eq(PermissionService.EDIT))
-                    .groupBy(RoleTableDefinition.voIdField)
-                    .having(granted)
-                    .asTable("wlEdit");
-
-            select = select.leftJoin(editSubselect).on(this.table.getIdAlias().eq(editSubselect.field(RoleTableDefinition.voIdField)));
-
-            if(user instanceof User) {
-                conditions.addCondition(DSL.or(
-                        readSubselect.field("granted").isTrue(),
-                        editSubselect.field("granted").isTrue(),
-                        this.table.getField("userId").eq(((User)user).getId())));
-            }else {
-                conditions.addCondition(DSL.or(
-                        readSubselect.field("granted").isTrue(),
-                        editSubselect.field("granted").isTrue()));
-            }
+            select = select.join(permissionsGranted).on(
+                    permissionsGranted.field(PermissionMappingTable.PERMISSIONS_MAPPING.permissionId).in(
+                            WatchListTableDefinition.READ_PERMISSION_ALIAS, WatchListTableDefinition.EDIT_PERMISSION_ALIAS)
+                    .or(this.table.getAlias("userId").eq(((User)user).getId())));
         }
         return select;
     }
@@ -242,7 +248,9 @@ public class WatchListDao extends AbstractDao<WatchListVO, WatchListTableDefinit
                 vo.getName(),
                 vo.getUserId(),
                 vo.getType(),
-                jsonData
+                jsonData,
+                vo.getReadPermission().getId(),
+                vo.getEditPermission().getId()
         };
     }
 
@@ -283,6 +291,8 @@ public class WatchListDao extends AbstractDao<WatchListVO, WatchListTableDefinit
             }catch(Exception e){
                 LOG.error(e.getMessage(), e);
             }
+            wl.setReadPermission(new MangoPermission(rs.getInt(++i)));
+            wl.setEditPermission(new MangoPermission(rs.getInt(++i)));
             return wl;
         }
     }

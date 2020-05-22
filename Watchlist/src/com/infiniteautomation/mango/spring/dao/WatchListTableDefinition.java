@@ -28,6 +28,13 @@ import com.infiniteautomation.mango.spring.db.UserTableDefinition;
 public class WatchListTableDefinition extends AbstractTableDefinition {
 
     public static final String TABLE_NAME = "watchLists";
+    public static final Table<Record> TABLE = DSL.table(TABLE_NAME);
+    public static final Field<Integer> ID = DSL.field(TABLE.getQualifiedName().append("id"), SQLDataType.INTEGER.nullable(false));
+    public static final Field<Integer> READ_PERMISSION = DSL.field(TABLE.getQualifiedName().append("readPermissionId"), SQLDataType.INTEGER.nullable(false));
+    public static final Field<Integer> EDIT_PERMISSION = DSL.field(TABLE.getQualifiedName().append("editPermissionId"), SQLDataType.INTEGER.nullable(false));
+
+    public static final Field<Integer> READ_PERMISSION_ALIAS = DSL.field( DSL.name("wl").append("readPermissionId"), SQLDataType.INTEGER.nullable(false));
+    public static final Field<Integer> EDIT_PERMISSION_ALIAS = DSL.field( DSL.name("wl").append("editPermissionId"), SQLDataType.INTEGER.nullable(false));
 
     public final Field<Integer> USER_ID = DSL.field(DSL.name("userId"), SQLDataType.INTEGER.nullable(false));
     public final Field<String> TYPE = DSL.field(DSL.name("type"), SQLDataType.VARCHAR(20));
@@ -53,6 +60,8 @@ public class WatchListTableDefinition extends AbstractTableDefinition {
         fields.add(USER_ID);
         fields.add(TYPE);
         fields.add(DATA);
+        fields.add(READ_PERMISSION);
+        fields.add(EDIT_PERMISSION);
     }
 
     @Override
