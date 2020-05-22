@@ -25,9 +25,11 @@ create table maintenanceEvents (
   inactiveCron nvarchar(25),
   timeoutPeriods int,
   timeoutPeriodType int,
+  togglePermissionId INT NOT NULL,
   primary key (id)
 );
 alter table maintenanceEvents add constraint maintenanceEventsUn1 unique (xid);
+ALTER TABLE maintenanceEvents ADD CONSTRAINT maintenanceEventsFk1 FOREIGN KEY (togglePermissionId) REFERENCES permissions(id) ON DELETE RESTRICT;
 
 CREATE TABLE maintenanceEventDataPoints (
   maintenanceEventId int NOT NULL,

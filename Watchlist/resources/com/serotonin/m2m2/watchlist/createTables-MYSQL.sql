@@ -9,10 +9,14 @@ CREATE TABLE watchLists (
   name varchar(255),
   type varchar(20),
   data longtext,
+  readPermissionId INT NOT NULL,
+  editPermissionId INT NOT NULL,
   PRIMARY KEY (id)
 ) engine=InnoDB;
 ALTER TABLE watchLists add constraint watchListsUn1 unique (xid);
 ALTER TABLE watchLists add constraint watchListsFk1 foreign key (userId) references users(id) on delete cascade;
+ALTER TABLE watchLists ADD CONSTRAINT watchListsFk2 FOREIGN KEY (readPermissionId) REFERENCES permissions(id) ON DELETE RESTRICT;
+ALTER TABLE watchLists ADD CONSTRAINT watchListsFk3 FOREIGN KEY (editPermissionId) REFERENCES permissions(id) ON DELETE RESTRICT;
 
 CREATE TABLE watchListPoints (
   watchListId int NOT NULL,

@@ -8,6 +8,8 @@ import java.util.List;
 
 import org.jooq.Field;
 import org.jooq.Name;
+import org.jooq.Record;
+import org.jooq.Table;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
 import org.springframework.stereotype.Component;
@@ -20,6 +22,12 @@ import com.infiniteautomation.mango.spring.db.AbstractTableDefinition;
  */
 @Component
 public class MaintenanceEventsTableDefinition extends AbstractTableDefinition {
+
+    public static final Table<Record> TABLE = DSL.table(SchemaDefinition.TABLE_NAME);
+    public static final Field<Integer> ID = DSL.field(TABLE.getQualifiedName().append("id"), SQLDataType.INTEGER.nullable(false));
+    public static final Field<Integer> TOGGLE_PERMISSION = DSL.field(TABLE.getQualifiedName().append("togglePermissionId"), SQLDataType.INTEGER.nullable(false));
+
+    public static final Field<Integer> TOGGLE_PERMISSION_ALIAS = DSL.field( DSL.name("me").append("togglePermissionId"), SQLDataType.INTEGER.nullable(false));
 
     Field<Integer> ALARM_LEVEL = DSL.field(DSL.name("alarmLevel"), SQLDataType.INTEGER.nullable(false));
     Field<Integer> SCHEDULE_TYPE = DSL.field(DSL.name("scheduleType"), SQLDataType.INTEGER.nullable(false));
@@ -68,6 +76,7 @@ public class MaintenanceEventsTableDefinition extends AbstractTableDefinition {
         fields.add(INACTIVE_CRON);
         fields.add(TIMEOUT_PERIODS);
         fields.add(TIMEOUT_PERIOD_TYPE);
+        fields.add(TOGGLE_PERMISSION);
     }
 
     @Override

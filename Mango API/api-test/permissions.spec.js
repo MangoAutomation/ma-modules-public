@@ -25,7 +25,7 @@ describe('Permissions endpoint tests', function() {
     
     it('Update create user permission with single array', () => {
         return client.restRequest({
-            path: '/rest/v2/permissions/users.create',
+            path: '/rest/v2/system-permissions/users.create',
             method: 'PUT',
             data: {
                 systemSettingName: 'users.create',
@@ -42,7 +42,7 @@ describe('Permissions endpoint tests', function() {
     
     it('Update create user permission with multiple arrays', () => {
         return client.restRequest({
-            path: '/rest/v2/permissions/users.create',
+            path: '/rest/v2/system-permissions/users.create',
             method: 'PUT',
             data: {
                 systemSettingName: 'users.create',

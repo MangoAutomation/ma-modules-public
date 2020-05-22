@@ -71,7 +71,6 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
     String dataSourceXid;
     String dataSourceName;
     String dataSourceTypeName;
-    MangoPermissionModel dataSourceEditRoles;
 
     boolean mergeTags = false;
     Map<String, String> tags;
@@ -135,7 +134,6 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
             this.setExtremeLowLimit = point.getSetExtremeLowLimit();
             this.setExtremeHighLimit = point.getSetExtremeHighLimit();
         }
-        this.dataSourceEditRoles = new MangoPermissionModel(point.getDataSourceEditRoles());
         this.extendedName = point.getExtendedName();
         this.data = point.getData();
     }
@@ -558,14 +556,6 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
 
     public void setSetExtremeHighLimit(Double setExtremeHighLimit) {
         this.setExtremeHighLimit = setExtremeHighLimit;
-    }
-
-    public MangoPermissionModel getDataSourceEditRoles() {
-        return dataSourceEditRoles;
-    }
-
-    public void setDataSourceEditRoles(MangoPermissionModel dataSourceEditRoles) {
-        //No-op
     }
 
     public String getExtendedName() {
