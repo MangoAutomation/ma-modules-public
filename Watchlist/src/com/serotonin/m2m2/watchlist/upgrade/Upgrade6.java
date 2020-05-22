@@ -71,7 +71,7 @@ public class Upgrade6 extends DBUpgrade implements PermissionMigration {
         scripts.put(DatabaseProxy.DatabaseType.H2.name(), sql);
         scripts.put(DatabaseProxy.DatabaseType.MSSQL.name(), sql);
         scripts.put(DatabaseProxy.DatabaseType.POSTGRES.name(), sql);
-        runScript(scripts);
+        runScript(scripts, out);
     }
 
     private final String[] sql = new String[] {

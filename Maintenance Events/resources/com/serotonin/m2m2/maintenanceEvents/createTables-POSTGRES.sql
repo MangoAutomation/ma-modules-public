@@ -26,10 +26,11 @@ create table maintenanceEvents (
   inactiveCron varchar(25),
   timeoutPeriods int,
   timeoutPeriodType int,
+  togglePermissionId INT NOT NULL,
   primary key (id)
 );
 alter table maintenanceEvents add constraint maintenanceEventsUn1 unique (xid);
-alter table maintenanceEvents add constraint maintenanceEventsFk1 foreign key (dataSourceId) references dataSources(id) on delete cascade;
+ALTER TABLE maintenanceEvents ADD CONSTRAINT maintenanceEventsFk1 FOREIGN KEY (togglePermissionId) REFERENCES permissions(id) ON DELETE RESTRICT;
 
 CREATE TABLE maintenanceEventDataPoints (
   maintenanceEventId int NOT NULL,
@@ -37,3 +38,10 @@ CREATE TABLE maintenanceEventDataPoints (
 ) ;
 ALTER TABLE maintenanceEventDataPoints add constraint maintenanceEventDataPointsFk1 foreign key (maintenanceEventId) references maintenanceEvents(id) on delete cascade;
 ALTER TABLE maintenanceEventDataPoints add constraint maintenanceEventDataPointsFk2 foreign key (dataPointId) references dataPoints(id) on delete cascade;
+
+CREATE TABLE maintenanceEventDataSources (
+  maintenanceEventId int NOT NULL,
+  dataSourceId int NOT NULL
+) ;
+ALTER TABLE maintenanceEventDataSources add constraint maintenanceEventDataSourcesFk1 foreign key (maintenanceEventId) references maintenanceEvents(id) on delete cascade;
+ALTER TABLE maintenanceEventDataSources add constraint maintenanceEventDataSourcesFk2 foreign key (dataSourceId) references dataSources(id) on delete cascade;

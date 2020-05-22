@@ -20,6 +20,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.infiniteautomation.mango.permission.MangoPermission;
 import com.infiniteautomation.mango.spring.MangoRuntimeContextConfiguration;
 import com.infiniteautomation.mango.util.LazyInitSupplier;
 import com.serotonin.ShouldNeverHappenException;
@@ -28,7 +29,7 @@ import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.AbstractDao;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
-import com.serotonin.m2m2.db.dao.RoleDao;
+import com.serotonin.m2m2.db.dao.PermissionDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.vo.DataPointVO;
@@ -46,8 +47,9 @@ public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO, Mainten
     private final String SELECT_POINTS;
     private final String SELECT_DATA_SOURCES;
 
-    private DataPointDao dataPointDao;
-    private DataSourceDao dataSourceDao;
+    private final DataPointDao dataPointDao;
+    private final DataSourceDao dataSourceDao;
+    private final PermissionDao permissionDao;
 
     private static final LazyInitSupplier<MaintenanceEventDao> springInstance = new LazyInitSupplier<>(() -> {
         Object o = Common.getRuntimeContext().getBean(MaintenanceEventDao.class);
@@ -61,12 +63,14 @@ public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO, Mainten
             MaintenanceEventsTableDefinition table,
             DataPointDao dataPointDao, DataSourceDao dataSourceDao,
             @Qualifier(MangoRuntimeContextConfiguration.DAO_OBJECT_MAPPER_NAME)ObjectMapper mapper,
-            ApplicationEventPublisher publisher) {
+            ApplicationEventPublisher publisher,
+            PermissionDao permissionDao) {
         super(AuditEvent.TYPE_NAME,
                 table, new TranslatableMessage("header.maintenanceEvents"),
                 mapper, publisher);
         this.dataPointDao = dataPointDao;
         this.dataSourceDao = dataSourceDao;
+        this.permissionDao = permissionDao;
         SELECT_POINTS = dataPointDao.getJoinedSelectQuery().getSQL() + " JOIN maintenanceEventDataPoints mep ON mep.dataPointId = dp.id WHERE mep.maintenanceEventId=?";
         SELECT_DATA_SOURCES = dataSourceDao.getJoinedSelectQuery().getSQL() + " JOIN maintenanceEventDataSources med ON med.dataSourceId = ds.id WHERE med.maintenanceEventId=?";
     }
@@ -91,13 +95,41 @@ public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO, Mainten
             return false;
         }
     }
+
+    @Override
+    public void savePreRelationalData(MaintenanceEventVO existing, MaintenanceEventVO vo) {
+        permissionDao.permissionId(vo.getTogglePermission());
+    }
+
+    @Override
+    public void saveRelationalData(MaintenanceEventVO existing, MaintenanceEventVO vo) {
+        if(existing == null) {
+            ejt.batchUpdate(INSERT_DATA_SOURCE_IDS, new InsertDataSources(vo));
+            ejt.batchUpdate(INSERT_DATA_POINT_IDS, new InsertDataPoints(vo));
+        }else {
+            //Delete and insert
+            ejt.update(DELETE_DATA_SOURCE_IDS, new Object[] {vo.getId()});
+            ejt.batchUpdate(INSERT_DATA_SOURCE_IDS, new InsertDataSources(vo));
+            ejt.update(DELETE_DATA_POINT_IDS, new Object[] {vo.getId()});
+            ejt.batchUpdate(INSERT_DATA_POINT_IDS, new InsertDataPoints(vo));
+            if(!existing.getTogglePermission().equals(vo.getTogglePermission())) {
+                permissionDao.permissionDeleted(existing.getTogglePermission());
+            }
+        }
+    }
+
     @Override
     public void loadRelationalData(MaintenanceEventVO vo) {
         vo.setDataPoints(queryForList(SELECT_POINT_IDS, new Object[] {vo.getId()}, Integer.class));
         vo.setDataSources(queryForList(SELECT_DATA_SOURCE_IDS, new Object[] {vo.getId()}, Integer.class));
         //Populate permissions
-        vo.setTogglePermission(RoleDao.getInstance().getPermission(vo, "TOGGLE"));
+        vo.setTogglePermission(permissionDao.get(vo.getTogglePermission().getId()));
+    }
 
+    @Override
+    public void deletePostRelationalData(MaintenanceEventVO vo) {
+        //Clean permissions
+        permissionDao.permissionDeleted(vo.getTogglePermission());
     }
 
     /**
@@ -255,29 +287,6 @@ public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO, Mainten
     private static final String INSERT_DATA_POINT_IDS = "INSERT INTO maintenanceEventDataPoints (maintenanceEventId, dataPointId) VALUES (?,?)";
     private static final String DELETE_DATA_POINT_IDS = "DELETE FROM maintenanceEventDataPoints WHERE maintenanceEventId=?";
 
-    @Override
-    public void saveRelationalData(MaintenanceEventVO vo, boolean insert) {
-        if(insert) {
-            ejt.batchUpdate(INSERT_DATA_SOURCE_IDS, new InsertDataSources(vo));
-            ejt.batchUpdate(INSERT_DATA_POINT_IDS, new InsertDataPoints(vo));
-        }else {
-            //Delete and insert
-            ejt.update(DELETE_DATA_SOURCE_IDS, new Object[] {vo.getId()});
-            ejt.batchUpdate(INSERT_DATA_SOURCE_IDS, new InsertDataSources(vo));
-            ejt.update(DELETE_DATA_POINT_IDS, new Object[] {vo.getId()});
-            ejt.batchUpdate(INSERT_DATA_POINT_IDS, new InsertDataPoints(vo));
-        }
-
-        //Replace the role mappings
-        RoleDao.getInstance().replaceRolesOnVoPermission(vo.getTogglePermission(), vo, "TOGGLE", insert);
-
-    }
-
-    @Override
-    public void deleteRelationalData(MaintenanceEventVO vo) {
-        RoleDao.getInstance().deleteRolesForVoPermission(vo, "TOGGLE");
-    }
-
     private static class InsertDataSources implements BatchPreparedStatementSetter {
         MaintenanceEventVO vo;
 
@@ -344,7 +353,8 @@ public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO, Mainten
                 me.getInactiveSecond(),
                 me.getInactiveCron(),
                 me.getTimeoutPeriods(),
-                me.getTimeoutPeriodType()
+                me.getTimeoutPeriodType(),
+                me.getTogglePermission().getId()
         };
     }
 
@@ -380,6 +390,7 @@ public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO, Mainten
             me.setInactiveCron(rs.getString(++i));
             me.setTimeoutPeriods(rs.getInt(++i));
             me.setTimeoutPeriodType(rs.getInt(++i));
+            me.setTogglePermission(new MangoPermission(rs.getInt(++i)));
             return me;
         }
     }
