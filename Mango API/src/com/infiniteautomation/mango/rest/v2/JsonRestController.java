@@ -21,9 +21,11 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.infiniteautomation.mango.db.query.pojo.RQLFilterJsonNode;
 import com.infiniteautomation.mango.rest.v2.model.ArrayWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.FilteredStreamWithTotal;
+import com.infiniteautomation.mango.rest.v2.model.jsondata.JsonDataModel;
 import com.infiniteautomation.mango.rest.v2.resolver.RemainingPath;
 import com.infiniteautomation.mango.spring.service.JsonDataService;
 import com.infiniteautomation.mango.util.RQLUtils;
+import com.serotonin.m2m2.vo.json.JsonDataVO;
 
 import net.jazdw.rql.parser.ASTNode;
 
@@ -97,5 +99,30 @@ public class JsonRestController {
         ArrayNode items = this.jsonDataService.valuesForDataAtPointer(xid, pointer);
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
         return new FilteredStreamWithTotal<>(items, new RQLFilterJsonNode(rql));
+    }
+
+    // TODO Mango 4.0 these store methods should use a new model that does not contain the JSON data
+    @RequestMapping(method = RequestMethod.GET, value="/store/{xid}")
+    public JsonDataModel getStore(@PathVariable String xid) {
+        JsonDataVO vo = this.jsonDataService.get(xid);
+        return new JsonDataModel(vo);
+    }
+
+    @RequestMapping(method = RequestMethod.POST, value="/store")
+    public JsonDataModel createStore(@RequestBody JsonDataModel data) {
+        JsonDataVO vo = this.jsonDataService.insert(data.toVO());
+        return new JsonDataModel(vo);
+    }
+
+    @RequestMapping(method = RequestMethod.PUT, value="/store/{xid}")
+    public JsonDataModel updateStore(@PathVariable String xid, @RequestBody JsonDataModel data) {
+        JsonDataVO vo = this.jsonDataService.update(xid, data.toVO());
+        return new JsonDataModel(vo);
+    }
+
+    @RequestMapping(method = RequestMethod.DELETE, value="/store/{xid}")
+    public JsonDataModel deleteStore(@PathVariable String xid) {
+        JsonDataVO vo = this.jsonDataService.delete(xid);
+        return new JsonDataModel(vo);
     }
 }

@@ -19,6 +19,7 @@ public class JsonDataModel extends AbstractVoModel<JsonDataVO> {
 
     private MangoPermissionModel readPermission;
     private MangoPermissionModel editPermission;
+    // TODO Mango 4.0 this is no longer needed?
     private boolean publicData;
     private JsonNode jsonData;
 
