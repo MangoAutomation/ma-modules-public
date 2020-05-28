@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.HandlerMapping;
 
@@ -101,28 +102,49 @@ public class JsonRestController {
         return new FilteredStreamWithTotal<>(items, new RQLFilterJsonNode(rql));
     }
 
-    // TODO Mango 4.0 these store methods should use a new model that does not contain the JSON data
     @RequestMapping(method = RequestMethod.GET, value="/store/{xid}")
-    public JsonDataModel getStore(@PathVariable String xid) {
+    public JsonDataModel getStore(@PathVariable String xid, @RequestParam(required = false, defaultValue = "false") boolean withData) {
         JsonDataVO vo = this.jsonDataService.get(xid);
+        if (!withData) {
+            vo.setJsonData(null);
+        }
         return new JsonDataModel(vo);
     }
 
     @RequestMapping(method = RequestMethod.POST, value="/store")
-    public JsonDataModel createStore(@RequestBody JsonDataModel data) {
-        JsonDataVO vo = this.jsonDataService.insert(data.toVO());
+    public JsonDataModel createStore(@RequestBody JsonDataModel body, @RequestParam(required = false, defaultValue = "false") boolean withData) {
+        JsonDataVO create = body.toVO();
+        if (!withData) {
+            create.setJsonData(null);
+        }
+        JsonDataVO vo = this.jsonDataService.insert(create);
+        if (!withData) {
+            vo.setJsonData(null);
+        }
         return new JsonDataModel(vo);
     }
 
     @RequestMapping(method = RequestMethod.PUT, value="/store/{xid}")
-    public JsonDataModel updateStore(@PathVariable String xid, @RequestBody JsonDataModel data) {
-        JsonDataVO vo = this.jsonDataService.update(xid, data.toVO());
+    public JsonDataModel updateStore(@PathVariable String xid, @RequestBody JsonDataModel body, @RequestParam(required = false, defaultValue = "false") boolean withData) {
+        JsonDataVO update = body.toVO();
+        JsonDataVO vo;
+        if (withData) {
+            vo = this.jsonDataService.update(xid, update);
+        } else {
+            vo = this.jsonDataService.updateStore(xid, update);
+        }
+        if (!withData) {
+            vo.setJsonData(null);
+        }
         return new JsonDataModel(vo);
     }
 
     @RequestMapping(method = RequestMethod.DELETE, value="/store/{xid}")
-    public JsonDataModel deleteStore(@PathVariable String xid) {
+    public JsonDataModel deleteStore(@PathVariable String xid, @RequestParam(required = false, defaultValue = "false") boolean withData) {
         JsonDataVO vo = this.jsonDataService.delete(xid);
+        if (!withData) {
+            vo.setJsonData(null);
+        }
         return new JsonDataModel(vo);
     }
 }

@@ -4,6 +4,7 @@
 
 package com.infiniteautomation.mango.rest.v2.model.jsondata;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.infiniteautomation.mango.permission.MangoPermission;
 import com.infiniteautomation.mango.rest.v2.model.AbstractVoModel;
@@ -21,6 +22,8 @@ public class JsonDataModel extends AbstractVoModel<JsonDataVO> {
     private MangoPermissionModel editPermission;
     // TODO Mango 4.0 this is no longer needed?
     private boolean publicData;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private JsonNode jsonData;
 
     public JsonDataModel(JsonDataVO data) {

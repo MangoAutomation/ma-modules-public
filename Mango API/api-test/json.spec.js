@@ -18,7 +18,7 @@
 const {createClient, addLoginHook, uuid} = require('@infinite-automation/mango-module-tools/test-helper/testHelper');
 const client = createClient();
 
-const jsonDataUrl = '/rest/v2/json-data';
+const jsonStoreUrl = '/rest/v2/json/store';
 const jsonUrl = '/rest/v2/json/data';
 const jsonQueryUrl = '/rest/v2/json/query';
 
@@ -64,27 +64,33 @@ describe('JSON data', function() {
     beforeEach('Create test item', function() {
         this.currentTest.xid = uuid();
         const storeItem = {
+            xid: this.currentTest.xid,
             name: 'test json store',
             publicData: false,
             readPermission: '',
-            editPermission: ''
+            editPermission: '',
+            jsonData: testData
         };
 
         return client.restRequest({
-            path: `${jsonDataUrl}/${encodeURIComponent(this.currentTest.xid)}`,
+            path: jsonStoreUrl,
             method: 'POST',
-            params: storeItem,
-            data: testData
+            data: storeItem,
+            params: {
+                withData: true
+            }
         }).then(response => {
             this.currentTest.item = response.data;
         });
     });
     
     afterEach('Delete test item', function() {
-        return client.restRequest({
-            path: `${jsonDataUrl}/${encodeURIComponent(this.currentTest.xid)}`,
-            method: 'DELETE'
-        });
+        if (!this.currentTest.skipDelete) {
+            return client.restRequest({
+                path: `${jsonStoreUrl}/${encodeURIComponent(this.currentTest.xid)}`,
+                method: 'DELETE'
+            });
+        }
     });
 
     const getJsonData = (xid, pointer) => {
@@ -388,4 +394,182 @@ describe('JSON data', function() {
             });
         });
     }
+    
+    describe('Store items', function() {
+        it('Get with data', function() {
+            return client.restRequest({
+                path: `${jsonStoreUrl}/${encodeURIComponent(this.test.xid)}`,
+                method: 'GET',
+                params: {
+                    withData: true
+                }
+            }).then(response => {
+                assert.deepEqual(response.data, this.test.item);
+            });
+        });
+        
+        it('Get without data', function() {
+            return client.restRequest({
+                path: `${jsonStoreUrl}/${encodeURIComponent(this.test.xid)}`,
+                method: 'GET'
+            }).then(response => {
+                assert.doesNotHaveAnyKeys(response.data, ['jsonData']);
+                const expected = Object.assign({}, this.test.item);
+                delete expected.jsonData;
+                assert.deepEqual(response.data, expected);
+            });
+        });
+        
+        it('Create with data', function() {
+            const data = {
+                xid: uuid(),
+                name: 'test json store',
+                publicData: false,
+                readPermission: [],
+                editPermission: [],
+                jsonData: {test: uuid()}
+            };
+            
+            return client.restRequest({
+                path: jsonStoreUrl,
+                method: 'POST',
+                params: {
+                    withData: true
+                },
+                data
+            }).then(response => {
+                assert.isNumber(response.data.id);
+                for (let key in data) {
+                    assert.deepEqual(response.data[key], data[key]);
+                }
+            }).finally(() => {
+                return client.restRequest({
+                    path: `${jsonStoreUrl}/${encodeURIComponent(data.xid)}`,
+                    method: 'DELETE'
+                });
+            });
+        });
+        
+        it('Create without data', function() {
+            const data = {
+                xid: uuid(),
+                name: 'test json store',
+                publicData: false,
+                readPermission: [],
+                editPermission: []
+            };
+            
+            return client.restRequest({
+                path: jsonStoreUrl,
+                method: 'POST',
+                data
+            }).then(response => {
+                assert.doesNotHaveAnyKeys(response.data, ['jsonData']);
+                assert.isNumber(response.data.id);
+                for (let key in data) {
+                    assert.deepEqual(response.data[key], data[key]);
+                }
+            }).finally(() => {
+                return client.restRequest({
+                    path: `${jsonStoreUrl}/${encodeURIComponent(data.xid)}`,
+                    method: 'DELETE'
+                });
+            });
+        });
+        
+        it('Create will null data', function() {
+            const data = {
+                xid: uuid(),
+                name: 'test json store',
+                publicData: false,
+                readPermission: [],
+                editPermission: [],
+                jsonData: null
+            };
+            
+            return client.restRequest({
+                path: jsonStoreUrl,
+                method: 'POST',
+                params: {
+                    withData: true
+                },
+                data
+            }).then(response => {
+                assert.isNumber(response.data.id);
+                for (let key in data) {
+                    assert.deepEqual(response.data[key], data[key]);
+                }
+            }).finally(() => {
+                return client.restRequest({
+                    path: `${jsonStoreUrl}/${encodeURIComponent(data.xid)}`,
+                    method: 'DELETE'
+                });
+            });
+        });
+        
+        it('Update with data', function() {
+            this.test.item.name += uuid();
+            this.test.item.jsonData = {test: uuid()};
+            
+            return client.restRequest({
+                path: `${jsonStoreUrl}/${encodeURIComponent(this.test.xid)}`,
+                method: 'PUT',
+                params: {
+                    withData: true
+                },
+                data: this.test.item
+            }).then(response => {
+                assert.deepEqual(response.data, this.test.item);
+            });
+        });
+        
+        it('Update without data', function() {
+            this.test.item.name += uuid();
+            const expectedData = this.test.item.jsonData;
+            delete this.test.item.jsonData;
+            
+            return client.restRequest({
+                path: `${jsonStoreUrl}/${encodeURIComponent(this.test.xid)}`,
+                method: 'PUT',
+                data: this.test.item
+            }).then(response => {
+                assert.deepEqual(response.data, this.test.item);
+                
+                return client.restRequest({
+                    path: `${jsonStoreUrl}/${encodeURIComponent(this.test.xid)}`,
+                    method: 'GET',
+                    params: {
+                        withData: true
+                    }
+                });
+            }).then(response => {
+                assert.deepEqual(response.data.jsonData, expectedData);
+            });
+        });
+        
+        it('Delete with data', function() {
+            return client.restRequest({
+                path: `${jsonStoreUrl}/${encodeURIComponent(this.test.xid)}`,
+                method: 'DELETE',
+                params: {
+                    withData: true
+                }
+            }).then(response => {
+                this.test.skipDelete = true;
+                assert.deepEqual(response.data, this.test.item);
+            });
+        });
+        
+        it('Delete without data', function() {
+            delete this.test.item.jsonData;
+            
+            return client.restRequest({
+                path: `${jsonStoreUrl}/${encodeURIComponent(this.test.xid)}`,
+                method: 'DELETE'
+            }).then(response => {
+                this.test.skipDelete = true;
+                assert.deepEqual(response.data, this.test.item);
+            });
+        });
+    });
 });
