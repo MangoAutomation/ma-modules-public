@@ -55,6 +55,7 @@ import com.infiniteautomation.mango.rest.v2.mapping.SqlMessageConverter;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.resolver.PartialUpdateArgumentResolver;
 import com.infiniteautomation.mango.rest.v2.resolver.RemainingPathResolver;
+import com.infiniteautomation.mango.rest.v2.resolver.RqlResolver;
 import com.infiniteautomation.mango.rest.v2.util.MangoRestTemporaryResourceContainer;
 import com.infiniteautomation.mango.spring.MangoCommonConfiguration;
 import com.infiniteautomation.mango.spring.MangoRuntimeContextConfiguration;
@@ -76,6 +77,7 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
     final ObjectMapper mapper;
     final PartialUpdateArgumentResolver partialUpdateResolver;
     final RemainingPathResolver remainingPathResolver;
+    final RqlResolver rqlResolver;
     final List<HttpMessageConverter<?>> converters;
     /**
      * Should be supplied by
@@ -89,11 +91,13 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
             ObjectMapper mapper,
             PartialUpdateArgumentResolver resolver,
             RemainingPathResolver remainingPathResolver,
+            RqlResolver rqlResolver,
             RestModelMapper modelMapper,
             AsyncTaskExecutor asyncTaskExecutor) {
         this.mapper = mapper;
         this.partialUpdateResolver = resolver;
         this.remainingPathResolver = remainingPathResolver;
+        this.rqlResolver = rqlResolver;
         this.converters = new ArrayList<>();
         this.asyncTaskExecutor = asyncTaskExecutor;
 
@@ -203,6 +207,7 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
         resolvers.add(partialUpdateResolver);
         resolvers.add(remainingPathResolver);
+        resolvers.add(rqlResolver);
     }
 
     @Override
