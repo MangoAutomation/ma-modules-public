@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.infiniteautomation.mango.permission.MangoPermission;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.model.FilteredStreamWithTotal;
+import com.infiniteautomation.mango.rest.v2.model.ListWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.permissions.PermissionDefinitionModel;
 import com.infiniteautomation.mango.spring.service.SystemPermissionService;
@@ -46,7 +47,14 @@ public class PermissionsRestController {
         this.service = service;
     }
 
-    @ApiOperation(value = "Query permissions, their names and roles")
+    /**
+     * For Swagger documentation use only.
+     * @author Jared Wiltshire
+     */
+    private interface PermissionDefinitionQueryResult extends ListWithTotal<PermissionDefinitionModel> {
+    }
+
+    @ApiOperation(value = "Query permissions, their names and roles", response = PermissionDefinitionQueryResult.class)
     @RequestMapping(method = RequestMethod.GET)
     public StreamWithTotal<PermissionDefinitionModel> query(ASTNode rql) {
         List<PermissionDefinitionModel> permissions = new ArrayList<>();
