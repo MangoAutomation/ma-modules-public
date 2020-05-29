@@ -79,8 +79,9 @@ describe('Permissions endpoint tests', function() {
             path: '/rest/v2/system-permissions',
             method: 'GET'
         }).then(response => {
-            assert.isArray(response.data);
-            for (let item of response.data) {
+            assert.isNumber(response.data.total);
+            assert.isArray(response.data.items);
+            for (let item of response.data.items) {
                 assertPermissionSchema(item);
             }
         })
