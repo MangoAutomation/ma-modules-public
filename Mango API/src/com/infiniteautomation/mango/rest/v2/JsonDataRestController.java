@@ -41,8 +41,8 @@ import com.infiniteautomation.mango.rest.v2.model.permissions.MangoPermissionMod
 import com.infiniteautomation.mango.spring.service.JsonDataService;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.json.JsonDataVO;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -68,7 +68,7 @@ public class JsonDataRestController {
         APPEND, REPLACE, DELETE
     }
 
-    private final BiFunction<JsonDataVO, User, JsonDataModel> map = (vo, user) -> {return new JsonDataModel(vo);};
+    private final BiFunction<JsonDataVO, PermissionHolder, JsonDataModel> map = (vo, user) -> {return new JsonDataModel(vo);};
     private final JsonDataService service;
 
     @Autowired
@@ -95,7 +95,7 @@ public class JsonDataRestController {
             HttpServletRequest request,
             @ApiParam(value = "XID", required = true, allowMultiple = false)
             @PathVariable String xid,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
         return this.map.apply(service.getPublicData(xid), user);
     }
 
@@ -105,7 +105,7 @@ public class JsonDataRestController {
             HttpServletRequest request,
             @ApiParam(value = "XID", required = true, allowMultiple = false)
             @PathVariable String xid,
-            @AuthenticationPrincipal User user) throws UnsupportedEncodingException{
+            @AuthenticationPrincipal PermissionHolder user) throws UnsupportedEncodingException{
         return getDataWithPath(request, xid, null, user);
     }
 
@@ -122,7 +122,7 @@ public class JsonDataRestController {
 
             @ApiParam(value = "Data path using dots as separator", required = true, allowMultiple = false)
             @PathVariable String path,
-            @AuthenticationPrincipal User user) throws UnsupportedEncodingException {
+            @AuthenticationPrincipal PermissionHolder user) throws UnsupportedEncodingException {
 
         JsonDataVO vo = service.get(xid);
         String[] pathParts = splitAndDecodePath(path);
@@ -156,14 +156,11 @@ public class JsonDataRestController {
             @ApiParam(value = "Name", required = true, allowMultiple = false, defaultValue="")
             @RequestParam(required=false, defaultValue="") String name,
 
-            @ApiParam(value = "Is public?", required = true, allowMultiple = false, defaultValue="false")
-            @RequestParam(required=false, defaultValue="false") boolean publicData,
-
             @ApiParam( value = "Data to save")
             @RequestBody(required=true)
             JsonNode data,
 
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder,
             HttpServletRequest request) {
 
@@ -174,7 +171,6 @@ public class JsonDataRestController {
                 readPermission,
                 editPermission,
                 name,
-                publicData,
                 data,
                 user,
                 builder,
@@ -207,14 +203,11 @@ public class JsonDataRestController {
             @ApiParam(value = "Name", required = true, allowMultiple = false, defaultValue="")
             @RequestParam(required=false, defaultValue="") String name,
 
-            @ApiParam(value = "Is public?", required = true, allowMultiple = false, defaultValue="false")
-            @RequestParam(required=false, defaultValue="false") boolean publicData,
-
             @ApiParam( value = "Data to save")
             @RequestBody(required=true)
             JsonNode data,
 
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder,
             HttpServletRequest request) throws UnsupportedEncodingException {
         String[] pathParts = splitAndDecodePath(path);
@@ -225,7 +218,6 @@ public class JsonDataRestController {
                 readPermission,
                 editPermission,
                 name,
-                publicData,
                 data,
                 user,
                 builder, request, HttpStatus.OK);
@@ -255,14 +247,11 @@ public class JsonDataRestController {
             @ApiParam(value = "Name", required = true, allowMultiple = false, defaultValue="")
             @RequestParam(required=false, defaultValue="") String name,
 
-            @ApiParam(value = "Is public?", required = true, allowMultiple = false, defaultValue="false")
-            @RequestParam(required=false, defaultValue="false") boolean publicData,
-
             @ApiParam( value = "Data to save")
             @RequestBody(required=true)
             JsonNode data,
 
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder,
             HttpServletRequest request) {
 
@@ -272,7 +261,7 @@ public class JsonDataRestController {
                 readPermission,
                 editPermission,
                 name,
-                publicData, data,
+                data,
                 user, builder, request, HttpStatus.CREATED);
     }
 
@@ -303,13 +292,10 @@ public class JsonDataRestController {
             @ApiParam(value = "Name", required = true, allowMultiple = false, defaultValue="")
             @RequestParam(required=false, defaultValue="") String name,
 
-            @ApiParam(value = "Is public?", required = true, allowMultiple = false, defaultValue="false")
-            @RequestParam(required=false, defaultValue="false") boolean publicData,
-
             @ApiParam( value = "Data to save")
             @RequestBody(required=true)
             JsonNode data,
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder,
             HttpServletRequest request) throws UnsupportedEncodingException {
 
@@ -320,7 +306,6 @@ public class JsonDataRestController {
                 readPermission,
                 editPermission,
                 name,
-                publicData,
                 data, user,
                 builder, request, HttpStatus.CREATED);
     }
@@ -335,7 +320,7 @@ public class JsonDataRestController {
     public JsonDataModel deleteJsonData(
             @ApiParam(value = "XID", required = true, allowMultiple = false)
             @PathVariable String xid,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
         return deletePartialJsonData(xid, null, user);
     }
 
@@ -353,7 +338,7 @@ public class JsonDataRestController {
 
             @ApiParam(value = "Data path using dots as separator", required = true, allowMultiple = false)
             @PathVariable String path,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
 
         String[] pathParts;
         if (path == null || (pathParts = path.split("\\.")).length == 0) {
@@ -387,7 +372,6 @@ public class JsonDataRestController {
      * @param readPermissions
      * @param editPermissions
      * @param name
-     * @param publicData
      * @param data
      * @param builder
      * @param request
@@ -395,8 +379,8 @@ public class JsonDataRestController {
      * @return
      */
     private ResponseEntity<JsonDataModel> modifyJsonData(MapOperation operation,
-            String xid, String[] pathParts, MangoPermissionModel readPermissions, MangoPermissionModel editPermissions, String name, boolean publicData,
-            JsonNode data, User user, UriComponentsBuilder builder, HttpServletRequest request, HttpStatus successStatus) {
+            String xid, String[] pathParts, MangoPermissionModel readPermissions, MangoPermissionModel editPermissions, String name,
+            JsonNode data, PermissionHolder user, UriComponentsBuilder builder, HttpServletRequest request, HttpStatus successStatus) {
 
         // check we are using this method only for replace and append
         if (operation != MapOperation.REPLACE && operation != MapOperation.APPEND) throw new IllegalArgumentException();
@@ -407,7 +391,6 @@ public class JsonDataRestController {
             vo = service.get(xid);
             //Replace the data
             vo.setName(name);
-            vo.setPublicData(publicData);
             vo.setReadPermission(readPermissions != null ? readPermissions.getPermission() : null);
             vo.setEditPermission(editPermissions!= null ? editPermissions.getPermission() : null);
 
@@ -429,7 +412,6 @@ public class JsonDataRestController {
             vo = new JsonDataVO();
             vo.setXid(xid);
             vo.setName(name);
-            vo.setPublicData(publicData);
             vo.setReadPermission(readPermissions != null ? readPermissions.getPermission() : null);
             vo.setEditPermission(editPermissions!= null ? editPermissions.getPermission() : null);
             vo.setJsonData(data);

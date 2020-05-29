@@ -20,8 +20,6 @@ public class JsonDataModel extends AbstractVoModel<JsonDataVO> {
 
     private MangoPermissionModel readPermission;
     private MangoPermissionModel editPermission;
-    // TODO Mango 4.0 this is no longer needed?
-    private boolean publicData;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private JsonNode jsonData;
@@ -48,14 +46,6 @@ public class JsonDataModel extends AbstractVoModel<JsonDataVO> {
         this.editPermission = editPermission;
     }
 
-    public boolean isPublicData() {
-        return publicData;
-    }
-
-    public void setPublicData(boolean publicData) {
-        this.publicData = publicData;
-    }
-
     public JsonNode getJsonData() {
         return jsonData;
     }
@@ -69,7 +59,6 @@ public class JsonDataModel extends AbstractVoModel<JsonDataVO> {
         super.fromVO(vo);
         this.readPermission = new MangoPermissionModel(vo.getReadPermission());
         this.editPermission = new MangoPermissionModel(vo.getEditPermission());
-        this.publicData = vo.isPublicData();
         this.jsonData = vo.getJsonData();
     }
 
@@ -78,7 +67,6 @@ public class JsonDataModel extends AbstractVoModel<JsonDataVO> {
         JsonDataVO vo = super.toVO();
         vo.setReadPermission(readPermission != null ? readPermission.getPermission() : new MangoPermission());
         vo.setEditPermission(editPermission != null ? editPermission.getPermission() : new MangoPermission());
-        vo.setPublicData(publicData);
         vo.setJsonData(jsonData);
         return vo;
     }
