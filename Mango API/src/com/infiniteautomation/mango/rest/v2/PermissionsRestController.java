@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.infiniteautomation.mango.permission.MangoPermission;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
+import com.infiniteautomation.mango.rest.v2.model.FilteredStreamWithTotal;
+import com.infiniteautomation.mango.rest.v2.model.StreamWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.permissions.PermissionDefinitionModel;
 import com.infiniteautomation.mango.spring.service.SystemPermissionService;
 import com.serotonin.m2m2.module.ModuleRegistry;
@@ -24,13 +26,14 @@ import com.serotonin.m2m2.module.PermissionDefinition;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import net.jazdw.rql.parser.ASTNode;
 
 /**
- * List of permissions and their keys
+ * List of permissions and their names
  *
  * @author Jared Wiltshire
  */
-@Api(value = "Lists permissions and their keys")
+@Api(value = "Lists permissions and their names")
 @PreAuthorize("isAdmin()")
 @RestController
 @RequestMapping("/system-permissions")
@@ -43,24 +46,24 @@ public class PermissionsRestController {
         this.service = service;
     }
 
-    @ApiOperation(value = "List permissions, their keys and roles")
+    @ApiOperation(value = "Query permissions, their names and roles")
     @RequestMapping(method = RequestMethod.GET)
-    public List<PermissionDefinitionModel> listPermissions() {
+    public StreamWithTotal<PermissionDefinitionModel> query(ASTNode rql) {
         List<PermissionDefinitionModel> permissions = new ArrayList<>();
 
         for (PermissionDefinition def : ModuleRegistry.getPermissionDefinitions().values()) {
             permissions.add(new PermissionDefinitionModel(def));
         }
 
-        return permissions;
+        return new FilteredStreamWithTotal<>(permissions, rql);
     }
 
     @ApiOperation(value = "Update all of a Permission's Roles", notes = "If no roles are supplied then all existing assigned roles are removed")
-    @RequestMapping(method = RequestMethod.PUT, value = "/{key}")
-    public PermissionDefinitionModel update(@PathVariable String key,
+    @RequestMapping(method = RequestMethod.PUT, value = "/{name}")
+    public PermissionDefinitionModel update(@PathVariable String name,
             @ApiParam(value = "Permission", required = true) @RequestBody(required = true) PermissionDefinitionModel model) {
 
-        PermissionDefinition def = ModuleRegistry.getPermissionDefinition(key);
+        PermissionDefinition def = ModuleRegistry.getPermissionDefinition(name);
 
         if (def == null) {
             throw new NotFoundRestException();
@@ -72,9 +75,9 @@ public class PermissionsRestController {
     }
 
     @ApiOperation(value = "Get a permission")
-    @RequestMapping(method = RequestMethod.GET, value = "/{key}")
-    public PermissionDefinitionModel get(@PathVariable String key) {
-        PermissionDefinition def = ModuleRegistry.getPermissionDefinition(key);
+    @RequestMapping(method = RequestMethod.GET, value = "/{name}")
+    public PermissionDefinitionModel get(@PathVariable String name) {
+        PermissionDefinition def = ModuleRegistry.getPermissionDefinition(name);
         if (def == null) {
             throw new NotFoundRestException();
         }

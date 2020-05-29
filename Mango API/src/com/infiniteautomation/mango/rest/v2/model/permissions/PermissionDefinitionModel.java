@@ -4,8 +4,8 @@
 
 package com.infiniteautomation.mango.rest.v2.model.permissions;
 
-import com.infiniteautomation.mango.permission.MangoPermission;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
+import com.serotonin.m2m2.module.Module;
 import com.serotonin.m2m2.module.PermissionDefinition;
 
 /**
@@ -15,19 +15,18 @@ public class PermissionDefinitionModel {
     private String name;
     private TranslatableMessage description;
     private MangoPermissionModel permission;
+    private String moduleName;
+    private TranslatableMessage moduleDescription;
 
     public PermissionDefinitionModel() {}
-
-    public PermissionDefinitionModel(String name, TranslatableMessage description, MangoPermission permission) {
-        this.name = name;
-        this.description = description;
-        this.permission = new MangoPermissionModel(permission);
-    }
 
     public PermissionDefinitionModel(PermissionDefinition def) {
         this.name = def.getPermissionTypeName();
         this.description = def.getDescription();
         this.permission = new MangoPermissionModel(def.getPermission());
+        Module module = def.getModule();
+        this.moduleName = module.getName();
+        this.moduleDescription = module.getDescription();
     }
 
     public String getName() {
@@ -42,10 +41,6 @@ public class PermissionDefinitionModel {
         return description;
     }
 
-    public void setDescription(TranslatableMessage description) {
-        this.description = description;
-    }
-
     public MangoPermissionModel getPermission() {
         return permission;
     }
@@ -53,4 +48,13 @@ public class PermissionDefinitionModel {
     public void setPermission(MangoPermissionModel roles) {
         this.permission = roles;
     }
+
+    public String getModuleName() {
+        return moduleName;
+    }
+
+    public TranslatableMessage getModuleDescription() {
+        return moduleDescription;
+    }
+
 }
