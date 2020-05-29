@@ -15,15 +15,24 @@
  * the License.
  */
 
-const {createClient, assertValidationErrors, defer, delay, login} = require('@infinite-automation/mango-module-tools/test-helper/testHelper');
+const {createClient, login} = require('@infinite-automation/mango-module-tools/test-helper/testHelper');
 const client = createClient();
-const Role = client.Role;
-const User = client.User;
 
 describe('Permissions endpoint tests', function() {
     before('Login', function() { return login.call(this, client); });
+
+    function assertPermissionSchema(data) {
+        assert.isString(data.name);
+        assert.isString(data.description);
+        assert.isArray(data.permission);
+        for (let minterm of data.permission) {
+            if (typeof minterm !== 'string') {
+                assert.isArray(minterm);
+            }
+        }
+    }
     
-    it('Update create user permission with single array', () => {
+    it('Update create user permission with single array', function() {
         return client.restRequest({
             path: '/rest/v2/system-permissions/users.create',
             method: 'PUT',
@@ -32,15 +41,24 @@ describe('Permissions endpoint tests', function() {
                 permission: ['user','superadmin']
             }
         }).then(response => {
-            assert.strictEqual(response.data.systemSettingName, 'users.create');
+            assertPermissionSchema(response.data);
+            assert.strictEqual(response.data.name, 'users.create');
             assert.strictEqual(response.data.permission.length, 2);
             assert.include(response.data.permission, 'user');
             assert.include(response.data.permission, 'superadmin');
-        })
+        }).finally(() => {
+            return client.restRequest({
+                path: '/rest/v2/system-permissions/users.create',
+                method: 'PUT',
+                data: {
+                    systemSettingName: 'users.create',
+                    permission: ['user','superadmin']
+                }
+            });
+        });
     });
     
-    
-    it('Update create user permission with multiple arrays', () => {
+    it('Update create user permission with multiple arrays', function() {
         return client.restRequest({
             path: '/rest/v2/system-permissions/users.create',
             method: 'PUT',
@@ -49,10 +67,34 @@ describe('Permissions endpoint tests', function() {
                 permission: [['user', 'superadmin'], 'superadmin']
             }
         }).then(response => {
-            assert.strictEqual(response.data.systemSettingName, 'users.create');
+            assertPermissionSchema(response.data);
+            assert.strictEqual(response.data.name, 'users.create');
             assert.strictEqual(response.data.permission.length, 2);
             assert.include(response.data.permission, 'superadmin');
         })
     });
     
+    it('Can list permissions', function() {
+        return client.restRequest({
+            path: '/rest/v2/system-permissions',
+            method: 'GET'
+        }).then(response => {
+            assert.isArray(response.data);
+            for (let item of response.data) {
+                assertPermissionSchema(item);
+            }
+        })
+    });
+    
+    it('Can get create user permission', function() {
+        return client.restRequest({
+            path: '/rest/v2/system-permissions/users.create',
+            method: 'GET'
+        }).then(response => {
+            assertPermissionSchema(response.data);
+            assert.strictEqual(response.data.name, 'users.create');
+            assert.strictEqual(response.data.permission.length, 2);
+            assert.include(response.data.permission, 'superadmin');
+        })
+    });
 });

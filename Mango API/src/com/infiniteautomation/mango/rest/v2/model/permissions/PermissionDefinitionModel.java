@@ -12,30 +12,30 @@ import com.serotonin.m2m2.module.PermissionDefinition;
  * @author Terry Packer
  */
 public class PermissionDefinitionModel {
-    String systemSettingName;
-    TranslatableMessage description;
-    MangoPermissionModel permission;
+    private String name;
+    private TranslatableMessage description;
+    private MangoPermissionModel permission;
 
     public PermissionDefinitionModel() {}
 
-    public PermissionDefinitionModel(String systemSettingName, TranslatableMessage description, MangoPermission permission) {
-        this.systemSettingName = systemSettingName;
+    public PermissionDefinitionModel(String name, TranslatableMessage description, MangoPermission permission) {
+        this.name = name;
         this.description = description;
         this.permission = new MangoPermissionModel(permission);
     }
 
     public PermissionDefinitionModel(PermissionDefinition def) {
-        this.systemSettingName = def.getPermissionTypeName();
+        this.name = def.getPermissionTypeName();
         this.description = def.getDescription();
         this.permission = new MangoPermissionModel(def.getPermission());
     }
 
-    public String getSystemSettingName() {
-        return systemSettingName;
+    public String getName() {
+        return name;
     }
 
-    public void setSystemSettingName(String systemSettingName) {
-        this.systemSettingName = systemSettingName;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public TranslatableMessage getDescription() {
