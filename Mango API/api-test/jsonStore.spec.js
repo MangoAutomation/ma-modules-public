@@ -25,7 +25,6 @@ describe('JSON store', function() {
         const xid = uuid();
         const storeItem = {
             name: 'my json store item',
-            publicData: false,
             readPermission: '',
             editPermission: ''
         };
@@ -81,7 +80,6 @@ describe('JSON store', function() {
             method: 'PUT',
             params: {
                 name: storeItem.name,
-                publicData: storeItem.publicData,
                 readPermission: storeItem.readPermission,
                 editPermission: storeItem.editPermission,
             },
@@ -103,7 +101,6 @@ describe('JSON store', function() {
             method: 'POST',
             params: {
                 name: storeItem.name,
-                publicData: storeItem.publicData,
                 readPermission: storeItem.readPermission,
                 editPermission: storeItem.editPermission,
             },

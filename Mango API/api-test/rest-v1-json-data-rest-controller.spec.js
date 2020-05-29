@@ -30,7 +30,6 @@ describe('json-data-rest-controller', function() {
             params: {
                 editPermission: params.editPermission || [],
                 name: params.name || 'test data',
-                publicData: params.publicData,
                 readPermission: params.readPermission || []
             },
             data: requestBody || {
@@ -75,7 +74,7 @@ describe('json-data-rest-controller', function() {
     it('GET /rest/v2/json-data/public/{xid}', function() {
         const params = {
             xid: uuid(), // in = path, description = XID, required = true, type = string, default = , enum = 
-            publicData: true
+            readPermission: ['anonymous']
         };
         
         return Promise.resolve().then(() => {
@@ -103,7 +102,6 @@ describe('json-data-rest-controller', function() {
 
             // DESCRIPTION: Name of object
             assert.isString(response.data.name, 'data.name');
-            assert.isBoolean(response.data.publicData, 'data.publicData');
             assert.isArray(response.data.readPermission, 'data.readPermission');
             // DESCRIPTION: XID of object
             assert.isString(response.data.xid, 'data.xid');
@@ -143,7 +141,6 @@ describe('json-data-rest-controller', function() {
 
             // DESCRIPTION: Name of object
             assert.isString(response.data.name, 'data.name');
-            assert.isBoolean(response.data.publicData, 'data.publicData');
             assert.isArray(response.data.readPermission, 'data.readPermission');
             // DESCRIPTION: XID of object
             assert.isString(response.data.xid, 'data.xid');
@@ -162,7 +159,6 @@ describe('json-data-rest-controller', function() {
             data: requestBody, // in = body, description = Data to save, required = false, type = , default = , enum = 
             editPermission: ['user'], // in = query, description = Edit Permissions, required = false, type = array, default = , enum = 
             name: 'string', // in = query, description = Name, required = true, type = string, default = , enum = 
-            publicData: false, // in = query, description = Is public?, required = true, type = boolean, default = false, enum = 
             readPermission: ['user'], // in = query, description = Read Permissions, required = false, type = array, default = , enum = 
             xid: uuid() // in = path, description = XID, required = true, type = string, default = , enum = 
         };
@@ -174,7 +170,6 @@ describe('json-data-rest-controller', function() {
                 params: {
                     editPermission: params.editPermission,
                     name: params.name,
-                    publicData: params.publicData,
                     readPermission: params.readPermission
                 },
                 data: requestBody
@@ -196,7 +191,6 @@ describe('json-data-rest-controller', function() {
 
             // DESCRIPTION: Name of object
             assert.isString(response.data.name, 'data.name');
-            assert.isBoolean(response.data.publicData, 'data.publicData');
             assert.isArray(response.data.readPermission, 'data.readPermission');
             // DESCRIPTION: XID of object
             assert.isString(response.data.xid, 'data.xid');
@@ -217,7 +211,6 @@ describe('json-data-rest-controller', function() {
             data: requestBody, // in = body, description = Data to save, required = false, type = , default = , enum = 
             editPermission: ['user'], // in = query, description = Edit Permissions, required = false, type = array, default = , enum = 
             name: 'string', // in = query, description = Name, required = true, type = string, default = , enum = 
-            publicData: false, // in = query, description = Is public?, required = true, type = boolean, default = false, enum = 
             readPermission: ['user'], // in = query, description = Read Permissions, required = false, type = array, default = , enum = 
             xid: uuid() // in = path, description = XID, required = true, type = string, default = , enum = 
         };
@@ -231,7 +224,6 @@ describe('json-data-rest-controller', function() {
                 params: {
                     editPermission: params.editPermission,
                     name: params.name,
-                    publicData: params.publicData,
                     readPermission: params.readPermission
                 },
                 data: requestBody
@@ -254,7 +246,6 @@ describe('json-data-rest-controller', function() {
 
             // DESCRIPTION: Name of object
             assert.isString(response.data.name, 'data.name');
-            assert.isBoolean(response.data.publicData, 'data.publicData');
             assert.isArray(response.data.readPermission, 'data.readPermission');
             // DESCRIPTION: XID of object
             assert.isString(response.data.xid, 'data.xid');
@@ -271,7 +262,6 @@ describe('json-data-rest-controller', function() {
             data: requestBody, // in = body, description = Data to save, required = false, type = , default = , enum = 
             editPermission: ['user'], // in = query, description = Edit Permissions, required = false, type = array, default = , enum = 
             name: 'string', // in = query, description = Name, required = true, type = string, default = , enum = 
-            publicData: false, // in = query, description = Is public?, required = true, type = boolean, default = false, enum = 
             readPermission: ['user'], // in = query, description = Read Permissions, required = false, type = array, default = , enum = 
             xid: uuid() // in = path, description = XID, required = true, type = string, default = , enum = 
         };
@@ -285,7 +275,6 @@ describe('json-data-rest-controller', function() {
                 params: {
                     editPermission: params.editPermission,
                     name: params.name,
-                    publicData: params.publicData,
                     readPermission: params.readPermission
                 },
                 data: requestBody
@@ -307,7 +296,6 @@ describe('json-data-rest-controller', function() {
 
             // DESCRIPTION: Name of object
             assert.isString(response.data.name, 'data.name');
-            assert.isBoolean(response.data.publicData, 'data.publicData');
             assert.isArray(response.data.readPermission, 'data.readPermission');
             // DESCRIPTION: XID of object
             assert.isString(response.data.xid, 'data.xid');
@@ -345,7 +333,6 @@ describe('json-data-rest-controller', function() {
 
             // DESCRIPTION: Name of object
             assert.isString(response.data.name, 'data.name');
-            assert.isBoolean(response.data.publicData, 'data.publicData');
             assert.isArray(response.data.readPermission, 'data.readPermission');
             // DESCRIPTION: XID of object
             assert.isString(response.data.xid, 'data.xid');
@@ -386,7 +373,6 @@ describe('json-data-rest-controller', function() {
 
             // DESCRIPTION: Name of object
             assert.isString(response.data.name, 'data.name');
-            assert.isBoolean(response.data.publicData, 'data.publicData');
             assert.isArray(response.data.readPermission, 'data.readPermission');
             // DESCRIPTION: XID of object
             assert.isString(response.data.xid, 'data.xid');
@@ -407,7 +393,6 @@ describe('json-data-rest-controller', function() {
             editPermission: ['user'], // in = query, description = Edit Permissions, required = false, type = array, default = , enum = 
             name: 'string', // in = query, description = Name, required = true, type = string, default = , enum = 
             path: 'objectKey', // in = path, description = Data path using dots as separator, required = true, type = string, default = , enum = 
-            publicData: false, // in = query, description = Is public?, required = true, type = boolean, default = false, enum = 
             readPermission: ['user'], // in = query, description = Read Permissions, required = false, type = array, default = , enum = 
             xid: uuid() // in = path, description = XID, required = true, type = string, default = , enum = 
         };
@@ -421,7 +406,6 @@ describe('json-data-rest-controller', function() {
                 params: {
                     editPermission: params.editPermission,
                     name: params.name,
-                    publicData: params.publicData,
                     readPermission: params.readPermission
                 },
                 data: requestBody
@@ -443,7 +427,6 @@ describe('json-data-rest-controller', function() {
 
             // DESCRIPTION: Name of object
             assert.isString(response.data.name, 'data.name');
-            assert.isBoolean(response.data.publicData, 'data.publicData');
             assert.isArray(response.data.readPermission, 'data.readPermission');
             // DESCRIPTION: XID of object
             assert.isString(response.data.xid, 'data.xid');
@@ -463,7 +446,6 @@ describe('json-data-rest-controller', function() {
             editPermission: ['user'], // in = query, description = Edit Permissions, required = false, type = array, default = , enum = 
             name: 'string', // in = query, description = Name, required = true, type = string, default = , enum = 
             path: 'objectKey', // in = path, description = Data path using dots as separator, required = true, type = string, default = , enum = 
-            publicData: false, // in = query, description = Is public?, required = true, type = boolean, default = false, enum = 
             readPermission: ['user'], // in = query, description = Read Permissions, required = false, type = array, default = , enum = 
             xid: uuid() // in = path, description = XID, required = true, type = string, default = , enum = 
         };
@@ -477,7 +459,6 @@ describe('json-data-rest-controller', function() {
                 params: {
                     editPermission: params.editPermission,
                     name: params.name,
-                    publicData: params.publicData,
                     readPermission: params.readPermission
                 },
                 data: requestBody
@@ -500,7 +481,6 @@ describe('json-data-rest-controller', function() {
 
             // DESCRIPTION: Name of object
             assert.isString(response.data.name, 'data.name');
-            assert.isBoolean(response.data.publicData, 'data.publicData');
             assert.isArray(response.data.readPermission, 'data.readPermission');
             // DESCRIPTION: XID of object
             assert.isString(response.data.xid, 'data.xid');
@@ -542,7 +522,6 @@ describe('json-data-rest-controller', function() {
 
             // DESCRIPTION: Name of object
             assert.isString(response.data.name, 'data.name');
-            assert.isBoolean(response.data.publicData, 'data.publicData');
             assert.isArray(response.data.readPermission, 'data.readPermission');
             // DESCRIPTION: XID of object
             assert.isString(response.data.xid, 'data.xid');

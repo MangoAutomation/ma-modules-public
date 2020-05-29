@@ -66,7 +66,6 @@ describe('JSON data', function() {
         const storeItem = {
             xid: this.currentTest.xid,
             name: 'test json store',
-            publicData: false,
             readPermission: '',
             editPermission: '',
             jsonData: testData
@@ -424,7 +423,6 @@ describe('JSON data', function() {
             const data = {
                 xid: uuid(),
                 name: 'test json store',
-                publicData: false,
                 readPermission: [],
                 editPermission: [],
                 jsonData: {test: uuid()}
@@ -454,7 +452,6 @@ describe('JSON data', function() {
             const data = {
                 xid: uuid(),
                 name: 'test json store',
-                publicData: false,
                 readPermission: [],
                 editPermission: []
             };
@@ -481,7 +478,6 @@ describe('JSON data', function() {
             const data = {
                 xid: uuid(),
                 name: 'test json store',
-                publicData: false,
                 readPermission: [],
                 editPermission: [],
                 jsonData: null
