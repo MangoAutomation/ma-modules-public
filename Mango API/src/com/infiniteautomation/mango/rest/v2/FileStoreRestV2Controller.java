@@ -76,6 +76,7 @@ import com.serotonin.m2m2.vo.User;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import springfox.documentation.annotations.ApiIgnore;
 
 /**
  * Manage files from stores defined by FileStoreDefinition(s)
@@ -122,7 +123,7 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller {
 
             @RequestParam(required=false, defaultValue="false") boolean overwrite,
 
-            @RemainingPath String pathInStore,
+            @ApiIgnore @RemainingPath String pathInStore,
 
             MultipartHttpServletRequest multipartRequest,
             HttpServletRequest request) throws IOException {
@@ -201,7 +202,7 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller {
             @RequestParam(required=false) String moveTo,
             @ApiParam(value = "Copy file/folder to", required = false, allowMultiple = false)
             @RequestParam(required=false) String copyTo,
-            @RemainingPath String pathInStore,
+            @ApiIgnore @RemainingPath String pathInStore,
             @AuthenticationPrincipal User user,
             HttpServletRequest request) throws IOException, URISyntaxException {
 
@@ -276,7 +277,7 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller {
             @PathVariable("name") String name,
             @ApiParam(value = "Recurisve delete of directory", required = false, defaultValue="false", allowMultiple = false)
             @RequestParam(required=false, defaultValue="false") boolean recursive,
-            @RemainingPath String pathInStore,
+            @ApiIgnore @RemainingPath String pathInStore,
             @AuthenticationPrincipal User user,
             HttpServletRequest request) throws IOException, HttpMediaTypeNotAcceptableException {
 
@@ -385,7 +386,7 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller {
             @PathVariable("name") String name,
             @ApiParam(value = "Set content disposition to attachment", required = false, defaultValue="true", allowMultiple = false)
             @RequestParam(required=false, defaultValue="true") boolean download,
-            @RemainingPath String pathInStore,
+            @ApiIgnore @RemainingPath String pathInStore,
             @AuthenticationPrincipal User user,
             HttpServletRequest request,
             HttpServletResponse response) throws IOException, HttpMediaTypeNotAcceptableException {
@@ -422,7 +423,7 @@ public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller {
             @PathVariable("name") String name,
             @ApiParam(value = "Set content disposition to attachment", required = false, defaultValue="true", allowMultiple = false)
             @RequestParam(required=false, defaultValue="true") boolean download,
-            @RemainingPath String pathInStore,
+            @ApiIgnore @RemainingPath String pathInStore,
             @AuthenticationPrincipal User user,
             HttpServletRequest request,
             HttpServletResponse response) throws IOException, HttpMediaTypeNotAcceptableException {

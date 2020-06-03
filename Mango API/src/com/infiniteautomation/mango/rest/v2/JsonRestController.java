@@ -29,6 +29,7 @@ import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.vo.json.JsonDataVO;
 
 import net.jazdw.rql.parser.ASTNode;
+import springfox.documentation.annotations.ApiIgnore;
 
 /**
  * @author Jared Wiltshire
@@ -52,7 +53,7 @@ public class JsonRestController {
     }
 
     @RequestMapping(method = RequestMethod.GET, value="/data/{xid}/**")
-    public JsonNode getDataAtPointer(@PathVariable String xid, @RemainingPath String path) throws UnsupportedEncodingException {
+    public JsonNode getDataAtPointer(@PathVariable String xid, @ApiIgnore @RemainingPath String path) throws UnsupportedEncodingException {
         String pointer = "/" + path;
         return this.jsonDataService.getDataAtPointer(xid, pointer);
     }
@@ -66,7 +67,7 @@ public class JsonRestController {
     }
 
     @RequestMapping(method = RequestMethod.POST, value="/data/{xid}/**")
-    public JsonNode setDataAtPointer(@PathVariable String xid, @RemainingPath String path, @RequestBody JsonNode data) throws UnsupportedEncodingException {
+    public JsonNode setDataAtPointer(@PathVariable String xid, @ApiIgnore @RemainingPath String path, @RequestBody JsonNode data) throws UnsupportedEncodingException {
         String pointer = "/" + path;
         this.jsonDataService.setDataAtPointer(xid, pointer, data);
         return data;
@@ -80,7 +81,7 @@ public class JsonRestController {
     }
 
     @RequestMapping(method = RequestMethod.DELETE, value="/data/{xid}/**")
-    public JsonNode setDataAtPointer(@PathVariable String xid, @RemainingPath String path) throws UnsupportedEncodingException {
+    public JsonNode setDataAtPointer(@PathVariable String xid, @ApiIgnore @RemainingPath String path) throws UnsupportedEncodingException {
         String pointer = "/" + path;
         return this.jsonDataService.deleteDataAtPointer(xid, pointer);
     }
@@ -95,7 +96,7 @@ public class JsonRestController {
     }
 
     @RequestMapping(method = RequestMethod.GET, value="/query/{xid}/**")
-    public ArrayWithTotal<Stream<JsonNode>> queryAtPointer(@PathVariable String xid, @RemainingPath String path, HttpServletRequest request) throws UnsupportedEncodingException {
+    public ArrayWithTotal<Stream<JsonNode>> queryAtPointer(@PathVariable String xid, @ApiIgnore @RemainingPath String path, HttpServletRequest request) throws UnsupportedEncodingException {
         String pointer = "/" + path;
         ArrayNode items = this.jsonDataService.valuesForDataAtPointer(xid, pointer);
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());

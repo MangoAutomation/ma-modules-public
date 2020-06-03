@@ -46,6 +46,7 @@ import com.serotonin.m2m2.vo.role.Role;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import springfox.documentation.annotations.ApiIgnore;
 
 /**
  * @author Jared Wiltshire
@@ -91,7 +92,7 @@ public class ScriptRestController {
             @ApiParam(value = "Script roles", required = false, allowMultiple = true)
             @RequestParam(required = false) String[] roles,
 
-            @RemainingPath String path,
+            @ApiIgnore @RemainingPath String path,
 
             @AuthenticationPrincipal User user,
 
