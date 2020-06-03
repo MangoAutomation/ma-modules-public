@@ -104,13 +104,11 @@ public class StreamedBasicVORqlQueryWithTotal<T extends AbstractBasicVO, TABLE e
         public void writeArrayValues(JsonGenerator jgen) throws IOException {
             if(filter != null) {
                 //Using memory filter
-                int offset = conditions.getOffset() == null ? 0 : conditions.getOffset();
-                int limit = conditions.getLimit(); //Assured to not be null by the constructor of the CSL
-                conditions.nullLimit();
-                conditions.nullOffset();
-                service.customizedQuery(conditions, (T item, int index) -> {
+                Integer offset = conditions.getOffset();
+                Integer limit = conditions.getLimit();
+                service.customizedQuery(conditions.withNullLimitOffset(), (T item, int index) -> {
                     if (filter.test(item)) {
-                        if(count >= offset && offsetCount < limit) {
+                        if ((offset == null || count >= offset) && (limit == null || offsetCount < limit)) {
                             try {
                                 jgen.writeObject(toModel.apply(item));
                             } catch (IOException e) {
