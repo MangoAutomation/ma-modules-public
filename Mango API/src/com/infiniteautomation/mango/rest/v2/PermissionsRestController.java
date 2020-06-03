@@ -25,9 +25,12 @@ import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.module.PermissionDefinition;
 
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import net.jazdw.rql.parser.ASTNode;
+import springfox.documentation.annotations.ApiIgnore;
 
 /**
  * List of permissions and their names
@@ -54,9 +57,13 @@ public class PermissionsRestController {
     private interface PermissionDefinitionQueryResult extends ListWithTotal<PermissionDefinitionModel> {
     }
 
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "name", paramType="query", dataType = "string"),
+        @ApiImplicitParam(name = "moduleName", paramType="query", dataType = "string")
+    })
     @ApiOperation(value = "Query permissions, their names and roles", response = PermissionDefinitionQueryResult.class)
     @RequestMapping(method = RequestMethod.GET)
-    public StreamWithTotal<PermissionDefinitionModel> query(ASTNode rql) {
+    public StreamWithTotal<PermissionDefinitionModel> query(@ApiIgnore ASTNode rql) {
         List<PermissionDefinitionModel> permissions = new ArrayList<>();
 
         for (PermissionDefinition def : ModuleRegistry.getPermissionDefinitions().values()) {
