@@ -68,6 +68,7 @@ public class RoleModelMapping implements RestModelMapping<RoleVO, RoleModel> {
                 roles.add(new Role(id == null ? Common.NEW_ID : id, xid));
             }
         }
+        vo.setInherited(roles);
         return vo;
     }
 

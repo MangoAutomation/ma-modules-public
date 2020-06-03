@@ -8,7 +8,6 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -74,7 +73,6 @@ import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.vo.User;
-import com.serotonin.m2m2.vo.role.Role;
 import com.serotonin.m2m2.web.MediaTypes;
 import com.serotonin.m2m2.web.mvc.spring.security.MangoSessionRegistry;
 
@@ -351,32 +349,6 @@ public class UserRestController {
             permissions.add(new UserRolesDetailsModel(detail));
         }
         return permissions;
-    }
-
-
-    @ApiOperation(value = "Get All User Groups that a user can 'see'")
-    @RequestMapping(method = RequestMethod.GET, value = "/permissions-groups")
-    public Set<String> getAllUserGroups(@AuthenticationPrincipal User user) {
-        Set<Role> roles = service.getUserRoles();
-        Set<String> groups = new HashSet<>();
-        for(Role role : roles) {
-            groups.add(role.getXid());
-        }
-        return groups;
-    }
-
-    @ApiOperation(value = "Get All User Groups that a user can 'see', Optionally excluding groups")
-    @RequestMapping(method = RequestMethod.GET, value = "/permissions-groups/{exclude}")
-    public Set<String> getAllUserGroups(
-            @ApiParam(value = "Exclude Groups comma separated", required = false, allowMultiple = false, defaultValue="")
-            @PathVariable List<String> exclude,
-            @AuthenticationPrincipal User user) {
-        Set<Role> roles = service.getUserRoles(exclude);
-        Set<String> groups = new HashSet<>();
-        for(Role role : roles) {
-            groups.add(role.getXid());
-        }
-        return groups;
     }
 
     @ApiOperation(

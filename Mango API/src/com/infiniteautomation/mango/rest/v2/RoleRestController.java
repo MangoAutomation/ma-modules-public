@@ -5,6 +5,9 @@
 package com.infiniteautomation.mango.rest.v2;
 
 import java.net.URI;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -18,8 +21,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.infiniteautomation.mango.rest.v2.model.FilteredStreamWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.ListWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
+import com.infiniteautomation.mango.rest.v2.model.StreamWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.StreamedVORqlQueryWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.role.RoleModel;
@@ -118,6 +123,22 @@ public class RoleRestController {
     public ResponseEntity<RoleModel> delete(@ApiParam(value = "XID of Role to delete", required = true, allowMultiple = false) @PathVariable String xid,
             @AuthenticationPrincipal User user) {
         return ResponseEntity.ok(mapping.map(service.delete(xid), user, mapper));
+    }
+
+    @ApiOperation(value = "Query root roles")
+    @RequestMapping(method = RequestMethod.GET, value = "/root")
+    public StreamWithTotal<RoleModel> queryInherited(@AuthenticationPrincipal User user, @ApiIgnore ASTNode rql) {
+        Set<RoleVO> roles = service.getRootRoles();
+        List<RoleModel> models = roles.stream().map(r -> mapping.map(r, user, mapper)).collect(Collectors.toList());
+        return new FilteredStreamWithTotal<>(models, rql);
+    }
+
+    @ApiOperation(value = "Query inherited roles")
+    @RequestMapping(method = RequestMethod.GET, value = "/inherited/{xid}")
+    public StreamWithTotal<RoleModel> queryInherited(@AuthenticationPrincipal User user, @PathVariable String xid, @ApiIgnore ASTNode rql) {
+        Set<RoleVO> roles = service.getInheritedRoles(xid);
+        List<RoleModel> models = roles.stream().map(r -> mapping.map(r, user, mapper)).collect(Collectors.toList());
+        return new FilteredStreamWithTotal<>(models, rql);
     }
 
     private StreamedArrayWithTotal doQuery(ASTNode rql, PermissionHolder user) {
