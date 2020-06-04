@@ -35,7 +35,7 @@ public class MangoPermissionModelDeserializer extends StdDeserializer<MangoPermi
 
     public MangoPermissionModelDeserializer() {
         super(MangoPermissionModel.class);
-        this.dao = RoleDao.getInstance();
+        this.dao = Common.getBean(RoleDao.class);
     }
 
 
