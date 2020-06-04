@@ -31,6 +31,8 @@ import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.vo.role.RoleVO;
 
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import net.jazdw.rql.parser.ASTNode;
@@ -65,6 +67,12 @@ public class RoleRestController {
     private interface RoleQueryResult extends ListWithTotal<RoleModel> {
     }
 
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "id", paramType="query", dataType = "int"),
+        @ApiImplicitParam(name = "xid", paramType="query", dataType = "string"),
+        @ApiImplicitParam(name = "name", paramType="query", dataType = "string"),
+        @ApiImplicitParam(name = "inheritedBy", paramType="query", dataType = "string")
+    })
     @ApiOperation(value = "Query Roles", response = RoleQueryResult.class)
     @RequestMapping(method = RequestMethod.GET)
     public StreamedArrayWithTotal query(@AuthenticationPrincipal User user, @ApiIgnore ASTNode rql) {
