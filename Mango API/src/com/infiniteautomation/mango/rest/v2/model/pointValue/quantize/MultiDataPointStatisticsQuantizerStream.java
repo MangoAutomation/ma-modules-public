@@ -111,7 +111,7 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
     @Override
     public void streamData(PointValueTimeWriter writer) throws IOException {
         createQuantizerMap();
-        dao.wideBookendQuery(new ArrayList<Integer>(voMap.keySet()), info.getFromMillis(), info.getToMillis(), !info.isSingleArray(), null, this);
+        dao.wideBookendQuery(new ArrayList<DataPointVO>(voMap.values()), info.getFromMillis(), info.getToMillis(), !info.isSingleArray(), null, this);
     }
 
     protected void writePeriodStats(List<DataPointValueTime> generators) throws IOException {

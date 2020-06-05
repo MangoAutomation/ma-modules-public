@@ -219,7 +219,7 @@ public class PointValueModificationRestController {
                     pvt = new AnnotatedPointValueTime(dataValue, timestamp, new TranslatableMessage("common.default", annotation));
                 }
                 if(rt == null) {
-                    dao.savePointValueAsync(vo.getId(), pvt, null);
+                    dao.savePointValueAsync(vo, pvt, null);
                     //Try for next value to see if the point is enabled now
                     rt = Common.runtimeManager.getDataPoint(vo.getId());
                 }else {
@@ -276,7 +276,7 @@ public class PointValueModificationRestController {
 
         public void deleteValue(ZonedDateTime timestamp) {
             if(valid && timestamp != null) {
-                totalProcessed += Common.runtimeManager.purgeDataPointValue(vo.getId(), timestamp.toInstant().toEpochMilli(), dao);
+                totalProcessed += Common.runtimeManager.purgeDataPointValue(vo, timestamp.toInstant().toEpochMilli(), dao);
             }else {
                 totalSkipped++;
             }

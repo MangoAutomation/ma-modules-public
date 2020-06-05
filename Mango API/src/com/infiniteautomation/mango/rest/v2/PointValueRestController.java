@@ -1097,7 +1097,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
         else
             to = ZonedDateTime.ofInstant(Instant.ofEpochMilli(current), zoneId);
 
-        return ResponseEntity.ok(Common.runtimeManager.purgeDataPointValuesBetween(vo.getId(), from.toInstant().toEpochMilli(), to.toInstant().toEpochMilli()));
+        return ResponseEntity.ok(Common.runtimeManager.purgeDataPointValuesBetween(vo, from.toInstant().toEpochMilli(), to.toInstant().toEpochMilli()));
     }
 
     @ApiOperation(
@@ -1199,12 +1199,12 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
 
                             //Do purge based on settings
                             if(model.isPurgeAll())
-                                Common.runtimeManager.purgeDataPointValuesWithoutCount(dp.getId());
+                                Common.runtimeManager.purgeDataPointValuesWithoutCount(dp);
                             else if(model.isUseTimeRange())
-                                Common.runtimeManager.purgeDataPointValuesBetween(dp.getId(), model.getTimeRange().getFrom().getTime(), model.getTimeRange().getTo().getTime());
+                                Common.runtimeManager.purgeDataPointValuesBetween(dp, model.getTimeRange().getFrom().getTime(), model.getTimeRange().getTo().getTime());
                             else {
                                 long before = DateUtils.minus(Common.timer.currentTimeMillis(), TimePeriodType.convertFrom(model.getDuration().getType()), model.getDuration().getPeriods());
-                                Common.runtimeManager.purgeDataPointValuesWithoutCount(dp.getId(), before);
+                                Common.runtimeManager.purgeDataPointValuesWithoutCount(dp, before);
                             }
                             result.getSuccessfullyPurged().add(xid);
                         }catch(NotFoundException e) {

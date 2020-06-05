@@ -54,7 +54,7 @@ public class MultiDataPointDefaultRollupStatisticsQuantizerStream <T, INFO exten
             return;
         }
         createQuantizerMap();
-        dao.wideBookendQuery(new ArrayList<Integer>(voMap.keySet()), info.getFromMillis(), info.getToMillis(), !info.isSingleArray(), null, this);
+        dao.wideBookendQuery(new ArrayList<DataPointVO>(voMap.values()), info.getFromMillis(), info.getToMillis(), !info.isSingleArray(), null, this);
 
         //Fast forward to end to fill any gaps at the end
         for(DataPointStatisticsQuantizer<?> quant : this.quantizerMap.values()) {

@@ -26,15 +26,15 @@ import com.serotonin.m2m2.vo.DataPointVO;
  * @author Terry Packer
  */
 public class MultiPointTimeRangeDatabaseStream<T, INFO extends ZonedDateTimeRangeQueryInfo> extends MultiPointLatestDatabaseStream<T, INFO>{
-    
+
     public MultiPointTimeRangeDatabaseStream(INFO info,
             Map<Integer, DataPointVO> voMap, PointValueDao dao) {
         super(info, voMap, dao);
     }
-    
+
     @Override
     public void streamData(PointValueTimeWriter writer) throws IOException {
-    
+
         //Can we use just the cache?
         if(info.isUseCache() == PointValueTimeCacheControl.CACHE_ONLY) {
             processCacheOnly();
@@ -43,9 +43,9 @@ public class MultiPointTimeRangeDatabaseStream<T, INFO extends ZonedDateTimeRang
 
         //Do we need bookends?
         if(info.isBookend())
-            this.dao.wideBookendQuery(new ArrayList<Integer>(voMap.keySet()), info.getFromMillis(), info.getToMillis(), !info.isSingleArray(), info.getLimit(), this);
+            this.dao.wideBookendQuery(new ArrayList<DataPointVO>(voMap.values()), info.getFromMillis(), info.getToMillis(), !info.isSingleArray(), info.getLimit(), this);
         else
-            this.dao.getPointValuesBetween(new ArrayList<Integer>(voMap.keySet()), info.getFromMillis(), info.getToMillis(), !info.isSingleArray(), info.getLimit(), this);
+            this.dao.getPointValuesBetween(new ArrayList<DataPointVO>(voMap.values()), info.getFromMillis(), info.getToMillis(), !info.isSingleArray(), info.getLimit(), this);
     }
 
     @Override
@@ -57,7 +57,7 @@ public class MultiPointTimeRangeDatabaseStream<T, INFO extends ZonedDateTimeRang
     public void lastValue(IdPointValueTime value, int index, boolean bookend) throws IOException {
         processRow(value, index, false, bookend, false);
     }
-    
+
     /**
      * Does this point's time fit within our query range
      * @param pvt
@@ -67,7 +67,7 @@ public class MultiPointTimeRangeDatabaseStream<T, INFO extends ZonedDateTimeRang
     protected boolean includeCachedPoint(PointValueTime pvt) {
         return pvt.getTime() >= info.getFromMillis() && pvt.getTime() < info.getToMillis();
     }
-    
+
     @Override
     protected boolean processValueThroughCache(IdPointValueTime value, int index, boolean firstBookend, boolean lastBookend) throws IOException {
         List<IdPointValueTime> pointCache = this.cache.get(value.getId());
@@ -98,7 +98,7 @@ public class MultiPointTimeRangeDatabaseStream<T, INFO extends ZonedDateTimeRang
 
     @Override
     protected void processCacheOnly() throws IOException{
-      //Performance enhancement to return data within cache only
+        //Performance enhancement to return data within cache only
         Iterator<Integer> it = voMap.keySet().iterator();
         int index = 0;
         while(it.hasNext()) {
@@ -109,7 +109,7 @@ public class MultiPointTimeRangeDatabaseStream<T, INFO extends ZonedDateTimeRang
                     processRow(new IdPointValueTime(id, null, info.getFromMillis()), index++, true, false, true);
                     processRow(new IdPointValueTime(id, null, info.getToMillis()), index++, false, true, true);
                 }
-            }else { 
+            }else {
                 boolean first = true;
                 int limitCount = 0;
                 for(IdPointValueTime value : values) {
@@ -146,7 +146,7 @@ public class MultiPointTimeRangeDatabaseStream<T, INFO extends ZonedDateTimeRang
             }
         }
     }
-    
+
     @Override
     protected void sortCache(List<IdPointValueTime> cache) {
         Collections.sort(cache);

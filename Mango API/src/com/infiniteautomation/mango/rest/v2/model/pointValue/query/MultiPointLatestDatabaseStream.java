@@ -67,7 +67,7 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
             processCacheOnly();
             return;
         }
-        this.dao.getLatestPointValues(new ArrayList<Integer>(voMap.keySet()), info.getFromMillis(), !info.isSingleArray(), info.getLimit(), this);
+        this.dao.getLatestPointValues(new ArrayList<DataPointVO>(voMap.values()), info.getFromMillis(), !info.isSingleArray(), info.getLimit(), this);
     }
 
     @Override

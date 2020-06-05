@@ -197,7 +197,7 @@ public class PointValueSignalAnalysisRestController {
         PointValueDao pvd = Common.databaseProxy.newPointValueDao();
         List<PointValueTime> data = new ArrayList<>();
         //Make the call to get the data and quantize it
-        pvd.getPointValuesBetween(vo.getId(), info.getFromMillis(), info.getToMillis(),
+        pvd.getPointValuesBetween(vo, info.getFromMillis(), info.getToMillis(),
                 new MappedRowCallback<PointValueTime>() {
             @Override
             public void row(PointValueTime pvt, int row) {
