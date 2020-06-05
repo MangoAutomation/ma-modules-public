@@ -238,14 +238,14 @@ public class UserModel extends AbstractVoModel<User> {
         this.lastLogin = vo.getLastLogin() == 0 ? null : new Date(vo.getLastLogin());
         this.lastPasswordChange = new Date(vo.getPasswordChangeTimestamp());
         this.receiveAlarmEmails = vo.getReceiveAlarmEmails();
-        this.timezone = vo.getTimezone();
+        this.timezone = StringUtils.isBlank(vo.getTimezone()) ? null : vo.getTimezone();
         this.muted = vo.isMuted();
         this.receiveOwnAuditEvents = vo.isReceiveOwnAuditEvents();
         this.permissions = new HashSet<>();
         for(Role role : vo.getRoles()) {
             permissions.add(role.getXid());
         }
-        this.locale = vo.getLocale();
+        this.locale = StringUtils.isBlank(vo.getLocale()) ? null : vo.getLocale();
         this.passwordLocked = vo.isPasswordLocked();
         this.sessionExpirationOverride = vo.isSessionExpirationOverride();
         if(sessionExpirationOverride)
@@ -267,13 +267,13 @@ public class UserModel extends AbstractVoModel<User> {
         user.setDisabled(disabled);
         user.setHomeUrl(homeUrl);
         user.setReceiveAlarmEmails(receiveAlarmEmails);
-        user.setTimezone(timezone);
+        user.setTimezone(StringUtils.isBlank(timezone) ? null : timezone);
         user.setMuted(muted);
         user.setReceiveOwnAuditEvents(receiveOwnAuditEvents);
         if(permissions != null) {
             user.setRoles(Common.getBean(PermissionService.class).explodeLegacyPermissionGroupsToRoles(permissions));
         }
-        user.setLocale(locale);
+        user.setLocale(StringUtils.isBlank(locale) ? null : locale);
         if(!StringUtils.isEmpty(hashAlgorithm)) {
             String password = this.password != null ? this.password : "";
             user.setPasswordHash(this.hashAlgorithm, password);
