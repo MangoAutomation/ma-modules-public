@@ -4,13 +4,13 @@
  */
 package com.infiniteautomation.mango.rest.v2.model.dataPoint.textRenderer;
 
-import com.serotonin.m2m2.view.text.ConvertingRenderer;
+import com.serotonin.m2m2.view.text.ConvertingUnitRenderer;
 
 /**
  * @author Terry Packer
  *
  */
-public abstract class ConvertingTextRendererModel<T extends ConvertingRenderer> extends BaseTextRendererModel<T>{
+public abstract class ConvertingTextRendererModel<T extends ConvertingUnitRenderer> extends BaseTextRendererModel<T>{
 
     private boolean useUnitAsSuffix;
     public ConvertingTextRendererModel(){ }

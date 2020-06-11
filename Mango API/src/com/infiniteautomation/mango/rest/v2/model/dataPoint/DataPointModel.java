@@ -20,7 +20,7 @@ import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataPointTagsDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
-import com.serotonin.m2m2.util.UnitUtil;
+import com.serotonin.m2m2.util.JUnitUtil;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 
@@ -103,14 +103,14 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
         if (this.purgeOverride) {
             this.purgePeriod = new TimePeriodModel(point.getPurgePeriod(), point.getPurgeType());
         }
-        this.unit = UnitUtil.formatLocal(point.getUnit());
+        this.unit = JUnitUtil.formatLocal(point.getUnit());
         this.useIntegralUnit = point.isUseIntegralUnit();
         if (this.useIntegralUnit) {
-            this.integralUnit = UnitUtil.formatLocal(point.getIntegralUnit());
+            this.integralUnit = JUnitUtil.formatLocal(point.getIntegralUnit());
         }
         this.useRenderedUnit = point.isUseRenderedUnit();
         if (this.useRenderedUnit) {
-            this.renderedUnit = UnitUtil.formatLocal(point.getRenderedUnit());
+            this.renderedUnit = JUnitUtil.formatLocal(point.getRenderedUnit());
         }
         //The Point Locator will be set by the RestModelMapper after
         this.chartColour = point.getChartColour();
@@ -192,7 +192,7 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
         }
         if (unit != null) {
             try {
-                point.setUnit(UnitUtil.parseLocal(unit));
+                point.setUnit(JUnitUtil.parseLocal(unit));
             } catch(IllegalArgumentException e) {
                 //TODO  Mango 4.0 unmap
                 ProcessResult result = new ProcessResult();
@@ -205,7 +205,7 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
         }
         if (integralUnit != null) {
             try {
-                point.setIntegralUnit(UnitUtil.parseLocal(integralUnit));
+                point.setIntegralUnit(JUnitUtil.parseLocal(integralUnit));
             } catch(IllegalArgumentException e) {
                 //TODO  Mango 4.0 unmap
                 ProcessResult result = new ProcessResult();
@@ -218,7 +218,7 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
         }
         if (this.renderedUnit != null) {
             try {
-                point.setRenderedUnit(UnitUtil.parseLocal(renderedUnit));
+                point.setRenderedUnit(JUnitUtil.parseLocal(renderedUnit));
             } catch(IllegalArgumentException e) {
                 //TODO  Mango 4.0 unmap
                 ProcessResult result = new ProcessResult();

@@ -26,7 +26,7 @@ import com.infiniteautomation.mango.util.LazyInitSupplier;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.db.MappedRowCallback;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.db.dao.AbstractDao;
+import com.serotonin.m2m2.db.dao.AbstractVoDao;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.db.dao.PermissionDao;
@@ -36,7 +36,7 @@ import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 
 @Repository()
-public class MaintenanceEventDao extends AbstractDao<MaintenanceEventVO, MaintenanceEventsTableDefinition> {
+public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, MaintenanceEventsTableDefinition> {
 
     private final String SELECT_POINT_IDS = "SELECT dataPointId FROM maintenanceEventDataPoints WHERE maintenanceEventId=?";
     private final String SELECT_DATA_SOURCE_IDS = "SELECT dataSourceId FROM maintenanceEventDataSources WHERE maintenanceEventId=?";

@@ -44,7 +44,7 @@ import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.LazyInitializer;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.db.dao.AbstractDao;
+import com.serotonin.m2m2.db.dao.AbstractVoDao;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.PermissionDao;
 import com.serotonin.m2m2.db.dao.tables.MintermMappingTable;
@@ -62,7 +62,7 @@ import com.serotonin.m2m2.watchlist.WatchListVO;
  * @author Terry Packer
  */
 @Repository
-public class WatchListDao extends AbstractDao<WatchListVO, WatchListTableDefinition> {
+public class WatchListDao extends AbstractVoDao<WatchListVO, WatchListTableDefinition> {
 
     private static final LazyInitializer<WatchListDao> springInstance = new LazyInitializer<>();
 

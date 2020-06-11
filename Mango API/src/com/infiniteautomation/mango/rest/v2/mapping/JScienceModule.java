@@ -17,7 +17,7 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.deser.std.StdScalarDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdScalarSerializer;
-import com.serotonin.m2m2.util.UnitUtil;
+import com.serotonin.m2m2.util.JUnitUtil;
 
 /**
  * @author Terry Packer
@@ -60,7 +60,7 @@ public class JScienceModule extends SimpleModule {
                 // Format the unit using the standard UCUM representation.
                 // The string produced for a given unit is always the same; it is not affected by the locale.
                 // It can be used as a canonical string representation for exchanging units.
-                String ucumFormattedUnit = UnitUtil.formatUcum(unit);
+                String ucumFormattedUnit = JUnitUtil.formatDefault(unit);
 
                 jgen.writeString(ucumFormattedUnit);
             }
@@ -80,7 +80,7 @@ public class JScienceModule extends SimpleModule {
             JsonToken currentToken = jsonParser.getCurrentToken();
 
             if (currentToken == JsonToken.VALUE_STRING) {
-                return UnitUtil.parseUcum(jsonParser.getText());
+                return JUnitUtil.parseDefault(jsonParser.getText());
             }
             throw deserializationContext.wrongTokenException(jsonParser, Unit.class,
                     JsonToken.VALUE_STRING,
@@ -105,7 +105,7 @@ public class JScienceModule extends SimpleModule {
                 // Format the unit using the standard UCUM representation.
                 // The string produced for a given unit is always the same; it is not affected by the locale.
                 // It can be used as a canonical string representation for exchanging units.
-                String ucumFormattedUnit = UnitUtil.formatUcum(unit);
+                String ucumFormattedUnit = JUnitUtil.formatDefault(unit);
 
                 jgen.writeString(ucumFormattedUnit);
             }
@@ -127,7 +127,7 @@ public class JScienceModule extends SimpleModule {
             JsonToken currentToken = jsonParser.getCurrentToken();
 
             if (currentToken == JsonToken.VALUE_STRING) {
-                return (ProductUnit) UnitUtil.parseUcum(jsonParser.getText());
+                return (ProductUnit) JUnitUtil.parseDefault(jsonParser.getText());
             }
             throw deserializationContext.wrongTokenException(jsonParser, ProductUnit.class,
                     JsonToken.VALUE_STRING,
