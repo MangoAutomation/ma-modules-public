@@ -32,6 +32,7 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema.ColumnType;
+import com.infiniteautomation.mango.db.query.QueryCancelledException;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueField;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeCsvWriter;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream;
@@ -244,11 +245,14 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
             }
             generator.setSchema(builder.build());
             PointValueTimeWriter writer = new PointValueTimeCsvWriter(stream.getQueryInfo(), stream.getVoMap().size(), generator);
-            stream.start(writer);
-            stream.streamData(writer);
-            stream.finish(writer);
-            generator.flush();
-
+            try{
+                stream.start(writer);
+                stream.streamData(writer);
+                stream.finish(writer);
+                generator.flush();
+            }catch(QueryCancelledException e) {
+                throw new HttpMessageNotWritableException("Query Cancelled");
+            }
         }
         catch (JsonProcessingException ex) {
             throw new HttpMessageNotWritableException("Could not write content: " + ex.getMessage(), ex);

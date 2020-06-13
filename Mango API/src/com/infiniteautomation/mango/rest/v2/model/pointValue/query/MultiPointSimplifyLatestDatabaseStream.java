@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.goebl.simplify.SimplifyUtility;
+import com.infiniteautomation.mango.db.query.QueryCancelledException;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.DataPointVOPointValueTimeBookend;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeWriter;
 import com.serotonin.m2m2.db.dao.PointValueDao;
@@ -24,9 +25,9 @@ import com.serotonin.m2m2.vo.DataPointVO;
  * @author Terry Packer
  */
 public class MultiPointSimplifyLatestDatabaseStream<T, INFO extends LatestQueryInfo> extends MultiPointLatestDatabaseStream<T, INFO>{
-    
+
     protected final Map<Integer, List<DataPointVOPointValueTimeBookend>> valuesMap;
-    
+
     /**
      * @param info
      * @param voMap
@@ -48,9 +49,9 @@ public class MultiPointSimplifyLatestDatabaseStream<T, INFO extends LatestQueryI
         }
         values.add(value);
     }
-    
+
     @Override
-    public void finish(PointValueTimeWriter writer) throws IOException {
+    public void finish(PointValueTimeWriter writer) throws QueryCancelledException, IOException {
         //Write out the values after simplifying
         Iterator<Integer> it = valuesMap.keySet().iterator();
         if(info.isSingleArray() && voMap.size() > 1) {
@@ -64,7 +65,7 @@ public class MultiPointSimplifyLatestDatabaseStream<T, INFO extends LatestQueryI
                         DataPointVOPointValueTimeBookend o2) {
                     return o1.getPvt().compareTo(o2.getPvt());
                 }
-                
+
             });
             for(DataPointVOPointValueTimeBookend value : sorted)
                 super.writeValue(value);

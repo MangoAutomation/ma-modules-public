@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.goebl.simplify.SimplifyUtility;
+import com.infiniteautomation.mango.db.query.QueryCancelledException;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.DataPointVOPointValueTimeBookend;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.DataPointValueTime;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeWriter;
@@ -48,7 +49,7 @@ public class MultiDataPointDefaultRollupStatisticsQuantizerStream <T, INFO exten
     }
 
     @Override
-    public void streamData(PointValueTimeWriter writer) throws IOException {
+    public void streamData(PointValueTimeWriter writer) throws IOException, QueryCancelledException {
         if(!useSimplify) {
             super.streamData(writer);
             return;
@@ -161,29 +162,37 @@ public class MultiDataPointDefaultRollupStatisticsQuantizerStream <T, INFO exten
     }
 
     @Override
-    public void firstValue(IdPointValueTime value, int index, boolean bookend) throws IOException {
-        if(!useSimplify) {
-            super.firstValue(value, index, bookend);
-            return;
+    public void firstValue(IdPointValueTime value, int index, boolean bookend) throws QueryCancelledException {
+        try {
+            if(!useSimplify) {
+                super.firstValue(value, index, bookend);
+                return;
+            }
+            DataPointStatisticsQuantizer<?> quantizer = this.quantizerMap.get(value.getId());
+            updateQuantizers(value);
+            quantizer.firstValue(value, index, bookend);
+        }catch(IOException e) {
+            throw new QueryCancelledException(e);
         }
-        DataPointStatisticsQuantizer<?> quantizer = this.quantizerMap.get(value.getId());
-        updateQuantizers(value);
-        quantizer.firstValue(value, index, bookend);
     }
 
     @Override
-    public void row(IdPointValueTime value, int index) throws IOException {
-        if(!useSimplify) {
-            super.row(value, index);
-            return;
+    public void row(IdPointValueTime value, int index) throws QueryCancelledException {
+        try {
+            if(!useSimplify) {
+                super.row(value, index);
+                return;
+            }
+            updateQuantizers(value);
+            DataPointStatisticsQuantizer<?> quantizer = this.quantizerMap.get(value.getId());
+            quantizer.row(value, index);
+        }catch(IOException e) {
+            throw new QueryCancelledException(e);
         }
-        updateQuantizers(value);
-        DataPointStatisticsQuantizer<?> quantizer = this.quantizerMap.get(value.getId());
-        quantizer.row(value, index);
     }
 
     @Override
-    public void lastValue(IdPointValueTime value, int index, boolean bookend) throws IOException {
+    public void lastValue(IdPointValueTime value, int index, boolean bookend) throws QueryCancelledException {
         if(!useSimplify) {
             super.lastValue(value, index, bookend);
             return;
@@ -193,7 +202,7 @@ public class MultiDataPointDefaultRollupStatisticsQuantizerStream <T, INFO exten
     }
 
     @Override
-    public void quantizedStatistics(DataPointStatisticsGenerator generator) throws IOException {
+    public void quantizedStatistics(DataPointStatisticsGenerator generator) throws QueryCancelledException {
         if(!useSimplify) {
             super.quantizedStatistics(generator);
             return;
@@ -208,7 +217,7 @@ public class MultiDataPointDefaultRollupStatisticsQuantizerStream <T, INFO exten
     }
 
     @Override
-    public void finish(PointValueTimeWriter writer) throws IOException {
+    public void finish(PointValueTimeWriter writer) throws QueryCancelledException, IOException {
         if(!useSimplify) {
             super.finish(writer);
             return;

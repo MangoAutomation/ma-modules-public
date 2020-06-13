@@ -6,10 +6,14 @@ package com.infiniteautomation.mango.rest.v2.mapping;
 
 import java.io.IOException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.infiniteautomation.mango.db.query.QueryCancelledException;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeJsonWriter;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream.StreamContentType;
@@ -20,18 +24,23 @@ import com.infiniteautomation.mango.rest.v2.model.pointValue.query.LatestQueryIn
  *
  * @author Terry Packer
  */
-public class PointValueTimeStreamJsonSerializer<T, INFO extends LatestQueryInfo> extends JsonSerializer<PointValueTimeStream<T, INFO>>{
+public class PointValueTimeStreamJsonSerializer<T, INFO extends LatestQueryInfo> extends JsonSerializer<PointValueTimeStream<T, INFO>> {
+    private static final Log LOG = LogFactory.getLog(PointValueTimeStreamJsonSerializer.class);
 
     @Override
     public void serialize(PointValueTimeStream<T, INFO> value, JsonGenerator jgen,
             SerializerProvider provider) throws IOException,
-            JsonProcessingException {
+    JsonProcessingException {
         PointValueTimeWriter writer = new PointValueTimeJsonWriter(value.getQueryInfo(), jgen);
         value.setContentType(StreamContentType.JSON);
-        value.start(writer);
-        value.streamData(writer);
-        value.finish(writer);
-        jgen.flush();
+        try{
+            value.start(writer);
+            value.streamData(writer);
+            value.finish(writer);
+            jgen.flush();
+        }catch(QueryCancelledException e) {
+            LOG.info("Query cancelled.", e);
+        }
     }
 
 }

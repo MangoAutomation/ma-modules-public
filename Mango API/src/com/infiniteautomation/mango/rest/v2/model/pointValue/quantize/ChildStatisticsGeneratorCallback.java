@@ -4,7 +4,7 @@
  */
 package com.infiniteautomation.mango.rest.v2.model.pointValue.quantize;
 
-import java.io.IOException;
+import com.infiniteautomation.mango.db.query.QueryCancelledException;
 
 /**
  *
@@ -13,10 +13,10 @@ import java.io.IOException;
 public interface ChildStatisticsGeneratorCallback {
 
     /**
-     * 
+     *
      * Called upon period change
      * @param generator
      */
-    void quantizedStatistics(DataPointStatisticsGenerator generator) throws IOException;
-    
+    void quantizedStatistics(DataPointStatisticsGenerator generator) throws QueryCancelledException;
+
 }

@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import com.infiniteautomation.mango.db.query.BookendQueryCallback;
+import com.infiniteautomation.mango.db.query.QueryCancelledException;
 import com.infiniteautomation.mango.quantize.BucketCalculator;
 import com.infiniteautomation.mango.quantize.BucketsBucketCalculator;
 import com.infiniteautomation.mango.quantize.TimePeriodBucketCalculator;
@@ -59,13 +60,16 @@ public abstract class AbstractMultiDataPointStatisticsQuantizerStream <T, INFO e
      * @param generator
      * @throws IOException
      */
-    protected void writePeriodStats(DataPointRollupPeriodValue generator) throws IOException{
+    protected void writePeriodStats(DataPointRollupPeriodValue generator) throws QueryCancelledException{
         //Code limit
-        //TODO Cancel query via Exception
-        if(info.getLimit() != null && count >= info.getLimit())
-            return;
-        this.writer.writeDataPointValue(generator);
-        count++;
+        try {
+            if(info.getLimit() != null && count >= info.getLimit())
+                return;
+            this.writer.writeDataPointValue(generator);
+            count++;
+        }catch(IOException e) {
+            throw new QueryCancelledException(e);
+        }
     }
 
     /**
@@ -75,7 +79,7 @@ public abstract class AbstractMultiDataPointStatisticsQuantizerStream <T, INFO e
      * @param value
      * @throws IOException
      */
-    protected void updateQuantizers(IdPointValueTime value) throws IOException {
+    protected void updateQuantizers(IdPointValueTime value) throws IOException, QueryCancelledException {
         long time = value.getTime();
         if(!info.isSingleArray()) {
             //In this query the values are returned in data point ID and time order

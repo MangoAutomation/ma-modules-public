@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 
+import com.infiniteautomation.mango.db.query.QueryCancelledException;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeWriter;
 import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.rt.dataImage.AnnotatedIdPointValueTime;
@@ -33,7 +34,7 @@ public class MultiPointTimeRangeDatabaseStream<T, INFO extends ZonedDateTimeRang
     }
 
     @Override
-    public void streamData(PointValueTimeWriter writer) throws IOException {
+    public void streamData(PointValueTimeWriter writer) throws QueryCancelledException, IOException {
 
         //Can we use just the cache?
         if(info.isUseCache() == PointValueTimeCacheControl.CACHE_ONLY) {
@@ -49,12 +50,12 @@ public class MultiPointTimeRangeDatabaseStream<T, INFO extends ZonedDateTimeRang
     }
 
     @Override
-    public void firstValue(IdPointValueTime value, int index, boolean bookend) throws IOException {
+    public void firstValue(IdPointValueTime value, int index, boolean bookend) throws QueryCancelledException {
         processRow(value, index, bookend, false, false);
     }
 
     @Override
-    public void lastValue(IdPointValueTime value, int index, boolean bookend) throws IOException {
+    public void lastValue(IdPointValueTime value, int index, boolean bookend) throws QueryCancelledException {
         processRow(value, index, false, bookend, false);
     }
 
@@ -69,7 +70,7 @@ public class MultiPointTimeRangeDatabaseStream<T, INFO extends ZonedDateTimeRang
     }
 
     @Override
-    protected boolean processValueThroughCache(IdPointValueTime value, int index, boolean firstBookend, boolean lastBookend) throws IOException {
+    protected boolean processValueThroughCache(IdPointValueTime value, int index, boolean firstBookend, boolean lastBookend) throws QueryCancelledException {
         List<IdPointValueTime> pointCache = this.cache.get(value.getId());
         if(pointCache != null) {
             ListIterator<IdPointValueTime> it = pointCache.listIterator();
@@ -97,7 +98,7 @@ public class MultiPointTimeRangeDatabaseStream<T, INFO extends ZonedDateTimeRang
     }
 
     @Override
-    protected void processCacheOnly() throws IOException{
+    protected void processCacheOnly() throws QueryCancelledException {
         //Performance enhancement to return data within cache only
         Iterator<Integer> it = voMap.keySet().iterator();
         int index = 0;

@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.goebl.simplify.SimplifyUtility;
+import com.infiniteautomation.mango.db.query.QueryCancelledException;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.DataPointVOPointValueTimeBookend;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeWriter;
 import com.serotonin.m2m2.db.dao.PointValueDao;
@@ -28,7 +29,7 @@ public class MultiPointSimplifyTimeRangeDatabaseStream<T, INFO extends ZonedDate
 
     protected final Map<Integer, BookendPair> bookendMap;
     protected final Map<Integer, List<DataPointVOPointValueTimeBookend>> valuesMap;
-    
+
     /**
      * @param info
      * @param voMap
@@ -38,7 +39,7 @@ public class MultiPointSimplifyTimeRangeDatabaseStream<T, INFO extends ZonedDate
             PointValueDao dao) {
         super(info, voMap, dao);
         this.valuesMap = new LinkedHashMap<>();
-        this.bookendMap = new HashMap<>(); 
+        this.bookendMap = new HashMap<>();
     }
 
     @Override
@@ -62,7 +63,7 @@ public class MultiPointSimplifyTimeRangeDatabaseStream<T, INFO extends ZonedDate
     }
 
     @Override
-    public void finish(PointValueTimeWriter writer) throws IOException {
+    public void finish(PointValueTimeWriter writer) throws QueryCancelledException, IOException {
         //Write out the values after simplifying
         Iterator<Integer> it = voMap.keySet().iterator();
         if(info.isSingleArray() && voMap.size() > 1) {
@@ -86,7 +87,7 @@ public class MultiPointSimplifyTimeRangeDatabaseStream<T, INFO extends ZonedDate
                         DataPointVOPointValueTimeBookend o2) {
                     return o1.getPvt().compareTo(o2.getPvt());
                 }
-                
+
             });
             for(DataPointVOPointValueTimeBookend value : sorted)
                 super.writeValue(value);
@@ -111,11 +112,11 @@ public class MultiPointSimplifyTimeRangeDatabaseStream<T, INFO extends ZonedDate
         }
         super.finish(writer);
     }
-    
+
     class BookendPair {
         DataPointVOPointValueTimeBookend startBookend;
         DataPointVOPointValueTimeBookend endBookend;
-        
+
         /**
          * Add a bookend, its either the at the from time or to time
          * @param bookend
@@ -127,5 +128,5 @@ public class MultiPointSimplifyTimeRangeDatabaseStream<T, INFO extends ZonedDate
                 endBookend = bookend;
         }
     }
-    
+
 }

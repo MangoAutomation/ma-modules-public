@@ -36,6 +36,7 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.infiniteautomation.mango.db.query.QueryCancelledException;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueField;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeJsonWriter;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream.StreamContentType;
@@ -103,7 +104,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
     }
 
     @Test
-    public void testSingleImagePointNoCacheNoChangeInitialValue() throws IOException {
+    public void testSingleImagePointNoCacheNoChangeInitialValue() throws IOException, QueryCancelledException {
 
         //Setup the data to run once daily for 30 days
         ZonedDateTime from = ZonedDateTime.of(2017, 01, 01, 00, 00, 00, 0, zoneId);
@@ -181,7 +182,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
     }
 
     @Test
-    public void testSingleImagePointOnlyCacheChange() throws IOException {
+    public void testSingleImagePointOnlyCacheChange() throws IOException, QueryCancelledException {
 
         //Setup the data to run once daily for 30 days
         ZonedDateTime from = ZonedDateTime.of(2017, 01, 01, 00, 00, 00, 0, zoneId);
@@ -267,7 +268,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
     }
 
     @Test
-    public void testSingleAlphanumericPointNoCacheNoChangeInitialValue() throws IOException {
+    public void testSingleAlphanumericPointNoCacheNoChangeInitialValue() throws IOException, QueryCancelledException {
 
         //Setup the data to run once daily for 30 days
         ZonedDateTime from = ZonedDateTime.of(2017, 01, 01, 00, 00, 00, 0, zoneId);
@@ -314,7 +315,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
      * @throws IOException
      */
     @Test
-    public void testSingleMultistatePointNoCacheNoChangeInitialValue() throws IOException {
+    public void testSingleMultistatePointNoCacheNoChangeInitialValue() throws IOException, QueryCancelledException {
 
         //Setup the data to run once daily for 30 days
         ZonedDateTime from = ZonedDateTime.of(2017, 01, 01, 00, 00, 00, 0, zoneId);
@@ -357,7 +358,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
 
 
     @Test
-    public void testSingleNumericPointNoCacheNoChangeInitialValue() throws IOException {
+    public void testSingleNumericPointNoCacheNoChangeInitialValue() throws IOException, QueryCancelledException {
 
         //Setup the data to run once daily for 30 days
         ZonedDateTime from = ZonedDateTime.of(2017, 01, 01, 00, 00, 00, 0, zoneId);
@@ -399,7 +400,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
     }
 
     @Test
-    public void testSingleNumericPointNoCacheChangeInitialValue() throws IOException {
+    public void testSingleNumericPointNoCacheChangeInitialValue() throws IOException, QueryCancelledException {
 
         //Setup the data to run once daily for 30 days
         ZonedDateTime from = ZonedDateTime.of(2017, 01, 01, 00, 00, 00, 0, zoneId);
@@ -440,7 +441,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
     }
 
     @Test
-    public void testSingleNumericPointOnlyCacheChange() throws IOException {
+    public void testSingleNumericPointOnlyCacheChange() throws IOException, QueryCancelledException {
 
         //Setup the data to run once daily for 30 days
         ZonedDateTime from = ZonedDateTime.of(2017, 01, 01, 00, 00, 00, 0, zoneId);
@@ -571,7 +572,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
 
 
     @Test
-    public void testSingleNumericPointOnlyCacheChangeCachedValueAtFrom() throws IOException {
+    public void testSingleNumericPointOnlyCacheChangeCachedValueAtFrom() throws IOException, QueryCancelledException {
 
         //Setup the data to run once daily for 30 days
         ZonedDateTime from = ZonedDateTime.of(2017, 01, 01, 00, 00, 00, 0, zoneId);
@@ -625,7 +626,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
     }
 
     @Test
-    public void testSingleNumericPointBothChange() throws IOException {
+    public void testSingleNumericPointBothChange() throws IOException, QueryCancelledException {
 
         //Setup the data to run once daily for 30 days
         ZonedDateTime from = ZonedDateTime.of(2017, 01, 01, 00, 00, 00, 0, zoneId);
@@ -755,7 +756,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
     }
 
     @Test
-    public void testMultiplePointsNoCacheChangeInitialValue() throws IOException {
+    public void testMultiplePointsNoCacheChangeInitialValue() throws IOException, QueryCancelledException {
 
         //Setup the data to run once daily for 30 days
         ZonedDateTime from = ZonedDateTime.of(2017, 01, 01, 00, 00, 00, 0, zoneId);
@@ -811,7 +812,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
     }
 
     @Test
-    public void testMultiplePointsOnlyCacheChange() throws IOException {
+    public void testMultiplePointsOnlyCacheChange() throws IOException, QueryCancelledException {
 
         //Setup the data to run once daily for 30 days
         ZonedDateTime from = ZonedDateTime.of(2017, 01, 01, 00, 00, 00, 0, zoneId);
@@ -1002,8 +1003,9 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
      * @param info
      * @param voMap
      * @throws IOException
+     * @throws QueryCancelledException
      */
-    private void test(ZonedDateTimeStatisticsQueryInfo info, DataPointWrapper<?>...points) throws IOException {
+    private void test(ZonedDateTimeStatisticsQueryInfo info, DataPointWrapper<?>...points) throws IOException, QueryCancelledException {
         Map<Integer, DataPointVO> voMap = new HashMap<>();
         for(DataPointWrapper<?> wrapper : points)
             voMap.put(wrapper.vo.getId(), wrapper.vo);
@@ -1059,7 +1061,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
      * @return
      * @throws IOException
      */
-    protected JsonNode generateOutput(ZonedDateTimeStatisticsQueryInfo info, Map<Integer, DataPointVO> voMap) throws IOException {
+    protected JsonNode generateOutput(ZonedDateTimeStatisticsQueryInfo info, Map<Integer, DataPointVO> voMap) throws QueryCancelledException, IOException {
         MultiPointStatisticsStream stream = new MultiPointStatisticsStream(info, voMap, Common.databaseProxy.newPointValueDao());
 
         JsonFactory factory = new JsonFactory();

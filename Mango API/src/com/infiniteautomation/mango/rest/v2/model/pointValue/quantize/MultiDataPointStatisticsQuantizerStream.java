@@ -14,6 +14,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.infiniteautomation.mango.db.query.QueryCancelledException;
 import com.infiniteautomation.mango.quantize.BucketCalculator;
 import com.infiniteautomation.mango.quantize.BucketsBucketCalculator;
 import com.infiniteautomation.mango.quantize.TimePeriodBucketCalculator;
@@ -50,88 +51,103 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
     }
 
     @Override
-    public void firstValue(IdPointValueTime value, int index, boolean bookend) throws IOException {
-        DataPointStatisticsQuantizer<?> quantizer = this.quantizerMap.get(value.getId());
-        if(!info.isSingleArray())
-            writer.writeStartArray(quantizer.vo.getXid());
-        updateQuantizers(value);
-        quantizer.firstValue(value, index, bookend);
-    }
-
-    @Override
-    public void row(IdPointValueTime value, int index) throws IOException {
-        updateQuantizers(value);
-
-        if(info.isSingleArray() && voMap.size() > 1) {
-            //Possibly fast forward as samples come in time order and we will not receive another value at this timestamp
-            //this will keep our periodStats to a minimum
-            if(lastTime != null && value.getTime() != lastTime) {
-                //Finish by forwarding to the point value time
-                Iterator<Integer> it = this.currentValueTimeMap.keySet().iterator();
-                while(it.hasNext()) {
-                    Integer id = it.next();
-                    DataPointStatisticsQuantizer<?> q = this.quantizerMap.get(id);
-                    IdPointValueTimeRow row = this.currentValueTimeMap.get(id);
-                    it.remove();
-                    if(row == null) {
-                        //No values in this sample period
-                        q.fastForward(lastTime);
-                    }else {
-                        q.row(row.value, row.index);
-                    }
-                }
-                currentValueTimeMap.put(value.getId(), new IdPointValueTimeRow(value, index));
-            }else {
-                //cache the value so as not to trigger quantization until all values are ready
-                currentValueTimeMap.put(value.getId(), new IdPointValueTimeRow(value, index));
-            }
-
-            lastTime = value.getTime();
-        }else {
+    public void firstValue(IdPointValueTime value, int index, boolean bookend) throws QueryCancelledException {
+        try {
             DataPointStatisticsQuantizer<?> quantizer = this.quantizerMap.get(value.getId());
-            quantizer.row(value, index);
+            if(!info.isSingleArray())
+                writer.writeStartArray(quantizer.vo.getXid());
+            updateQuantizers(value);
+            quantizer.firstValue(value, index, bookend);
+        }catch(IOException e) {
+            throw new QueryCancelledException(e);
         }
     }
 
     @Override
-    public void lastValue(IdPointValueTime value, int index, boolean bookend) throws IOException {
-        DataPointStatisticsQuantizer<?> quantizer = this.quantizerMap.get(value.getId());
-        IdPointValueTimeRow row = this.currentValueTimeMap.remove(value.getId());
-        if(row != null) {
-            quantizer.row(row.value, row.index);
-        }
-        quantizer.lastValue(value, index, bookend);
-        //This will definitely be the last time we see this point
-        if(!info.isSingleArray()) {
-            quantizer.done();
-            writer.writeEndArray();
+    public void row(IdPointValueTime value, int index) throws QueryCancelledException {
+        try {
+            updateQuantizers(value);
+
+            if(info.isSingleArray() && voMap.size() > 1) {
+                //Possibly fast forward as samples come in time order and we will not receive another value at this timestamp
+                //this will keep our periodStats to a minimum
+                if(lastTime != null && value.getTime() != lastTime) {
+                    //Finish by forwarding to the point value time
+                    Iterator<Integer> it = this.currentValueTimeMap.keySet().iterator();
+                    while(it.hasNext()) {
+                        Integer id = it.next();
+                        DataPointStatisticsQuantizer<?> q = this.quantizerMap.get(id);
+                        IdPointValueTimeRow row = this.currentValueTimeMap.get(id);
+                        it.remove();
+                        if(row == null) {
+                            //No values in this sample period
+                            q.fastForward(lastTime);
+                        }else {
+                            q.row(row.value, row.index);
+                        }
+                    }
+                    currentValueTimeMap.put(value.getId(), new IdPointValueTimeRow(value, index));
+                }else {
+                    //cache the value so as not to trigger quantization until all values are ready
+                    currentValueTimeMap.put(value.getId(), new IdPointValueTimeRow(value, index));
+                }
+
+                lastTime = value.getTime();
+            }else {
+                DataPointStatisticsQuantizer<?> quantizer = this.quantizerMap.get(value.getId());
+                quantizer.row(value, index);
+            }
+        }catch(IOException e) {
+            throw new QueryCancelledException(e);
         }
     }
 
     @Override
-    public void streamData(PointValueTimeWriter writer) throws IOException {
+    public void lastValue(IdPointValueTime value, int index, boolean bookend) throws QueryCancelledException {
+        try {
+            DataPointStatisticsQuantizer<?> quantizer = this.quantizerMap.get(value.getId());
+            IdPointValueTimeRow row = this.currentValueTimeMap.remove(value.getId());
+            if(row != null) {
+                quantizer.row(row.value, row.index);
+            }
+            quantizer.lastValue(value, index, bookend);
+            //This will definitely be the last time we see this point
+            if(!info.isSingleArray()) {
+                quantizer.done();
+                writer.writeEndArray();
+            }
+        }catch(IOException e) {
+            throw new QueryCancelledException(e);
+        }
+    }
+
+    @Override
+    public void streamData(PointValueTimeWriter writer) throws QueryCancelledException, IOException {
         createQuantizerMap();
         dao.wideBookendQuery(new ArrayList<DataPointVO>(voMap.values()), info.getFromMillis(), info.getToMillis(), !info.isSingleArray(), null, this);
     }
 
-    protected void writePeriodStats(List<DataPointValueTime> generators) throws IOException {
+    protected void writePeriodStats(List<DataPointValueTime> generators) throws QueryCancelledException {
         //Code limit
-        //TODO Cancel query via Exception
-        if(info.getLimit() != null && count >= info.getLimit())
-            return;
+        try {
+            if(info.getLimit() != null && count >= info.getLimit())
+                return;
 
-        if(info.isSingleArray() && voMap.size() > 1) {
-            if(generators.size() > 0)
-                this.writer.writeDataPointValues(generators, generators.get(0).getTime());
-        }else {
-            for(DataPointValueTime gen: generators)
-                this.writer.writeDataPointValue(gen);
+            if(info.isSingleArray() && voMap.size() > 1) {
+                if(generators.size() > 0)
+                    this.writer.writeDataPointValues(generators, generators.get(0).getTime());
+            }else {
+                for(DataPointValueTime gen: generators)
+                    this.writer.writeDataPointValue(gen);
+            }
+            count++;
+        }catch(IOException e) {
+            throw new QueryCancelledException(e);
         }
-        count++;
     }
 
     @Override
-    public void quantizedStatistics(DataPointStatisticsGenerator generator) throws IOException {
+    public void quantizedStatistics(DataPointStatisticsGenerator generator) throws QueryCancelledException {
         //Collect the stats for this period
         if(info.isSingleArray() && voMap.size() > 1) {
             //Do we have any entries for this period
@@ -153,7 +169,7 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
     }
 
     @Override
-    public void finish(PointValueTimeWriter writer) throws IOException {
+    public void finish(PointValueTimeWriter writer) throws QueryCancelledException, IOException {
 
         if(info.isSingleArray() && voMap.size() > 1) {
 

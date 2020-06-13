@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import com.infiniteautomation.mango.db.query.QueryCancelledException;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueField;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeWriter;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.DataPointStatisticsGenerator;
@@ -45,64 +46,69 @@ public class MultiPointStatisticsStream extends MultiPointTimeRangeDatabaseStrea
 
     @Override
     protected void processRow(IdPointValueTime value, int index, boolean firstBookend,
-            boolean lastBookend, boolean cached) throws IOException {
+            boolean lastBookend, boolean cached) throws QueryCancelledException {
 
-        final DataPointVO vo = voMap.get(value.getId());
-        if(info.isUseCache() != PointValueTimeCacheControl.NONE && !cached)
-            if(!processValueThroughCache(value, index, firstBookend, lastBookend))
-                return;
-        StatisticsGenerator generator = statsMap.compute(value.getId(), (k, v) -> {
-            if(v == null) {
-                switch(vo.getPointLocator().getDataTypeId()){
-                    case DataTypes.BINARY:
-                    case DataTypes.MULTISTATE:
-                        v = new StartsAndRuntimeList(info.getFromMillis(), info.getToMillis(), value);
-                        break;
-                    case DataTypes.ALPHANUMERIC:
-                    case DataTypes.IMAGE:
-                        v = new ValueChangeCounter(info.getFromMillis(), info.getToMillis(), value);
-                        break;
-                    case DataTypes.NUMERIC:
-                        v = new AnalogStatistics(info.getFromMillis(), info.getToMillis(), value);
-                        break;
-                    default:
-                        throw new ShouldNeverHappenException("Invalid Data Type: "+ voMap.get(value.getId()).getPointLocator().getDataTypeId());
+        try {
+            final DataPointVO vo = voMap.get(value.getId());
+            if(info.isUseCache() != PointValueTimeCacheControl.NONE && !cached)
+                if(!processValueThroughCache(value, index, firstBookend, lastBookend))
+                    return;
+            StatisticsGenerator generator = statsMap.compute(value.getId(), (k, v) -> {
+                if(v == null) {
+                    switch(vo.getPointLocator().getDataTypeId()){
+                        case DataTypes.BINARY:
+                        case DataTypes.MULTISTATE:
+                            v = new StartsAndRuntimeList(info.getFromMillis(), info.getToMillis(), value);
+                            break;
+                        case DataTypes.ALPHANUMERIC:
+                        case DataTypes.IMAGE:
+                            v = new ValueChangeCounter(info.getFromMillis(), info.getToMillis(), value);
+                            break;
+                        case DataTypes.NUMERIC:
+                            v = new AnalogStatistics(info.getFromMillis(), info.getToMillis(), value);
+                            break;
+                        default:
+                            throw new ShouldNeverHappenException("Invalid Data Type: "+ voMap.get(value.getId()).getPointLocator().getDataTypeId());
+                    }
                 }
-            }
-            if(!lastBookend && !firstBookend) {
-                v.addValueTime(value);
-            }
-            return v;
-        });
-
-        if(lastBookend) {
-            generator.done();
-            this.writer.writeStartObject(vo.getXid());
-            DataPointStatisticsGenerator gen = new DataPointStatisticsGenerator(vo, generator);
-
-            //Pre-process the fields
-            boolean rendered = false;
-            Set<PointValueField> fields = new HashSet<>();
-            for(PointValueField field: this.writer.getInfo().getFields()) {
-                if(field == PointValueField.RENDERED) {
-                    rendered = true;
-                }else if(field == PointValueField.ANNOTATION) {
-                    continue;
-                }else {
-                    fields.add(field);
+                if(!lastBookend && !firstBookend) {
+                    v.addValueTime(value);
                 }
+                return v;
+            });
+
+            if(lastBookend) {
+                generator.done();
+                this.writer.writeStartObject(vo.getXid());
+                DataPointStatisticsGenerator gen = new DataPointStatisticsGenerator(vo, generator);
+
+                //Pre-process the fields
+                boolean rendered = false;
+                Set<PointValueField> fields = new HashSet<>();
+                for(PointValueField field: this.writer.getInfo().getFields()) {
+                    if(field == PointValueField.RENDERED) {
+                        rendered = true;
+                    }else if(field == PointValueField.ANNOTATION) {
+                        continue;
+                    }else {
+                        fields.add(field);
+                    }
+                }
+
+                //Remove the Value field we will write it after
+                fields.remove(PointValueField.VALUE);
+
+                for(PointValueField field: fields) {
+                    field.writeValue(gen, info, Common.getTranslations(), false, writer);
+                }
+                this.writer.writeAllStatistics(generator, vo, rendered, fields.contains(PointValueField.RAW));
+
+                this.writer.writeEndObject();
             }
-
-            //Remove the Value field we will write it after
-            fields.remove(PointValueField.VALUE);
-
-            for(PointValueField field: fields) {
-                field.writeValue(gen, info, Common.getTranslations(), false, writer);
-            }
-            this.writer.writeAllStatistics(generator, vo, rendered, fields.contains(PointValueField.RAW));
-
-            this.writer.writeEndObject();
+        }catch(IOException e) {
+            throw new QueryCancelledException(e);
         }
+
     }
 
     @Override
