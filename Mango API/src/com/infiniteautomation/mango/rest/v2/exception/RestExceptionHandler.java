@@ -12,6 +12,7 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.jetty.io.EofException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.NestedRuntimeException;
@@ -76,6 +77,22 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         this.browserHtmlRequestMatcher = browserHtmlRequestMatcher;
         this.mapper = mapper;
         this.service = service;
+    }
+
+    /**
+     * Handle End of file exceptions specifically those from the client's connection being closed
+     * @param request
+     * @param response
+     * @param ex
+     * @param req
+     * @return
+     */
+    @ExceptionHandler(EofException.class)
+    public Object exceptionHandler(HttpServletRequest request, HttpServletResponse response, IOException ex, WebRequest req) {
+        response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
+        this.storeException(request, ex, HttpStatus.SERVICE_UNAVAILABLE);
+        //There is nothing we can send back
+        return null;
     }
 
     //Anything that extends our Base Exception
