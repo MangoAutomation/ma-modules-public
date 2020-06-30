@@ -10,6 +10,7 @@ import java.util.TimeZone;
 
 import javax.annotation.PostConstruct;
 
+import com.infiniteautomation.mango.rest.v2.resolver.TranslationsResolver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -75,10 +76,9 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
     public static final String DISPATCHER_NAME = "restV2DispatcherServlet";
 
     final ObjectMapper mapper;
-    final PartialUpdateArgumentResolver partialUpdateResolver;
-    final RemainingPathResolver remainingPathResolver;
-    final RqlResolver rqlResolver;
+    final List<HandlerMethodArgumentResolver> handlerMethodArgumentResolvers;
     final List<HttpMessageConverter<?>> converters;
+
     /**
      * Should be supplied by
      * com.infiniteautomation.mango.spring.MangoRuntimeContextConfiguration.taskExecutor(ExecutorService)
@@ -87,17 +87,12 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
 
     @Autowired
     public MangoRestDispatcherConfiguration(
-            @Qualifier(MangoRuntimeContextConfiguration.REST_OBJECT_MAPPER_NAME)
-            ObjectMapper mapper,
-            PartialUpdateArgumentResolver resolver,
-            RemainingPathResolver remainingPathResolver,
-            RqlResolver rqlResolver,
+            @Qualifier(MangoRuntimeContextConfiguration.REST_OBJECT_MAPPER_NAME) ObjectMapper mapper,
             RestModelMapper modelMapper,
+            List<HandlerMethodArgumentResolver> handlerMethodArgumentResolvers,
             AsyncTaskExecutor asyncTaskExecutor) {
         this.mapper = mapper;
-        this.partialUpdateResolver = resolver;
-        this.remainingPathResolver = remainingPathResolver;
-        this.rqlResolver = rqlResolver;
+        this.handlerMethodArgumentResolvers = handlerMethodArgumentResolvers;
         this.converters = new ArrayList<>();
         this.asyncTaskExecutor = asyncTaskExecutor;
 
@@ -145,8 +140,7 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
     /**
      * Setup Content Negotiation to map url extensions to returned data types
      *
-     * @see http
-     *      ://spring.io/blog/2013/05/11/content-negotiation-using-spring-mvc
+     * @see <a href="http://spring.io/blog/2013/05/11/content-negotiation-using-spring-mvc">Spring article</a>
      */
     @Override
     public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
@@ -205,9 +199,7 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
 
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
-        resolvers.add(partialUpdateResolver);
-        resolvers.add(remainingPathResolver);
-        resolvers.add(rqlResolver);
+        resolvers.addAll(handlerMethodArgumentResolvers);
     }
 
     @Override
