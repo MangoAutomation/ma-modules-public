@@ -9,6 +9,7 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.serotonin.m2m2.i18n.Translations;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -51,12 +52,12 @@ public class VirtualSerialPortRestV2Controller extends AbstractMangoRestV2Contro
             )
     @RequestMapping(method = RequestMethod.GET)
     public StreamWithTotal<VirtualSerialPortConfig> query(
-            HttpServletRequest request,
+            ASTNode query,
+            Translations translations,
             @AuthenticationPrincipal User user) {
 
-        ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
         List<VirtualSerialPortConfig> all = VirtualSerialPortConfigDao.getInstance().getAll();
-        return new FilteredStreamWithTotal<>(all, query);
+        return new FilteredStreamWithTotal<>(all, query, translations);
     }
 
     @PreAuthorize("isAdmin()")

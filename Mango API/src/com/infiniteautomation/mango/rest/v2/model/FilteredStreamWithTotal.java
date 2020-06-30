@@ -11,6 +11,7 @@ import java.util.stream.StreamSupport;
 import com.infiniteautomation.mango.db.query.pojo.RQLFilter;
 import com.infiniteautomation.mango.db.query.pojo.RQLFilterJavaBean;
 
+import com.serotonin.m2m2.i18n.Translations;
 import net.jazdw.rql.parser.ASTNode;
 
 /**
@@ -21,8 +22,8 @@ public class FilteredStreamWithTotal<T> implements StreamWithTotal<T> {
     private final Supplier<Stream<T>> streamSupplier;
     private final RQLFilter<T> filter;
 
-    public FilteredStreamWithTotal(Iterable<T> iterable, ASTNode query) {
-        this(iterable, new RQLFilterJavaBean<>(query));
+    public FilteredStreamWithTotal(Iterable<T> iterable, ASTNode query, Translations translations) {
+        this(iterable, new RQLFilterJavaBean<>(query, translations));
     }
 
     public FilteredStreamWithTotal(Iterable<T> iterable, RQLFilter<T> filter) {
@@ -34,8 +35,8 @@ public class FilteredStreamWithTotal<T> implements StreamWithTotal<T> {
         }, filter);
     }
 
-    public FilteredStreamWithTotal(Supplier<Stream<T>> streamSupplier, ASTNode query) {
-        this(streamSupplier, new RQLFilterJavaBean<>(query));
+    public FilteredStreamWithTotal(Supplier<Stream<T>> streamSupplier, ASTNode query, Translations translations) {
+        this(streamSupplier, new RQLFilterJavaBean<>(query, translations));
     }
 
     public FilteredStreamWithTotal(Supplier<Stream<T>> streamSupplier, RQLFilter<T> filter) {

@@ -10,6 +10,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.serotonin.m2m2.i18n.Translations;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -106,9 +107,8 @@ public class EventTypesRestController {
     @RequestMapping(method = RequestMethod.GET)
     public StreamWithTotal<EventTypeVOModel<?,?,?>> queryAllEventTypes(
             @AuthenticationPrincipal User user,
-            HttpServletRequest request) {
-
-        ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
+            Translations translations,
+            ASTNode query) {
 
         List<EventTypeVOModel<?,?,?>> models = new ArrayList<>();
 
@@ -161,7 +161,7 @@ public class EventTypesRestController {
             models.add(new EventTypeVOModel<>(model, new TranslatableMessage(def.getDescriptionKey()), def.supportsSubType(), def.supportsReferenceId1(), def.supportsReferenceId2()));
         }
 
-        return new FilteredStreamWithTotal<>(models, query);
+        return new FilteredStreamWithTotal<>(models, query, translations);
     }
 
     @ApiOperation(
@@ -173,11 +173,11 @@ public class EventTypesRestController {
     public StreamWithTotal<EventTypeVOModel<?,?,?>> queryEventTypesForType(
             @PathVariable(value="type") @ApiParam(value = "Event type to query over", required = true) String type,
             @AuthenticationPrincipal User user,
-            HttpServletRequest request) {
+            Translations translations,
+            ASTNode query) {
 
-        ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
         List<EventTypeVOModel<?,?,?>> models = getEventTypes(type, user);
-        return new FilteredStreamWithTotal<>(models, query);
+        return new FilteredStreamWithTotal<>(models, query, translations);
     }
 
     @ApiOperation(
@@ -190,11 +190,11 @@ public class EventTypesRestController {
             @PathVariable(value="type") @ApiParam(value = "Event type to query over", required = true) String type,
             @PathVariable(value="subtype") @ApiParam(value = "Event subtype to query over", required = true)  String subtype,
             @AuthenticationPrincipal User user,
-            HttpServletRequest request) {
+            Translations translations,
+            ASTNode query) {
 
-        ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
         List<EventTypeVOModel<?,?,?>> models = getEventTypesForSubtype(type,  StringUtils.equalsIgnoreCase(subtype, "null") ? null : subtype, user);
-        return new FilteredStreamWithTotal<>(models, query);
+        return new FilteredStreamWithTotal<>(models, query, translations);
     }
 
     @ApiOperation(
@@ -208,11 +208,11 @@ public class EventTypesRestController {
             @PathVariable(value="subtype") @ApiParam(value = "Event subtype to query over", required = true) String subtype,
             @PathVariable(value="referenceId1") @ApiParam(value = "Reference ID 1 locator", required = true)  Integer referenceId1,
             @AuthenticationPrincipal User user,
-            HttpServletRequest request) {
+            Translations translations,
+            ASTNode query) {
 
-        ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
         List<EventTypeVOModel<?,?,?>> models = getEventTypesForSubtypeAndReferenceId1(type, StringUtils.equalsIgnoreCase(subtype, "null") ? null : subtype, referenceId1, user);
-        return new FilteredStreamWithTotal<>(models, query);
+        return new FilteredStreamWithTotal<>(models, query, translations);
     }
 
     /**

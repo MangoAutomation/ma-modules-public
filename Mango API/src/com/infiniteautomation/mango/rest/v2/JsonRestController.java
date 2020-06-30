@@ -8,6 +8,7 @@ import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.serotonin.m2m2.i18n.Translations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -87,19 +88,17 @@ public class JsonRestController {
     }
 
     @RequestMapping(method = RequestMethod.GET, value="/query/{xid}")
-    public ArrayWithTotal<Stream<JsonNode>> query(@PathVariable String xid, HttpServletRequest request) throws UnsupportedEncodingException {
+    public ArrayWithTotal<Stream<JsonNode>> query(@PathVariable String xid, HttpServletRequest request, ASTNode rql) throws UnsupportedEncodingException {
         String path = (String) request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
         String pointer = path.endsWith("/") ? "/" : "";
         ArrayNode items = this.jsonDataService.valuesForDataAtPointer(xid, pointer);
-        ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
         return new FilteredStreamWithTotal<>(items, new RQLFilterJsonNode(rql));
     }
 
     @RequestMapping(method = RequestMethod.GET, value="/query/{xid}/**")
-    public ArrayWithTotal<Stream<JsonNode>> queryAtPointer(@PathVariable String xid, @ApiIgnore @RemainingPath String path, HttpServletRequest request) throws UnsupportedEncodingException {
+    public ArrayWithTotal<Stream<JsonNode>> queryAtPointer(@PathVariable String xid, @ApiIgnore @RemainingPath String path, ASTNode rql) throws UnsupportedEncodingException {
         String pointer = "/" + path;
         ArrayNode items = this.jsonDataService.valuesForDataAtPointer(xid, pointer);
-        ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
         return new FilteredStreamWithTotal<>(items, new RQLFilterJsonNode(rql));
     }
 

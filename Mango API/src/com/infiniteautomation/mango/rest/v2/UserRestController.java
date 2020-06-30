@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.serotonin.m2m2.i18n.Translations;
 import org.jooq.Field;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -543,16 +544,14 @@ public class UserRestController {
     public MappingJacksonValue getBulkUserOperations(
             @AuthenticationPrincipal
             User user,
-
-            HttpServletRequest request) {
-
-        ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
+            ASTNode query,
+            Translations translations) {
 
         // hide result property by setting a view
         MappingJacksonValue resultWithView = new MappingJacksonValue(new FilteredStreamWithTotal<>(() -> {
             return bulkResourceManager.list().stream()
                     .filter((tr) -> service.getPermissionService().hasAdminRole(user) || user.getId() == tr.getUserId());
-        }, query));
+        }, query, translations));
 
         resultWithView.setSerializationView(Object.class);
         return resultWithView;

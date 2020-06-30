@@ -6,6 +6,7 @@ package com.infiniteautomation.mango.rest.v2;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.serotonin.m2m2.i18n.Translations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -63,14 +64,14 @@ public class PermissionsRestController {
     })
     @ApiOperation(value = "Query permissions, their names and roles", response = PermissionDefinitionQueryResult.class)
     @RequestMapping(method = RequestMethod.GET)
-    public StreamWithTotal<PermissionDefinitionModel> query(@ApiIgnore ASTNode rql) {
+    public StreamWithTotal<PermissionDefinitionModel> query(@ApiIgnore ASTNode rql, Translations translations) {
         List<PermissionDefinitionModel> permissions = new ArrayList<>();
 
         for (PermissionDefinition def : ModuleRegistry.getPermissionDefinitions().values()) {
             permissions.add(new PermissionDefinitionModel(def));
         }
 
-        return new FilteredStreamWithTotal<>(permissions, rql);
+        return new FilteredStreamWithTotal<>(permissions, rql, translations);
     }
 
     @ApiOperation(value = "Update all of a Permission's Roles", notes = "If no roles are supplied then all existing assigned roles are removed")

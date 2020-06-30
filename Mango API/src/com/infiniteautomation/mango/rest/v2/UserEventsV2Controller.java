@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.serotonin.m2m2.i18n.Translations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -63,22 +64,20 @@ public class UserEventsV2Controller extends AbstractMangoRestV2Controller{
     @RequestMapping(method = RequestMethod.GET, value = "")
     public StreamWithTotal<EventInstanceModel> query(
             @AuthenticationPrincipal User user,
-            HttpServletRequest request) {
-
-        //Parse the RQL Query
-        ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
+            Translations translations,
+            ASTNode query) {
 
         List<EventInstanceModel> events = Common.eventManager.getAllActiveUserEvents(user).stream().map(e -> {
             return map.apply(e, user);
         }).collect(Collectors.toList());
 
-        return new FilteredStreamWithTotal<>(events, new EventFilter(query));
+        return new FilteredStreamWithTotal<>(events, new EventFilter(query, translations));
     }
 
     public static class EventFilter extends RQLFilterJavaBean<EventInstanceModel> {
 
-        public EventFilter(ASTNode node) {
-            super(node);
+        public EventFilter(ASTNode node, Translations translations) {
+            super(node, translations);
         }
 
         @Override

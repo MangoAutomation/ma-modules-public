@@ -12,6 +12,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.infiniteautomation.mango.rest.v2.model.JSONStreamedArray;
 import com.serotonin.m2m2.Common;
 
+import com.serotonin.m2m2.i18n.Translations;
 import net.jazdw.rql.parser.ASTNode;
 
 /**
@@ -21,12 +22,14 @@ import net.jazdw.rql.parser.ASTNode;
 public class LogQueryArrayStream implements JSONStreamedArray {
 
     public static final String LOGFILE_REGEX = ".*ma.log";
-    private String filename;
-    private ASTNode query;
+    private final String filename;
+    private final ASTNode query;
+    private final Translations translations;
 
-    public LogQueryArrayStream(String filename, ASTNode query){
+    public LogQueryArrayStream(String filename, ASTNode query, Translations translations) {
         this.filename = filename;
         this.query = query;
+        this.translations = translations;
     }
 
     /**
@@ -42,7 +45,7 @@ public class LogQueryArrayStream implements JSONStreamedArray {
 
         if(filename.matches(LOGFILE_REGEX)){
 
-            MangoLogFilePatternReceiver receiver = new MangoLogFilePatternReceiver(query, jgen);
+            MangoLogFilePatternReceiver receiver = new MangoLogFilePatternReceiver(query, jgen, translations);
 
             try {
                 File logsDir = Common.getLogsDir();

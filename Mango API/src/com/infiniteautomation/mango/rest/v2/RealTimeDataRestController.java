@@ -10,6 +10,7 @@ import java.util.function.BiFunction;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.serotonin.m2m2.i18n.Translations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -96,8 +97,6 @@ public class RealTimeDataRestController {
 
     /**
      * Query the User's Real Time Data
-     * @param request
-     * @param limit
      * @return
      */
     @ApiOperation(value = "Query realtime values",
@@ -105,9 +104,9 @@ public class RealTimeDataRestController {
     @RequestMapping(method = RequestMethod.GET)
     public StreamWithTotal<RealTimeDataPointValueModel> query(
             @AuthenticationPrincipal User user,
-            HttpServletRequest request) {
+            ASTNode query,
+            Translations translations) {
         //First build all the models
-        ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
         List<DataPointRT> points = Common.runtimeManager.getRunningDataPoints();
         List<RealTimeDataPointValueModel> models = new ArrayList<>();
         for(DataPointRT rt : points) {
@@ -117,7 +116,7 @@ public class RealTimeDataRestController {
         }
 
         //Query the results
-        return new FilteredStreamWithTotal<>(models, query);
+        return new FilteredStreamWithTotal<>(models, query, translations);
     }
 
 }

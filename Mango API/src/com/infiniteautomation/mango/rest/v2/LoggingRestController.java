@@ -15,6 +15,7 @@ import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.serotonin.m2m2.i18n.Translations;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -99,9 +100,8 @@ public class LoggingRestController {
     @PreAuthorize("isAdmin()")
     @ApiOperation(value = "Query log files", notes = "Returns a list of log files")
     @RequestMapping(method = RequestMethod.GET, value = "/log-files")
-    public StreamWithTotal<FileModel> queryFiles(HttpServletRequest request) throws IOException {
-
-        ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
+    public StreamWithTotal<FileModel> queryFiles(ASTNode query,
+                                                 Translations translations) throws IOException {
 
         File logsDir = Common.getLogsDir();
         List<FileModel> models = Files.list(logsDir.toPath())
@@ -109,7 +109,7 @@ public class LoggingRestController {
                 .map(this::toModel)
                 .collect(Collectors.toList());
 
-        return new FilteredStreamWithTotal<>(models, query);
+        return new FilteredStreamWithTotal<>(models, query, translations);
     }
 
     @PreAuthorize("isAdmin()")
@@ -125,15 +125,14 @@ public class LoggingRestController {
     @RequestMapping(method = RequestMethod.GET, value="/by-filename/{filename}")
     public JSONStreamedArray query(
             @PathVariable String filename,
-            HttpServletRequest request) {
-
-        ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
+            ASTNode query,
+            Translations translations) {
 
         File file = new File(Common.getLogsDir(), filename);
         if(file.exists()){
             //Pattern pattern = new
             if(filename.matches(LogQueryArrayStream.LOGFILE_REGEX)){
-                return new LogQueryArrayStream(filename, query);
+                return new LogQueryArrayStream(filename, query, translations);
             }else {
                 throw new AccessDeniedException();
             }

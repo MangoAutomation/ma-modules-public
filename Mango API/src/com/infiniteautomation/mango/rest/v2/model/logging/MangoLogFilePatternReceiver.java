@@ -13,19 +13,14 @@ import java.io.Reader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.StringTokenizer;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import com.serotonin.m2m2.i18n.Translations;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.logging.log4j.Level;
@@ -63,7 +58,7 @@ public class MangoLogFilePatternReceiver {
     private final RQLFilter<LoggingEvent> filter;
     private final Predicate<LoggingEvent> filterPredicate;
 
-    public MangoLogFilePatternReceiver(ASTNode query, JsonGenerator jgen) {
+    public MangoLogFilePatternReceiver(ASTNode query, JsonGenerator jgen, Translations translations) {
         this.jgen = jgen;
 
         Map<String, String> propertyAliases = new HashMap<>();
@@ -71,7 +66,7 @@ public class MangoLogFilePatternReceiver {
         propertyAliases.put("method", "methodName");
         propertyAliases.put("time", "timestamp");
 
-        this.filter = new RQLFilterJavaBean<LoggingEvent>(query) {
+        this.filter = new RQLFilterJavaBean<LoggingEvent>(query, translations) {
             @Override
             protected String mapPropertyName(String propertyName) {
                 return propertyAliases.getOrDefault(propertyName, propertyName);
@@ -91,9 +86,9 @@ public class MangoLogFilePatternReceiver {
             @Override
             protected Comparator<Object> getComparator(String property) {
                 if ("level".equals(property)) {
-                    return ObjectComparator.INSTANCE.reversed();
+                    return super.getComparator(property).reversed();
                 }
-                return ObjectComparator.INSTANCE;
+                return super.getComparator(property);
             }
         };
 

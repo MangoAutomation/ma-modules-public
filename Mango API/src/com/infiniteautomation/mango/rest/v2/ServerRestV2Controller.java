@@ -128,10 +128,10 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
             responseContainer = "Array")
     @RequestMapping(method = RequestMethod.GET, value = "/timezones")
     public StreamWithTotal<TimezoneModel> queryTimezone(
-            HttpServletRequest request) {
+            ASTNode query,
+            Translations translations) {
 
-        ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
-        return new FilteredStreamWithTotal<>(allTimezones, query);
+        return new FilteredStreamWithTotal<>(allTimezones, query, translations);
     }
 
     @PreAuthorize("isAdmin()")

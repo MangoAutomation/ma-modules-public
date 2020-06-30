@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.serotonin.m2m2.i18n.Translations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -478,17 +479,15 @@ public class DataPointTagsRestController {
     public MappingJacksonValue getBulkDataPointTagOperations(
             @AuthenticationPrincipal
             User user,
-
-            HttpServletRequest request) {
+            ASTNode query,
+            Translations translations) {
 
         List<TemporaryResource<TagBulkResponse, AbstractRestV2Exception>> preFiltered = this.bulkResourceManager.list().stream()
                 .filter((tr) -> permissionService.hasAdminRole(user) || user.getId() == tr.getUserId())
                 .collect(Collectors.toList());
 
-        ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
-
         // hide result property by setting a view
-        MappingJacksonValue resultWithView = new MappingJacksonValue(new FilteredStreamWithTotal<>(preFiltered, query));
+        MappingJacksonValue resultWithView = new MappingJacksonValue(new FilteredStreamWithTotal<>(preFiltered, query, translations));
         resultWithView.setSerializationView(Object.class);
         return resultWithView;
     }
@@ -568,7 +567,6 @@ public class DataPointTagsRestController {
     /**
      * Lists possible values for a tag key. Restrictions for other tag keys can be given via RQL
      * @param tagKey
-     * @param restrictions
      * @return
      */
     @ApiOperation(value = "Gets tag values for a given tag key", notes = "Only returns tag values which are present on data points the user has access to")
