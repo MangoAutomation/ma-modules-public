@@ -14,7 +14,7 @@
                 <ma-option-list ma-configure-input-container name="monitorId"
                                 ng-model="$ctrl.dataPoint.pointLocator.monitorId" ng-change="$ctrl.inputChanged()"
                                 ma-get-ctrl="$ctrl.monitorIdModelCtrl = $ngModel" required="required"
-                                items="$ctrl.queryMetrics($filter)">
+                                items="$ctrl.queryMetrics($filter, $dropDownOpen)">
                     <ma-option ng-repeat="value in $items" ng-value="value.id">
                         <span class="ma-ellipsis" md-highlight-text="$filter" md-highlight-flags="ig">{{value.name}}</span>
                     </ma-option>

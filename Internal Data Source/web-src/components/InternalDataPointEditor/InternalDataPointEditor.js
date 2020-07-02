@@ -14,8 +14,8 @@ class InternalDataPointEditorController {
         this.maSystemStatus = maSystemStatus;
     }
 
-    queryMetrics(filter) {
-        if (!this.queryPromise) {
+    queryMetrics(filter, dropDownOpen) {
+        if (!this.queryPromise || dropDownOpen) {
             this.queryPromise = this.maSystemStatus.getInternalMetrics().then(response => {
                 // store the response so we can access the name later
                 return (this.internalMetrics = response.data);
