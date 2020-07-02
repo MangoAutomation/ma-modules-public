@@ -6,30 +6,24 @@
 </h3>
 
 <div layout="row" layout-wrap layout-align="space-between start" class="ma-inputs-container">
-    <div flex="100" flex-gt-md="50">
-        <md-autocomplete
-            md-selected-item-change="$ctrl.inputChanged(monitorId)"
-            md-selected-item="$ctrl.selectedMonitor"
-            md-search-text="$ctrl.searchText"
-            md-items="monitorId in $ctrl.monitorIds | filter: $ctrl.searchText"
-            md-item-text="monitorId.name"
-            md-floating-label="{{$ctrl.label}}"
-            md-clear-button="true"
-            md-no-cache="true"
-            ma-get-ctrl="monitorIdModelCtrl = $ngModel"
-            md-min-length="0"
-            ng-click="$ctrl.autocompleteClicked()"
-            required>
-            <md-item-template>
-                <span md-highlight-text="$ctrl.searchText" md-highlight-flags="gi">{{monitorId.name}}</span>
-            </md-item-template>
-            <md-not-found>
-                <span ma-tr="ui.app.noPointsFound" ma-tr-args="[$ctrl.searchText]"></span>
-            </md-not-found>
-            <div ng-messages="monitorIdModelCtrl.$error">
-                <div ng-message="required" ma-tr="validate.required"></div>
-                <div ng-message="validationMessage" ng-bind="monitorIdModelCtrl.validationMessage"></div>
-            </div>
-        </md-autocomplete>
-    </div>
+    <md-input-container flex="100" flex-gt-md="50">
+        <label ma-tr="dsEdit.internal.attribute"></label>
+        <ma-drop-down-button>
+            <span ng-bind="$ctrl.dataPoint.pointLocator.configurationDescription"></span>
+            <ma-drop-down auto-focus="::false" class="ma-full-screen-centered">
+                <ma-option-list ma-configure-input-container name="monitorId"
+                                ng-model="$ctrl.dataPoint.pointLocator.monitorId" ng-change="$ctrl.inputChanged()"
+                                ma-get-ctrl="$ctrl.monitorIdModelCtrl = $ngModel" required="required"
+                                items="$ctrl.queryMetrics($filter)">
+                    <ma-option ng-repeat="value in $items" ng-value="value.id">
+                        <span class="ma-ellipsis" md-highlight-text="$filter" md-highlight-flags="ig">{{value.name}}</span>
+                    </ma-option>
+                </ma-option-list>
+            </ma-drop-down>
+        </ma-drop-down-button>
+        <div ng-messages="$ctrl.monitorIdModelCtrl.$error">
+            <div ng-message="required" ma-tr="validate.required"></div>
+            <div ng-message="validationMessage" ng-bind="$ctrl.monitorIdModelCtrl.validationMessage"></div>
+        </div>
+    </md-input-container>
 </div>

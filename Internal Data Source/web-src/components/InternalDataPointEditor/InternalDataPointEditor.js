@@ -5,43 +5,31 @@
 
 import componentTemplate from './InternalDataPointEditor.html';
 
-const $inject = Object.freeze(['$scope', 'maSystemStatus', 'maTranslate']);
-
 class InternalDataPointEditorController {
 
-    static get $inject() { return $inject; }
+    static get $inject() { return ['maSystemStatus']; }
     static get $$ngIsClass() { return true; }
 
-    constructor($scope, maSystemStatus, Translate) {
-        this.$scope = $scope;
+    constructor(maSystemStatus) {
         this.maSystemStatus = maSystemStatus;
-        this.Translate = Translate;
-   }
-
-    $onInit() {
-        this.label = this.Translate.trSync('dsEdit.internal.attribute');
-        this.getInternalMetrics();
-        if (this.dataPoint.pointLocator.monitorId) {
-            this.selectedMonitor = this.dataPoint.pointLocator.configurationDescription
-        }
     }
 
-    getInternalMetrics() {
-        this.maSystemStatus.getInternalMetrics().then(response => {
-            this.monitorIds = response.data;
+    queryMetrics(filter) {
+        if (!this.queryPromise) {
+            this.queryPromise = this.maSystemStatus.getInternalMetrics().then(response => {
+                // store the response so we can access the name later
+                return (this.internalMetrics = response.data);
+            });
+        }
+
+        return this.queryPromise.then(internalMetrics => {
+            return internalMetrics.filter(m => !filter || m.name.toLowerCase().includes(filter.toLowerCase()));
         });
     }
 
-    inputChanged(monitor) {
-        if (monitor) {
-            this.dataPoint.pointLocator.monitorId = monitor.id
-        }
-    }
-
-    autocompleteClicked(){
-        if (this.selectedMonitor === this.searchText) {
-            this.searchText = ' '
-        }
+    inputChanged() {
+        const metric = this.internalMetrics.find(m => m.id === this.dataPoint.pointLocator.monitorId);
+        this.dataPoint.pointLocator.configurationDescription = metric.name;
     }
 }
 
