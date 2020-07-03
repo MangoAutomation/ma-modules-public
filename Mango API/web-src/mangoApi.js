@@ -20,7 +20,6 @@ const mangoApiModule = angular.module('maApi', [])
             menuTr: 'rest.settings.title',
             menuIcon: 'storage',
             permission: 'superadmin',
-            weight: 2000,
             params: {
                 noPadding: false,
                 hideFooter: false,
