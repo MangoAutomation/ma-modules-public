@@ -103,7 +103,7 @@ public class GraaljsScriptEngineDefinition extends ScriptEngineDefinition {
         MangoFileSystem fs = new MangoFileSystem(newDefaultFileSystem(), fileStoreService, permissionService);
 
         ScriptEngine engine;
-        if (!permissionService.hasAdminRole(script)) {
+        if (permissionService.hasAdminRole(script)) {
             engine = GraalJSScriptEngine.create(null,
                     Context.newBuilder("js")
                     .allowHostAccess(HostAccess.ALL)
