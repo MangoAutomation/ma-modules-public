@@ -89,9 +89,12 @@ public class EventHandlersRestController {
 
         //Map the event types into the model
         this.map = (vo, user) -> {
-            List<AbstractEventTypeModel<?,?, ?>> eventTypes = service.getDao().getEventTypesForHandler(vo.getId()).stream().map(type -> {
-                return (AbstractEventTypeModel<?,?, ?>) modelMapper.map(type, AbstractEventTypeModel.class, user);
-            }).collect(Collectors.toList());
+            List<AbstractEventTypeModel<?,?, ?>> eventTypes = null;
+            if(vo.getEventTypes() != null) {
+                eventTypes = vo.getEventTypes().stream().map(type -> {
+                    return (AbstractEventTypeModel<?,?, ?>) modelMapper.map(type, AbstractEventTypeModel.class, user);
+                }).collect(Collectors.toList());
+            }
             @SuppressWarnings("unchecked")
             AbstractEventHandlerModel<? extends AbstractEventHandlerVO> model = modelMapper.map(vo, AbstractEventHandlerModel.class, user);
             model.setEventTypes(eventTypes);
