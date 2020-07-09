@@ -107,11 +107,18 @@ public class WatchListDao extends AbstractVoDao<WatchListVO, WatchListTableDefin
      */
     public void getPoints(int watchListId, final Consumer<DataPointVO> callback){
 
-        SelectJoinStep<Record> selectPoints = dataPointDao.getJoinedSelectQuery();
+        //To cater for the select distinct needing the sort order column
+        List<Field<?>> selectFields = dataPointDao.getSelectFields();
+        selectFields.add(table.POINTS_DATA_POINT_WATCHLIST_SORT_ORDER);
+
+        SelectJoinStep<Record> selectPoints = dataPointDao.getSelectQuery(selectFields);
+        selectPoints = dataPointDao.joinTables(selectPoints, null);
+
         selectPoints.join(table.POINTS_TABLE_AS_ALIAS)
         .on(table.POINTS_DATA_POINT_ID_ALIAS.eq(dataPointDao.getTable().getAlias("id")))
         .where(table.POINTS_DATA_POINT_WATCHLIST_ID_ALIAS.eq(watchListId))
         .orderBy(table.POINTS_DATA_POINT_WATCHLIST_SORT_ORDER);
+
 
         RowMapper<DataPointVO> pointMapper = DataPointDao.getInstance().getRowMapper();
         String sql = selectPoints.getSQL();
