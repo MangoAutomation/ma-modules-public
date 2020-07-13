@@ -567,19 +567,15 @@
         </div>
     </md-input-container>
 
-    <md-input-container flex="100" flex-gt-md="45" class="ma-input-space-between">
-        <label ma-tr="maintenanceEvents.togglePermission"></label>
-        <input name="togglePermission" ng-model="$ctrl.selectedEvent.togglePermission" pattern="^\s*[\w-]+?\s*(,\s*[\w-]+?\s*)*$">
-        <div ng-messages="$ctrl.form.togglePermission.$error">
-            <div ng-message="pattern" ma-tr="validate.invalidPermissions"></div>
-            <div ng-message="validationMessage" ng-bind="$ctrl.form.togglePermission.validationMessage"></div>
-        </div>
-        <ma-permissions-menu ng-model="$ctrl.selectedEvent.togglePermission"></ma-permissions-menu>
-    </md-input-container>
-
     <md-input-container flex="50" flex-gt-md="45" class="ma-input-space-between md-block">
         <md-checkbox ng-model="$ctrl.selectedEvent.disabled"><span ma-tr="maintenanceEvents.disabled"></span></md-checkbox>
     </md-input-container>
+
+    <ma-permission-editor-container flex="100">
+        <ma-permission-editor name="togglePermission" ng-model="$ctrl.selectedEvent.togglePermission">
+            <span ma-tr="maintenanceEvents.togglePermission"></span>
+        </ma-permission-editor>
+    </ma-permission-editor-container>
     
     <div flex="100" layout layout-align="start center" class="ma-margin-bottom">
         <md-button class="md-raised md-primary" ng-click="$ctrl.save($event)">
