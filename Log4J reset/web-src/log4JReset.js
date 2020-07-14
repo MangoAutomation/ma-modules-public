@@ -14,7 +14,7 @@ const log4JReset = angular.module('maLog4JReset', [])
                 template: '<ma-log4j-reset></ma-log4j-reset>',
                 menuTr: 'log4JReset.settings.header',
                 menuIcon: 'format_align_justify',
-                permission: 'superadmin',
+                permission: ['superadmin'],
                 menuHidden: true,
                 showInUtilities: true,
                 params: {

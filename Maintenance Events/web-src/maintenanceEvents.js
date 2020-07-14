@@ -34,7 +34,7 @@ export default angular.module('maMaintenanceEvents', ['maUiApp'])
                 hideFooter: false,
                 helpPage: 'ui.help.maintenanceEvents'
             },
-            permission: 'superadmin'
+            permission: ['superadmin']
         },
         {
             name: 'ui.help.maintenanceEvents',
