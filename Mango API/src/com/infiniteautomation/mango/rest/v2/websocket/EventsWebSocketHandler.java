@@ -3,14 +3,27 @@
  */
 package com.infiniteautomation.mango.rest.v2.websocket;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.infiniteautomation.mango.rest.v2.model.ArrayWithTotal;
+import com.infiniteautomation.mango.rest.v2.model.FilteredStreamWithTotal;
+import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
+import com.infiniteautomation.mango.rest.v2.model.event.DataPointEventSummaryModel;
+import com.infiniteautomation.mango.rest.v2.model.event.EventActionEnum;
+import com.infiniteautomation.mango.rest.v2.model.event.EventInstanceModel;
+import com.infiniteautomation.mango.rest.v2.model.event.EventLevelSummaryModel;
+import com.infiniteautomation.mango.spring.service.EventInstanceService;
+import com.infiniteautomation.mango.util.RQLUtils;
+import com.infiniteautomation.mango.util.exception.NotFoundException;
+import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.i18n.ProcessResult;
+import com.serotonin.m2m2.i18n.TranslatableMessage;
+import com.serotonin.m2m2.rt.event.*;
+import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.Validatable;
+import com.serotonin.m2m2.vo.permission.PermissionException;
+import net.jazdw.rql.parser.ASTNode;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,27 +31,9 @@ import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
-import com.infiniteautomation.mango.rest.v2.model.event.DataPointEventSummaryModel;
-import com.infiniteautomation.mango.rest.v2.model.event.EventActionEnum;
-import com.infiniteautomation.mango.rest.v2.model.event.EventInstanceModel;
-import com.infiniteautomation.mango.rest.v2.model.event.EventLevelSummaryModel;
-import com.infiniteautomation.mango.spring.service.EventInstanceService;
-import com.infiniteautomation.mango.util.exception.NotFoundException;
-import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.i18n.ProcessResult;
-import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.rt.event.AlarmLevels;
-import com.serotonin.m2m2.rt.event.DataPointEventLevelSummary;
-import com.serotonin.m2m2.rt.event.EventInstance;
-import com.serotonin.m2m2.rt.event.UserEventLevelSummary;
-import com.serotonin.m2m2.rt.event.UserEventListener;
-import com.serotonin.m2m2.vo.User;
-import com.serotonin.m2m2.vo.Validatable;
-import com.serotonin.m2m2.vo.permission.PermissionException;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Terry Packer
@@ -52,12 +47,14 @@ public class EventsWebSocketHandler extends MangoWebSocketHandler implements Use
     public static final String REQUEST_TYPE_SUBSCRIPTION = "SUBSCRIPTION";
     public static final String REQUEST_TYPE_DATA_POINT_SUMMARY = "DATA_POINT_SUMMARY";
     public static final String REQUEST_TYPE_ALL_ACTIVE_EVENTS = "ALL_ACTIVE_EVENTS";
+    public static final String REQUEST_TYPE_ACTIVE_EVENTS_QUERY = "ACTIVE_EVENTS_QUERY";
 
     @JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.PROPERTY, property="requestType")
     @JsonSubTypes({
         @JsonSubTypes.Type(name = REQUEST_TYPE_SUBSCRIPTION, value = EventsSubscriptionRequest.class),
         @JsonSubTypes.Type(name = REQUEST_TYPE_DATA_POINT_SUMMARY, value = EventsDataPointSummaryRequest.class),
-        @JsonSubTypes.Type(name = REQUEST_TYPE_ALL_ACTIVE_EVENTS, value = AllActiveEventsRequest.class)
+        @JsonSubTypes.Type(name = REQUEST_TYPE_ALL_ACTIVE_EVENTS, value = AllActiveEventsRequest.class),
+        @JsonSubTypes.Type(name = REQUEST_TYPE_ACTIVE_EVENTS_QUERY, value = ActiveEventsQuery.class)
     })
     public static abstract class EventsWebsocketRequest extends WebSocketRequest implements Validatable {
     }
@@ -137,6 +134,19 @@ public class EventsWebSocketHandler extends MangoWebSocketHandler implements Use
         public void setUnacknowledgedSummary(List<EventLevelSummaryModel> unacknowledgedSummary) {
             this.unacknowledgedSummary = unacknowledgedSummary;
         }
+    }
+
+    public static class ActiveEventsQuery extends EventsWebsocketRequest {
+        private String query;
+
+        public String getQuery() {
+            return query;
+        }
+        public void setQuery(String query) {
+            this.query = query;
+        }
+        @Override
+        public void validate(ProcessResult response) { }
     }
 
     private final RestModelMapper modelMapper;
@@ -281,6 +291,19 @@ public class EventsWebSocketHandler extends MangoWebSocketHandler implements Use
                     models.add(modelMapper.map(vo, EventInstanceModel.class, user));
                 }
                 response.setPayload(models);
+                this.sendRawMessage(session, response);
+            } else if (request instanceof ActiveEventsQuery) {
+                List<EventInstance> active = service.getAllActiveUserEvents();
+                List<EventInstanceModel> models = new ArrayList<>(active.size());
+                for(EventInstance vo : active) {
+                    models.add(modelMapper.map(vo, EventInstanceModel.class, user));
+                }
+
+                String query = ((ActiveEventsQuery) request).getQuery();
+                ASTNode rql = RQLUtils.parseRQLtoAST(query);
+
+                WebSocketResponse<ArrayWithTotal<Stream<EventInstanceModel>>> response = new WebSocketResponse<>(request.getSequenceNumber());
+                response.setPayload(new FilteredStreamWithTotal<>(models, rql, user.getTranslations()));
                 this.sendRawMessage(session, response);
             }
         } catch(NotFoundException e) {
