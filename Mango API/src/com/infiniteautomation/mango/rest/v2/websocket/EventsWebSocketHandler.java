@@ -160,7 +160,7 @@ public class EventsWebSocketHandler extends MangoWebSocketHandler implements Use
 
     @Autowired
     public EventsWebSocketHandler(RestModelMapper modelMapper, EventInstanceService service) {
-        super(true);
+        super();
         this.modelMapper = modelMapper;
         this.service = service;
     }

@@ -4,16 +4,14 @@
  */
 package com.infiniteautomation.mango.rest.v2.websocket;
 
-import org.springframework.web.socket.WebSocketSession;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.infiniteautomation.mango.spring.events.DaoEvent;
 import com.infiniteautomation.mango.spring.events.DaoEventType;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.AbstractBasicVO;
-import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
+import org.springframework.web.socket.WebSocketSession;
 
 /**
  * @author Jared Wiltshire

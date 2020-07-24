@@ -3,11 +3,11 @@
  */
 package com.infiniteautomation.mango.rest.v2.websocket;
 
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketSession;
+
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author Jared Wiltshire
@@ -18,10 +18,6 @@ public abstract class MultiSessionWebSocketHandler extends MangoWebSocketHandler
 
     public MultiSessionWebSocketHandler() {
         super();
-    }
-
-    public MultiSessionWebSocketHandler(boolean authenticationRequired) {
-        super(authenticationRequired);
     }
 
     @Override

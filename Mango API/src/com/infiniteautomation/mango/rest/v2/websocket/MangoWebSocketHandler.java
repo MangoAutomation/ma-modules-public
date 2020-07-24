@@ -4,11 +4,14 @@
  */
 package com.infiniteautomation.mango.rest.v2.websocket;
 
-import java.io.IOException;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.infiniteautomation.mango.permission.MangoPermission;
+import com.infiniteautomation.mango.spring.MangoRuntimeContextConfiguration;
+import com.infiniteautomation.mango.spring.service.PermissionService;
+import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -25,14 +28,10 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.adapter.jetty.JettyWebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import com.infiniteautomation.mango.spring.MangoRuntimeContextConfiguration;
-import com.infiniteautomation.mango.spring.service.PermissionService;
-import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.vo.User;
+import java.io.IOException;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Terry Packer
@@ -45,13 +44,10 @@ public abstract class MangoWebSocketHandler extends TextWebSocketHandler {
     public final static CloseStatus NOT_AUTHENTICATED = new CloseStatus(4001, "Not authenticated");
     public final static CloseStatus NOT_AUTHORIZED = new CloseStatus(4003, "Not authorized");
 
-    protected final Log log = LogFactory.getLog(this.getClass());
+    // default to any authenticated user
+    private static final MangoPermission DEFAULT_PERMISSION = MangoPermission.createOrSet(PermissionHolder.USER_ROLE);
 
-    /**
-     * TODO Mango 4.0 Remove and use permission
-     * If true, close the socket after our HttpSession is invalidated or when the authentication token is not valid.
-     */
-    protected final boolean authenticationRequired;
+    protected final Log log = LogFactory.getLog(this.getClass());
 
     /**
      * Timeout in ms to wait for Pong response before terminating connection
@@ -74,11 +70,6 @@ public abstract class MangoWebSocketHandler extends TextWebSocketHandler {
     protected PermissionService permissionService;
 
     public MangoWebSocketHandler() {
-        this(true);
-    }
-
-    public MangoWebSocketHandler(boolean authenticationRequired) {
-        this.authenticationRequired = authenticationRequired;
     }
 
     /**
@@ -164,9 +155,7 @@ public abstract class MangoWebSocketHandler extends TextWebSocketHandler {
     }
 
     protected PermissionHolder getUser(WebSocketSession session) {
-        PermissionHolder user = (PermissionHolder) session.getAttributes().get(MangoWebSocketHandshakeInterceptor.USER_ATTR);
-        this.permissionService.ensureValidPermissionHolder(user);
-        return user;
+        return (PermissionHolder) session.getAttributes().get(MangoWebSocketHandshakeInterceptor.USER_ATTR);
     }
 
     @Override
@@ -183,10 +172,14 @@ public abstract class MangoWebSocketHandler extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        // only add sessions which should be closed when the session is destroyed
-        if (this.authenticationRequired) {
-            this.sessionTracker.afterConnectionEstablished(session);
+        PermissionHolder user = getUser(session);
+        if (!permissionService.hasPermission(user, requiredPermission())) {
+            session.close(MangoWebSocketHandler.NOT_AUTHORIZED);
+            return;
         }
+
+        // Used to close the socket after user's HttpSession is invalidated or when the authentication token expires.
+        this.sessionTracker.afterConnectionEstablished(session);
 
         if (this.pingPongTimeoutMs > 0) {
             this.startPingPong(session);
@@ -195,9 +188,7 @@ public abstract class MangoWebSocketHandler extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
-        if (this.authenticationRequired) {
-            this.sessionTracker.afterConnectionClosed(session, status);
-        }
+        this.sessionTracker.afterConnectionClosed(session, status);
 
         this.stopPingPong(session);
     }
@@ -229,5 +220,13 @@ public abstract class MangoWebSocketHandler extends TextWebSocketHandler {
     protected void handlePongMessage(WebSocketSession session, PongMessage message) throws Exception {
         //Let the MangoPingPongTracker know we received a pong
         session.getAttributes().put(RECEIVED_PONG, Boolean.TRUE);
+    }
+
+    /**
+     * Permission required to use this WebSocket
+     * @return
+     */
+    protected MangoPermission requiredPermission() {
+        return DEFAULT_PERMISSION;
     }
 }
