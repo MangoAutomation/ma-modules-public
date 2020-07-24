@@ -8,6 +8,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpSession;
 
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.http.server.ServletServerHttpRequest;
@@ -44,7 +45,7 @@ public class MangoWebSocketHandshakeInterceptor implements HandshakeInterceptor 
             attributes.put(AUTHENTICATION_ATTR, authentication);
 
             Object authenticationPrincipal = authentication.getPrincipal();
-            if (authenticationPrincipal instanceof User) {
+            if (authenticationPrincipal instanceof PermissionHolder) {
                 attributes.put(USER_ATTR, authenticationPrincipal);
             }
         }

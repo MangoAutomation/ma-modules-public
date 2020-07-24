@@ -9,6 +9,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +48,7 @@ public abstract class MangoWebSocketHandler extends TextWebSocketHandler {
     protected final Log log = LogFactory.getLog(this.getClass());
 
     /**
+     * TODO Mango 4.0 Remove and use permission
      * If true, close the socket after our HttpSession is invalidated or when the authentication token is not valid.
      */
     protected final boolean authenticationRequired;
@@ -161,11 +163,9 @@ public abstract class MangoWebSocketHandler extends TextWebSocketHandler {
         }
     }
 
-    protected User getUser(WebSocketSession session) {
-        User user = (User) session.getAttributes().get(MangoWebSocketHandshakeInterceptor.USER_ATTR);
-        if (this.authenticationRequired) {
-            this.permissionService.ensureValidPermissionHolder(user);
-        }
+    protected PermissionHolder getUser(WebSocketSession session) {
+        PermissionHolder user = (PermissionHolder) session.getAttributes().get(MangoWebSocketHandshakeInterceptor.USER_ATTR);
+        this.permissionService.ensureValidPermissionHolder(user);
         return user;
     }
 

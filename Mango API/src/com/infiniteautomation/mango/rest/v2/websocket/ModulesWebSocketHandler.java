@@ -4,6 +4,7 @@
  */
 package com.infiniteautomation.mango.rest.v2.websocket;
 
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
@@ -32,10 +33,8 @@ public class ModulesWebSocketHandler extends MultiSessionWebSocketHandler implem
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        User user = getUser(session);
-        if (user == null) {
-            return;
-        } else if (!hasPermission(user)) {
+        PermissionHolder user = getUser(session);
+        if (!hasPermission(user)) {
             if (session.isOpen()) {
                 session.close(MangoWebSocketHandler.NOT_AUTHORIZED);
             }
@@ -94,8 +93,8 @@ public class ModulesWebSocketHandler extends MultiSessionWebSocketHandler implem
 
     public void notify(ModuleNotificationModel model) {
         for (WebSocketSession session : sessions) {
-            User user = getUser(session);
-            if (user != null && hasPermission(user)) {
+            PermissionHolder user = getUser(session);
+            if (hasPermission(user)) {
                 notify(session, model);
             }
         }
@@ -116,7 +115,7 @@ public class ModulesWebSocketHandler extends MultiSessionWebSocketHandler implem
         }
     }
 
-    protected boolean hasPermission(User user){
+    protected boolean hasPermission(PermissionHolder user){
         return permissionService.hasAdminRole(user);
     }
 

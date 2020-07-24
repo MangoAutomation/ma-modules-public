@@ -78,8 +78,7 @@ public class TemporaryResourceWebSocketHandler extends MultiSessionWebSocketHand
     }
 
     private void notifySession(WebSocketSession session, CrudNotificationType type, TemporaryResource<?, ?> resource) throws JsonProcessingException, IOException {
-        User user = this.getUser(session);
-        if (user == null) return;
+        User user = (User) this.getUser(session);
 
         TemporaryResourceSubscription subscription = (TemporaryResourceSubscription) session.getAttributes().get(SUBSCRIPTION_ATTRIBUTE);
 

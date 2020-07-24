@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -73,8 +74,8 @@ public final class MangoWebSocketSessionTracker {
         return (String) session.getAttributes().get(MangoWebSocketHandshakeInterceptor.HTTP_SESSION_ID_ATTR);
     }
 
-    private User userForSession(WebSocketSession session) {
-        return (User) session.getAttributes().get(MangoWebSocketHandshakeInterceptor.USER_ATTR);
+    private PermissionHolder userForSession(WebSocketSession session) {
+        return (PermissionHolder) session.getAttributes().get(MangoWebSocketHandshakeInterceptor.USER_ATTR);
     }
 
     private Authentication authenticationForSession(WebSocketSession session) {
@@ -226,15 +227,16 @@ public final class MangoWebSocketSessionTracker {
             sessionsByHttpSessionId.put(httpSessionId, session);
         }
 
-        User user = this.userForSession(session);
+        PermissionHolder user = this.userForSession(session);
         Authentication authentication = this.authenticationForSession(session);
         boolean isJwt = authentication instanceof JwtAuthentication;
 
-        if (user != null) {
+        if (user instanceof User) {
+            int userId = ((User) user).getId();
             if (isJwt) {
-                jwtSessionsByUserId.put(user.getId(), session);
+                jwtSessionsByUserId.put(userId, session);
             } else {
-                otherSessionsByUserId.put(user.getId(), session);
+                otherSessionsByUserId.put(userId, session);
             }
         }
 
@@ -255,15 +257,16 @@ public final class MangoWebSocketSessionTracker {
             sessionsByHttpSessionId.remove(httpSessionId, session);
         }
 
-        User user = this.userForSession(session);
+        PermissionHolder user = this.userForSession(session);
         Authentication authentication = this.authenticationForSession(session);
         boolean isJwt = authentication instanceof JwtAuthentication;
 
-        if (user != null) {
+        if (user instanceof User) {
+            int userId = ((User) user).getId();
             if (isJwt) {
-                jwtSessionsByUserId.remove(user.getId(), session);
+                jwtSessionsByUserId.remove(userId, session);
             } else {
-                otherSessionsByUserId.remove(user.getId(), session);
+                otherSessionsByUserId.remove(userId, session);
             }
         }
 

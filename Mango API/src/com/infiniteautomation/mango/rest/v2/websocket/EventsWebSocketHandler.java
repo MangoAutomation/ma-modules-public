@@ -168,7 +168,7 @@ public class EventsWebSocketHandler extends MangoWebSocketHandler implements Use
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         // Check for permissions, must be a User for UserEventListener
-        this.user = this.getUser(session);
+        this.user = (User) this.getUser(session);
         this.session = session;
         session.getAttributes().put(SUBSCRIPTION_ATTRIBUTE, Boolean.FALSE);
         super.afterConnectionEstablished(session);
@@ -209,8 +209,7 @@ public class EventsWebSocketHandler extends MangoWebSocketHandler implements Use
     @Override
     public void handleTextMessage(WebSocketSession session, TextMessage message) {
         try {
-            User user = this.getUser(session);
-
+            User user = (User) this.getUser(session);
             JsonNode tree = this.jacksonMapper.readTree(message.getPayload());
 
             if (!WebSocketMessageType.REQUEST.messageTypeMatches(tree) || tree.get("requestType") == null) {

@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -77,12 +78,8 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
 
     @Override
     public void handleTextMessage(WebSocketSession session, TextMessage message) {
-
         try {
-            User user = getUser(session);
-            if (user == null) {
-                return;
-            }
+            PermissionHolder user = getUser(session);
             PointValueRegistrationModel model = this.jacksonMapper.readValue(message.getPayload(), PointValueRegistrationModel.class);
 
             // Handle message.getPayload() here
@@ -94,9 +91,9 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
             }
 
             //Check permissions
-            if(!permissionService.hasDataPointReadPermission(user, vo)){
+            if (!permissionService.hasDataPointReadPermission(user, vo)) {
                 this.sendErrorMessage(session, MangoWebSocketErrorType.PERMISSION_DENIED,
-                        new TranslatableMessage("permission.exception.readDataPoint", user.getUsername()));
+                        new TranslatableMessage("permission.exception.readDataPoint", user.getPermissionHolderName()));
                 return;
             }
 

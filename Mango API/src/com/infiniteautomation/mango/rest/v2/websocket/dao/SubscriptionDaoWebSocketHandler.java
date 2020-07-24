@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
@@ -112,7 +113,7 @@ public abstract class SubscriptionDaoWebSocketHandler<T extends AbstractBasicVO>
     }
 
     @Override
-    protected Object createNotification(String type, T vo, T originalVo, User user) {
+    protected Object createNotification(String type, T vo, T originalVo, PermissionHolder user) {
         Object model = createModel(vo, user);
         if (model == null) {
             return null;

@@ -27,9 +27,8 @@ public abstract class DaoNotificationWebSocketHandler<T extends AbstractBasicVO>
      */
     public void notify(String action, T vo, T originalVo) {
         for (WebSocketSession session : sessions) {
-            User user = getUser(session);
-
-            if (user != null && hasPermission(user, vo) && isSubscribed(session, action, vo, originalVo)) {
+            PermissionHolder user = getUser(session);
+            if (hasPermission(user, vo) && isSubscribed(session, action, vo, originalVo)) {
                 this.permissionService.runAs(user, () -> {
                     Object userMessage = createNotification(action, vo, originalVo, user);
                     if (userMessage != null) {
@@ -61,7 +60,7 @@ public abstract class DaoNotificationWebSocketHandler<T extends AbstractBasicVO>
         return null;
     }
 
-    protected Class<?> viewForUser(User user) {
+    protected Class<?> viewForUser(PermissionHolder user) {
         return null;
     }
 
@@ -107,7 +106,7 @@ public abstract class DaoNotificationWebSocketHandler<T extends AbstractBasicVO>
         }
     }
 
-    protected Object createNotification(String action, T vo, T originalVo, User user) {
+    protected Object createNotification(String action, T vo, T originalVo, PermissionHolder user) {
         Object model = createModel(vo, user);
         if (model == null) {
             return null;

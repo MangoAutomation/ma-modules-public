@@ -1,4 +1,5 @@
 package com.infiniteautomation.mango.rest.v2.websocket;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 /**
  * Copyright (C) 2016 Infinite Automation Software. All rights reserved.
@@ -30,26 +31,21 @@ public class JsonConfigImportWebSocketHandler extends MultiSessionWebSocketHandl
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         // Check for permissions
-        User user = this.getUser(session);
-        if (user == null) {
-            return;
-        } else if (!permissionService.hasAdminRole(user)) {
+        PermissionHolder user = this.getUser(session);
+        if (!permissionService.hasAdminRole(user)) {
             if (session.isOpen()) {
                 session.close(MangoWebSocketHandler.NOT_AUTHORIZED);
             }
             return;
         }
-
         super.afterConnectionEstablished(session);
     }
 
     @Override
     public void handleTextMessage(WebSocketSession session, TextMessage message) {
         try {
-            User user = this.getUser(session);
-            if (user == null) {
-                return;
-            } else if (!permissionService.hasAdminRole(user)) {
+            PermissionHolder user = this.getUser(session);
+            if (!permissionService.hasAdminRole(user)) {
                 if (session.isOpen()) {
                     session.close(MangoWebSocketHandler.NOT_AUTHORIZED);
                 }
@@ -75,10 +71,8 @@ public class JsonConfigImportWebSocketHandler extends MultiSessionWebSocketHandl
 
     public void notify(ImportStatusProvider model) {
         for (WebSocketSession session : sessions) {
-            User user = getUser(session);
-            if (user != null) {
-                notify(session, model);
-            }
+            PermissionHolder user = getUser(session);
+            notify(session, model);
         }
     }
 
