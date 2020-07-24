@@ -51,28 +51,6 @@ public class GraaljsScriptEngineDefinition extends ScriptEngineDefinition {
     @Autowired
     PermissionService permissionService;
 
-    public GraaljsScriptEngineDefinition() {
-        // TODO remove when this issue is resolved https://github.com/graalvm/graaljs/issues/279
-        try {
-            Class<?> unmodifiableListClazz = Class.forName("java.util.Collections$UnmodifiableList");
-            Field unmodifiableListField = unmodifiableListClazz.getDeclaredField("list");
-            unmodifiableListField.setAccessible(true);
-
-            Field mimeTypesField = GraalJSEngineFactory.class.getDeclaredField("mimeTypes");
-            mimeTypesField.setAccessible(true);
-            @SuppressWarnings("unchecked")
-            List<String> mimeTypes = (List<String>) unmodifiableListField.get(mimeTypesField.get(null));
-            mimeTypes.add("application/javascript+module");
-
-            Field extensionsField = GraalJSEngineFactory.class.getDeclaredField("extensions");
-            extensionsField.setAccessible(true);
-            @SuppressWarnings("unchecked")
-            List<String> extensions = (List<String>) unmodifiableListField.get(extensionsField.get(null));
-            extensions.add("mjs");
-        } catch (Exception e) {
-        }
-    }
-
     @Override
     public boolean supports(ScriptEngineFactory engineFactory) {
         return engineFactory instanceof GraalJSEngineFactory;
