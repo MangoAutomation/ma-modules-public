@@ -124,7 +124,7 @@ public class EventHandlersRestController {
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
-        return doQuery(rql, user);
+        return new StreamedVORqlQueryWithTotal<>(service, rql, this.fieldMap, this.valueConverters, item -> true, vo -> map.apply(vo, user));
     }
 
     @ApiOperation(
@@ -318,15 +318,6 @@ public class EventHandlersRestController {
         MangoJavaScript jsVo = model.toVO();
         jsVo.setWrapInFunction(true);
         return new MangoJavaScriptResultModel(javaScriptService.testScript(jsVo, noChangeTranslationKey));
-    }
-
-    private StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
-        //If we are admin or have overall data source permission we can view all
-        if (service.getPermissionService().hasAdminRole(user)) {
-            return new StreamedVORqlQueryWithTotal<>(service, rql, this.fieldMap, this.valueConverters, item -> true, vo -> map.apply(vo, user));
-        } else {
-            return new StreamedVORqlQueryWithTotal<>(service, rql, this.fieldMap, this.valueConverters, item -> service.hasReadPermission(user, item), vo -> map.apply(vo, user));
-        }
     }
 
     public static class ValidationEventInstance extends EventInstance {

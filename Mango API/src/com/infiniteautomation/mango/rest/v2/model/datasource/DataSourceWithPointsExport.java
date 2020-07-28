@@ -21,6 +21,7 @@ import com.serotonin.json.JsonException;
 import com.serotonin.json.JsonWriter;
 import com.serotonin.json.spi.JsonPropertyOrder;
 import com.serotonin.json.type.JsonStreamedArray;
+import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 
@@ -37,12 +38,14 @@ public class DataSourceWithPointsExport {
     private final DataSourceService dataSourceService;
     private ASTNode dataSourceRql;
     private final DataPointService dataPointService;
+    private final DataPointDao dataPointDao;
     private final List<Integer> dataSourceIds = new ArrayList<>();
 
-    public DataSourceWithPointsExport(DataSourceService dataSourceService, ASTNode dataSourceRql, DataPointService dataPointService) {
+    public DataSourceWithPointsExport(DataSourceService dataSourceService, ASTNode dataSourceRql, DataPointService dataPointService, DataPointDao dataPointDao) {
         this.dataSourceService = dataSourceService;
         this.dataSourceRql = dataSourceRql;
         this.dataPointService = dataPointService;
+        this.dataPointDao = dataPointDao;
     }
 
     @JsonGetter("dataSources")
@@ -52,7 +55,7 @@ public class DataSourceWithPointsExport {
 
     @JsonGetter("dataPoints")
     public JsonStreamedArray getDataPoints() {
-        ConditionSortLimit csl = new ConditionSortLimit(dataPointService.getDao().getTable().getAlias("dataSourceId").in(dataSourceIds), null, null, null);
+        ConditionSortLimit csl = new ConditionSortLimit(dataPointDao.getTable().getAlias("dataSourceId").in(dataSourceIds), null, null, null);
         return new StreamedSeroJsonVORqlQuery<>(dataPointService, csl);
     }
 

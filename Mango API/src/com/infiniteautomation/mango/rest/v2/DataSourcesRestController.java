@@ -69,9 +69,10 @@ public class DataSourcesRestController {
     private final DataSourceService service;
     private final BiFunction<DataSourceVO, User, AbstractDataSourceModel<?>> map;
     private final DataPointService dataPointService;
+    private final DataPointDao dataPointDao;
 
     @Autowired
-    public DataSourcesRestController(final DataSourceService service, final RestModelMapper modelMapper, final DataPointService dataPointService) {
+    public DataSourcesRestController(final DataSourceService service, final DataPointDao dataPointDao, final RestModelMapper modelMapper, final DataPointService dataPointService) {
         this.service = service;
         this.map = (vo, user) -> {
             if(service.hasEditPermission(user, vo)) {
@@ -81,6 +82,7 @@ public class DataSourcesRestController {
             }
         };
         this.dataPointService = dataPointService;
+        this.dataPointDao = dataPointDao;
     }
 
     @ApiOperation(
@@ -309,7 +311,7 @@ public class DataSourcesRestController {
     @RequestMapping(method = RequestMethod.GET, value = "/export-with-points", produces = MediaTypes.SEROTONIN_JSON_VALUE)
     public DataSourceWithPointsExport exportQueryWithPoints(HttpServletRequest request, @AuthenticationPrincipal User user) {
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
-        return new DataSourceWithPointsExport(service, rql, dataPointService);
+        return new DataSourceWithPointsExport(service, rql, dataPointService, dataPointDao);
     }
 
     /**

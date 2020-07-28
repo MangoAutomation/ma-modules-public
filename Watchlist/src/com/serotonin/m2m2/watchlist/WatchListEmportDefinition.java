@@ -8,6 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.infiniteautomation.mango.emport.ImportContext;
+import com.infiniteautomation.mango.spring.dao.WatchListDao;
 import com.infiniteautomation.mango.spring.service.WatchListService;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.infiniteautomation.mango.util.exception.ValidationException;
@@ -25,6 +26,8 @@ public class WatchListEmportDefinition extends EmportDefinition {
 
     @Autowired
     private WatchListService service;
+    @Autowired
+    private WatchListDao dao;
 
     @Override
     public String getElementId() {
@@ -38,7 +41,7 @@ public class WatchListEmportDefinition extends EmportDefinition {
 
     @Override
     public Object getExportData() {
-        return service.getDao().getAll();
+        return dao.getAll();
     }
 
     @Override

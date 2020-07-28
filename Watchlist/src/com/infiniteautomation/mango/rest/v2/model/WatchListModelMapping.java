@@ -13,10 +13,10 @@ import org.springframework.stereotype.Component;
 import com.infiniteautomation.mango.permission.MangoPermission;
 import com.infiniteautomation.mango.rest.v2.model.permissions.MangoPermissionModel;
 import com.infiniteautomation.mango.spring.service.DataPointService;
-import com.infiniteautomation.mango.spring.service.UsersService;
 import com.infiniteautomation.mango.spring.service.WatchListService;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.infiniteautomation.mango.util.exception.ValidationException;
+import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
@@ -30,15 +30,15 @@ import com.serotonin.m2m2.watchlist.WatchListVO;
 public class WatchListModelMapping implements RestModelMapping<WatchListVO, WatchListModel> {
 
     private final WatchListService watchListService;
-    private final UsersService userService;
+    private final UserDao userDao;
     private final DataPointService dataPointService;
 
     @Autowired
     public WatchListModelMapping(WatchListService watchListService,
-            UsersService userService,
+            UserDao userDao,
             DataPointService dataPointService) {
         this.watchListService = watchListService;
-        this.userService = userService;
+        this.userDao = userDao;
         this.dataPointService = dataPointService;
     }
 
@@ -56,7 +56,7 @@ public class WatchListModelMapping implements RestModelMapping<WatchListVO, Watc
     public WatchListModel map(Object from, PermissionHolder user, RestModelMapper mapper) {
         WatchListVO vo = (WatchListVO)from;
         WatchListModel model = new WatchListModel(vo);
-        model.setUsername(userService.getDao().getXidById(vo.getUserId()));
+        model.setUsername(userDao.getXidById(vo.getUserId()));
         model.setReadPermission(new MangoPermissionModel(vo.getReadPermission()));
         model.setEditPermission(new MangoPermissionModel(vo.getEditPermission()));
 
@@ -75,7 +75,7 @@ public class WatchListModelMapping implements RestModelMapping<WatchListVO, Watc
         WatchListModel model = (WatchListModel)from;
         WatchListVO vo = model.toVO();
 
-        Integer userId = userService.getDao().getIdByXid(model.getUsername());
+        Integer userId = userDao.getIdByXid(model.getUsername());
         if(userId != null) {
             vo.setUserId(userId);
         }
