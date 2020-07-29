@@ -21,15 +21,13 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.RollupEnum;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeCacheControl;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.query.ZonedDateTimeRangeQueryInfo;
-import com.infiniteautomation.mango.spring.service.PermissionService;
+import com.infiniteautomation.mango.spring.service.DataPointService;
 import com.serotonin.db.MappedRowCallback;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.view.quantize2.FftGenerator;
@@ -55,11 +53,11 @@ public class PointValueSignalAnalysisRestController {
     //TODO Lowpass filter
     //TODO Bandpass filter
 
-    private final PermissionService permissionService;
+    private final DataPointService dataPointService;
 
     @Autowired
-    public PointValueSignalAnalysisRestController(PermissionService permissionService) {
-        this.permissionService = permissionService;
+    public PointValueSignalAnalysisRestController(DataPointService dataPointService) {
+        this.dataPointService = dataPointService;
     }
 
     @ApiOperation(
@@ -99,12 +97,12 @@ public class PointValueSignalAnalysisRestController {
             @AuthenticationPrincipal User user
             ) {
 
-        DataPointVO vo = DataPointDao.getInstance().getByXid(xid);
+
+        DataPointVO vo = dataPointService.get(xid);
         if (vo == null) {
             throw new NotFoundRestException();
         }else {
-            if(!permissionService.hasDataPointReadPermission(user, vo))
-                throw new AccessDeniedException();
+            dataPointService.ensureSetPermission(user, vo);
         }
 
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(
@@ -161,12 +159,11 @@ public class PointValueSignalAnalysisRestController {
             @AuthenticationPrincipal User user
             ) {
 
-        DataPointVO vo = DataPointDao.getInstance().getByXid(xid);
+        DataPointVO vo = dataPointService.get(xid);
         if (vo == null) {
             throw new NotFoundRestException();
         }else {
-            if(!permissionService.hasDataPointReadPermission(user, vo))
-                throw new AccessDeniedException();
+            dataPointService.ensureSetPermission(user, vo);
         }
 
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(

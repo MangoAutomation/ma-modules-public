@@ -173,7 +173,7 @@ public class WatchListService extends AbstractVOService<WatchListVO, WatchListTa
 
         //Validate Points
         for(IDataPoint point : vo.getPointList()) {
-            if(!permissionService.hasDataPointReadPermission(user, point)) {
+            if(!permissionService.hasPermission(user, point.getReadPermission())) {
                 response.addContextualMessage("points", "watchlist.vaildate.pointNoReadPermission", point.getXid());
             }
         }

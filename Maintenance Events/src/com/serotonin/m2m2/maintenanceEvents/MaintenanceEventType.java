@@ -117,7 +117,7 @@ public class MaintenanceEventType extends EventType {
 
             for(int dpId : vo.getDataPoints()) {
                 DataPointVO dp = DataPointDao.getInstance().get(dpId);
-                if(dp != null && !service.hasDataPointReadPermission(user, dp))
+                if(dp != null && !service.hasPermission(user, dp.getReadPermission()))
                     return false;
             }
         }

@@ -863,7 +863,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
 
 
         DataPointVO vo = this.dataPointService.get(xid);
-        this.permissionService.ensureDataPointSetPermission(user, vo);
+        this.dataPointService.ensureSetPermission(user, vo);
         // Set the time to now if it is not present
         if (model.getTimestamp() == 0) {
             model.setTimestamp(Common.timer.currentTimeMillis());
@@ -1025,7 +1025,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
         for(LegacyXidPointValueTimeModel model : models) {
             PointValueImportResult result = results.get(model.getXid());
             if(result == null) {
-                result = new PointValueImportResult(model.getXid(), dao, permissionService, fireEvents, user);
+                result = new PointValueImportResult(model.getXid(), dao, dataPointService, fireEvents, user);
                 results.put(model.getXid(), result);
             }
             //Attempt to save it
@@ -1066,12 +1066,11 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             HttpServletRequest request) {
 
 
-        DataPointVO vo = DataPointDao.getInstance().getByXid(xid);
+        DataPointVO vo = dataPointService.get(xid);
         if (vo == null) {
             throw new NotFoundRestException();
         }else {
-            if(!permissionService.hasDataPointSetPermission(user, vo))
-                throw new AccessDeniedException();
+            dataPointService.ensureSetPermission(user, vo);
         }
 
         ZoneId zoneId;
@@ -1111,10 +1110,12 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @RequestBody(required = true) Map<String, Object> attributes,
             @AuthenticationPrincipal User user
             ) {
-        DataPointVO vo = DataPointDao.getInstance().getByXid(xid);
-        if(vo == null)
+        DataPointVO vo = dataPointService.get(xid);
+        if (vo == null) {
             throw new NotFoundRestException();
-        permissionService.ensureDataPointSetPermission(user, vo);
+        }else {
+            dataPointService.ensureSetPermission(user, vo);
+        }
         DataPointRT rt = Common.runtimeManager.getDataPoint(vo.getId());
         if(rt == null)
             throw new NotFoundRestException();
@@ -1356,12 +1357,11 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
         //Build the map, check permissions, we want this map ordered so our results are in order for csv output
         Map<Integer, DataPointVO> voMap = new LinkedHashMap<Integer, DataPointVO>();
         for(String xid : xids) {
-            DataPointVO vo = DataPointDao.getInstance().getByXid(xid);
+            DataPointVO vo = dataPointService.get(xid);
             if (vo == null) {
                 throw new NotFoundRestException();
             }else {
-                if(!permissionService.hasDataPointReadPermission(user, vo))
-                    throw new AccessDeniedException();
+                dataPointService.ensureSetPermission(user, vo);
             }
 
             //Validate the rollup

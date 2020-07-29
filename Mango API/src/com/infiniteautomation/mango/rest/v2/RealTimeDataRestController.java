@@ -8,9 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.function.BiFunction;
 
-import javax.servlet.http.HttpServletRequest;
-
-import com.serotonin.m2m2.i18n.Translations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,8 +20,8 @@ import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.v2.model.StreamWithTotal;
 import com.infiniteautomation.mango.rest.v2.model.realtime.RealTimeDataPointValueModel;
 import com.infiniteautomation.mango.spring.service.PermissionService;
-import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.types.ImageValue;
@@ -110,7 +107,7 @@ public class RealTimeDataRestController {
         List<DataPointRT> points = Common.runtimeManager.getRunningDataPoints();
         List<RealTimeDataPointValueModel> models = new ArrayList<>();
         for(DataPointRT rt : points) {
-            if(permissionService.hasDataPointReadPermission(user, rt.getVO())) {
+            if(permissionService.hasPermission(user, rt.getVO().getReadPermission())) {
                 models.add(map.apply(rt, user));
             }
         }

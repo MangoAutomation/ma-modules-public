@@ -8,9 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-
-import com.serotonin.m2m2.i18n.Translations;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -36,13 +33,13 @@ import com.infiniteautomation.mango.rest.v2.model.event.detectors.AbstractPointE
 import com.infiniteautomation.mango.rest.v2.model.publisher.AbstractPublisherModel;
 import com.infiniteautomation.mango.spring.service.DataPointService;
 import com.infiniteautomation.mango.spring.service.PermissionService;
-import com.infiniteautomation.mango.util.RQLUtils;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.serotonin.m2m2.db.dao.DataPointTagsDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.db.dao.EventDetectorDao;
 import com.serotonin.m2m2.db.dao.PublisherDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
+import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.module.EventTypeDefinition;
 import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.module.SystemEventTypeDefinition;
@@ -302,7 +299,7 @@ public class EventTypesRestController {
 
                 for(DataPointVO vo : uniquePointsMap.values()) {
                     //Shortcut to check permissions via event type
-                    if(permissionService.hasDataPointReadPermission(user, vo)) {
+                    if(permissionService.hasPermission(user, vo.getReadPermission())) {
                         vo.setTags(DataPointTagsDao.getInstance().getTagsForDataPointId(vo.getId()));
                         DataPointEventTypeModel model = new DataPointEventTypeModel(new DataPointEventType(vo.getDataSourceId(), vo.getId(), 0, null), modelMapper.map(vo, DataPointModel.class, user));
                         types.add(new EventTypeVOModel<DataPointEventType, DataPointModel,AbstractPointEventDetectorModel<?>>(model, new TranslatableMessage("event.eventsFor", vo.getName()), false, true, true));

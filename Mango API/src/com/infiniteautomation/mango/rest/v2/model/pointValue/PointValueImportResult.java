@@ -5,10 +5,10 @@
 package com.infiniteautomation.mango.rest.v2.model.pointValue;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.infiniteautomation.mango.spring.service.PermissionService;
+import com.infiniteautomation.mango.spring.service.DataPointService;
+import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
-import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -23,6 +23,7 @@ import com.serotonin.m2m2.rt.dataImage.types.MultistateValue;
 import com.serotonin.m2m2.rt.dataImage.types.NumericValue;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionException;
 
 
 /**
@@ -41,7 +42,7 @@ public class PointValueImportResult {
     @JsonIgnore
     private PointValueDao dao;
     @JsonIgnore
-    private PermissionService service;
+    private DataPointService service;
     @JsonIgnore
     private final FireEvents fireEvents;
     @JsonIgnore
@@ -51,26 +52,24 @@ public class PointValueImportResult {
     @JsonIgnore
     private DataPointVO vo;
 
-    public PointValueImportResult(String xid, PointValueDao dao, PermissionService service, FireEvents fireEvents, User user) {
+    public PointValueImportResult(String xid, PointValueDao dao, DataPointService service, FireEvents fireEvents, User user) {
         this.xid = xid;
         this.result = new ProcessResult();
         this.dao = dao;
         this.service = service;
         this.fireEvents = fireEvents;
         this.user = user;
-        vo = DataPointDao.getInstance().getByXid(xid);
-        if(vo == null) {
+        try {
+            vo = service.get(xid);
+            service.ensureSetPermission(user, vo);
+            valid = true;
+            rt = Common.runtimeManager.getDataPoint(vo.getId());
+        }catch(NotFoundException e) {
             valid = false;
             result.addContextualMessage("xid", "emport.error.missingPoint", xid);
-        }else {
-
-            if (service.hasDataPointSetPermission(user, vo)){
-                valid = true;
-                rt = Common.runtimeManager.getDataPoint(vo.getId());
-            }else {
-                valid = false;
-                result.addContextualMessage("xid", "permission.exception.setDataPoint", user.getUsername());
-            }
+        }catch(PermissionException e) {
+            valid = false;
+            result.addContextualMessage("xid", "permission.exception.setDataPoint", user.getUsername());
         }
     }
 

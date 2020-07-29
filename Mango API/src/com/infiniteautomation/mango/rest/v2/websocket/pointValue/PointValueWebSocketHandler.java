@@ -4,6 +4,17 @@
 
 package com.infiniteautomation.mango.rest.v2.websocket.pointValue;
 
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import org.springframework.web.socket.CloseStatus;
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.util.UriComponentsBuilder;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeModel;
 import com.infiniteautomation.mango.rest.v2.websocket.MangoWebSocketErrorType;
@@ -20,16 +31,6 @@ import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
-import org.springframework.web.socket.CloseStatus;
-import org.springframework.web.socket.TextMessage;
-import org.springframework.web.socket.WebSocketSession;
-import org.springframework.web.util.UriComponentsBuilder;
-
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 
 /**
  * Event handler for single web socket session to publish events for multiple data points
@@ -90,7 +91,7 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
             }
 
             //Check permissions
-            if (!permissionService.hasDataPointReadPermission(user, vo)) {
+            if (!permissionService.hasPermission(user, vo.getReadPermission())) {
                 this.sendErrorMessage(session, MangoWebSocketErrorType.PERMISSION_DENIED,
                         new TranslatableMessage("permission.exception.readDataPoint", user.getPermissionHolderName()));
                 return;

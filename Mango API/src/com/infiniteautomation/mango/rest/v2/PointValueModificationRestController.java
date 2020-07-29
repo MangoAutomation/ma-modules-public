@@ -132,7 +132,7 @@ public class PointValueModificationRestController {
                 dataTypeId = DataTypes.UNKNOWN;
                 result.addContextualMessage("xid", "emport.error.missingPoint", xid);
             }else {
-                if (permissionService.hasDataPointSetPermission(user, vo)){
+                if (permissionService.hasPermission(user, vo.getSetPermission())){
                     valid = true;
                     rt = Common.runtimeManager.getDataPoint(vo.getId());
                     dataTypeId = vo.getPointLocator().getDataTypeId();

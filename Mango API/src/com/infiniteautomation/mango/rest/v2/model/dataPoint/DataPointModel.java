@@ -40,6 +40,7 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
 
     String deviceName;
     MangoPermissionModel readPermission;
+    MangoPermissionModel editPermission;
     MangoPermissionModel setPermission;
     Boolean purgeOverride;
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -98,6 +99,7 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
 
         this.deviceName = point.getDeviceName();
         this.readPermission = new MangoPermissionModel(point.getReadPermission());
+        this.editPermission = new MangoPermissionModel(point.getEditPermission());
         this.setPermission = new MangoPermissionModel(point.getSetPermission());
         this.purgeOverride = point.isPurgeOverride();
         if (this.purgeOverride) {
@@ -157,6 +159,10 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
         //TODO Mango 4.0 Use ModelMapper.unmap
         if (readPermission != null) {
             point.setReadPermission(readPermission.getPermission());
+        }
+        //TODO Mango 4.0 Use ModelMapper.unmap
+        if (editPermission != null) {
+            point.setEditPermission(editPermission.getPermission());
         }
         //TODO Mango 4.0 Use ModelMapper.unmap
         if (setPermission != null) {

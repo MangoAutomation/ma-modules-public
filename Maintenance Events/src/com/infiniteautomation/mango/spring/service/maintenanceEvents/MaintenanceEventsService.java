@@ -223,7 +223,7 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
                 return;
             }else {
                 if(read) {
-                    if(!permissionService.hasDataPointReadPermission(user, point)) {
+                    if(!permissionService.hasPermission(user, point.getReadPermission())) {
                         DataSourceVO source = sources.computeIfAbsent(point.getDataSourceId(), k -> {
                             DataSourceVO newDs = dataSourceDao.get(k);
                             return newDs;
