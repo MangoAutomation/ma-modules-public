@@ -127,7 +127,7 @@ public class SwaggerConfig {
                 // Map JsonNode to a marker interface for arbitrary JSON data
                 AlternateTypeRules.newRule(typeResolver.resolve(JsonNode.class), typeResolver.resolve(ArbitraryJsonData.class)));
 
-        docket.apiInfo(new ApiInfoBuilder().title("Mango REST V2 API").description(
+        docket.apiInfo(new ApiInfoBuilder().title("Mango REST v3 API").description(
                 "Support: <a href='http://infiniteautomation.com/forum' target='_blank'>Forum</a> or <a href='https://help.infiniteautomation.com/explore-the-api/' target='_blank'>Help</a>")
                 .version("2.0").termsOfServiceUrl("https://infiniteautomation.com/terms/")
                 .contact(new Contact("IAS", "https://infiniteautomation.com",
