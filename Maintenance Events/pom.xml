@@ -3,14 +3,14 @@
     <parent>
         <artifactId>ma-modules-public</artifactId>
         <groupId>com.infiniteautomation.mango</groupId>
-        <version>3.8.0-SNAPSHOT</version>
+        <version>4.0.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>maintenance-events</artifactId>
     <name>maintenanceEvents</name>
     <description>Page for creating and editing maintenance schedules that raise events at appropriate times.</description>
-    <version>3.8.0-SNAPSHOT</version>
+    <version>4.0.0-SNAPSHOT</version>
     <build>
         <plugins>
             <plugin>
@@ -33,7 +33,7 @@
         <dependency>
             <groupId>com.infiniteautomation.mango</groupId>
             <artifactId>mango-api</artifactId>
-            <version>3.8.0-SNAPSHOT</version>
+            <version>4.0.0-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>    
     </dependencies>
