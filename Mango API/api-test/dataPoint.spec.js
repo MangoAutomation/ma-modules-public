@@ -183,7 +183,7 @@ describe('Data point service', function() {
         });
     });
         
-    it('Gets v2 websocket notifications for data point create', function() {
+    it('Gets websocket notifications for data point create', function() {
         this.timeout(5000);
         
         let ws;

@@ -209,7 +209,7 @@ function pointValuesCsvFactory(client) {
     };
 }
 
-describe('Point values csv v2', function() {
+describe('Point values csv', function() {
     before('Login', function() {
         return login.call(this, client).then((...args) => {
             this.csvClient = createClient({

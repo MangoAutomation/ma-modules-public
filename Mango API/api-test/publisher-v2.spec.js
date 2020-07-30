@@ -19,7 +19,7 @@ const {createClient, login, defer, delay} = require('@infinite-automation/mango-
 const client = createClient();
 const Publisher = client.Publisher;
 
-describe('Publishers v2 service', function() {
+describe('Publishers service', function() {
     before('Login', function() { return login.call(this, client); });
     
     it('Gets websocket notifications for publisher create', function() {

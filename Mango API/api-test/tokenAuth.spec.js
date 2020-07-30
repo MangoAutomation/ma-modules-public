@@ -435,8 +435,7 @@ describe('JSON Web Token authentication', function() {
         });
     });
     
-    //User Token Tests v2
-    //TODO use UserV2 class when available
+    //User Token Tests latest
     it('Can\'t use home url setting endpoint with token', function() {
         let jwtClient;
         return this.createToken({username: this.testUser.username}).then(token => {
@@ -475,7 +474,7 @@ describe('JSON Web Token authentication', function() {
         });
     });
     
-    it('Standard user can\'t edit own user using token authentication v2', function() {
+    it('Standard user can\'t edit own user using token authentication', function() {
         let jwtClient;
         return this.createToken({username: this.testUser.username}).then(token => {
             jwtClient = createClient(this.noCookieConfig);
@@ -497,7 +496,7 @@ describe('JSON Web Token authentication', function() {
         });
     });
     
-    it('Admin can\'t edit own user using token authentication v2', function() {
+    it('Admin can\'t edit own user using token authentication', function() {
         let jwtClient;
         return this.createToken().then(token => {
             jwtClient = createClient(this.noCookieConfig);
@@ -519,7 +518,7 @@ describe('JSON Web Token authentication', function() {
         });
     });
     
-    it('Standard user can\'t patch self using token authentication v2', function() {
+    it('Standard user can\'t patch self using token authentication', function() {
         let jwtClient;
         return this.createToken({username: this.testUser.username}).then(token => {
             jwtClient = createClient(this.noCookieConfig);
@@ -541,7 +540,7 @@ describe('JSON Web Token authentication', function() {
         });
     });
     
-    it('Admin can\'t edit own user using token authentication v2', function() {
+    it('Admin can\'t edit own user using token authentication', function() {
         let jwtClient;
         return this.createToken().then(token => {
             jwtClient = createClient(this.noCookieConfig);

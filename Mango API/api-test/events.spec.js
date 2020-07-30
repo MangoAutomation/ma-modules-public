@@ -20,7 +20,7 @@ const client = createClient();
 const DataSource = client.DataSource;
 const DataPoint = client.DataPoint;
 
-describe('Events v2 tests', function(){
+describe('Events tests', function(){
     before('Login', function() { return login.call(this, client); });
 
     const newDataPoint = (xid, dsXid, rollupType, simplifyType, simplifyValue) => {

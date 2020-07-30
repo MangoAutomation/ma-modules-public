@@ -21,7 +21,7 @@ const DataPoint = client.DataPoint;
 const DataSource = client.DataSource;
 const moment = require('moment-timezone');
 
-describe('Point values v2', function() {
+describe('Point values', function() {
     before('Login', function() { return login.call(this, client); });
 
     const newDataPoint = (xid, dsXid, rollupType, simplifyType, simplifyValue) => {

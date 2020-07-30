@@ -118,12 +118,12 @@ describe('Log file query tests', function(){
             data: 'REST api log query test'
         }).then(()=> {
             return client.restRequest({
-                path: '/rest/latest/logging/by-filename/ma.log?like(classname,*infiniteautomation.mango.rest.v2.*)&limit(5)',
+                path: '/rest/latest/logging/by-filename/ma.log?like(classname,*infiniteautomation.mango.rest.latest.*)&limit(5)',
                 method: 'GET'
             }).then(response => {
                 assert.isAtLeast(response.data.length, 1);
                 for(var i=0; i<response.data.length; i++){
-                    assert.match(response.data[i].classname, /.*infiniteautomation.mango.rest.v2.*/);
+                    assert.match(response.data[i].classname, /.*infiniteautomation.mango.rest.latest.*/);
                 }
             });            
         });
