@@ -97,14 +97,14 @@ describe('Event detector bulk operations', function() {
             this.ed2 = highLimitDetector(testDetectorXid2, this.testPoint2.id);
             return Promise.all([
                 client.restRequest({
-                    path: '/rest/latest/full-event-detectors',
+                    path: '/rest/latest/event-detectors',
                     method: 'POST',
                     data: this.ed1
                 }).then(response => {
                     this.ed1.id = response.data.id;
                 }),
                 client.restRequest({
-                    path: '/rest/latest/full-event-detectors',
+                    path: '/rest/latest/event-detectors',
                     method: 'POST',
                     data: this.ed2
                 }).then(response => {
@@ -124,7 +124,7 @@ describe('Event detector bulk operations', function() {
         this.ed1.name = 'new name for ed1';
         this.ed2.name = 'new name for ed2';
         return client.restRequest({
-            path: `/rest/latest/full-event-detectors/bulk`,
+            path: `/rest/latest/event-detectors/bulk`,
             method: 'POST',
             data: {
                 action: 'UPDATE',

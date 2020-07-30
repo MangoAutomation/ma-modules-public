@@ -298,21 +298,21 @@ describe('Event types', function() {
     beforeEach('Create event detectors', function(){
         let promises = [];
         promises.push(client.restRequest({
-            path: '/rest/latest/full-event-detectors',
+            path: '/rest/latest/event-detectors',
             method: 'POST',
             data: this.binaryPed1
         }).then(response => {
             this.binaryPed1 = response.data;
         }));
         promises.push(client.restRequest({
-            path: '/rest/latest/full-event-detectors',
+            path: '/rest/latest/event-detectors',
             method: 'POST',
             data: this.binaryPed2
         }).then(response => {
             this.binaryPed2 = response.data;
         }));
         promises.push(client.restRequest({
-            path: '/rest/latest/full-event-detectors',
+            path: '/rest/latest/event-detectors',
             method: 'POST',
             data: this.numPed1
         }).then(response => {
@@ -324,19 +324,19 @@ describe('Event types', function() {
     afterEach('Delete event detectors', function(){
         let promises = [];
         promises.push(client.restRequest({
-            path: `/rest/latest/full-event-detectors/${this.binaryPed1.xid}`,
+            path: `/rest/latest/event-detectors/${this.binaryPed1.xid}`,
             method: 'DELETE',
         }).then(response =>{
             
         }));
         promises.push(client.restRequest({
-            path: `/rest/latest/full-event-detectors/${this.binaryPed2.xid}`,
+            path: `/rest/latest/event-detectors/${this.binaryPed2.xid}`,
             method: 'DELETE',
         }).then(response =>{
             
         }));
         promises.push(client.restRequest({
-            path: `/rest/latest/full-event-detectors/${this.numPed1.xid}`,
+            path: `/rest/latest/event-detectors/${this.numPed1.xid}`,
             method: 'DELETE',
         }).then(response =>{
             

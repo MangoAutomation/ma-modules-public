@@ -21,7 +21,7 @@ import com.serotonin.m2m2.vo.permission.PermissionHolder;
  *
  */
 @Component()
-@WebSocketMapping("/websocket/full-event-detectors")
+@WebSocketMapping("/websocket/event-detectors")
 public class EventDetectorWebSocketHandler <T extends AbstractEventDetectorVO> extends DaoNotificationWebSocketHandler<T> {
 
     private final EventDetectorsService service;

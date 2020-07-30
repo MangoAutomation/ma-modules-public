@@ -76,9 +76,9 @@ import net.jazdw.rql.parser.ASTNode;
  * @author Terry Packer
  *
  */
-@Api(value="Event Detectors, full REST v2 implementation")
+@Api(value="Event Detectors, full implementation")
 @RestController()
-@RequestMapping("/full-event-detectors")
+@RequestMapping("/event-detectors")
 public class EventDetectorsRestController {
 
     private final EventDetectorsService service;
@@ -159,7 +159,7 @@ public class EventDetectorsRestController {
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
         AbstractEventDetectorVO vo = service.insertAndReload(model.toVO(), restart);
-        URI location = builder.path("/full-event-detectors/{xid}").buildAndExpand(vo.getXid()).toUri();
+        URI location = builder.path("/event-detectors/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
         return new ResponseEntity<>(map.apply(vo, user), headers, HttpStatus.CREATED);
@@ -181,7 +181,7 @@ public class EventDetectorsRestController {
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
         AbstractEventDetectorVO vo = service.updateAndReload(xid, model.toVO(), restart);
-        URI location = builder.path("/full-event-detectors/{xid}").buildAndExpand(vo.getXid()).toUri();
+        URI location = builder.path("/event-detectors/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
         return new ResponseEntity<>(map.apply(vo, user), headers, HttpStatus.OK);
@@ -207,7 +207,7 @@ public class EventDetectorsRestController {
 
         AbstractEventDetectorVO vo = service.updateAndReload(xid, model.toVO(), restart);
 
-        URI location = builder.path("/full-event-detectors/{xid}").buildAndExpand(vo.getXid()).toUri();
+        URI location = builder.path("/event-detectors/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
 
@@ -357,7 +357,7 @@ public class EventDetectorsRestController {
                 });
 
         HttpHeaders headers = new HttpHeaders();
-        headers.setLocation(builder.path("/full-event-detectors/bulk/{id}").buildAndExpand(responseBody.getId()).toUri());
+        headers.setLocation(builder.path("/event-detectors/bulk/{id}").buildAndExpand(responseBody.getId()).toUri());
         return new ResponseEntity<TemporaryResource<EventDetectorBulkResponse, AbstractRestException>>(responseBody, headers, HttpStatus.CREATED);
     }
 
