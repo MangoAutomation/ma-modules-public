@@ -12,7 +12,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import org.jooq.Condition;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -177,6 +179,63 @@ public class WatchListServiceTest extends AbstractVOServiceWithPermissionsTest<W
                 int count = getService().customizedCount(conditions);
                 assertEquals(1, count);
             });
+        });
+    }
+
+    /*
+     * Since we have an owner this test has a different style of logic than the superclass
+     */
+    @Test
+    @Override
+    public void testCountQueryEditPermissionEnforcement() {
+        runTest(() -> {
+            WatchListVO vo = newVO(editUser);
+            setEditPermission(MangoPermission.createOrSet(roleService.getSuperadminRole(), readRole), vo);
+            getService().permissionService.runAsSystemAdmin(() -> {
+                return service.insert(vo);
+            });
+            getService().permissionService.runAs(readUser, () -> {
+                ConditionSortLimit conditions = new ConditionSortLimit(null, null, null, 0);
+                int count = getService().customizedCount(conditions);
+                assertEquals(0, count);
+            });
+        });
+    }
+
+    /*
+     * Since we have an owner this test has a different style of logic than the superclass
+     */
+    @Test
+    @Override
+    public void testQueryEditPermissionEnforcement() {
+        WatchListVO vo = newVO(editUser);
+        setEditPermission(MangoPermission.createOrSet(roleService.getSuperadminRole(), readRole), vo);
+        getService().permissionService.runAsSystemAdmin(() -> {
+            service.insert(vo);
+        });
+        getService().permissionService.runAs(readUser, () -> {
+            ConditionSortLimit conditions = new ConditionSortLimit(null, null, 1, 0);
+            AtomicInteger count = new AtomicInteger();
+            getService().customizedQuery(conditions, (item, row) -> {
+                count.getAndIncrement();
+            });
+            assertEquals(0, count.get());
+        });
+
+        WatchListVO readable = newVO(readUser);
+        setReadPermission(MangoPermission.createOrSet(roleService.getSuperadminRole(), editRole), readable);
+        WatchListVO savedReadable = getService().permissionService.runAsSystemAdmin(() -> {
+            return service.insert(readable);
+        });
+        getService().permissionService.runAs(editUser, () -> {
+            Condition c = getDao().getTable().getNameAlias().eq(savedReadable.getName());
+            ConditionSortLimit conditions = new ConditionSortLimit(c, null, null, null);
+            AtomicInteger count = new AtomicInteger();
+            getService().customizedQuery(conditions, (item, row) -> {
+                count.getAndIncrement();
+                assertEquals(savedReadable.getName(), item.getName());
+            });
+            assertEquals(1, count.get());
         });
     }
 
