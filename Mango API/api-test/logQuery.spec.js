@@ -28,7 +28,7 @@ describe('Log file query tests', function(){
 
     it('List log files', () => {
       return client.restRequest({
-          path: '/rest/v2/logging/files',
+          path: '/rest/latest/logging/files',
           method: 'GET'
       }).then(response => {
         //Set this for next test
@@ -46,7 +46,7 @@ describe('Log file query tests', function(){
 
     it('List log files with limit', () => {
       return client.restRequest({
-          path: '/rest/v2/logging/files',
+          path: '/rest/latest/logging/files',
           method: 'GET',
           params: {
             limit: testContext.logfileCount - 1
@@ -58,7 +58,7 @@ describe('Log file query tests', function(){
 
     it('Simple level query', () => {
       return client.restRequest({
-          path: '/rest/v2/logging/by-filename/ma.log?level=INFO&limit(1)',
+          path: '/rest/latest/logging/by-filename/ma.log?level=INFO&limit(1)',
           method: 'GET'
       }).then(response => {
         //Looking for the Starting Mango Message
@@ -69,7 +69,7 @@ describe('Log file query tests', function(){
 
     it('Simple level query for less than ERROR', () => {
       return client.restRequest({
-          path: '/rest/v2/logging/by-filename/ma.log?level<ERROR&limit(1)',
+          path: '/rest/latest/logging/by-filename/ma.log?level<ERROR&limit(1)',
           method: 'GET'
       }).then(response => {
           // INFO is lower than ERROR (but not alphabetically), should be at least one INFO
@@ -80,7 +80,7 @@ describe('Log file query tests', function(){
     it('Simple time query', () => {
       testContext.fiveHourAgo = new Date(new Date().getTime() - 18000000);
       return client.restRequest({
-          path: '/rest/v2/logging/by-filename/ma.log?time=gt=' + testContext.fiveHourAgo.toISOString() + '&limit(5)',
+          path: '/rest/latest/logging/by-filename/ma.log?time=gt=' + testContext.fiveHourAgo.toISOString() + '&limit(5)',
           method: 'GET'
       }).then(response => {
         //Test that all timestamps are > five min ago
@@ -93,14 +93,14 @@ describe('Log file query tests', function(){
     });
 
     it('Simple classname eq query', () => {
-        testContext.classname = 'com.infiniteautomation.mango.rest.v2.TestingRestController';
+        testContext.classname = 'com.infiniteautomation.mango.rest.latest.TestingRestController';
         return client.restRequest({
-            path: '/rest/v2/testing/log-error-message',
+            path: '/rest/latest/testing/log-error-message',
             method: 'POST',
             data: 'REST api log query test'
         }).then(()=> {
           return client.restRequest({
-              path: '/rest/v2/logging/by-filename/ma.log?classname=eq=' + testContext.classname  + '&limit(5)',
+              path: '/rest/latest/logging/by-filename/ma.log?classname=eq=' + testContext.classname  + '&limit(5)',
               method: 'GET'
           }).then(response => {
               assert.isAtLeast(response.data.length, 1);
@@ -113,12 +113,12 @@ describe('Log file query tests', function(){
 
     it('Simple classname like query', () => {
         return client.restRequest({
-            path: '/rest/v2/testing/log-error-message',
+            path: '/rest/latest/testing/log-error-message',
             method: 'POST',
             data: 'REST api log query test'
         }).then(()=> {
             return client.restRequest({
-                path: '/rest/v2/logging/by-filename/ma.log?like(classname,*infiniteautomation.mango.rest.v2.*)&limit(5)',
+                path: '/rest/latest/logging/by-filename/ma.log?like(classname,*infiniteautomation.mango.rest.v2.*)&limit(5)',
                 method: 'GET'
             }).then(response => {
                 assert.isAtLeast(response.data.length, 1);
@@ -133,12 +133,12 @@ describe('Log file query tests', function(){
         //Note mispelled method
         testContext.method = 'logErorMessage';
         return client.restRequest({
-          path: '/rest/v2/testing/log-error-message',
+          path: '/rest/latest/testing/log-error-message',
           method: 'POST',
           data: 'REST api log query test'
         }).then(()=> {
           return client.restRequest({
-              path: '/rest/v2/logging/by-filename/ma.log?method=eq=' + testContext.method + '&limit(5)',
+              path: '/rest/latest/logging/by-filename/ma.log?method=eq=' + testContext.method + '&limit(5)',
               method: 'GET'
           }).then(response => {
               assert.isAtLeast(response.data.length, 1);
@@ -153,12 +153,12 @@ describe('Log file query tests', function(){
         //Note mispelled method
         testContext.method = 'logErorMessage';
         return client.restRequest({
-          path: '/rest/v2/testing/log-error-message',
+          path: '/rest/latest/testing/log-error-message',
           method: 'POST',
           data: 'REST api log query test'
         }).then(()=> {
           return client.restRequest({
-              path: '/rest/v2/logging/by-filename/ma.log?like(method,' + encodeURIComponent('logEr*') + ')&limit(5)',
+              path: '/rest/latest/logging/by-filename/ma.log?like(method,' + encodeURIComponent('logEr*') + ')&limit(5)',
               method: 'GET'
           }).then(response => {
               assert.isAtLeast(response.data.length, 1);
@@ -172,12 +172,12 @@ describe('Log file query tests', function(){
     it('Simple message eq query', () => {
         //Known bug that the message has a trailing space when parsed out of the file on the server
         return client.restRequest({
-            path: '/rest/v2/testing/log-error-message',
+            path: '/rest/latest/testing/log-error-message',
             method: 'POST',
             data: 'REST api log query test'
         }).then(()=> {
             return client.restRequest({
-                path: '/rest/v2/logging/by-filename/ma.log?message=eq=' + encodeURIComponent('REST api log query test') + '&limit(1)',
+                path: '/rest/latest/logging/by-filename/ma.log?message=eq=' + encodeURIComponent('REST api log query test') + '&limit(1)',
                 method: 'GET'
             }).then(response => {
                 assert.isAtLeast(response.data.length, 1);
@@ -189,12 +189,12 @@ describe('Log file query tests', function(){
     it('Simple message like query', () => {
         //Known bug that the message has a trailing space when parsed out of the file on the server
         return client.restRequest({
-            path: '/rest/v2/testing/log-error-message',
+            path: '/rest/latest/testing/log-error-message',
             method: 'POST',
             data: 'REST api log query test'
         }).then(()=> {
             return client.restRequest({
-                path: '/rest/v2/logging/by-filename/ma.log?like(message,' + encodeURIComponent('REST api log query*') + ')&limit(1)',
+                path: '/rest/latest/logging/by-filename/ma.log?like(message,' + encodeURIComponent('REST api log query*') + ')&limit(1)',
                 method: 'GET'
             }).then(response => {
                 assert.isAtLeast(response.data.length, 1);
@@ -205,7 +205,7 @@ describe('Log file query tests', function(){
 
     it('Downloads ma.log', function(){
       return client.restRequest({
-          path: '/rest/v2/logging/view/ma.log',
+          path: '/rest/latest/logging/view/ma.log',
           method: 'GET',
           dataType: 'buffer',
           headers: {
@@ -224,7 +224,7 @@ describe('Log file query tests', function(){
 
     it('View ma.log', function(){
       return client.restRequest({
-          path: '/rest/v2/logging/view/ma.log',
+          path: '/rest/latest/logging/view/ma.log',
           method: 'GET',
           dataType: 'buffer',
           headers: {
@@ -243,7 +243,7 @@ describe('Log file query tests', function(){
     
     it('Expects 403 when trying to query an existing logfile that is not log4J ', function() {
         return client.restRequest({
-            path: '/rest/v2/logging/by-filename/createTables.log',
+            path: '/rest/latest/logging/by-filename/createTables.log',
             method: 'GET'
         }).then(response => {
             throw new Error('Returned successful response', response.status);

@@ -63,9 +63,9 @@ public class SwaggerConfig {
         this.typeResolver = typeResolver;
 
         SwaggerResource v2 = new SwaggerResource();
-        v2.setName("Mango API v2");
+        v2.setName("Mango API v3");
         String url = Common.envProps.getString("springfox.documentation.swagger.v2.path", "/swagger/v2/api-docs");
-        v2.setUrl("/rest/v2" + url);
+        v2.setUrl("/rest/v3" + url);
         v2.setSwaggerVersion("2.0");
         resourceProvider.add(v2);
     }

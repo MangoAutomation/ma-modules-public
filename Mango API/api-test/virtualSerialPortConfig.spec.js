@@ -32,7 +32,7 @@ describe('Virtual serial port config tests', function(){
           portType : "SERIAL_SOCKET_BRIDGE"
         };
       return client.restRequest({
-          path: '/rest/v2/virtual-serial-ports',
+          path: '/rest/latest/virtual-serial-ports',
           method: 'POST',
           data: ssb
       }).then(response => {
@@ -50,7 +50,7 @@ describe('Virtual serial port config tests', function(){
          portType : "SERIAL_SERVER_SOCKET_BRIDGE"
         };
       return client.restRequest({
-          path: '/rest/v2/virtual-serial-ports',
+          path: '/rest/latest/virtual-serial-ports',
           method: 'POST',
           data: ssb
       }).then(response => {
@@ -68,7 +68,7 @@ describe('Virtual serial port config tests', function(){
           portType : "SERIAL_SOCKET_BRIDGE"
         };
       return client.restRequest({
-          path: '/rest/v2/virtual-serial-ports/VSP_client',
+          path: '/rest/latest/virtual-serial-ports/VSP_client',
           method: 'PUT',
           data: ssb
       }).then(response => {
@@ -86,7 +86,7 @@ describe('Virtual serial port config tests', function(){
          portType : "SERIAL_SERVER_SOCKET_BRIDGE"
         };
       return client.restRequest({
-          path: '/rest/v2/virtual-serial-ports/VSP_server',
+          path: '/rest/latest/virtual-serial-ports/VSP_server',
           method: 'PUT',
           data: ssb
       }).then(response => {
@@ -105,7 +105,7 @@ describe('Virtual serial port config tests', function(){
           portType : "SERIAL_SOCKET_BRIDGE"
         };
       return client.restRequest({
-          path: '/rest/v2/virtual-serial-ports/VSP_client',
+          path: '/rest/latest/virtual-serial-ports/VSP_client',
           method: 'GET'
       }).then(response => {
         assert.equal(response.data.address, ssb.address);
@@ -122,7 +122,7 @@ describe('Virtual serial port config tests', function(){
          portType : "SERIAL_SERVER_SOCKET_BRIDGE"
         };
       return client.restRequest({
-          path: '/rest/v2/virtual-serial-ports/VSP_server',
+          path: '/rest/latest/virtual-serial-ports/VSP_server',
           method: 'GET',
       }).then(response => {
         assert.equal(response.data.port, ssb.port);
@@ -139,7 +139,7 @@ describe('Virtual serial port config tests', function(){
           portType : "SERIAL_SOCKET_BRIDGE"
         };
       return client.restRequest({
-          path: '/rest/v2/virtual-serial-ports/VSP_client',
+          path: '/rest/latest/virtual-serial-ports/VSP_client',
           method: 'DELETE',
           data: {}
       }).then(response => {
@@ -157,7 +157,7 @@ describe('Virtual serial port config tests', function(){
          portType : "SERIAL_SERVER_SOCKET_BRIDGE"
         };
       return client.restRequest({
-          path: '/rest/v2/virtual-serial-ports/VSP_server',
+          path: '/rest/latest/virtual-serial-ports/VSP_server',
           method: 'DELETE',
           data: {}
       }).then(response => {

@@ -30,7 +30,7 @@ describe('Server endpoint tests', function(){
 
     it('Gets list of system information', () => {
       return client.restRequest({
-          path: '/rest/v2/server/system-info',
+          path: '/rest/latest/server/system-info',
           method: 'GET'
       }).then(response => {
         assert.notEqual(response.data.timezone, null);
@@ -58,7 +58,7 @@ describe('Server endpoint tests', function(){
                     value: true
                 }).then(() => {
                     return client.restRequest({
-                        path: '/rest/v2/server/point-history-counts',
+                        path: '/rest/latest/server/point-history-counts',
                         method: 'GET'
                     }).then(response => {
                       assert.isAbove(response.data.length, 0);
@@ -72,7 +72,7 @@ describe('Server endpoint tests', function(){
     
     it('Gets all serial ports', () => {
         return client.restRequest({
-            path: '/rest/v2/server/serial-ports?refresh=true',
+            path: '/rest/latest/server/serial-ports?refresh=true',
             method: 'GET'
         }).then(response => {
             assert.isNumber(response.data.length);
@@ -81,7 +81,7 @@ describe('Server endpoint tests', function(){
 
     it('Gets cors settings', () => {
         return client.restRequest({
-            path: '/rest/v2/server/cors-settings',
+            path: '/rest/latest/server/cors-settings',
             method: 'GET'
         }).then(response => {
             assert.isBoolean(response.data.enabled, true);
@@ -90,7 +90,7 @@ describe('Server endpoint tests', function(){
     
     it('List directory', () => {
         return client.restRequest({
-            path: '/rest/v2/server/execute-command',
+            path: '/rest/latest/server/execute-command',
             method: 'POST',
             data:{
                 timeout: 5000,

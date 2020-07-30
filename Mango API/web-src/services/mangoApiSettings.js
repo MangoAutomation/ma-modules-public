@@ -6,7 +6,7 @@
 MangoApiSettingsFactory.$inject = ['maRestResource', '$http'];
 function MangoApiSettingsFactory(RestResource, $http) {
     
-    const baseUrl = '/rest/v2/server/cors-settings';
+    const baseUrl = '/rest/latest/server/cors-settings';
     const xidPrefix = 'APISET_';
 
     class MangoApiSettingsResource extends RestResource {

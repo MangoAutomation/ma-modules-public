@@ -8,7 +8,7 @@ import angular from 'angular';
 sqlConsoleFactory.$inject = ['maRestResource'];
 function sqlConsoleFactory(RestResource) {
     
-    const sqlConsoleBaseUrl = '/rest/v2/sql-console';
+    const sqlConsoleBaseUrl = '/rest/latest/sql-console';
 
     class sqlConsoleResource extends RestResource {
         

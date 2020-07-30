@@ -23,7 +23,7 @@ describe('SQL Console ', () => {
     
     it('List tables', function(){
         return client.restRequest({
-            path: '/rest/v2/sql-console/list-tables',
+            path: '/rest/latest/sql-console/list-tables',
             method: 'GET',
         }).then(response => {
             assert.strictEqual(response.data.headers.length, 1);
@@ -33,7 +33,7 @@ describe('SQL Console ', () => {
 
     it('Query', function(){
         return client.restRequest({
-            path: '/rest/v2/sql-console',
+            path: '/rest/latest/sql-console',
             method: 'GET',
             params: {
                 query: 'SELECT * FROM USERS;'
@@ -46,7 +46,7 @@ describe('SQL Console ', () => {
 
     it('Update', function(){
         return client.restRequest({
-            path: '/rest/v2/sql-console',
+            path: '/rest/latest/sql-console',
             method: 'POST',
             headers: {
                 'Content-Type': 'application/sql'

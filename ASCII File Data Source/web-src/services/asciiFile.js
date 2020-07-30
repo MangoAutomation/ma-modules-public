@@ -10,7 +10,7 @@ function asciiFilerFactory($http) {
 
         validate(xid, data) {
             let url, method;
-            url = '/rest/v2/ascii-file-data-source/validate-ascii/' + xid;
+            url = '/rest/latest/ascii-file-data-source/validate-ascii/' + xid;
             method = 'POST';
             
             return $http({
@@ -27,7 +27,7 @@ function asciiFilerFactory($http) {
 
         validateFileExists(data) {
             let url, method;
-            url = '/rest/v2/ascii-file-data-source/validate-ascii-file-exists';
+            url = '/rest/latest/ascii-file-data-source/validate-ascii-file-exists';
             method = 'POST';
             
             return $http({

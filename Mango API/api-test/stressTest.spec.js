@@ -24,7 +24,7 @@ const DataPoint = client.DataPoint;
 
 class Publisher extends MangoObject {
     static get baseUrl() {
-        return '/rest/v2/publishers-v2';
+        return '/rest/latest/publishers-v2';
     }
 }
 
@@ -46,7 +46,7 @@ describe('Stress test', function() {
         } else {
             return delay(1000).then(() => {
                 return client.restRequest({
-                    path: `/rest/v2/data-points/bulk/${encodeURIComponent(response.data.id)}`,
+                    path: `/rest/latest/data-points/bulk/${encodeURIComponent(response.data.id)}`,
                     method: 'GET'
                 }).then(waitUntilComplete);
             });
@@ -181,7 +181,7 @@ describe('Stress test', function() {
             ];
             
             return client.restRequest({
-                path: '/rest/v2/data-points/bulk',
+                path: '/rest/latest/data-points/bulk',
                 method: 'POST',
                 data: {
                     action: 'CREATE',
@@ -213,7 +213,7 @@ describe('Stress test', function() {
             }));
             
             return client.restRequest({
-                path: '/rest/v2/data-points/bulk',
+                path: '/rest/latest/data-points/bulk',
                 method: 'POST',
                 data: {
                     action: 'CREATE',
@@ -261,7 +261,7 @@ describe('Stress test', function() {
             }));
             
             return client.restRequest({
-                path: '/rest/v2/data-points/bulk',
+                path: '/rest/latest/data-points/bulk',
                 method: 'POST',
                 data: {
                     action: 'CREATE',
@@ -313,7 +313,7 @@ describe('Stress test', function() {
         }).then(() => {
             if (stressTestConfig.heapDumpFilename) {
                 return client.restRequest({
-                    path: '/rest/v2/testing/heap-dump',
+                    path: '/rest/latest/testing/heap-dump',
                     method: 'POST',
                     params: {filename: stressTestConfig.heapDumpFile, readable: true}
                 }).then(response => {
@@ -322,7 +322,7 @@ describe('Stress test', function() {
             }
         }).then(() => {
             return client.restRequest({
-                path: '/rest/v2/testing/jvm-info',
+                path: '/rest/latest/testing/jvm-info',
             });
         }).then(response => {
             results.jvmInfo = response.data;

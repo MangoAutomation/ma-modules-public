@@ -28,7 +28,7 @@ describe('system-settings-rest-controller', function() {
         
         return client.restRequest({
             method: 'PUT',
-            path: `/rest/v2/system-settings/${params.key}`,
+            path: `/rest/latest/system-settings/${params.key}`,
             data: this.test.expectedResult
         });
     };
@@ -37,16 +37,16 @@ describe('system-settings-rest-controller', function() {
         // common test teardown, e.g. delete a VO object
         return client.restRequest({
             method: 'DELETE',
-            path: `/rest/v2/system-settings/${params.key}`,
+            path: `/rest/latest/system-settings/${params.key}`,
         });
     };
     
     // Get All System Settings - Admin Permission Required, All settings returned as string types
-    it('GET /rest/v2/system-settings', function() {
+    it('GET /rest/latest/system-settings', function() {
         return Promise.resolve().then(() => {
             return client.restRequest({
                 method: 'GET',
-                path: `/rest/v2/system-settings`,
+                path: `/rest/latest/system-settings`,
             });
         }).then(response => {
             // OK
@@ -56,7 +56,7 @@ describe('system-settings-rest-controller', function() {
     });
 
     // Update Many System Settings - Admin Privs Required
-    it('POST /rest/v2/system-settings', function() {
+    it('POST /rest/latest/system-settings', function() {
         const params = {
             key: uuid()
         };
@@ -69,7 +69,7 @@ describe('system-settings-rest-controller', function() {
         }).then(() => {
             return client.restRequest({
                 method: 'POST',
-                path: `/rest/v2/system-settings`,
+                path: `/rest/latest/system-settings`,
                 data: requestBody
             });
         }).then(response => {
@@ -83,7 +83,7 @@ describe('system-settings-rest-controller', function() {
     });
 
     // Get System Setting By key - Admin Permission Required, if no type supplied assume to be string
-    it('GET /rest/v2/system-settings/{key}', function() {
+    it('GET /rest/latest/system-settings/{key}', function() {
         const params = {
             key: uuid(), // in = path, description = Valid System Setting ID, required = true, type = string, default = , enum = 
             type: 'STRING' // in = query, description = Return Type, required = false, type = string, default = STRING, enum = INTEGER,BOOLEAN,JSON,STRING
@@ -94,7 +94,7 @@ describe('system-settings-rest-controller', function() {
         }).then(() => {
             return client.restRequest({
                 method: 'GET',
-                path: `/rest/v2/system-settings/${params.key}`,
+                path: `/rest/latest/system-settings/${params.key}`,
                 params: {
                     type: params.type
                 }
@@ -109,7 +109,7 @@ describe('system-settings-rest-controller', function() {
     });
 
     // Update an existing System Setting - If no type is provided, String is assumed
-    it('PUT /rest/v2/system-settings/{key}', function() {
+    it('PUT /rest/latest/system-settings/{key}', function() {
         const requestBody = 'value 2';
         const params = {
             key: uuid(), // in = path, description = key, required = true, type = string, default = , enum = 
@@ -121,7 +121,7 @@ describe('system-settings-rest-controller', function() {
         }).then(() => {
             return client.restRequest({
                 method: 'PUT',
-                path: `/rest/v2/system-settings/${params.key}`,
+                path: `/rest/latest/system-settings/${params.key}`,
                 data: requestBody
             });
         }).then(response => {

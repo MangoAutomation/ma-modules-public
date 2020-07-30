@@ -81,7 +81,7 @@ describe('Websocket authentication', function() {
     
     beforeEach('Reset the auth token', function() {
         return client.restRequest({
-            path: '/rest/v2/auth-tokens/create',
+            path: '/rest/latest/auth-tokens/create',
             method: 'POST',
             data: {
                 username: this.testUser.username
@@ -97,7 +97,7 @@ describe('Websocket authentication', function() {
         const sequenceNumber = Math.floor(Math.random() * 10000);
 
         const ws = client.openWebSocket({
-            path: '/rest/v2/websocket/temporary-resources'
+            path: '/rest/latest/websocket/temporary-resources'
         });
 
         ws.on('open', () => {
@@ -154,7 +154,7 @@ describe('Websocket authentication', function() {
         }, 2000);
         
         const ws = client.openWebSocket({
-            path: '/rest/v2/websocket/temporary-resources'
+            path: '/rest/latest/websocket/temporary-resources'
         });
 
         ws.on('open', () => {
@@ -245,7 +245,7 @@ describe('Websocket authentication', function() {
         this.timeout(5000);
         
         return client.restRequest({
-            path: '/rest/v2/auth-tokens/create',
+            path: '/rest/latest/auth-tokens/create',
             method: 'POST',
             data: {
                 username: this.testUser.username,
@@ -265,7 +265,7 @@ describe('Websocket authentication', function() {
     it('Terminates token authentication websockets when token is revoked', function() {
         return testWebSocketTermination.call(this, this.clients.token, () => {
             return client.restRequest({
-                path: `/rest/v2/auth-tokens/revoke/${encodeURIComponent(this.testUser.username)}`,
+                path: `/rest/latest/auth-tokens/revoke/${encodeURIComponent(this.testUser.username)}`,
                 method: 'POST'
             });
         }, ({code, reason}) => {

@@ -31,7 +31,7 @@ describe('logging-rest-controller', function() {
     };
     
     // Query ma.log logs - Returns a list of recent logs, ie. /by-filename/ma.log?limit(10)
-    it('GET /rest/v2/logging/by-filename/{filename}', function() {
+    it('GET /rest/latest/logging/by-filename/{filename}', function() {
         const params = {
             filename: 'ma.log' // in = path, description = filename, required = true, type = string, default = , enum = 
         };
@@ -41,7 +41,7 @@ describe('logging-rest-controller', function() {
         }).then(() => {
             return client.restRequest({
                 method: 'GET',
-                path: `/rest/v2/logging/by-filename/${params.filename}`,
+                path: `/rest/latest/logging/by-filename/${params.filename}`,
             });
         }).then(response => {
             // OK
@@ -70,7 +70,7 @@ describe('logging-rest-controller', function() {
     });
 
     // List Log Files - Returns a list of logfile metadata
-    it('GET /rest/v2/logging/files', function() {
+    it('GET /rest/latest/logging/files', function() {
         const params = {
             limit: 10 // in = query, description = limit, required = false, type = integer, default = , enum = 
         };
@@ -80,7 +80,7 @@ describe('logging-rest-controller', function() {
         }).then(() => {
             return client.restRequest({
                 method: 'GET',
-                path: `/rest/v2/logging/files`,
+                path: `/rest/latest/logging/files`,
                 params: {
                     limit: params.limit
                 }
@@ -107,7 +107,7 @@ describe('logging-rest-controller', function() {
     });
 
     // View log - Optionally download file as attachment
-    it('GET /rest/v2/logging/view/{filename}', function() {
+    it('GET /rest/latest/logging/view/{filename}', function() {
         const params = {
             download: true, // in = query, description = Set content disposition to attachment, required = false, type = boolean, default = true, enum = 
             filename: 'ma.log' // in = path, description = filename, required = true, type = string, default = , enum = 
@@ -118,7 +118,7 @@ describe('logging-rest-controller', function() {
         }).then(() => {
             return client.restRequest({
                 method: 'GET',
-                path: `/rest/v2/logging/view/${params.filename}`,
+                path: `/rest/latest/logging/view/${params.filename}`,
                 params: {
                     download: params.download
                 },

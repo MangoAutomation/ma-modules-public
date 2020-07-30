@@ -75,7 +75,7 @@ describe('Cache control verification', function() {
     
     it('Gets no cache for REST request', function() {
         return client.restRequest({
-            path: '/rest/v2/users/current',
+            path: '/rest/latest/users/current',
             dataType: 'buffer',
             headers: {
                 'Accept': '*/*'

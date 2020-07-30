@@ -26,7 +26,7 @@ describe('json-data-rest-controller', function() {
         // common test setup, e.g. create a VO object
         return client.restRequest({
             method: 'POST',
-            path: `/rest/v2/json-data/${params.xid}`,
+            path: `/rest/latest/json-data/${params.xid}`,
             params: {
                 editPermission: params.editPermission || [],
                 name: params.name || 'test data',
@@ -48,16 +48,16 @@ describe('json-data-rest-controller', function() {
         // common test teardown, e.g. delete a VO object
         return client.restRequest({
             method: 'DELETE',
-            path: `/rest/v2/json-data/${params.xid}`,
+            path: `/rest/latest/json-data/${params.xid}`,
         });
     };
     
     // List all available xids - Shows any xids that you have read permissions for
-    it('GET /rest/v2/json-data', function() {
+    it('GET /rest/latest/json-data', function() {
         return Promise.resolve().then(() => {
             return client.restRequest({
                 method: 'GET',
-                path: `/rest/v2/json-data`,
+                path: `/rest/latest/json-data`,
             });
         }).then(response => {
             // OK
@@ -71,7 +71,7 @@ describe('json-data-rest-controller', function() {
     });
 
     // Get Public JSON Data - Returns only the data
-    it('GET /rest/v2/json-data/public/{xid}', function() {
+    it('GET /rest/latest/json-data/public/{xid}', function() {
         const params = {
             xid: uuid(), // in = path, description = XID, required = true, type = string, default = , enum = 
             readPermission: ['anonymous']
@@ -83,7 +83,7 @@ describe('json-data-rest-controller', function() {
             const publicClient = createClient();
             return publicClient.restRequest({
                 method: 'GET',
-                path: `/rest/v2/json-data/public/${params.xid}`,
+                path: `/rest/latest/json-data/public/${params.xid}`,
             });
         }).then(response => {
             // OK
@@ -112,7 +112,7 @@ describe('json-data-rest-controller', function() {
     });
 
     // Get JSON Data - Returns only the data
-    it('GET /rest/v2/json-data/{xid}', function() {
+    it('GET /rest/latest/json-data/{xid}', function() {
         const params = {
             xid: uuid() // in = path, description = XID, required = true, type = string, default = , enum = 
         };
@@ -122,7 +122,7 @@ describe('json-data-rest-controller', function() {
         }).then(() => {
             return client.restRequest({
                 method: 'GET',
-                path: `/rest/v2/json-data/${params.xid}`,
+                path: `/rest/latest/json-data/${params.xid}`,
             });
         }).then(response => {
             // OK
@@ -151,7 +151,7 @@ describe('json-data-rest-controller', function() {
     });
 
     // Create/replace JSON Data - 
-    it('POST /rest/v2/json-data/{xid}', function() {
+    it('POST /rest/latest/json-data/{xid}', function() {
         const requestBody = {
             key1: 'value1'
         };
@@ -166,7 +166,7 @@ describe('json-data-rest-controller', function() {
         return Promise.resolve().then(() => {
             return client.restRequest({
                 method: 'POST',
-                path: `/rest/v2/json-data/${params.xid}`,
+                path: `/rest/latest/json-data/${params.xid}`,
                 params: {
                     editPermission: params.editPermission,
                     name: params.name,
@@ -203,7 +203,7 @@ describe('json-data-rest-controller', function() {
     });
 
     // Append JSON Data to existing - 
-    it('PUT /rest/v2/json-data/{xid}', function() {
+    it('PUT /rest/latest/json-data/{xid}', function() {
         const requestBody = {
             key3: 'value3'
         };
@@ -220,7 +220,7 @@ describe('json-data-rest-controller', function() {
         }).then(() => {
             return client.restRequest({
                 method: 'PUT',
-                path: `/rest/v2/json-data/${params.xid}`,
+                path: `/rest/latest/json-data/${params.xid}`,
                 params: {
                     editPermission: params.editPermission,
                     name: params.name,
@@ -256,7 +256,7 @@ describe('json-data-rest-controller', function() {
     });
 
     // Append JSON Data to existing - append to arrays
-    it('PUT /rest/v2/json-data/{xid} append to arrays', function() {
+    it('PUT /rest/latest/json-data/{xid} append to arrays', function() {
         const requestBody = 1;
         const params = {
             data: requestBody, // in = body, description = Data to save, required = false, type = , default = , enum = 
@@ -271,7 +271,7 @@ describe('json-data-rest-controller', function() {
         }).then(() => {
             return client.restRequest({
                 method: 'PUT',
-                path: `/rest/v2/json-data/${params.xid}`,
+                path: `/rest/latest/json-data/${params.xid}`,
                 params: {
                     editPermission: params.editPermission,
                     name: params.name,
@@ -306,7 +306,7 @@ describe('json-data-rest-controller', function() {
     });
 
     // Fully Delete JSON Data - 
-    it('DELETE /rest/v2/json-data/{xid}', function() {
+    it('DELETE /rest/latest/json-data/{xid}', function() {
         const params = {
             xid: uuid() // in = path, description = XID, required = true, type = string, default = , enum = 
         };
@@ -316,7 +316,7 @@ describe('json-data-rest-controller', function() {
         }).then(() => {
             return client.restRequest({
                 method: 'DELETE',
-                path: `/rest/v2/json-data/${params.xid}`,
+                path: `/rest/latest/json-data/${params.xid}`,
             });
         }).then(response => {
             // OK
@@ -343,7 +343,7 @@ describe('json-data-rest-controller', function() {
     });
 
     // Get JSON Data using a path - To get a sub component of the data use a path of member.submember
-    it('GET /rest/v2/json-data/{xid}/{path}', function() {
+    it('GET /rest/latest/json-data/{xid}/{path}', function() {
         const params = {
             path: 'objectKey', // in = path, description = Data path using dots as separator, required = true, type = string, default = , enum = 
             xid: uuid() // in = path, description = XID, required = true, type = string, default = , enum = 
@@ -354,7 +354,7 @@ describe('json-data-rest-controller', function() {
         }).then(() => {
             return client.restRequest({
                 method: 'GET',
-                path: `/rest/v2/json-data/${params.xid}/${params.path}`,
+                path: `/rest/latest/json-data/${params.xid}/${params.path}`,
             });
         }).then(response => {
             // OK
@@ -383,7 +383,7 @@ describe('json-data-rest-controller', function() {
     });
 
     // Replace JSON Data - {path} is the path to data with dots data.member.submember
-    it('POST /rest/v2/json-data/{xid}/{path}', function() {
+    it('POST /rest/latest/json-data/{xid}/{path}', function() {
         const requestBody = {
             prop1: 1,
             prop2: 2
@@ -402,7 +402,7 @@ describe('json-data-rest-controller', function() {
         }).then(() => {
             return client.restRequest({
                 method: 'POST',
-                path: `/rest/v2/json-data/${params.xid}/${params.path}`,
+                path: `/rest/latest/json-data/${params.xid}/${params.path}`,
                 params: {
                     editPermission: params.editPermission,
                     name: params.name,
@@ -437,7 +437,7 @@ describe('json-data-rest-controller', function() {
     });
 
     // Append JSON Data to existing - {path} is the path to data with dots data.member.submember
-    it('PUT /rest/v2/json-data/{xid}/{path}', function() {
+    it('PUT /rest/latest/json-data/{xid}/{path}', function() {
         const requestBody = {
             prop3: 123
         };
@@ -455,7 +455,7 @@ describe('json-data-rest-controller', function() {
         }).then(() => {
             return client.restRequest({
                 method: 'PUT',
-                path: `/rest/v2/json-data/${params.xid}/${params.path}`,
+                path: `/rest/latest/json-data/${params.xid}/${params.path}`,
                 params: {
                     editPermission: params.editPermission,
                     name: params.name,
@@ -493,7 +493,7 @@ describe('json-data-rest-controller', function() {
     });
 
     // Partially Delete JSON Data - {path} is the path to data with dots data.member.submember
-    it('DELETE /rest/v2/json-data/{xid}/{path}', function() {
+    it('DELETE /rest/latest/json-data/{xid}/{path}', function() {
         const params = {
             path: 'objectKey', // in = path, description = Data path using dots as separator, required = true, type = string, default = , enum = 
             xid: uuid() // in = path, description = XID, required = true, type = string, default = , enum = 
@@ -504,7 +504,7 @@ describe('json-data-rest-controller', function() {
         }).then(() => {
             return client.restRequest({
                 method: 'DELETE',
-                path: `/rest/v2/json-data/${params.xid}/${params.path}`,
+                path: `/rest/latest/json-data/${params.xid}/${params.path}`,
             });
         }).then(response => {
             // OK

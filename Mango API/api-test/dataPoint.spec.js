@@ -194,7 +194,7 @@ describe('Data point service', function() {
         
         return Promise.resolve().then(() => {
             ws = client.openWebSocket({
-                path: '/rest/v2/websocket/data-points'
+                path: '/rest/latest/websocket/data-points'
             });
 
             ws.on('open', () => {

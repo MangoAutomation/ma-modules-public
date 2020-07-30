@@ -44,7 +44,7 @@ describe('Point Event detector service', function() {
         const highLimitPed = highLimitDetector();
         highLimitPed.sourceId = this.numDp.id;
         return client.restRequest({
-            path: '/rest/v2/full-event-detectors',
+            path: '/rest/latest/full-event-detectors',
             method: 'POST',
             data: highLimitPed
         }).then(response => {
@@ -80,14 +80,14 @@ describe('Point Event detector service', function() {
         const highLimitPed = highLimitDetector();
         highLimitPed.sourceId = this.numDp.id;
         return client.restRequest({
-            path: '/rest/v2/full-event-detectors',
+            path: '/rest/latest/full-event-detectors',
             method: 'POST',
             data: highLimitPed
         }).then(response => {
             highLimitPed.xid = response.data.xid;
             highLimitPed.handlerXids = [this.staticValueSetPointEventHandler.xid];
             return client.restRequest({
-                path: `/rest/v2/full-event-detectors/${response.data.xid}`,
+                path: `/rest/latest/full-event-detectors/${response.data.xid}`,
                 method: 'PUT',
                 data: highLimitPed
             }).then(response => {
@@ -120,14 +120,14 @@ describe('Point Event detector service', function() {
         const highLimitPed = highLimitDetector();
         highLimitPed.sourceId = this.numDp.id;
         return client.restRequest({
-            path: '/rest/v2/full-event-detectors',
+            path: '/rest/latest/full-event-detectors',
             method: 'POST',
             data: highLimitPed
         }).then(response => {
             highLimitPed.xid = response.data.xid;
             highLimitPed.handlerXids = ['nothing-at-all'];
             return client.restRequest({
-                path: `/rest/v2/full-event-detectors/${highLimitPed.xid}`,
+                path: `/rest/latest/full-event-detectors/${highLimitPed.xid}`,
                 method: 'PUT',
                 data: highLimitPed
             }).then(response => {
@@ -144,13 +144,13 @@ describe('Point Event detector service', function() {
         const highLimitPed = highLimitDetector();
         highLimitPed.sourceId = this.numDp.id;
         return client.restRequest({
-            path: '/rest/v2/full-event-detectors',
+            path: '/rest/latest/full-event-detectors',
             method: 'POST',
             data: highLimitPed
         }).then(response => {
             highLimitPed.xid = response.data.xid;
             return client.restRequest({
-                path: `/rest/v2/full-event-detectors/${highLimitPed.xid}`,
+                path: `/rest/latest/full-event-detectors/${highLimitPed.xid}`,
                 method: 'GET'
             }).then(response => {
                 assert.strictEqual(response.data.name, highLimitPed.name);
@@ -179,7 +179,7 @@ describe('Point Event detector service', function() {
         highLimitPed.sourceId = this.numDp.id;
         highLimitPed.handlerXids = [this.staticValueSetPointEventHandler.xid];
         return client.restRequest({
-            path: '/rest/v2/full-event-detectors',
+            path: '/rest/latest/full-event-detectors',
             method: 'POST',
             data: highLimitPed
         }).then(response => {
@@ -187,7 +187,7 @@ describe('Point Event detector service', function() {
             highLimitPed.xid = response.data.xid;
             highLimitPed.handlerXids = [];
             return client.restRequest({
-                path: `/rest/v2/full-event-detectors/${highLimitPed.xid}`,
+                path: `/rest/latest/full-event-detectors/${highLimitPed.xid}`,
                 method: 'PUT',
                 data: highLimitPed
             }).then(response => {
@@ -220,13 +220,13 @@ describe('Point Event detector service', function() {
         const highLimitPed = highLimitDetector();
         highLimitPed.sourceId = this.numDp.id;
         return client.restRequest({
-            path: '/rest/v2/full-event-detectors',
+            path: '/rest/latest/full-event-detectors',
             method: 'POST',
             data: highLimitPed
         }).then(response => {
             highLimitPed.xid = response.data.xid;
             return client.restRequest({
-                path: `/rest/v2/full-event-detectors?xid=${highLimitPed.xid}`,
+                path: `/rest/latest/full-event-detectors?xid=${highLimitPed.xid}`,
                 method: 'GET'
             }).then(response => {
                 assert.strictEqual(response.data.total, 1);
@@ -239,13 +239,13 @@ describe('Point Event detector service', function() {
         const highLimitPed = highLimitDetector();
         highLimitPed.sourceId = this.numDp.id;
         return client.restRequest({
-            path: '/rest/v2/full-event-detectors',
+            path: '/rest/latest/full-event-detectors',
             method: 'POST',
             data: highLimitPed
         }).then(response => {
             highLimitPed.xid = response.data.xid;
             return client.restRequest({
-                path: `/rest/v2/full-event-detectors?sourceId=${highLimitPed.sourceId}`,
+                path: `/rest/latest/full-event-detectors?sourceId=${highLimitPed.sourceId}`,
                 method: 'GET'
             }).then(response => {
                 assert.strictEqual(response.data.total, 1);
@@ -258,12 +258,12 @@ describe('Point Event detector service', function() {
         const highLimitPed = highLimitDetector();
         highLimitPed.sourceId = this.numDp.id;
         return client.restRequest({
-            path: '/rest/v2/full-event-detectors',
+            path: '/rest/latest/full-event-detectors',
             method: 'POST',
             data: highLimitPed
         }).then(response => {
             return client.restRequest({
-                path: `/rest/v2/full-event-detectors?detectorSourceType=DATA_POINT&limit(1)`,
+                path: `/rest/latest/full-event-detectors?detectorSourceType=DATA_POINT&limit(1)`,
                 method: 'GET'
             }).then(response => {
                 assert.isAtLeast(response.data.total, 1);
@@ -298,7 +298,7 @@ describe('Point Event detector service', function() {
         const alphaRegexState = new AlphaRegexStateDetector();
         alphaRegexState.sourceId = this.alphaDp.id;
         return client.restRequest({
-            path: '/rest/v2/full-event-detectors',
+            path: '/rest/latest/full-event-detectors',
             method: 'POST',
             data: alphaRegexState
         }).then(response => {
@@ -327,13 +327,13 @@ describe('Point Event detector service', function() {
         const alphaRegexState = new AlphaRegexStateDetector();
         alphaRegexState.sourceId = this.alphaDp.id;
         return client.restRequest({
-            path: '/rest/v2/full-event-detectors',
+            path: '/rest/latest/full-event-detectors',
             method: 'POST',
             data: alphaRegexState
         }).then(response => {
             alphaRegexState.xid = response.data.xid;
             return client.restRequest({
-                path: `/rest/v2/full-event-detectors/${alphaRegexState.xid}`,
+                path: `/rest/latest/full-event-detectors/${alphaRegexState.xid}`,
                 method: 'DELETE',
             }).then(response => {
                 
@@ -379,7 +379,7 @@ describe('Point Event detector service', function() {
 
         return Promise.resolve().then(() => {
             ws = client.openWebSocket({
-                path: '/rest/v2/websocket/full-event-detectors'
+                path: '/rest/latest/websocket/full-event-detectors'
             });
 
             ws.on('open', () => {
@@ -426,7 +426,7 @@ describe('Point Event detector service', function() {
         }).then(() => delay(1000)).then(() => {
             //TODO Fix DaoNotificationWebSocketHandler so we can remove this delay, only required for cold start
             return client.restRequest({
-                path: `/rest/v2/full-event-detectors`,
+                path: `/rest/latest/full-event-detectors`,
                 method: 'POST',
                 data: ed
             }).then(response =>{
@@ -568,7 +568,7 @@ describe('Point Event detector service', function() {
               };
         this.staticValueSetPointEventHandler.targetPointXid = this.numDp.xid;
         return client.restRequest({
-            path: '/rest/v2/event-handlers',
+            path: '/rest/latest/event-handlers',
             method: 'POST',
             data: this.staticValueSetPointEventHandler
         }).then(response => {
@@ -594,7 +594,7 @@ describe('Point Event detector service', function() {
     
     afterEach('Delete static set point handler', function() {
         return client.restRequest({
-            path: `/rest/v2/event-handlers/${this.staticValueSetPointEventHandler.xid}`,
+            path: `/rest/latest/event-handlers/${this.staticValueSetPointEventHandler.xid}`,
             method: 'DELETE',
             data: {}
         }).then(response => {

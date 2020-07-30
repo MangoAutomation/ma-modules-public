@@ -128,7 +128,7 @@ describe('watch-list-rest-controller', function() {
             
             return client.restRequest({
                 method: 'POST',
-                path: '/rest/v2/watch-lists',
+                path: '/rest/latest/watch-lists',
                 data: this.currentTest.createObject
             }).then((response) => {
                 this.currentTest.savedObject = response.data;
@@ -151,19 +151,19 @@ describe('watch-list-rest-controller', function() {
         if (this.currentTest.xid) {
             return client.restRequest({
                 method: 'DELETE',
-                path: `/rest/v2/watch-lists/${this.currentTest.xid}`,
+                path: `/rest/latest/watch-lists/${this.currentTest.xid}`,
             }).catch(noop);
         }
     });
 
     // Query WatchLists - 
-    it('GET /rest/v2/watch-lists', function() {
+    it('GET /rest/latest/watch-lists', function() {
         const params = {
         };
         
         return client.restRequest({
             method: 'GET',
-            path: `/rest/v2/watch-lists?xid=${encodeURIComponent(this.test.xid)}`,
+            path: `/rest/latest/watch-lists?xid=${encodeURIComponent(this.test.xid)}`,
         }).then(response => {
             // OK
             assert.strictEqual(response.status, 200);
@@ -178,7 +178,7 @@ describe('watch-list-rest-controller', function() {
     });
 
     // Create New WatchList - 
-    it('POST /rest/v2/watch-lists', function() {
+    it('POST /rest/latest/watch-lists', function() {
         this.test.xid = uuid();
         const requestBody = {
             xid: this.test.xid,
@@ -197,7 +197,7 @@ describe('watch-list-rest-controller', function() {
         
         return client.restRequest({
             method: 'POST',
-            path: `/rest/v2/watch-lists`,
+            path: `/rest/latest/watch-lists`,
             data: requestBody
         }).then(response => {
             // Created
@@ -210,14 +210,14 @@ describe('watch-list-rest-controller', function() {
     }).createObject = false;
 
     // Get a Watchlist - 
-    it('GET /rest/v2/watch-lists/{xid}', function() {
+    it('GET /rest/latest/watch-lists/{xid}', function() {
         const params = {
             xid: this.test.xid // in = path, description = xid, required = true, type = string, default = , enum = 
         };
         
         return client.restRequest({
             method: 'GET',
-            path: `/rest/v2/watch-lists/${params.xid}`,
+            path: `/rest/latest/watch-lists/${params.xid}`,
         }).then(response => {
             // OK
             assert.strictEqual(response.status, 200);
@@ -229,7 +229,7 @@ describe('watch-list-rest-controller', function() {
     });
 
     // Update a WatchList - 
-    it('PUT /rest/v2/watch-lists/{xid}', function() {
+    it('PUT /rest/latest/watch-lists/{xid}', function() {
         const requestBody = this.test.expectedResult = {
             xid: this.test.xid,
             name: 'Test watchlist - renamed',
@@ -247,7 +247,7 @@ describe('watch-list-rest-controller', function() {
         
         return client.restRequest({
             method: 'PUT',
-            path: `/rest/v2/watch-lists/${params.xid}`,
+            path: `/rest/latest/watch-lists/${params.xid}`,
             data: requestBody
         }).then(response => {
             // OK
@@ -262,14 +262,14 @@ describe('watch-list-rest-controller', function() {
     });
 
     // Delete a WatchList  - Only the owner or an admin can delete
-    it('DELETE /rest/v2/watch-lists/{xid}', function() {
+    it('DELETE /rest/latest/watch-lists/{xid}', function() {
         const params = {
             xid: this.test.xid // in = path, description = xid, required = true, type = string, default = , enum = 
         };
         
         return client.restRequest({
             method: 'DELETE',
-            path: `/rest/v2/watch-lists/${params.xid}`,
+            path: `/rest/latest/watch-lists/${params.xid}`,
         }).then(response => {
             // No Content
             assert.strictEqual(response.status, 200);
@@ -280,14 +280,14 @@ describe('watch-list-rest-controller', function() {
     });
 
     // Get Data Points for a Watchlist - 
-    it('GET /rest/v2/watch-lists/{xid}/data-points', function() {
+    it('GET /rest/latest/watch-lists/{xid}/data-points', function() {
         const params = {
             xid: this.test.xid // in = path, description = xid, required = true, type = string, default = , enum = 
         };
         
         return client.restRequest({
             method: 'GET',
-            path: `/rest/v2/watch-lists/${params.xid}/data-points`,
+            path: `/rest/latest/watch-lists/${params.xid}/data-points`,
         }).then(response => {
             // OK
             assert.strictEqual(response.status, 200);

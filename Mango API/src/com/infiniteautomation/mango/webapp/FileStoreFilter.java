@@ -18,7 +18,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import com.infiniteautomation.mango.spring.ConditionalOnProperty;
 
 /**
- * Forwards GET requests from /file-stores to /rest/v2/file-stores
+ * Forwards GET requests from /file-stores to /rest/latest/file-stores
  * @author Jared Wiltshire
  */
 @Component
@@ -37,7 +37,7 @@ public class FileStoreFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
         } else {
             String path = requestURI.substring("/file-stores/".length());
-            request.getRequestDispatcher("/rest/v2/file-stores/download-file/" + path).forward(request, response);
+            request.getRequestDispatcher("/rest/latest/file-stores/download-file/" + path).forward(request, response);
         }
     }
 

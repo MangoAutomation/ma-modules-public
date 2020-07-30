@@ -6,7 +6,7 @@
 Log4JResetFactory.$inject = ['maTemporaryRestResource', '$http'];
 function Log4JResetFactory(TemporaryRestResource, $http) {
     
-    const baseUrl = '/rest/v2/system-actions/log4JUtil';
+    const baseUrl = '/rest/latest/system-actions/log4JUtil';
     const xidPrefix = 'LOG4JRST_';
 
     const defaultProperties = {
@@ -62,7 +62,7 @@ function Log4JResetFactory(TemporaryRestResource, $http) {
         }
 
         get() {
-            let url = `/rest/v2/system-actions/status/${this.id}`;
+            let url = `/rest/latest/system-actions/status/${this.id}`;
             let method = 'GET';
 
             return $http({

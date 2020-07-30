@@ -20,7 +20,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
  * <li>Each SwaggerConfig adds a SwaggerResource to the {@link com.infiniteautomation.mangoApi.rootRest.MangoRestSwaggerResourceProvider SwaggerResourceProvider} which
  * is where the ApiResourceController retrieves the list of resources from.</li>
  * <li>Each SwaggerConfig creates a {@link springfox.documentation.swagger2.web.Swagger2Controller Swagger2Controller} which serves up the swagger JSON</li>
- * <li>Each Swagger2Controller creates a swagger endpoint under the current dispatcher (e.g. /rest/v2/swagger/v2/api-docs). This is controlled via the
+ * <li>Each Swagger2Controller creates a swagger endpoint under the current dispatcher (e.g. /rest/latest/swagger/v2/api-docs). This is controlled via the
  * <code>springfox.documentation.swagger.v2.path</code> environment property.</li>
  * </ul>
  * @author Terry Packer

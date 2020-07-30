@@ -126,7 +126,7 @@ describe('Data source service', function() {
             this.testPoint3.save(),
             this.testPoint4.save()]).then(() => {
                 return client.restRequest({
-                    path: `/rest/v2/data-sources/copy/${this.ds.xid}`,
+                    path: `/rest/latest/data-sources/copy/${this.ds.xid}`,
                     params: {
                         copyName: this.ds.name + '-copy',
                         copyXid: this.ds.xid + '-copy',
@@ -140,7 +140,7 @@ describe('Data source service', function() {
                    assert.strictEqual(response.data.name, this.ds.name + '-copy');
                    assert.strictEqual(response.data.enabled, false);
                    return  client.restRequest({
-                       path: `/rest/v2/data-points?dataSourceXid=${this.ds.xid}-copy`,
+                       path: `/rest/latest/data-points?dataSourceXid=${this.ds.xid}-copy`,
                        method: 'GET'
                    }).then(response => {
                        assert.strictEqual(response.data.total, 4);

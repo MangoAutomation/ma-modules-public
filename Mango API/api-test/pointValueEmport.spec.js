@@ -121,7 +121,7 @@ describe('Point value emport tests', function() {
         this.timeout(5000);
          
         return client.restRequest({
-            path: `/rest/v2/point-values/multiple-arrays/time-period/AVERAGE`,
+            path: `/rest/latest/point-values/multiple-arrays/time-period/AVERAGE`,
             method: 'POST',
             headers: {
                 'Accept': 'text/csv',
@@ -142,7 +142,7 @@ describe('Point value emport tests', function() {
         }).then(() => delay(1000)).then(response => {
             const uploadFileName = path.resolve('pointValues.csv');
             return client.restRequest({
-                path: `/rest/v2/point-value-modification/import`,
+                path: `/rest/latest/point-value-modification/import`,
                 method: 'POST',
                 headers: {
                     'Content-Type': 'text/csv;charset=UTF-8'
@@ -161,7 +161,7 @@ describe('Point value emport tests', function() {
     it('Can upload a CSV file as text', function() {
 
         return client.restRequest({
-            path: `/rest/v2/point-value-modification/import`,
+            path: `/rest/latest/point-value-modification/import`,
             method: 'POST',
             headers: {
                 'Content-Type': 'text/csv;charset=UTF-8'
@@ -177,7 +177,7 @@ describe('Point value emport tests', function() {
     it('Fails to upload an invalid CSV file', function() {
 
         return client.restRequest({
-            path: `/rest/v2/point-value-modification/import`,
+            path: `/rest/latest/point-value-modification/import`,
             method: 'POST',
             headers: {
                 'Content-Type': 'text/csv;charset=UTF-8'
@@ -195,7 +195,7 @@ describe('Point value emport tests', function() {
         //We need to ensure the data comes back as an array with value,xid,timestamp 
         //but we don't have an endpoint for multiple points that does that AFAIK yet.
         return client.restRequest({
-            path: `/rest/v2/point-value-modification/import`,
+            path: `/rest/latest/point-value-modification/import`,
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json;charset=utf-8'

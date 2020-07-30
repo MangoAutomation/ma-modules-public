@@ -84,7 +84,7 @@ describe('Point value purge', function() {
         let resourceId;
         let cutoffTime = new Date().getTime() - 10*60*1000;
         return client.restRequest({
-            path: '/rest/v2/point-values/purge',
+            path: '/rest/latest/point-values/purge',
             method: 'POST',
             data: {
                 xids: [testPointXid1],
@@ -127,7 +127,7 @@ describe('Point value purge', function() {
         let resourceId;
         let cutoffTime = new Date().getTime() - 10*60*1000;
         return client.restRequest({
-            path: '/rest/v2/point-values/purge',
+            path: '/rest/latest/point-values/purge',
             method: 'POST',
             data: {
                 dataSourceXid: this.ds.xid,
@@ -195,7 +195,7 @@ describe('Point value purge', function() {
             //Ensure we set the intra shard purge setting
             //mangoNoSql.intraShardPurge
             return client.restRequest({
-                path: '/rest/v2/system-settings/mangoNoSql.intraShardPurge?type=BOOLEAN',
+                path: '/rest/latest/system-settings/mangoNoSql.intraShardPurge?type=BOOLEAN',
                 method: 'PUT',
                 data: true
             }).then(response => {

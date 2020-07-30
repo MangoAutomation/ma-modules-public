@@ -27,7 +27,7 @@ describe('Event types', function() {
     
     it('Query all event types', function () {
         return client.restRequest({
-            path: `/rest/v2/event-types`,
+            path: `/rest/latest/event-types`,
             method: 'GET'
         }).then(response => {
             assert.isNumber(response.data.total);
@@ -60,7 +60,7 @@ describe('Event types', function() {
     
     it('Query for data point event types ref2 always 0', function () {
         return client.restRequest({
-            path: `/rest/v2/event-types/DATA_POINT/null`,
+            path: `/rest/latest/event-types/DATA_POINT/null`,
             method: 'GET'
         }).then(response => {
             assert.isNumber(response.data.total);
@@ -75,7 +75,7 @@ describe('Event types', function() {
 
     it('Query for all possible user login events', function () {
         return client.restRequest({
-            path: `/rest/v2/event-types/SYSTEM/USER_LOGIN`,
+            path: `/rest/latest/event-types/SYSTEM/USER_LOGIN`,
             method: 'GET'
         }).then(response => {
             assert.isNumber(response.data.total);
@@ -89,7 +89,7 @@ describe('Event types', function() {
     
     it('Query event types for single data point', function () {
         return client.restRequest({
-            path: `/rest/v2/event-types/DATA_POINT/null/${this.dp.id}`,
+            path: `/rest/latest/event-types/DATA_POINT/null/${this.dp.id}`,
             method: 'GET'
         }).then(response => {
             assert.isNumber(response.data.total);
@@ -104,7 +104,7 @@ describe('Event types', function() {
     
     it('Query event types for single data source', function () {
         return client.restRequest({
-            path: `/rest/v2/event-types/DATA_SOURCE/null/${this.ds.id}`,
+            path: `/rest/latest/event-types/DATA_SOURCE/null/${this.ds.id}`,
             method: 'GET'
         }).then(response => {
             assert.isNumber(response.data.total);
@@ -120,7 +120,7 @@ describe('Event types', function() {
     
     it('Fails to query data source event subtype', function () {
         return client.restRequest({
-            path: `/rest/v2/event-types/DATA_SOURCE/test`,
+            path: `/rest/latest/event-types/DATA_SOURCE/test`,
             method: 'GET'
         }).then(response => {
             assert.fail(response);
@@ -131,7 +131,7 @@ describe('Event types', function() {
     
     it('Fails to query system event using reference 1', function () {
         return client.restRequest({
-            path: `/rest/v2/event-types/SYSTEM/EMAIL_SEND_FAILURE`,
+            path: `/rest/latest/event-types/SYSTEM/EMAIL_SEND_FAILURE`,
             method: 'GET'
         }).then(response => {
             assert.fail(response);
@@ -142,7 +142,7 @@ describe('Event types', function() {
     
     it('System event with missing subtype should 404', function () {
         return client.restRequest({
-            path: `/rest/v2/event-types/SYSTEM/NOTHING`,
+            path: `/rest/latest/event-types/SYSTEM/NOTHING`,
             method: 'GET'
         }).then(response => {
             assert.fail(response);
@@ -298,21 +298,21 @@ describe('Event types', function() {
     beforeEach('Create event detectors', function(){
         let promises = [];
         promises.push(client.restRequest({
-            path: '/rest/v2/full-event-detectors',
+            path: '/rest/latest/full-event-detectors',
             method: 'POST',
             data: this.binaryPed1
         }).then(response => {
             this.binaryPed1 = response.data;
         }));
         promises.push(client.restRequest({
-            path: '/rest/v2/full-event-detectors',
+            path: '/rest/latest/full-event-detectors',
             method: 'POST',
             data: this.binaryPed2
         }).then(response => {
             this.binaryPed2 = response.data;
         }));
         promises.push(client.restRequest({
-            path: '/rest/v2/full-event-detectors',
+            path: '/rest/latest/full-event-detectors',
             method: 'POST',
             data: this.numPed1
         }).then(response => {
@@ -324,19 +324,19 @@ describe('Event types', function() {
     afterEach('Delete event detectors', function(){
         let promises = [];
         promises.push(client.restRequest({
-            path: `/rest/v2/full-event-detectors/${this.binaryPed1.xid}`,
+            path: `/rest/latest/full-event-detectors/${this.binaryPed1.xid}`,
             method: 'DELETE',
         }).then(response =>{
             
         }));
         promises.push(client.restRequest({
-            path: `/rest/v2/full-event-detectors/${this.binaryPed2.xid}`,
+            path: `/rest/latest/full-event-detectors/${this.binaryPed2.xid}`,
             method: 'DELETE',
         }).then(response =>{
             
         }));
         promises.push(client.restRequest({
-            path: `/rest/v2/full-event-detectors/${this.numPed1.xid}`,
+            path: `/rest/latest/full-event-detectors/${this.numPed1.xid}`,
             method: 'DELETE',
         }).then(response =>{
             

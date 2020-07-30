@@ -28,7 +28,7 @@ const fs = require('fs');
 function eventDetectorsCsvFactory(client) {
     return class EventDetectorsCsv {
         get baseUrl() {
-            return '/rest/v2/full-event-detectors';
+            return '/rest/latest/full-event-detectors';
         }
         
         download(query) {
@@ -195,14 +195,14 @@ describe('Event detectors CSV format', function() {
             this.ed2 = highLimitDetector(this.testDetectorXid2, this.testPoint2.id);
             return Promise.all([
                 client.restRequest({
-                    path: '/rest/v2/full-event-detectors',
+                    path: '/rest/latest/full-event-detectors',
                     method: 'POST',
                     data: this.ed1
                 }).then(response => {
                     this.ed1.id = response.data.id;
                 }),
                 client.restRequest({
-                    path: '/rest/v2/full-event-detectors',
+                    path: '/rest/latest/full-event-detectors',
                     method: 'POST',
                     data: this.ed2
                 }).then(response => {

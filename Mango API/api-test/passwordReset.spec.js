@@ -19,7 +19,7 @@ const {createClient, login, uuid, noop} = require('@infinite-automation/mango-mo
 const client = createClient();
 const User = client.User;
 
-const resetUrl = '/rest/v2/password-reset';
+const resetUrl = '/rest/latest/password-reset';
 
 describe('Password reset', function() {
     before('Login', function() { return login.call(this, client); });

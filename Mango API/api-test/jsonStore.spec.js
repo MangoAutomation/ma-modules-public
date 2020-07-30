@@ -30,7 +30,7 @@ describe('JSON store', function() {
         };
 
         return client.restRequest({
-            path: '/rest/v2/json-data/' + encodeURIComponent(xid),
+            path: '/rest/latest/json-data/' + encodeURIComponent(xid),
             method: 'POST',
             params: storeItem,
             data: jsonData
@@ -41,7 +41,7 @@ describe('JSON store', function() {
     };
 
     const deleteJsonStoreItem = (xid, path) => {
-        let url = '/rest/v2/json-data/' + encodeURIComponent(xid);
+        let url = '/rest/latest/json-data/' + encodeURIComponent(xid);
         if (path) {
             url += '/' + encodeURIComponent(path.join('.'));
         }
@@ -55,7 +55,7 @@ describe('JSON store', function() {
     };
 
     const getJsonStoreItem = (xid, path) => {
-        let url = '/rest/v2/json-data/' + encodeURIComponent(xid);
+        let url = '/rest/latest/json-data/' + encodeURIComponent(xid);
         if (path) {
             url += '/' + encodeURIComponent(path.join('.'));
         }
@@ -70,7 +70,7 @@ describe('JSON store', function() {
     };
 
     const mergeJsonStoreItem = (storeItem, jsonData, path) => {
-        let url = '/rest/v2/json-data/' + encodeURIComponent(storeItem.xid);
+        let url = '/rest/latest/json-data/' + encodeURIComponent(storeItem.xid);
         if (path) {
             url += '/' + encodeURIComponent(path.join('.'));
         }
@@ -91,7 +91,7 @@ describe('JSON store', function() {
     };
 
     const replaceJsonStoreItem = (storeItem, jsonData, path) => {
-        let url = '/rest/v2/json-data/' + encodeURIComponent(storeItem.xid);
+        let url = '/rest/latest/json-data/' + encodeURIComponent(storeItem.xid);
         if (path) {
             url += '/' + encodeURIComponent(path.join('.'));
         }

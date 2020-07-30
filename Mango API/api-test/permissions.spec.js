@@ -34,7 +34,7 @@ describe('Permissions endpoint tests', function() {
     
     it('Update create user permission with single array', function() {
         return client.restRequest({
-            path: '/rest/v2/system-permissions/users.create',
+            path: '/rest/latest/system-permissions/users.create',
             method: 'PUT',
             data: {
                 systemSettingName: 'users.create',
@@ -48,7 +48,7 @@ describe('Permissions endpoint tests', function() {
             assert.include(response.data.permission, 'superadmin');
         }).finally(() => {
             return client.restRequest({
-                path: '/rest/v2/system-permissions/users.create',
+                path: '/rest/latest/system-permissions/users.create',
                 method: 'PUT',
                 data: {
                     systemSettingName: 'users.create',
@@ -60,7 +60,7 @@ describe('Permissions endpoint tests', function() {
     
     it('Update create user permission with multiple arrays', function() {
         return client.restRequest({
-            path: '/rest/v2/system-permissions/users.create',
+            path: '/rest/latest/system-permissions/users.create',
             method: 'PUT',
             data: {
                 systemSettingName: 'users.create',
@@ -76,7 +76,7 @@ describe('Permissions endpoint tests', function() {
     
     it('Can list permissions', function() {
         return client.restRequest({
-            path: '/rest/v2/system-permissions',
+            path: '/rest/latest/system-permissions',
             method: 'GET'
         }).then(response => {
             assert.isNumber(response.data.total);
@@ -89,7 +89,7 @@ describe('Permissions endpoint tests', function() {
     
     it('Can get create user permission', function() {
         return client.restRequest({
-            path: '/rest/v2/system-permissions/users.create',
+            path: '/rest/latest/system-permissions/users.create',
             method: 'GET'
         }).then(response => {
             assertPermissionSchema(response.data);

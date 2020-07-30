@@ -1411,7 +1411,7 @@ describe('Point values v2', function() {
     });
     
     // Update an existing data point's value - Data point must exist and be enabled
-    it('PUT /rest/v2/point-values/{xid}', function() {
+    it('PUT /rest/latest/point-values/{xid}', function() {
         const requestBody = {
             annotation: 'test annotation',
             dataType: 'NUMERIC',
@@ -1427,7 +1427,7 @@ describe('Point values v2', function() {
         return Promise.resolve().then(() => {
             return client.restRequest({
                 method: 'PUT',
-                path: `/rest/v2/point-values/${params.xid}`,
+                path: `/rest/latest/point-values/${params.xid}`,
                 params: {
                     unitConversion: params.unitConversion
                 },

@@ -881,7 +881,7 @@ describe('Event detector service', function() {
       
       return Promise.resolve().then(() => {
           const ws = client.openWebSocket({
-              path: '/rest/v2//websocket/full-event-detectors'
+              path: '/rest/latest//websocket/full-event-detectors'
           });
 
           ws.on('open', () => {

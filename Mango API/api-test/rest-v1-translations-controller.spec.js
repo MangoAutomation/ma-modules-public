@@ -23,7 +23,7 @@ describe('translations-controller', function() {
     before('Login', function() { return login.call(this, client); });
 
     // Get all translations - Kitchen sink of translations
-    it('GET /rest/v2/translations', function() {
+    it('GET /rest/latest/translations', function() {
         const params = {
             browser: false, // in = query, description = browser, required = false, type = boolean, default = false, enum = 
             language: 'en-US', // in = query, description = Language for translations, required = false, type = string, default = , enum = 
@@ -33,7 +33,7 @@ describe('translations-controller', function() {
         return Promise.resolve().then(() => {
             return client.restRequest({
                 method: 'GET',
-                path: `/rest/v2/translations`,
+                path: `/rest/latest/translations`,
                 params: {
                     browser: params.browser,
                     language: params.language,
@@ -61,14 +61,14 @@ describe('translations-controller', function() {
     });
 
     // Clear the translation cache - Translations will be reloaded from .properties files upon next translation request
-    it('POST /rest/v2/translations/clear-cache', function() {
+    it('POST /rest/latest/translations/clear-cache', function() {
         const params = {
         };
         
         return Promise.resolve().then(() => {
             return client.restRequest({
                 method: 'POST',
-                path: `/rest/v2/translations/clear-cache`,
+                path: `/rest/latest/translations/clear-cache`,
             });
         }).then(response => {
             // OK
@@ -77,7 +77,7 @@ describe('translations-controller', function() {
     });
 
     // Get translations for public namespaces - Namespace must be base , ie public not public.messages. Returns sub-namespaces too. For > 1 use comma common,public
-    it('GET /rest/v2/translations/public/{namespaces}', function() {
+    it('GET /rest/latest/translations/public/{namespaces}', function() {
         const params = {
             browser: false, // in = query, description = browser, required = false, type = boolean, default = false, enum = 
             language: 'en-US', // in = query, description = Language for translation (must have language pack installed), required = false, type = string, default = , enum = 
@@ -90,7 +90,7 @@ describe('translations-controller', function() {
             
             return publicClient.restRequest({
                 method: 'GET',
-                path: `/rest/v2/translations/public/${params.namespaces}`,
+                path: `/rest/latest/translations/public/${params.namespaces}`,
                 params: {
                     browser: params.browser,
                     language: params.language,
@@ -122,7 +122,7 @@ describe('translations-controller', function() {
     });
 
     // Get translations based on namespaces - Namespace must be base namespace, ie common not common.messages. Returns sub-namespaces too.  For > 1 use comma common,public
-    it('GET /rest/v2/translations/{namespaces}', function() {
+    it('GET /rest/latest/translations/{namespaces}', function() {
         const params = {
             browser: false, // in = query, description = browser, required = false, type = boolean, default = false, enum = 
             language: 'en-US', // in = query, description = Language for translation (must have language pack installed), required = false, type = string, default = , enum = 
@@ -133,7 +133,7 @@ describe('translations-controller', function() {
         return Promise.resolve().then(() => {
             return client.restRequest({
                 method: 'GET',
-                path: `/rest/v2/translations/${params.namespaces}`,
+                path: `/rest/latest/translations/${params.namespaces}`,
                 params: {
                     browser: params.browser,
                     language: params.language,

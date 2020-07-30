@@ -8,7 +8,7 @@ import angular from 'angular';
 maintenanceEventsFactory.$inject = ['maRestResource'];
 function maintenanceEventsFactory(RestResource) {
     
-    const maintenanceEventBaseUrl = '/rest/v2/maintenance-events';
+    const maintenanceEventBaseUrl = '/rest/latest/maintenance-events';
     const maintenanceEventWebSocketUrl = '/v2/websocket/maintenance-events';
     const maintenanceEventXidPrefix = 'ME_';
     
@@ -57,7 +57,7 @@ function maintenanceEventsFactory(RestResource) {
 
         getByXid() {
             return this.constructor.http({
-                url: '/rest/v2/maintenance-events/query/get-events-by-rql',
+                url: '/rest/latest/maintenance-events/query/get-events-by-rql',
                 method: 'POST',
                 data: {
                     maintenanceEventsRql: `xid=${encodeURIComponent(this.xid)}`,

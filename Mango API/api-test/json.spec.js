@@ -18,9 +18,9 @@
 const {createClient, addLoginHook, uuid} = require('@infinite-automation/mango-module-tools/test-helper/testHelper');
 const client = createClient();
 
-const jsonStoreUrl = '/rest/v2/json/store';
-const jsonUrl = '/rest/v2/json/data';
-const jsonQueryUrl = '/rest/v2/json/query';
+const jsonStoreUrl = '/rest/latest/json/store';
+const jsonUrl = '/rest/latest/json/data';
+const jsonQueryUrl = '/rest/latest/json/query';
 
 /**
  * Test data taken from JSON pointer spec - https://tools.ietf.org/html/rfc6901

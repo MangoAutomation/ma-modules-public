@@ -26,7 +26,7 @@ describe('Forwarded and X-Forwarded-* headers', function() {
         const {protocol, host, port} = client.options;
 
         return client.restRequest({
-            path: '/rest/v2/testing/location',
+            path: '/rest/latest/testing/location',
             method: 'GET'
         }).then(response => {
             assert.isString(response.headers.location);
@@ -51,7 +51,7 @@ describe('Forwarded and X-Forwarded-* headers', function() {
         const port = '8443';
         
         return client.restRequest({
-            path: '/rest/v2/testing/location',
+            path: '/rest/latest/testing/location',
             method: 'GET',
             headers: {
                 'X-Forwarded-Proto': protocol,
@@ -75,7 +75,7 @@ describe('Forwarded and X-Forwarded-* headers', function() {
         const port = '8443';
         
         return client.restRequest({
-            path: '/rest/v2/testing/location',
+            path: '/rest/latest/testing/location',
             method: 'GET',
             headers: {
                 'X-Forwarded-Proto': protocol,
@@ -98,7 +98,7 @@ describe('Forwarded and X-Forwarded-* headers', function() {
         const port = '8443';
         
         return client.restRequest({
-            path: '/rest/v2/testing/location',
+            path: '/rest/latest/testing/location',
             method: 'GET',
             headers: {
                 Forwarded: `host="${host}:${port}";proto=${protocol}`
@@ -117,7 +117,7 @@ describe('Forwarded and X-Forwarded-* headers', function() {
     it('Trusts the X-Forwarded-For header', function() {
         const testIp = '10.123.231.213';
         return client.restRequest({
-            path: '/rest/v2/testing/remote-addr',
+            path: '/rest/latest/testing/remote-addr',
             method: 'GET',
             headers: {
                 'X-Forwarded-For': testIp
@@ -130,7 +130,7 @@ describe('Forwarded and X-Forwarded-* headers', function() {
     it('Trusts the X-Forwarded-For header (IPv6)', function() {
         const testIp = '9556:caee:3b13:39b4:9dc2:ef7:2807:895';
         return client.restRequest({
-            path: '/rest/v2/testing/remote-addr',
+            path: '/rest/latest/testing/remote-addr',
             method: 'GET',
             headers: {
                 'X-Forwarded-For': testIp
@@ -143,7 +143,7 @@ describe('Forwarded and X-Forwarded-* headers', function() {
     it('Trusts the Forwarded header "for" component', function() {
         const testIp = '10.123.231.213';
         return client.restRequest({
-            path: '/rest/v2/testing/remote-addr',
+            path: '/rest/latest/testing/remote-addr',
             method: 'GET',
             headers: {
                 Forwarded: `for=${testIp}`
@@ -157,7 +157,7 @@ describe('Forwarded and X-Forwarded-* headers', function() {
     it('Trusts the Forwarded header "for" component (IPv6)', function() {
         const testIp = '9556:caee:3b13:39b4:9dc2:ef7:2807:895';
         return client.restRequest({
-            path: '/rest/v2/testing/remote-addr',
+            path: '/rest/latest/testing/remote-addr',
             method: 'GET',
             headers: {
                 Forwarded: `for="[${testIp}]"`

@@ -61,7 +61,7 @@ describe('User csv operations ', function() {
     function userCsvFactory(client) {
         return class UserCsv {
             get baseUrl() {
-                return '/rest/v2/users';
+                return '/rest/latest/users';
             }
             
             download(query) {

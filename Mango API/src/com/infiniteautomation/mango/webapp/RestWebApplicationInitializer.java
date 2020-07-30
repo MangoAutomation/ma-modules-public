@@ -68,16 +68,17 @@ public class RestWebApplicationInitializer implements WebApplicationInitializer 
         }
 
         /**
-         * REST V2
+         * REST latest
          */
-        AnnotationConfigWebApplicationContext restV2Context = new AnnotationConfigWebApplicationContext();
-        restV2Context.setId(com.infiniteautomation.mango.rest.latest.MangoRestDispatcherConfiguration.CONTEXT_ID);
-        restV2Context.setParent(rootRestContext);
-        restV2Context.register(com.infiniteautomation.mango.rest.latest.MangoRestDispatcherConfiguration.class);
+        AnnotationConfigWebApplicationContext latestRestContext = new AnnotationConfigWebApplicationContext();
+        latestRestContext.setId(com.infiniteautomation.mango.rest.latest.MangoRestDispatcherConfiguration.CONTEXT_ID);
+        latestRestContext.setParent(rootRestContext);
+        latestRestContext.register(com.infiniteautomation.mango.rest.latest.MangoRestDispatcherConfiguration.class);
 
-        ServletRegistration.Dynamic restV2Dispatcher = context.addServlet(com.infiniteautomation.mango.rest.latest.MangoRestDispatcherConfiguration.DISPATCHER_NAME, new DispatcherServlet(restV2Context));
-        restV2Dispatcher.setLoadOnStartup(3);
-        restV2Dispatcher.setAsyncSupported(true);
-        restV2Dispatcher.addMapping("/rest/v2/*");
+        ServletRegistration.Dynamic latestRestDispatcher = context.addServlet(com.infiniteautomation.mango.rest.latest.MangoRestDispatcherConfiguration.DISPATCHER_NAME, new DispatcherServlet(latestRestContext));
+        latestRestDispatcher.setLoadOnStartup(3);
+        latestRestDispatcher.setAsyncSupported(true);
+        latestRestDispatcher.addMapping("/rest/v3/*");
+        latestRestDispatcher.addMapping("/rest/latest/*");
     }
 }

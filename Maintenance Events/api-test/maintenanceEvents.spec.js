@@ -103,7 +103,7 @@ describe('Maintenance events', function() {
       };
 
       return client.restRequest({
-          path: '/rest/v2/maintenance-events',
+          path: '/rest/latest/maintenance-events',
           method: 'POST',
           data: testContext.maintEventWithDataPoint
       }).then(response => {
@@ -128,7 +128,7 @@ describe('Maintenance events', function() {
         };
 
         return client.restRequest({
-            path: '/rest/v2/maintenance-events',
+            path: '/rest/latest/maintenance-events',
             method: 'POST',
             data: testContext.maintEventWithDataPoints
         }).then(response => {
@@ -162,7 +162,7 @@ describe('Maintenance events', function() {
         };
 
         return client.restRequest({
-            path: '/rest/v2/maintenance-events',
+            path: '/rest/latest/maintenance-events',
             method: 'POST',
             data: testContext.maintEventWithDataSource
         }).then(response => {
@@ -187,7 +187,7 @@ describe('Maintenance events', function() {
         };
 
         return client.restRequest({
-            path: '/rest/v2/maintenance-events',
+            path: '/rest/latest/maintenance-events',
             method: 'POST',
             data: testContext.maintEventWithDataSources
         }).then(response => {
@@ -214,7 +214,7 @@ describe('Maintenance events', function() {
     it('Patch a data point based maintenance event', () => {
         testContext.maintEventWithDataPoint.name = 'updated name';
         return client.restRequest({
-            path: `/rest/v2/maintenance-events/${testContext.maintEventWithDataPoint.xid}`,
+            path: `/rest/latest/maintenance-events/${testContext.maintEventWithDataPoint.xid}`,
             method: 'PATCH',
             data: {
                 name: 'updated name'
@@ -234,7 +234,7 @@ describe('Maintenance events', function() {
     it('Get a data point based maintenance event', () => {
         testContext.maintEventWithDataPoint.name = 'updated name';
         return client.restRequest({
-            path: `/rest/v2/maintenance-events/${testContext.maintEventWithDataPoint.xid}`,
+            path: `/rest/latest/maintenance-events/${testContext.maintEventWithDataPoint.xid}`,
             method: 'GET'
         }).then(response => {
             assert.equal(response.data.xid, testContext.maintEventWithDataPoint.xid);
@@ -249,7 +249,7 @@ describe('Maintenance events', function() {
     it('Put a data points based maintenance event', () => {
         testContext.maintEventWithDataPoints.name = 'updated name';
         return client.restRequest({
-            path: `/rest/v2/maintenance-events/${testContext.maintEventWithDataPoints.xid}`,
+            path: `/rest/latest/maintenance-events/${testContext.maintEventWithDataPoints.xid}`,
             method: 'PUT',
             data: testContext.maintEventWithDataPoints
         }).then(response => {
@@ -275,7 +275,7 @@ describe('Maintenance events', function() {
     
     it('Toggle a data points based maintenance event', () => {
         return client.restRequest({
-            path: `/rest/v2/maintenance-events/toggle/${testContext.maintEventWithDataPoints.xid}`,
+            path: `/rest/latest/maintenance-events/toggle/${testContext.maintEventWithDataPoints.xid}`,
             method: 'PUT'
         }).then(response => {
             assert.equal(response.data, true);
@@ -284,7 +284,7 @@ describe('Maintenance events', function() {
     
     it('Query by xid', () => {
         return client.restRequest({
-            path: `/rest/v2/maintenance-events?xid=${testContext.maintEventWithDataPoint.xid}`,
+            path: `/rest/latest/maintenance-events?xid=${testContext.maintEventWithDataPoint.xid}`,
             method: 'GET'
         }).then(response => {
             assert.equal(response.data.total, 1);
@@ -300,7 +300,7 @@ describe('Maintenance events', function() {
     
     it('Deletes data point me', () => {
       return client.restRequest({
-          path: `/rest/v2/maintenance-events/${testContext.maintEventWithDataPoint.xid}`,
+          path: `/rest/latest/maintenance-events/${testContext.maintEventWithDataPoint.xid}`,
           method: 'DELETE',
           data: {}
       }).then(response => {
@@ -309,7 +309,7 @@ describe('Maintenance events', function() {
     });
     it('Deletes data points me', () => {
         return client.restRequest({
-            path: `/rest/v2/maintenance-events/${testContext.maintEventWithDataPoints.xid}`,
+            path: `/rest/latest/maintenance-events/${testContext.maintEventWithDataPoints.xid}`,
             method: 'DELETE',
             data: {}
         }).then(response => {
@@ -318,7 +318,7 @@ describe('Maintenance events', function() {
     });
     it('Deletes data source me', () => {
         return client.restRequest({
-            path: `/rest/v2/maintenance-events/${testContext.maintEventWithDataSource.xid}`,
+            path: `/rest/latest/maintenance-events/${testContext.maintEventWithDataSource.xid}`,
             method: 'DELETE',
             data: {}
         }).then(response => {
@@ -327,7 +327,7 @@ describe('Maintenance events', function() {
     });
     it('Deletes data sources me', () => {
         return client.restRequest({
-            path: `/rest/v2/maintenance-events/${testContext.maintEventWithDataSources.xid}`,
+            path: `/rest/latest/maintenance-events/${testContext.maintEventWithDataSources.xid}`,
             method: 'DELETE',
             data: {}
         }).then(response => {

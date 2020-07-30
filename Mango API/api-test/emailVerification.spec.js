@@ -21,7 +21,7 @@ const User = client.User;
 const SystemSetting = client.SystemSetting;
 
 describe('Email verification', function() {
-    const emailVerificationUrl = '/rest/v2/email-verification';
+    const emailVerificationUrl = '/rest/latest/email-verification';
     
     const deleteUser = (result, user) => {
         return User.delete(user.username).catch(e => null).then(() => result);

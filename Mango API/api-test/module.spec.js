@@ -24,7 +24,7 @@ describe('Modules Endpoints', function() {
 
 	it('Gets the Core module information', () => {
 		return client.restRequest({
-			path: '/rest/v2/modules/core',
+			path: '/rest/latest/modules/core',
 			method: 'GET'
 		}).then(response => {
 		    [
@@ -50,7 +50,7 @@ describe('Modules Endpoints', function() {
 	// but there is no reason to make this method so fragile as that.
 	it('Gets the possible upgrades', () => {
 		return client.restRequest({
-			path: '/rest/v2/modules/upgrades-available',
+			path: '/rest/latest/modules/upgrades-available',
 			method: 'GET'
 		}).then(response => {
 			var responseFields = ['upgrades', 'newInstalls'];
@@ -64,7 +64,7 @@ describe('Modules Endpoints', function() {
   //TODO This will need to be more flexible
   it.skip('Performs upgrade and gets status', () => {
 		return client.restRequest({
-			path: '/rest/v2/modules/upgrade?backup=false&restart=false',
+			path: '/rest/latest/modules/upgrade?backup=false&restart=false',
 			method: 'POST',
       data: {
         upgrades: [{name: 'mangoApi', version: '3.2.0'},
@@ -73,7 +73,7 @@ describe('Modules Endpoints', function() {
       }
 		}).then(response => {
       return client.restRequest({
-        path: '/rest/v2/modules/upgrade-status',
+        path: '/rest/latest/modules/upgrade-status',
         method: 'GET'
       });
 		});
@@ -82,7 +82,7 @@ describe('Modules Endpoints', function() {
   //TODO Skip this test until we put a demo user in the store
   it.skip('Downloads license file', () => {
 		return client.restRequest({
-			path: '/rest/v2/modules/download-license',
+			path: '/rest/latest/modules/download-license',
 			method: 'PUT',
       data: {
         username: 'testStoreUser@infiniteautomation.com',

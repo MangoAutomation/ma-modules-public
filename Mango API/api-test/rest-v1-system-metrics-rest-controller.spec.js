@@ -23,14 +23,14 @@ describe('system-metrics-rest-controller', function() {
     before('Login', function() { return login.call(this, client); });
 
     // Get the current value for all System Metrics - TBD Add RQL Support to this endpoint
-    it('GET /rest/v2/system-metrics', function() {
+    it('GET /rest/latest/system-metrics', function() {
         const params = {
         };
         
         return Promise.resolve().then(() => {
             return client.restRequest({
                 method: 'GET',
-                path: `/rest/v2/system-metrics`,
+                path: `/rest/latest/system-metrics`,
             });
         }).then(response => {
             // OK
@@ -51,7 +51,7 @@ describe('system-metrics-rest-controller', function() {
     });
 
     // Get the current value for one System Metric by its ID - 
-    it('GET /rest/v2/system-metrics/{id}', function() {
+    it('GET /rest/latest/system-metrics/{id}', function() {
         const params = {
             id: 'runtime.uptime' // in = path, description = Valid Monitor id, required = true, type = string, default = , enum = 
         };
@@ -59,7 +59,7 @@ describe('system-metrics-rest-controller', function() {
         return Promise.resolve().then(() => {
             return client.restRequest({
                 method: 'GET',
-                path: `/rest/v2/system-metrics/${params.id}`,
+                path: `/rest/latest/system-metrics/${params.id}`,
             });
         }).then(response => {
             // OK

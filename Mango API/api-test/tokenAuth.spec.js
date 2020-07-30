@@ -19,7 +19,7 @@ const {createClient, login, uuid, config, delay} = require('@infinite-automation
 const client = createClient();
 const User = client.User;
 
-const jwtUrl = '/rest/v2/auth-tokens';
+const jwtUrl = '/rest/latest/auth-tokens';
 
 describe('JSON Web Token authentication', function() {
     before('Login', function() { return login.call(this, client); });
@@ -366,7 +366,7 @@ describe('JSON Web Token authentication', function() {
             jwtClient.setBearerAuthentication(token);
             
             return jwtClient.restRequest({
-                path: '/rest/v2/users/current'
+                path: '/rest/latest/users/current'
             });
         }).then(response => {
             assert.notProperty(response.headers, 'set-cookie');
@@ -446,7 +446,7 @@ describe('JSON Web Token authentication', function() {
         }).then(user => {
             assert.strictEqual(user.username, this.testUser.username);
             return jwtClient.restRequest({
-                path: `/rest/v2/users/${user.username}/homepage?url=/anything`,
+                path: `/rest/latest/users/${user.username}/homepage?url=/anything`,
                 method: 'PUT'
             }).then(response => {
                 throw new Error('Shouldnt be able to update home url');
@@ -465,7 +465,7 @@ describe('JSON Web Token authentication', function() {
         }).then(user => {
             assert.strictEqual(user.username, this.testUser.username);
             return jwtClient.restRequest({
-                path: `/rest/v2/users/${user.username}/mute?mute=true`,
+                path: `/rest/latest/users/${user.username}/mute?mute=true`,
                 method: 'PUT'
             }).then(response => {
                 throw new Error('Shouldnt be able to update muted');
@@ -486,7 +486,7 @@ describe('JSON Web Token authentication', function() {
             user.name = 'Joe';
             user.permissions = ['permissions'];
             return jwtClient.restRequest({
-                path: `/rest/v2/users/${user.username}`,
+                path: `/rest/latest/users/${user.username}`,
                 method: 'PUT',
                 data: user
             }).then(user => {
@@ -508,7 +508,7 @@ describe('JSON Web Token authentication', function() {
             user.name = 'Joe';
             user.permissions = ['superamdin'];
             return jwtClient.restRequest({
-                path: `/rest/v2/users/${user.username}`,
+                path: `/rest/latest/users/${user.username}`,
                 method: 'PUT',
                 data: user
             }).then(user => {
@@ -528,7 +528,7 @@ describe('JSON Web Token authentication', function() {
         }).then(user => {
             assert.strictEqual(user.username, this.testUser.username);
             return jwtClient.restRequest({
-                path: `/rest/v2/users/${user.username}`,
+                path: `/rest/latest/users/${user.username}`,
                 method: 'PATCH',
                 data: {
                     name: 'Joe'
@@ -550,7 +550,7 @@ describe('JSON Web Token authentication', function() {
         }).then(user => {
             assert.strictEqual(user.username, config.username);
             return jwtClient.restRequest({
-                path: `/rest/v2/users/${user.username}`,
+                path: `/rest/latest/users/${user.username}`,
                 method: 'PATCH',
                 data: {
                     name: 'Joe'

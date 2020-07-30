@@ -200,7 +200,7 @@ describe('Role endpoint tests', function() {
         
         return Promise.resolve().then(() => {
             ws = client.openWebSocket({
-                path: '/rest/v2/websocket/roles'
+                path: '/rest/latest/websocket/roles'
             });
 
             ws.on('open', () => {
@@ -281,7 +281,7 @@ describe('Role endpoint tests', function() {
 
         return Promise.resolve().then(() => {
             ws = client.openWebSocket({
-                path: '/rest/v2/websocket/roles'
+                path: '/rest/latest/websocket/roles'
             });
 
             ws.on('open', () => {
@@ -372,7 +372,7 @@ describe('Role endpoint tests', function() {
         
         return Promise.resolve().then(() => {
             ws = client.openWebSocket({
-                path: '/rest/v2/websocket/roles'
+                path: '/rest/latest/websocket/roles'
             });
 
             ws.on('open', () => {

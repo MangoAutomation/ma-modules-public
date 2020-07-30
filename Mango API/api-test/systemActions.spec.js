@@ -24,7 +24,7 @@ describe('System Action Endpoints', function() {
 
     it('Lists available actions', () => {
       return client.restRequest({
-          path: '/rest/v2/actions',
+          path: '/rest/latest/actions',
           method: 'GET',
       }).then(response => {
         var actions = [
@@ -49,7 +49,7 @@ describe('System Action Endpoints', function() {
     it('Kick off purgeUsingSettings', () => {
 
       return client.restRequest({
-          path: '/rest/v2/actions/trigger/purgeUsingSettings',
+          path: '/rest/latest/actions/trigger/purgeUsingSettings',
           method: 'PUT'
       }).then(response => {
 
@@ -67,7 +67,7 @@ describe('System Action Endpoints', function() {
     it('Kick off purgeAllPointValues', () => {
 
       return client.restRequest({
-          path: '/rest/v2/actions/trigger/purgeAllPointValues',
+          path: '/rest/latest/actions/trigger/purgeAllPointValues',
           method: 'PUT'
       }).then(response => {
 
@@ -85,7 +85,7 @@ describe('System Action Endpoints', function() {
     it('Kick off purgeAllEvents', () => {
 
       return client.restRequest({
-          path: '/rest/v2/actions/trigger/purgeAllEvents',
+          path: '/rest/latest/actions/trigger/purgeAllEvents',
           method: 'PUT'
       }).then(response => {
 
@@ -103,7 +103,7 @@ describe('System Action Endpoints', function() {
     it('Kick off backupConfiguration', () => {
 
       return client.restRequest({
-          path: '/rest/v2/actions/trigger/backupConfiguration',
+          path: '/rest/latest/actions/trigger/backupConfiguration',
           method: 'PUT'
       }).then(response => {
 
@@ -122,7 +122,7 @@ describe('System Action Endpoints', function() {
 
     it('Kick off sqlBackup then sqlRestore', () => {
       return client.restRequest({
-          path: '/rest/v2/actions/trigger/sqlBackup',
+          path: '/rest/latest/actions/trigger/sqlBackup',
           method: 'PUT'
       }).then(response => {
         return delay(9000).then(() => {
@@ -135,7 +135,7 @@ describe('System Action Endpoints', function() {
               //Now Restore it, the endpoint expects a filename only not the full path
               const parts = response.data.results.backupFile.split("/");
               return client.restRequest({
-                  path: '/rest/v2/actions/trigger/sqlRestore',
+                  path: '/rest/latest/actions/trigger/sqlRestore',
                   method: 'PUT',
                   data: {filename: parts[parts.length-1]}
               }).then(response => {
@@ -156,7 +156,7 @@ describe('System Action Endpoints', function() {
     it('Kick off excelReportPurgeUsingSettings action', () => {
 
       return client.restRequest({
-          path: '/rest/v2/actions/trigger/excelReportPurgeUsingSettings',
+          path: '/rest/latest/actions/trigger/excelReportPurgeUsingSettings',
           method: 'PUT'
       }).then(response => {
 
@@ -174,7 +174,7 @@ describe('System Action Endpoints', function() {
     it('Kick off excelReportPurgeAll action', () => {
 
       return client.restRequest({
-          path: '/rest/v2/actions/trigger/excelReportPurgeAll',
+          path: '/rest/latest/actions/trigger/excelReportPurgeAll',
           method: 'PUT'
       }).then(response => {
 
@@ -191,7 +191,7 @@ describe('System Action Endpoints', function() {
 
 /*    it('Kick off purgeAllPointValues action', () => {
       return client.restRequest({
-          path: '/rest/v2/actions/trigger/purgeAllPointValues',
+          path: '/rest/latest/actions/trigger/purgeAllPointValues',
           method: 'PUT',
       }).then(response => {
         console.log(response);

@@ -23,7 +23,7 @@ describe('User Event query tests', function(){
 
     before('Insert a User Event', function(){
         return client.restRequest({
-            path: '/rest/v2/testing/raise-event',
+            path: '/rest/latest/testing/raise-event',
             method: 'POST',
             data: {
                 event: {
@@ -45,7 +45,7 @@ describe('User Event query tests', function(){
     it('Query inserted event', function() {
         this.timeout(10000);
         return client.restRequest({
-            path: `/rest/v2/user-events?eq(eventType.eventType,SYSTEM)&eq(eventType.eventSubtype,TestEvent)&sort(-activeTimestamp)&limit(1)`,
+            path: `/rest/latest/user-events?eq(eventType.eventType,SYSTEM)&eq(eventType.eventSubtype,TestEvent)&sort(-activeTimestamp)&limit(1)`,
             method: 'GET'
         }).then(response => {
             assert.isAbove(response.data.total, 0);

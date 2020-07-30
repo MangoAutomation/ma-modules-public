@@ -29,7 +29,7 @@ describe('JSON emport endpoints', function() {
     it('Tests expiration of temp resource', () => {
       var timeout = 500;
       return client.restRequest({
-          path: '/rest/v2/json-emport?timeout='+timeout,
+          path: '/rest/latest/json-emport?timeout='+timeout,
           method: 'POST',
           data: {
             "users": [
@@ -76,7 +76,7 @@ describe('JSON emport endpoints', function() {
       const configuration = {};
 
       return client.restRequest({
-          path: '/rest/v2/json-emport?timeout='+timeout,
+          path: '/rest/latest/json-emport?timeout='+timeout,
           method: 'POST',
           data: configuration
       }).then(response => {

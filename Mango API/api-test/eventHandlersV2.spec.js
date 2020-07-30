@@ -121,7 +121,7 @@ describe('Event handlers', function() {
                 handlerType : "SET_POINT"
               };
         return client.restRequest({
-            path: '/rest/v2/event-handlers',
+            path: '/rest/latest/event-handlers',
             method: 'POST',
             data: testContext.staticValueSetPointEventHandler
         }).then(response => {
@@ -159,7 +159,7 @@ describe('Event handlers', function() {
     
     it('Query event handlers lists', () => {
         return client.restRequest({
-            path: `/rest/v2/event-handlers?xid=${testContext.staticValueSetPointEventHandler.xid}`,
+            path: `/rest/latest/event-handlers?xid=${testContext.staticValueSetPointEventHandler.xid}`,
             method: 'GET',
             data: testContext.addressMailingList
         }).then(response => {
@@ -201,7 +201,7 @@ describe('Event handlers', function() {
     
     it('Delete static set point event handler', () => {
         return client.restRequest({
-            path: `/rest/v2/event-handlers/${testContext.staticValueSetPointEventHandler.xid}`,
+            path: `/rest/latest/event-handlers/${testContext.staticValueSetPointEventHandler.xid}`,
             method: 'DELETE',
             data: {}
         }).then(response => {
@@ -228,7 +228,7 @@ describe('Event handlers', function() {
                 handlerType : "SET_POINT"
               };
         return client.restRequest({
-            path: '/rest/v2/event-handlers',
+            path: '/rest/latest/event-handlers',
             method: 'POST',
             data: testContext.pointValueSetPointEventHandler
         }).then(response => {
@@ -276,7 +276,7 @@ describe('Event handlers', function() {
                 handlerType : "SET_POINT"
             };
         return client.restRequest({
-            path: '/rest/v2/event-handlers',
+            path: '/rest/latest/event-handlers',
             method: 'POST',
             data: testContext.invalidSetPointEventHandler
         }).then(response => {
@@ -315,7 +315,7 @@ describe('Event handlers', function() {
 
         return Promise.resolve().then(() => {
             ws = client.openWebSocket({
-                path: '/rest/v2/websocket/event-handlers'
+                path: '/rest/latest/websocket/event-handlers'
             });
 
             ws.on('open', () => {
@@ -366,7 +366,7 @@ describe('Event handlers', function() {
         }).then(() => delay(1000)).then(() => {
             //TODO Fix DaoNotificationWebSocketHandler so we can remove this delay, only required for cold start
             return client.restRequest({
-                path: `/rest/v2/event-handlers/${testContext.pointValueSetPointEventHandler.xid}`,
+                path: `/rest/latest/event-handlers/${testContext.pointValueSetPointEventHandler.xid}`,
                 method: 'PUT',
                 data: testContext.pointValueSetPointEventHandler
             }).then(response =>{
@@ -415,7 +415,7 @@ describe('Event handlers', function() {
 
         return Promise.resolve().then(() => {
             ws = client.openWebSocket({
-                path: '/rest/v2/websocket/event-handlers'
+                path: '/rest/latest/websocket/event-handlers'
             });
 
             ws.on('open', () => {
@@ -461,7 +461,7 @@ describe('Event handlers', function() {
             
         }).then(() => delay(1000)).then(() => {
             return client.restRequest({
-                path: `/rest/v2/event-handlers/${testContext.pointValueSetPointEventHandler.xid}`,
+                path: `/rest/latest/event-handlers/${testContext.pointValueSetPointEventHandler.xid}`,
                 method: 'DELETE',
                 data: {}
             }).then(response => {
@@ -491,7 +491,7 @@ describe('Event handlers', function() {
                 handlerType : "PROCESS"
               };
         return client.restRequest({
-            path: '/rest/v2/event-handlers',
+            path: '/rest/latest/event-handlers',
             method: 'POST',
             data: testContext.processEventHandler
         }).then(response => {
@@ -511,7 +511,7 @@ describe('Event handlers', function() {
     it('Patch process event handler', () => {
         testContext.processEventHandler.disabled = false;
         return client.restRequest({
-            path: '/rest/v2/event-handlers/' + testContext.processEventHandler.xid,
+            path: '/rest/latest/event-handlers/' + testContext.processEventHandler.xid,
             method: 'PATCH',
             data: {
                 disabled: false
@@ -532,7 +532,7 @@ describe('Event handlers', function() {
     
     it('Delete process event handler', () => {
         return client.restRequest({
-            path: `/rest/v2/event-handlers/${testContext.processEventHandler.xid}`,
+            path: `/rest/latest/event-handlers/${testContext.processEventHandler.xid}`,
             method: 'DELETE',
             data: {}
         }).then(response => {
@@ -579,7 +579,7 @@ describe('Event handlers', function() {
                 handlerType : "EMAIL"
               };
         return client.restRequest({
-            path: '/rest/v2/event-handlers',
+            path: '/rest/latest/event-handlers',
             method: 'POST',
             data: testContext.emailEventHandler
         }).then(response => {
@@ -660,7 +660,7 @@ describe('Event handlers', function() {
                 handlerType : "EMAIL"
               };
         return client.restRequest({
-            path: '/rest/v2/event-handlers',
+            path: '/rest/latest/event-handlers',
             method: 'POST',
             data: testContext.invalidEmailEventHandler
         }).then(response => {
@@ -684,7 +684,7 @@ describe('Event handlers', function() {
     
     it('Delete email event handler', () => {
         return client.restRequest({
-            path: `/rest/v2/event-handlers/${testContext.emailEventHandler.xid}`,
+            path: `/rest/latest/event-handlers/${testContext.emailEventHandler.xid}`,
             method: 'DELETE',
             data: {}
         }).then(response => {

@@ -213,7 +213,7 @@ describe('Data point tags', function() {
 
         return dp.save().then(dp => {
             return client.restRequest({
-                path: '/rest/v2/data-point-tags/keys',
+                path: '/rest/latest/data-point-tags/keys',
                 method: 'GET'
             });
         }).then((response) => {
@@ -234,7 +234,7 @@ describe('Data point tags', function() {
 
         return dp.save().then(dp => {
             return client.restRequest({
-                path: '/rest/v2/data-point-tags/values/region',
+                path: '/rest/latest/data-point-tags/values/region',
                 method: 'GET'
             });
         }).then((response) => {
@@ -260,7 +260,7 @@ describe('Data point tags', function() {
             assert.strictEqual(dp.tags[tagKey1], tagValue1);
             assert.strictEqual(dp.tags[tagKey2], tagValue2);
 
-            let url = `/rest/v2/data-point-tags/values/${encodeURIComponent(tagKey1)}?`;
+            let url = `/rest/latest/data-point-tags/values/${encodeURIComponent(tagKey1)}?`;
             url += `${encodeURIComponent(tagKey2)}=${encodeURIComponent(tagValue2)}`;
 
             return client.restRequest({
@@ -338,7 +338,7 @@ describe('Data point tags', function() {
 
         return Promise.all([dp1.save(), dp2.save()]).then(() => {
             return client.restRequest({
-                path: '/rest/v2/data-point-tags/bulk-sync',
+                path: '/rest/latest/data-point-tags/bulk-sync',
                 method: 'POST',
                 data: {
                     action: 'GET',
@@ -374,7 +374,7 @@ describe('Data point tags', function() {
 
         return Promise.all([dp1.save(), dp2.save()]).then(() => {
             return client.restRequest({
-                path: '/rest/v2/data-point-tags/bulk',
+                path: '/rest/latest/data-point-tags/bulk',
                 method: 'POST',
                 data: {
                     action: 'GET',
@@ -432,7 +432,7 @@ describe('Data point tags', function() {
 
         return Promise.all([dp1.save(), dp2.save()]).then(() => {
             return client.restRequest({
-                path: '/rest/v2/data-point-tags/bulk',
+                path: '/rest/latest/data-point-tags/bulk',
                 method: 'POST',
                 data: {
                     action: 'SET',
@@ -491,7 +491,7 @@ describe('Data point tags', function() {
 
         return Promise.all([dp1.save(), dp2.save()]).then(() => {
             return client.restRequest({
-                path: '/rest/v2/data-point-tags/bulk',
+                path: '/rest/latest/data-point-tags/bulk',
                 method: 'POST',
                 data: {
                     action: 'MERGE',
@@ -551,7 +551,7 @@ describe('Data point tags', function() {
 
         return Promise.all([dp1.save(), dp2.save()]).then(() => {
             return client.restRequest({
-                path: '/rest/v2/data-point-tags/bulk',
+                path: '/rest/latest/data-point-tags/bulk',
                 method: 'POST',
                 data: {
                     expiration: 100,
@@ -577,7 +577,7 @@ describe('Data point tags', function() {
             assert.strictEqual(error.status, 404);
             
             return client.restRequest({
-                path: '/rest/v2/data-point-tags/bulk',
+                path: '/rest/latest/data-point-tags/bulk',
                 method: 'GET'
             });
         }).then(response => {
@@ -600,7 +600,7 @@ describe('Data point tags', function() {
 
         return Promise.all([dp1.save(), dp2.save()]).then(() => {
             return client.restRequest({
-                path: '/rest/v2/data-point-tags/bulk',
+                path: '/rest/latest/data-point-tags/bulk',
                 method: 'POST',
                 data: {
                     action: 'GET',
@@ -625,7 +625,7 @@ describe('Data point tags', function() {
             assert.strictEqual(response.data.id, resourceId);
             
             return client.restRequest({
-                path: '/rest/v2/data-point-tags/bulk',
+                path: '/rest/latest/data-point-tags/bulk',
                 method: 'GET'
             });
         }).then(response => {
@@ -634,14 +634,14 @@ describe('Data point tags', function() {
             assert.isObject(response.data.items.find(tr => tr.id === resourceId));
             
             return client.restRequest({
-                path: `/rest/v2/data-point-tags/bulk/${encodeURIComponent(resourceId)}`,
+                path: `/rest/latest/data-point-tags/bulk/${encodeURIComponent(resourceId)}`,
                 method: 'DELETE'
             });
         }).then(response => {
             assert.strictEqual(response.status, 200);
             
             return client.restRequest({
-                path: '/rest/v2/data-point-tags/bulk',
+                path: '/rest/latest/data-point-tags/bulk',
                 method: 'GET'
             });
         }).then(response => {
@@ -670,7 +670,7 @@ describe('Data point tags', function() {
             }
             
             return client.restRequest({
-                path: '/rest/v2/data-point-tags/bulk',
+                path: '/rest/latest/data-point-tags/bulk',
                 method: 'POST',
                 data: {
                     timeout: 10, // 10ms
@@ -715,7 +715,7 @@ describe('Data point tags', function() {
             }
             
             return client.restRequest({
-                path: '/rest/v2/data-point-tags/bulk',
+                path: '/rest/latest/data-point-tags/bulk',
                 method: 'POST',
                 data: {
                     action: 'GET',

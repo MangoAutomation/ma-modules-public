@@ -27,7 +27,7 @@ function pointValuesCsvFactory(client) {
 
     return class PointValueCsv {
         get baseUrl() {
-            return '/rest/v2/point-values';
+            return '/rest/latest/point-values';
         }
         
         toRequestBody(options) {

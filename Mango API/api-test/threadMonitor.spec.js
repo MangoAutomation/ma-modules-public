@@ -23,7 +23,7 @@ describe('Thread access tests', function(){
 
     it('View all threads', () => {
       return client.restRequest({
-          path: '/rest/v2/threads',
+          path: '/rest/latest/threads',
           method: 'GET'
       }).then(response => {
         for(var i=0; i<response.data.length; i++){

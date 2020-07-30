@@ -23,7 +23,7 @@ describe('Work Item tests', function(){
 
     it('Lists all work items', () => {
       return client.restRequest({
-          path: '/rest/v2/work-items',
+          path: '/rest/latest/work-items',
           method: 'GET'
       }).then(response => {
         assert.isAbove(response.data.length, 0);
@@ -37,7 +37,7 @@ describe('Work Item tests', function(){
 
     it('Filters on DataPurgeTask', () => {
       return client.restRequest({
-          path: '/rest/v2/work-items',
+          path: '/rest/latest/work-items',
           method: 'GET',
           params: {
             classname: 'com.serotonin.m2m2.rt.maint.DataPurge.DataPurgeTask'
@@ -52,7 +52,7 @@ describe('Work Item tests', function(){
 
     it('Lists all queued work item counts', () => {
       return client.restRequest({
-          path: '/rest/v2/work-items/queue-counts',
+          path: '/rest/latest/work-items/queue-counts',
           method: 'GET'
       }).then(response => {
         assert.notEqual(response.data.highPriorityServiceQueueClassCounts, null);
@@ -64,7 +64,7 @@ describe('Work Item tests', function(){
 
     it('Lists all running work item stats', () => {
       return client.restRequest({
-          path: '/rest/v2/work-items/running-stats',
+          path: '/rest/latest/work-items/running-stats',
           method: 'GET'
       }).then(response => {
         assert.notEqual(response.data.highPriorityOrderedQueueStats, null);
@@ -74,7 +74,7 @@ describe('Work Item tests', function(){
 
     it('Lists all rejected work item stats', () => {
       return client.restRequest({
-          path: '/rest/v2/work-items/rejected-stats',
+          path: '/rest/latest/work-items/rejected-stats',
           method: 'GET'
       }).then(response => {
         assert.notEqual(response.data.highPriorityRejectedTaskStats, null);

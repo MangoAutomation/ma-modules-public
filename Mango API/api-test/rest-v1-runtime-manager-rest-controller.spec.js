@@ -27,7 +27,7 @@ describe('runtime-manager-rest-controller', function() {
         
         return client.restRequest({
             method: 'POST',
-            path: '/rest/v2/data-sources',
+            path: '/rest/latest/data-sources',
             data: {
                 xid: this.dsXid,
                 name: this.dsXid,
@@ -45,7 +45,7 @@ describe('runtime-manager-rest-controller', function() {
     after('Delete data source', function() {
         return client.restRequest({
             method: 'DELETE',
-            path: `/rest/v2/data-sources/${this.dsXid}`,
+            path: `/rest/latest/data-sources/${this.dsXid}`,
         }).catch(noop);
     });
 
@@ -54,7 +54,7 @@ describe('runtime-manager-rest-controller', function() {
         
         return client.restRequest({
             method: 'POST',
-            path: '/rest/v2/data-points',
+            path: '/rest/latest/data-points',
             data: {
                 xid: this.currentTest.dpXid,
                 enabled: true,
@@ -72,10 +72,10 @@ describe('runtime-manager-rest-controller', function() {
     });
 
     // Force Refresh a data point - Not all data sources implement this feature
-    it('PUT /rest/v2/runtime-manager/force-refresh/{xid}', function() {
+    it('PUT /rest/latest/runtime-manager/force-refresh/{xid}', function() {
         return client.restRequest({
             method: 'PUT',
-            path: `/rest/v2/runtime-manager/force-refresh/${this.test.dpXid}`,
+            path: `/rest/latest/runtime-manager/force-refresh/${this.test.dpXid}`,
         }).then(response => {
             // OK
             assert.strictEqual(response.status, 200);
@@ -83,10 +83,10 @@ describe('runtime-manager-rest-controller', function() {
     });
 
     // Relinquish the value of a data point - Only BACnet data points allow this
-    it('POST /rest/v2/runtime-manager/relinquish/{xid}', function() {
+    it('POST /rest/latest/runtime-manager/relinquish/{xid}', function() {
         return client.restRequest({
             method: 'POST',
-            path: `/rest/v2/runtime-manager/relinquish/${this.test.dpXid}`,
+            path: `/rest/latest/runtime-manager/relinquish/${this.test.dpXid}`,
         }).then(response => {
             assert.fail('Relinquish should not be supported on virtual data source');
         }, response => {

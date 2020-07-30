@@ -38,7 +38,7 @@ describe('Publishers v2 service', function() {
         
         return Promise.resolve().then(() => {
             ws = client.openWebSocket({
-                path: '/rest/v2/websocket/publishers'
+                path: '/rest/latest/websocket/publishers'
             });
 
             ws.on('open', () => {
@@ -115,7 +115,7 @@ describe('Publishers v2 service', function() {
 
         return Promise.resolve().then(() => {
             ws = client.openWebSocket({
-                path: '/rest/v2/websocket/publishers'
+                path: '/rest/latest/websocket/publishers'
             });
 
             ws.on('open', () => {
@@ -199,7 +199,7 @@ describe('Publishers v2 service', function() {
         
         return Promise.resolve().then(() => {
             ws = client.openWebSocket({
-                path: '/rest/v2/websocket/publishers'
+                path: '/rest/latest/websocket/publishers'
             });
 
             ws.on('open', () => {

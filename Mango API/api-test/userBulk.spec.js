@@ -71,7 +71,7 @@ describe('User bulk operations ', function() {
         this.users[1].organization = 'User 1 Organization';
         
         return client.restRequest({
-            path: `/rest/v2/users/bulk`,
+            path: `/rest/latest/users/bulk`,
             method: 'POST',
             data: {
                 action: 'UPDATE',

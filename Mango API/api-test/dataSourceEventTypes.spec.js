@@ -23,7 +23,7 @@ describe('Data source event types', function() {
 
     it('Get Virtual data source default event types', () => {
       return client.restRequest({
-          path: '/rest/v2/data-source-event-types/VIRTUAL',
+          path: '/rest/latest/data-source-event-types/VIRTUAL',
           method: 'GET'
       }).then(response => {
         assert.strictEqual(response.data.length, 1);
@@ -37,7 +37,7 @@ describe('Data source event types', function() {
     
     it('Fails to get unknown data source default event types', () => {
         return client.restRequest({
-            path: '/rest/v2/data-source-event-types/UNKNOWN',
+            path: '/rest/latest/data-source-event-types/UNKNOWN',
             method: 'GET'
         }).then(response => {
             throw new Error('Should not get any event types');

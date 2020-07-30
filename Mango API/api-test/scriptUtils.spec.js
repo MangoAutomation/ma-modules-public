@@ -23,7 +23,7 @@ describe('Test Script Utility Endpoints', function() {
 
     it('Validate wrapped PointValueTime result script', () => {
       return client.restRequest({
-          path: '/rest/v2/script/validate',
+          path: '/rest/latest/script/validate',
           method: 'POST',
           data: {
               wrapInFunction: true,
@@ -42,7 +42,7 @@ describe('Test Script Utility Endpoints', function() {
     
     it('Validate wrapped PointValueTime result script', () => {
         return client.restRequest({
-            path: '/rest/v2/script/validate',
+            path: '/rest/latest/script/validate',
             method: 'POST',
             data: {
                 wrapInFunction: true,
@@ -61,7 +61,7 @@ describe('Test Script Utility Endpoints', function() {
     
     it('Validate wrapped String result script', () => {
         return client.restRequest({
-            path: '/rest/v2/script/validate',
+            path: '/rest/latest/script/validate',
             method: 'POST',
             data: {
                 wrapInFunction: true,
@@ -77,7 +77,7 @@ describe('Test Script Utility Endpoints', function() {
       
       it('Validate wrapped String result script', () => {
           return client.restRequest({
-              path: '/rest/v2/script/validate',
+              path: '/rest/latest/script/validate',
               method: 'POST',
               data: {
                   wrapInFunction: true,
@@ -93,7 +93,7 @@ describe('Test Script Utility Endpoints', function() {
     
     it('Validate wrapped buggy script', () => {
         return client.restRequest({
-            path: '/rest/v2/script/validate',
+            path: '/rest/latest/script/validate',
             method: 'POST',
             data: {
                 wrapInFunction: true,
@@ -110,7 +110,7 @@ describe('Test Script Utility Endpoints', function() {
     
     it('Validate un-wrapped buggy script', () => {
         return client.restRequest({
-            path: '/rest/v2/script/validate',
+            path: '/rest/latest/script/validate',
             method: 'POST',
             data: {
                 wrapInFunction: false,
@@ -127,7 +127,7 @@ describe('Test Script Utility Endpoints', function() {
     
     it('Validate un-wrapped String result script', () => {
         return client.restRequest({
-            path: '/rest/v2/script/validate',
+            path: '/rest/latest/script/validate',
             method: 'POST',
             data: {
                 wrapInFunction: false,
@@ -142,7 +142,7 @@ describe('Test Script Utility Endpoints', function() {
       });
     it('Validate script null script', () => {
         return client.restRequest({
-            path: '/rest/v2/script/validate',
+            path: '/rest/latest/script/validate',
             method: 'POST',
             data: {
                 wrapInFunction: false,
@@ -160,7 +160,7 @@ describe('Test Script Utility Endpoints', function() {
     
     it('Validate script with result type exception.', () => {
         return client.restRequest({
-            path: '/rest/v2/script/validate',
+            path: '/rest/latest/script/validate',
             method: 'POST',
             data: {
                 wrapInFunction: true,

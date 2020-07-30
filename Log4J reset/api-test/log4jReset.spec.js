@@ -41,7 +41,7 @@ describe('Log4J Utilities', function() {
 
         return Promise.resolve().then(() => {
             ws = client.openWebSocket({
-                path: '/rest/v2/websocket/temporary-resources'
+                path: '/rest/latest/websocket/temporary-resources'
             });
 
             ws.on('open', () => {
@@ -87,7 +87,7 @@ describe('Log4J Utilities', function() {
             
         }).then(() => subscribeDeferred.promise ).then(() => {
             return client.restRequest({
-                path: '/rest/v2/system-actions/log4JUtil',
+                path: '/rest/latest/system-actions/log4JUtil',
                 method: 'POST',
                 data: {
                     action: 'RESET'
@@ -96,7 +96,7 @@ describe('Log4J Utilities', function() {
                 //Keep this id to confirm it finished later
                 testData.id = response.data.id;
                 return client.restRequest({
-                    path: `/rest/v2/system-actions/status/${response.data.id}`,
+                    path: `/rest/latest/system-actions/status/${response.data.id}`,
                     method: 'GET'
                 }).then(response => {
                     assert.isNotNull(response.data.startTime);
@@ -107,7 +107,7 @@ describe('Log4J Utilities', function() {
             ws.close();
             //Make a request to get the status
             return client.restRequest({
-                path: `/rest/v2/system-actions/status/${testData.id}`,
+                path: `/rest/latest/system-actions/status/${testData.id}`,
                 method: 'GET'
             }).then(response => {
                 assert.strictEqual(response.data.status, 'SUCCESS');
@@ -117,21 +117,21 @@ describe('Log4J Utilities', function() {
     
     it('Cancel RESET action', function() {
         return client.restRequest({
-            path: '/rest/v2/system-actions/log4JUtil',
+            path: '/rest/latest/system-actions/log4JUtil',
             method: 'POST',
             data: {
                 action: 'RESET'
             }
         }).then(response => {
             return client.restRequest({
-                path: `/rest/v2/system-actions/status/${response.data.id}`,
+                path: `/rest/latest/system-actions/status/${response.data.id}`,
                 method: 'DELETE'
             }).then(response => {
                 assert.isNotNull(response.data.startTime);
                 assert.isNotNull(response.data.completionTime);
                 //Check its gone
                 return client.restRequest({
-                    path: `/rest/v2/system-actions/status/${response.data.id}`,
+                    path: `/rest/latest/system-actions/status/${response.data.id}`,
                     method: 'GET'
                 }).then(response => {
                    assert.fail('should not get result');

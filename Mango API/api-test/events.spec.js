@@ -79,7 +79,7 @@ describe('Events v2 tests', function(){
             });
         }).then(() => {
             return client.restRequest({
-                path: '/rest/v2/testing/raise-event',
+                path: '/rest/latest/testing/raise-event',
                 method: 'POST',
                 data: {
                     event: {
@@ -120,7 +120,7 @@ describe('Events v2 tests', function(){
         debugger;
         return Promise.resolve().then(function() {
             ws = client.openWebSocket({
-                path: '/rest/v2/websocket/events'
+                path: '/rest/latest/websocket/events'
             });
 
             ws.on('open', () => {
@@ -174,7 +174,7 @@ describe('Events v2 tests', function(){
             return send.promise;
         }).then(() => gotAlarmSummaries.promise).then(function() {
             return client.restRequest({
-                path: '/rest/v2/testing/raise-event',
+                path: '/rest/latest/testing/raise-event',
                 method: 'POST',
                 data: {
                     event: {
@@ -213,7 +213,7 @@ describe('Events v2 tests', function(){
 
         return Promise.resolve().then(function() {
             ws = client.openWebSocket({
-                path: '/rest/v2/websocket/events'
+                path: '/rest/latest/websocket/events'
             });
 
             ws.on('open', () => {
@@ -292,7 +292,7 @@ describe('Events v2 tests', function(){
     
     it('Can query for data point events', function() {
         return client.restRequest({
-            path: `/rest/v2/events?eq(eventType,DATA_POINT)&eq(referenceId1,${this.testPoint1.id})&sort(-activeTimestamp)&limit(15,0)`,
+            path: `/rest/latest/events?eq(eventType,DATA_POINT)&eq(referenceId1,${this.testPoint1.id})&sort(-activeTimestamp)&limit(15,0)`,
             method: 'GET'
         }).then(response => {
             assert.strictEqual(response.data.items.length, 1);

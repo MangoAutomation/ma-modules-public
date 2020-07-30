@@ -6,7 +6,7 @@
 MbusDataSourceFactory.$inject = ['maTemporaryRestResource', '$http'];
 function MbusDataSourceFactory(TemporaryRestResource, $http) {
     
-    const baseUrl = '/rest/v2/mbus-data-sources';
+    const baseUrl = '/rest/latest/mbus-data-sources';
 
     class MbusDataSourceResource extends TemporaryRestResource {
 

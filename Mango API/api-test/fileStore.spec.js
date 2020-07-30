@@ -28,7 +28,7 @@ describe('Test File Store endpoints', function() {
 
     it('Lists all file stores', () => {
         return client.restRequest({
-            path: '/rest/v2/file-stores',
+            path: '/rest/latest/file-stores',
             method: 'GET',
         }).then(response => {
           assert.isArray(response.data);
@@ -43,7 +43,7 @@ describe('Test File Store endpoints', function() {
         fs.writeFileSync(uploadFile.name, randomBytes);
 
         return client.restRequest({
-            path: '/rest/v2/file-stores/default/node-client-test/debug',
+            path: '/rest/latest/file-stores/default/node-client-test/debug',
             method: 'POST',
             uploadFiles: [uploadFile.name]
         }).then(response => {
@@ -53,7 +53,7 @@ describe('Test File Store endpoints', function() {
             // file uploaded OK, now download it and compare
             const percentEncodedFilename = encodeURI(response.data[0].filename);
             return client.restRequest({
-                path: `/rest/v2/file-stores/default/node-client-test/debug/${percentEncodedFilename}`,
+                path: `/rest/latest/file-stores/default/node-client-test/debug/${percentEncodedFilename}`,
                 method: 'GET',
                 dataType: 'buffer',
                 headers: {
@@ -76,7 +76,7 @@ describe('Test File Store endpoints', function() {
         fs.writeFileSync(uploadFile.name, randomBytes);
 
         return client.restRequest({
-            path: '/rest/v2/file-stores/default/node-client-test/debug',
+            path: '/rest/latest/file-stores/default/node-client-test/debug',
             method: 'POST',
             uploadFiles: [uploadFile.name]
         }).then(response => {
@@ -86,7 +86,7 @@ describe('Test File Store endpoints', function() {
             // file uploaded OK, now download it and compare
             const percentEncodedFilename = encodeURI(response.data[0].filename);
             return client.restRequest({
-                path: `/rest/v2/file-stores/default/node-client-test/debug/${percentEncodedFilename}`,
+                path: `/rest/latest/file-stores/default/node-client-test/debug/${percentEncodedFilename}`,
                 method: 'GET',
                 dataType: 'buffer',
                 headers: {
@@ -111,7 +111,7 @@ describe('Test File Store endpoints', function() {
         fs.writeFileSync(uploadFile.name, randomBytes);
 
         return client.restRequest({
-            path: '/rest/v2/file-stores/default/node-client-test/debug',
+            path: '/rest/latest/file-stores/default/node-client-test/debug',
             method: 'POST',
             uploadFiles: [uploadFile.name]
         }).then(response => {
@@ -121,7 +121,7 @@ describe('Test File Store endpoints', function() {
             // file uploaded OK, now download it and compare
             const percentEncodedFilename = encodeURI(response.data[0].filename);
             return client.restRequest({
-                path: `/rest/v2/file-stores/default/node-client-test/debug/${percentEncodedFilename}`,
+                path: `/rest/latest/file-stores/default/node-client-test/debug/${percentEncodedFilename}`,
                 method: 'GET',
                 dataType: 'buffer',
                 headers: {
@@ -143,7 +143,7 @@ describe('Test File Store endpoints', function() {
         fs.writeFileSync(uploadFile.name, randomBytes);
 
         return client.restRequest({
-            path: '/rest/v2/file-stores/default/node-client-test/debug',
+            path: '/rest/latest/file-stores/default/node-client-test/debug',
             method: 'POST',
             uploadFiles: [uploadFile.name]
         }).then(response => {
@@ -153,7 +153,7 @@ describe('Test File Store endpoints', function() {
             // file uploaded OK, now download it and compare
             const percentEncodedFilename = encodeURI(response.data[0].filename);
             return client.restRequest({
-                path: `/rest/v2/file-stores/default/node-client-test/debug/${percentEncodedFilename}`,
+                path: `/rest/latest/file-stores/default/node-client-test/debug/${percentEncodedFilename}`,
                 method: 'GET',
                 dataType: 'buffer',
                 headers: {
@@ -175,7 +175,7 @@ describe('Test File Store endpoints', function() {
         fs.writeFileSync(uploadFile.name, randomBytes);
 
         return client.restRequest({
-            path: '/rest/v2/file-stores/default/node-client-test/debug',
+            path: '/rest/latest/file-stores/default/node-client-test/debug',
             method: 'POST',
             uploadFiles: [uploadFile.name]
         }).then(response => {
@@ -185,7 +185,7 @@ describe('Test File Store endpoints', function() {
             // file uploaded OK, now download it and compare
             const percentEncodedFilename = encodeURI(response.data[0].filename);
             return client.restRequest({
-                path: `/rest/v2/file-stores/default/node-client-test/debug/${percentEncodedFilename}`,
+                path: `/rest/latest/file-stores/default/node-client-test/debug/${percentEncodedFilename}`,
                 method: 'GET',
                 dataType: 'buffer',
                 headers: {
@@ -207,7 +207,7 @@ describe('Test File Store endpoints', function() {
         fs.writeFileSync(uploadFile.name, randomBytes);
 
         return client.restRequest({
-            path: '/rest/v2/file-stores/default/node-client-test/debug',
+            path: '/rest/latest/file-stores/default/node-client-test/debug',
             method: 'POST',
             uploadFiles: [uploadFile.name]
         }).then(response => {
@@ -217,7 +217,7 @@ describe('Test File Store endpoints', function() {
             // file uploaded OK, now download it and compare
             const percentEncodedFilename = encodeURI(response.data[0].filename);
             return client.restRequest({
-                path: `/rest/v2/file-stores/default/node-client-test/debug/${percentEncodedFilename}`,
+                path: `/rest/latest/file-stores/default/node-client-test/debug/${percentEncodedFilename}`,
                 method: 'GET',
                 dataType: 'buffer',
                 headers: {
@@ -239,7 +239,7 @@ describe('Test File Store endpoints', function() {
         fs.writeFileSync(uploadFile.name, randomBytes);
 
         return client.restRequest({
-            path: '/rest/v2/file-stores/default/node-client-test/debug',
+            path: '/rest/latest/file-stores/default/node-client-test/debug',
             method: 'POST',
             uploadFiles: [uploadFile.name]
         }).then(response => {
@@ -249,7 +249,7 @@ describe('Test File Store endpoints', function() {
             // file uploaded OK, now download it and compare
             const percentEncodedFilename = encodeURI(response.data[0].filename);
             return client.restRequest({
-                path: `/rest/v2/file-stores/default/node-client-test/debug/${percentEncodedFilename}`,
+                path: `/rest/latest/file-stores/default/node-client-test/debug/${percentEncodedFilename}`,
                 method: 'GET',
                 headers: {
                     'Accept': 'application/javascript'
@@ -265,7 +265,7 @@ describe('Test File Store endpoints', function() {
 
     it('Returns 404 Not Found when file is not found in file store', function() {
         return client.restRequest({
-            path: '/rest/v2/file-stores/default/xyz.12345',
+            path: '/rest/latest/file-stores/default/xyz.12345',
             method: 'GET',
             headers: {
                 'Accept': '*/*'
@@ -285,7 +285,7 @@ describe('Test File Store endpoints', function() {
         fs.writeFileSync(uploadFile.name, randomBytes);
 
         return client.restRequest({
-            path: '/rest/v2/file-stores/default/utf',
+            path: '/rest/latest/file-stores/default/utf',
             method: 'POST',
             uploadFiles: [uploadFile.name]
         }).then(response => {
@@ -295,7 +295,7 @@ describe('Test File Store endpoints', function() {
             // file uploaded OK, now download it and compare
             const percentEncodedFilename = encodeURI(response.data[0].filename);
             return client.restRequest({
-                path: `/rest/v2/file-stores/default/utf/${percentEncodedFilename}`,
+                path: `/rest/latest/file-stores/default/utf/${percentEncodedFilename}`,
                 method: 'GET',
                 dataType: 'buffer',
                 headers: {
@@ -317,7 +317,7 @@ describe('Test File Store endpoints', function() {
         fs.writeFileSync(uploadFile.name, randomBytes);
 
         return client.restRequest({
-            path: '/rest/v2/file-stores/default/',
+            path: '/rest/latest/file-stores/default/',
             method: 'POST',
             uploadFiles: [uploadFile.name]
         }).then(response => {
@@ -327,7 +327,7 @@ describe('Test File Store endpoints', function() {
             // file uploaded OK, now download it and compare
             const percentEncodedFilename = encodeURI(response.data[0].filename);
             return client.restRequest({
-                path: `/rest/v2/file-stores/default/${percentEncodedFilename}`,
+                path: `/rest/latest/file-stores/default/${percentEncodedFilename}`,
                 method: 'GET',
                 dataType: 'buffer',
                 headers: {
@@ -348,7 +348,7 @@ describe('Test File Store endpoints', function() {
         fs.writeFileSync(uploadFile.name, randomBytes);
 
         return client.restRequest({
-            path: '/rest/v2/file-stores/default/../',
+            path: '/rest/latest/file-stores/default/../',
             method: 'POST',
             uploadFiles: [uploadFile.name]
         }).then(response => {
@@ -362,7 +362,7 @@ describe('Test File Store endpoints', function() {
 
     it('Can\'t get files below the store base path using ".."', function() {
         return client.restRequest({
-            path: '/rest/v2/file-stores/default/../../LICENSE',
+            path: '/rest/latest/file-stores/default/../../LICENSE',
             method: 'GET',
             headers: {
                 'Accept': '*/*'
@@ -386,7 +386,7 @@ describe('Test File Store endpoints', function() {
         fs.writeFileSync(uploadFile.name, randomBytes);
 
         return client.restRequest({
-            path: '/rest/v2/file-stores/default/',
+            path: '/rest/latest/file-stores/default/',
             method: 'POST',
             uploadFiles: [uploadFile.name]
         }).then(response => {
@@ -396,7 +396,7 @@ describe('Test File Store endpoints', function() {
             // file uploaded OK, now download it and compare
             const percentEncodedFilename = encodeURI(response.data[0].filename);
             return client.restRequest({
-                path: `/rest/v2/file-stores/default/${percentEncodedFilename}`,
+                path: `/rest/latest/file-stores/default/${percentEncodedFilename}`,
                 method: 'GET',
                 dataType: 'buffer',
                 headers: {
@@ -418,14 +418,14 @@ describe('Test File Store endpoints', function() {
         fs.writeFileSync(uploadFile.name, randomBytes);
 
         return client.restRequest({
-            path: '/rest/v2/file-stores/default/',
+            path: '/rest/latest/file-stores/default/',
             method: 'POST',
             uploadFiles: [uploadFile.name]
         }).then(response => {
             assert.strictEqual(response.data[0].filename, fileBaseName);
 
             return client.restRequest({
-                path: '/rest/v2/file-stores/default/',
+                path: '/rest/latest/file-stores/default/',
                 method: 'POST',
                 uploadFiles: [uploadFile.name]
             }).then(response => {
@@ -446,7 +446,7 @@ describe('Test File Store endpoints', function() {
         fs.writeFileSync(uploadFile2.name, randomBytes2);
 
         return client.restRequest({
-            path: '/rest/v2/file-stores/default/',
+            path: '/rest/latest/file-stores/default/',
             method: 'POST',
             uploadFiles: [uploadFile1.name, uploadFile2.name]
         }).then(response => {
@@ -464,7 +464,7 @@ describe('Test File Store endpoints', function() {
         fs.writeFileSync(uploadFile.name, randomBytes);
 
         const folderName = 'love \u2665';
-        const url = encodeURI(`/rest/v2/file-stores/default/${folderName}/`);
+        const url = encodeURI(`/rest/latest/file-stores/default/${folderName}/`);
 
         return client.restRequest({
             path: url,
@@ -499,7 +499,7 @@ describe('Test File Store endpoints', function() {
         let percentEncodedFilename;
 
         return client.restRequest({
-            path: '/rest/v2/file-stores/default/',
+            path: '/rest/latest/file-stores/default/',
             method: 'POST',
             uploadFiles: [uploadFile.name]
         }).then(response => {
@@ -509,12 +509,12 @@ describe('Test File Store endpoints', function() {
             // file uploaded OK, now delete it
             percentEncodedFilename = encodeURI(response.data[0].filename);
             return client.restRequest({
-                path: `/rest/v2/file-stores/default/${percentEncodedFilename}`,
+                path: `/rest/latest/file-stores/default/${percentEncodedFilename}`,
                 method: 'DELETE'
             });
         }).then(response => {
             return client.restRequest({
-                path: `/rest/v2/file-stores/default/${percentEncodedFilename}`,
+                path: `/rest/latest/file-stores/default/${percentEncodedFilename}`,
                 method: 'GET',
                 dataType: 'buffer',
                 headers: {
@@ -535,7 +535,7 @@ describe('Test File Store endpoints', function() {
         fs.writeFileSync(uploadFile.name, randomBytes);
 
         const dirName = path.basename(tmp.tmpNameSync({prefix: 'd', postfix: 'd'}));
-        const url = `/rest/v2/file-stores/default/${dirName}/`;
+        const url = `/rest/latest/file-stores/default/${dirName}/`;
 
         return client.restRequest({
             path: url,
@@ -574,7 +574,7 @@ describe('Test File Store endpoints', function() {
         fs.writeFileSync(uploadFile.name, randomBytes);
 
         const dirName = path.basename(tmp.tmpNameSync({prefix: 'd', postfix: 'd'}));
-        const url = `/rest/v2/file-stores/default/${dirName}/`;
+        const url = `/rest/latest/file-stores/default/${dirName}/`;
 
         return client.restRequest({
             path: url,
@@ -600,7 +600,7 @@ describe('Test File Store endpoints', function() {
         const uploadFile = tmp.fileSync();
         
         return client.restRequest({
-            path: '/rest/v2/testing/upload-limit',
+            path: '/rest/latest/testing/upload-limit',
             method: 'GET'
         }).then(response => {
             const uploadLimit = response.data;
@@ -609,7 +609,7 @@ describe('Test File Store endpoints', function() {
             fs.writeFileSync(uploadFile.name, randomBytes);
 
             return client.restRequest({
-                path: '/rest/v2/file-stores/default/',
+                path: '/rest/latest/file-stores/default/',
                 method: 'POST',
                 uploadFiles: [uploadFile.name]
             });
@@ -625,7 +625,7 @@ describe('Test File Store endpoints', function() {
     it('Can create folders', () => {
     	const dirName = path.basename(tmp.tmpNameSync({prefix: 'd', postfix: 'd'}));
         return client.restRequest({
-            path: '/rest/v2/file-stores/default/' + dirName,
+            path: '/rest/latest/file-stores/default/' + dirName,
             method: 'POST'
         }).then(response => {
         	assert.strictEqual(response.data.filename, dirName);
@@ -640,7 +640,7 @@ describe('Test File Store endpoints', function() {
         fs.writeFileSync(uploadFile.name, randomBytes);
 
         return client.restRequest({
-            path: '/rest/v2/file-stores/default/',
+            path: '/rest/latest/file-stores/default/',
             method: 'POST',
             uploadFiles: [uploadFile.name]
         }).then(response => {
@@ -650,7 +650,7 @@ describe('Test File Store endpoints', function() {
             fs.writeFileSync(uploadFile.name, randomBytes);
 
             return client.restRequest({
-                path: '/rest/v2/file-stores/default/',
+                path: '/rest/latest/file-stores/default/',
                 method: 'POST',
                 uploadFiles: [uploadFile.name],
                 params: {
@@ -664,7 +664,7 @@ describe('Test File Store endpoints', function() {
             // file uploaded OK, now download it and compare
             const percentEncodedFilename = encodeURI(response.data[0].filename);
             return client.restRequest({
-                path: `/rest/v2/file-stores/default/${percentEncodedFilename}`,
+                path: `/rest/latest/file-stores/default/${percentEncodedFilename}`,
                 method: 'GET',
                 dataType: 'buffer',
                 headers: {
@@ -685,7 +685,7 @@ describe('Test File Store endpoints', function() {
         const fileBaseName = path.basename(uploadFile.name);
 
         return client.restRequest({
-            path: '/rest/v2/file-stores/default/',
+            path: '/rest/latest/file-stores/default/',
             method: 'POST',
             uploadFiles: [uploadFile.name]
         }).then(response => {
@@ -695,7 +695,7 @@ describe('Test File Store endpoints', function() {
             // file uploaded OK, now download it and compare
             const percentEncodedFilename = encodeURI(response.data[0].filename);
             return client.restRequest({
-                path: `/rest/v2/file-stores/default/${percentEncodedFilename}`,
+                path: `/rest/latest/file-stores/default/${percentEncodedFilename}`,
                 method: 'GET',
                 dataType: 'buffer',
                 headers: {
@@ -715,13 +715,13 @@ describe('Test File Store endpoints', function() {
         const fileBaseName = path.basename(uploadFile.name);
 
         return client.restRequest({
-            path: '/rest/v2/file-stores/default/movefiles/',
+            path: '/rest/latest/file-stores/default/movefiles/',
             method: 'POST',
             uploadFiles: [uploadFile.name]
         }).then(response => {
         	uploadFile.removeCallback();
             return client.restRequest({
-                path: `/rest/v2/file-stores/default/movefiles/${fileBaseName}`,
+                path: `/rest/latest/file-stores/default/movefiles/${fileBaseName}`,
                 method: 'POST',
                 params: {
                 	moveTo: '..'
@@ -732,7 +732,7 @@ describe('Test File Store endpoints', function() {
         	throw error;
         }).then(response => {
         	return client.restRequest({
-                path: `/rest/v2/file-stores/default/${fileBaseName}`,
+                path: `/rest/latest/file-stores/default/${fileBaseName}`,
                 method: 'GET',
                 dataType: 'buffer',
                 headers: {
@@ -748,13 +748,13 @@ describe('Test File Store endpoints', function() {
         const dirName = path.basename(tmp.tmpNameSync({prefix: 'd', postfix: 'd'}));
 
         return client.restRequest({
-            path: `/rest/v2/file-stores/default/movefiles/${dirName}/`,
+            path: `/rest/latest/file-stores/default/movefiles/${dirName}/`,
             method: 'POST',
             uploadFiles: [uploadFile.name]
         }).then(response => {
         	uploadFile.removeCallback();
             return client.restRequest({
-                path: `/rest/v2/file-stores/default/movefiles/${dirName}`,
+                path: `/rest/latest/file-stores/default/movefiles/${dirName}`,
                 method: 'POST',
                 params: {
                 	moveTo: '..'
@@ -765,7 +765,7 @@ describe('Test File Store endpoints', function() {
         	throw error;
         }).then(response => {
         	return client.restRequest({
-                path: `/rest/v2/file-stores/default/${dirName}/${fileBaseName}`,
+                path: `/rest/latest/file-stores/default/${dirName}/${fileBaseName}`,
                 method: 'GET',
                 dataType: 'buffer',
                 headers: {
@@ -781,13 +781,13 @@ describe('Test File Store endpoints', function() {
         const fileName2 = path.basename(tmp.tmpNameSync());
 
         return client.restRequest({
-            path: `/rest/v2/file-stores/default/`,
+            path: `/rest/latest/file-stores/default/`,
             method: 'POST',
             uploadFiles: [uploadFile.name]
         }).then(response => {
         	uploadFile.removeCallback();
             return client.restRequest({
-                path: `/rest/v2/file-stores/default/${fileBaseName}`,
+                path: `/rest/latest/file-stores/default/${fileBaseName}`,
                 method: 'POST',
                 params: {
                 	moveTo: fileName2
@@ -798,7 +798,7 @@ describe('Test File Store endpoints', function() {
         	throw error;
         }).then(response => {
         	return client.restRequest({
-                path: `/rest/v2/file-stores/default/${fileName2}`,
+                path: `/rest/latest/file-stores/default/${fileName2}`,
                 method: 'GET',
                 dataType: 'buffer',
                 headers: {
@@ -815,13 +815,13 @@ describe('Test File Store endpoints', function() {
         const dirName2 = path.basename(tmp.tmpNameSync({prefix: 'd', postfix: 'd'}));
 
         return client.restRequest({
-            path: `/rest/v2/file-stores/default/movefiles/${dirName}/`,
+            path: `/rest/latest/file-stores/default/movefiles/${dirName}/`,
             method: 'POST',
             uploadFiles: [uploadFile.name]
         }).then(response => {
         	uploadFile.removeCallback();
             return client.restRequest({
-                path: `/rest/v2/file-stores/default/movefiles/${dirName}`,
+                path: `/rest/latest/file-stores/default/movefiles/${dirName}`,
                 method: 'POST',
                 params: {
                 	moveTo: dirName2
@@ -832,7 +832,7 @@ describe('Test File Store endpoints', function() {
         	throw error;
         }).then(response => {
         	return client.restRequest({
-                path: `/rest/v2/file-stores/default/movefiles/${dirName2}/${fileBaseName}`,
+                path: `/rest/latest/file-stores/default/movefiles/${dirName2}/${fileBaseName}`,
                 method: 'GET',
                 dataType: 'buffer',
                 headers: {
@@ -849,13 +849,13 @@ describe('Test File Store endpoints', function() {
         const fileName2Encoded = encodeURIComponent(fileName2);
 
         return client.restRequest({
-            path: `/rest/v2/file-stores/default/`,
+            path: `/rest/latest/file-stores/default/`,
             method: 'POST',
             uploadFiles: [uploadFile.name]
         }).then(response => {
         	uploadFile.removeCallback();
             return client.restRequest({
-                path: `/rest/v2/file-stores/default/${fileBaseName}`,
+                path: `/rest/latest/file-stores/default/${fileBaseName}`,
                 method: 'POST',
                 params: {
                 	moveTo: fileName2
@@ -866,7 +866,7 @@ describe('Test File Store endpoints', function() {
         	throw error;
         }).then(response => {
         	return client.restRequest({
-                path: `/rest/v2/file-stores/default/${fileName2Encoded}`,
+                path: `/rest/latest/file-stores/default/${fileName2Encoded}`,
                 method: 'GET',
                 dataType: 'buffer',
                 headers: {
@@ -883,13 +883,13 @@ describe('Test File Store endpoints', function() {
         const fileName2Encoded = encodeURIComponent(fileName2);
 
         return client.restRequest({
-            path: `/rest/v2/file-stores/default/`,
+            path: `/rest/latest/file-stores/default/`,
             method: 'POST',
             uploadFiles: [uploadFile.name]
         }).then(response => {
         	uploadFile.removeCallback();
             return client.restRequest({
-                path: `/rest/v2/file-stores/default/${fileBaseName}`,
+                path: `/rest/latest/file-stores/default/${fileBaseName}`,
                 method: 'POST',
                 params: {
                 	moveTo: fileName2
@@ -900,7 +900,7 @@ describe('Test File Store endpoints', function() {
         	throw error;
         }).then(response => {
         	return client.restRequest({
-                path: `/rest/v2/file-stores/default/${fileName2Encoded}`,
+                path: `/rest/latest/file-stores/default/${fileName2Encoded}`,
                 method: 'GET',
                 dataType: 'buffer',
                 headers: {
@@ -915,13 +915,13 @@ describe('Test File Store endpoints', function() {
         const fileBaseName = path.basename(uploadFile.name);
 
         return client.restRequest({
-            path: `/rest/v2/file-stores/default/`,
+            path: `/rest/latest/file-stores/default/`,
             method: 'POST',
             uploadFiles: [uploadFile.name]
         }).then(response => {
         	uploadFile.removeCallback();
             return client.restRequest({
-                path: `/rest/v2/file-stores/default/${fileBaseName}`,
+                path: `/rest/latest/file-stores/default/${fileBaseName}`,
                 method: 'POST',
                 params: {
                 	moveTo: encodeURIComponent('..')
@@ -945,10 +945,10 @@ describe('Test File Store endpoints', function() {
             
             this.fileName = path.basename(uploadFile.name);
             this.encodedFileName = encodeURI(this.fileName);
-            this.path = `/rest/v2/file-stores/default/node-client-test/debug/${this.encodedFileName}`;
+            this.path = `/rest/latest/file-stores/default/node-client-test/debug/${this.encodedFileName}`;
             
             return client.restRequest({
-                path: '/rest/v2/file-stores/default/node-client-test/debug',
+                path: '/rest/latest/file-stores/default/node-client-test/debug',
                 method: 'POST',
                 uploadFiles: [uploadFile.name]
             }).then(response => {

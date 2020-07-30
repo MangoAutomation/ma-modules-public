@@ -6,7 +6,7 @@
 maSerialDsEditorFactory.$inject = ['$http'];
 function maSerialDsEditorFactory($http) {
     
-    const serialDsEditorBaseUrl = '/rest/v2';
+    const serialDsEditorBaseUrl = '/rest/latest';
 
     class serialDsEditorResource {
         

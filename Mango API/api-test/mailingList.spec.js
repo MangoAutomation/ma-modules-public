@@ -44,7 +44,7 @@ describe('Mailing lists', function() {
       };
 
       return client.restRequest({
-          path: '/rest/v2/mailing-lists',
+          path: '/rest/latest/mailing-lists',
           method: 'POST',
           data: addressMailingList
       }).then(response => {
@@ -78,7 +78,7 @@ describe('Mailing lists', function() {
           addressMailingList.id = response.data.id;
       }).finally(() => {
           return client.restRequest({
-              path: `/rest/v2/mailing-lists/${addressMailingList.xid}`,
+              path: `/rest/latest/mailing-lists/${addressMailingList.xid}`,
               method: 'DELETE'
           });
       });
@@ -86,7 +86,7 @@ describe('Mailing lists', function() {
     
     it('Can\'t create a mailing list without entries', () => {
         return client.restRequest({
-            path: '/rest/v2/mailing-lists',
+            path: '/rest/latest/mailing-lists',
             method: 'POST',
             data: {
                 xid: 'ML_TEST_ADDRESS',
@@ -137,7 +137,7 @@ describe('Mailing lists', function() {
           ]
         };
         return client.restRequest({
-            path: '/rest/v2/mailing-lists',
+            path: '/rest/latest/mailing-lists',
             method: 'POST',
             data: addressMailingList
         }).then(response => {
@@ -145,7 +145,7 @@ describe('Mailing lists', function() {
             addressMailingList.name = 'updated';
             
             return client.restRequest({
-                path: `/rest/v2/mailing-lists/${addressMailingList.xid}`,
+                path: `/rest/latest/mailing-lists/${addressMailingList.xid}`,
                 method: 'PUT',
                 data: addressMailingList
             }).then(response => {
@@ -178,7 +178,7 @@ describe('Mailing lists', function() {
             })
         }).finally(() => {
             return client.restRequest({
-                path: `/rest/v2/mailing-lists/${addressMailingList.xid}`,
+                path: `/rest/latest/mailing-lists/${addressMailingList.xid}`,
                 method: 'DELETE'
             });
         });
@@ -209,7 +209,7 @@ describe('Mailing lists', function() {
                 ]
         };
         return client.restRequest({
-            path: '/rest/v2/mailing-lists/',
+            path: '/rest/latest/mailing-lists/',
             method: 'POST',
             data: addressMailingList
         }).then(response => {
@@ -217,7 +217,7 @@ describe('Mailing lists', function() {
             addressMailingList.id = response.data.id;
             addressMailingList.readPermission = ['user', 'superadmin'];
             return client.restRequest({
-                path: `/rest/v2/mailing-lists/${addressMailingList.xid}`,
+                path: `/rest/latest/mailing-lists/${addressMailingList.xid}`,
                 method: 'PATCH',
                 data: {
                     readPermission: ['user', 'superadmin']
@@ -251,7 +251,7 @@ describe('Mailing lists', function() {
                 }
             }).finally(() => {
                 return client.restRequest({
-                    path: `/rest/v2/mailing-lists/${addressMailingList.xid}`,
+                    path: `/rest/latest/mailing-lists/${addressMailingList.xid}`,
                     method: 'DELETE'
                 });
             });            
@@ -283,13 +283,13 @@ describe('Mailing lists', function() {
                 ]
         };
         return client.restRequest({
-            path: '/rest/v2/mailing-lists/',
+            path: '/rest/latest/mailing-lists/',
             method: 'POST',
             data: addressMailingList
         }).then(response => {
             addressMailingList.id = response.data.id;
             return client.restRequest({
-                path: `/rest/v2/mailing-lists?xid=${addressMailingList.xid}`,
+                path: `/rest/latest/mailing-lists?xid=${addressMailingList.xid}`,
                 method: 'GET',
                 data: addressMailingList
             }).then(response => {
@@ -322,7 +322,7 @@ describe('Mailing lists', function() {
             });
         }).finally(() => {
             return client.restRequest({
-                path: `/rest/v2/mailing-lists/${addressMailingList.xid}`,
+                path: `/rest/latest/mailing-lists/${addressMailingList.xid}`,
                 method: 'DELETE'
             });
         });
@@ -364,7 +364,7 @@ describe('Mailing lists', function() {
 
         return Promise.resolve().then(() => {
             ws = client.openWebSocket({
-                path: '/rest/v2/websocket/mailing-lists'
+                path: '/rest/latest/websocket/mailing-lists'
             });
 
             ws.on('open', () => {
@@ -412,13 +412,13 @@ describe('Mailing lists', function() {
         }).then(() => delay(1000)).then(() => {
             //TODO Fix DaoNotificationWebSocketHandler so we can remove this delay, only required for cold start
             return client.restRequest({
-                path: `/rest/v2/mailing-lists`,
+                path: `/rest/latest/mailing-lists`,
                 method: 'POST',
                 data: addressMailingList
             }).then(response => {
                 addressMailingList.id = response.data.id;
                 return client.restRequest({
-                    path: `/rest/v2/mailing-lists/${addressMailingList.xid}`,
+                    path: `/rest/latest/mailing-lists/${addressMailingList.xid}`,
                     method: 'PUT',
                     data: addressMailingList
                 });
@@ -469,7 +469,7 @@ describe('Mailing lists', function() {
         
         return Promise.resolve().then(() => {
             ws = client.openWebSocket({
-                path: '/rest/v2/websocket/mailing-lists'
+                path: '/rest/latest/websocket/mailing-lists'
             });
 
             ws.on('open', () => {
@@ -516,13 +516,13 @@ describe('Mailing lists', function() {
             
         }).then(() => delay(1000)).then(() => {
             return client.restRequest({
-                path: `/rest/v2/mailing-lists`,
+                path: `/rest/latest/mailing-lists`,
                 method: 'POST',
                 data: addressMailingList
             }).then(response => {
                 addressMailingList.id = response.data.id;
                 return client.restRequest({
-                    path: `/rest/v2/mailing-lists/${addressMailingList.xid}`,
+                    path: `/rest/latest/mailing-lists/${addressMailingList.xid}`,
                     method: 'DELETE',
                     data: {}
                 }).then(response => {
