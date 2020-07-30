@@ -40,10 +40,10 @@
   dependencies:
     "@hapi/hoek" "^8.3.0"
 
-"@infinite-automation/mango-client@^1.2.0":
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/@infinite-automation/mango-client/-/mango-client-1.2.0.tgz#411f38ce26e1c422e7f64d6a11717b34640f5def"
-  integrity sha512-okyibttNo+xccrVtuDZl3/zgiJXa35t1kHIhAZraGInanHsQQr3FSnYkKOWW6ZGWzLhD8604ufTpOAzHKEryRw==
+"@infinite-automation/mango-client@^1.2.1":
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/@infinite-automation/mango-client/-/mango-client-1.2.1.tgz#2e0e241f61e37fd71b9f68ef0599b7456b98e9b6"
+  integrity sha512-+o7wQqjB8o2rrRKM4s9XcS4JOQ9DBLpCQyF20nEyL8ev7JzDIQb2YD2knstLl8/fDXJWdYStFywX/S6PTykomA==
   dependencies:
     form-data "^2.3.0"
     moment "^2.19.0"
@@ -52,11 +52,11 @@
     ws ">=4 <7"
 
 "@infinite-automation/mango-module-tools@^2.1.0":
-  version "2.5.0"
-  resolved "https://registry.yarnpkg.com/@infinite-automation/mango-module-tools/-/mango-module-tools-2.5.0.tgz#c3feaa238c69ab5044603641d6e0565054571b84"
-  integrity sha512-quVWzke/a8ruA6dElesce6XSTqj/XqVT/MzoYswbRRAXC+ZXqQiFuZJ3o2Qrx8rPUzgnqCb4iWjCiRzUkc0RXg==
+  version "2.5.1"
+  resolved "https://registry.yarnpkg.com/@infinite-automation/mango-module-tools/-/mango-module-tools-2.5.1.tgz#367424755c0d092495580e7a24da6509d3747bf1"
+  integrity sha512-dcvi/T/0mtE0WcUiTfiqnDYCNuNH5SFJnOJR3gTpUaHGhy6kNqNBrkusqO5iHSDFnlCHl4y1qvwe9wJxaFBeRA==
   dependencies:
-    "@infinite-automation/mango-client" "^1.2.0"
+    "@infinite-automation/mango-client" "^1.2.1"
     chai "^4.2.0"
     clean-webpack-plugin "^3.0.0"
     copy-webpack-plugin "^5.1.1"
