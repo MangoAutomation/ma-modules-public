@@ -12,28 +12,28 @@ import com.serotonin.m2m2.i18n.TranslatableMessage;
  *
  * @author Terry Packer
  */
-public class ModuleRestV2Exception extends AbstractRestV2Exception{
+public class ModuleRestException extends AbstractRestException {
     private static final long serialVersionUID = 1L;
 
-    public ModuleRestV2Exception(HttpStatus httpCode, Throwable cause) {
+    public ModuleRestException(HttpStatus httpCode, Throwable cause) {
         super(httpCode, cause);
     }
 
-    public ModuleRestV2Exception(HttpStatus httpCode, IMangoRestErrorCode mangoCode, Throwable cause) {
+    public ModuleRestException(HttpStatus httpCode, IMangoRestErrorCode mangoCode, Throwable cause) {
         super(httpCode, mangoCode, cause);
         if (mangoCode == null || mangoCode.getCode() >= 1000) {
             throw new IllegalArgumentException ("Module status codes must be < 1000");
         }
     }
 
-    public ModuleRestV2Exception(HttpStatus httpCode, IMangoRestErrorCode mangoCode, TranslatableMessage message) {
+    public ModuleRestException(HttpStatus httpCode, IMangoRestErrorCode mangoCode, TranslatableMessage message) {
         super(httpCode, mangoCode, message);
         if (mangoCode == null || mangoCode.getCode() >= 1000) {
             throw new IllegalArgumentException ("Module status codes must be < 1000");
         }
     }
 
-    public ModuleRestV2Exception(HttpStatus httpCode, TranslatableMessage message) {
+    public ModuleRestException(HttpStatus httpCode, TranslatableMessage message) {
         super(httpCode, null, message);
     }
 }

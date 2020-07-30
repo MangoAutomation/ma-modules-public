@@ -58,7 +58,6 @@ import com.infiniteautomation.mango.rest.latest.model.system.TimezoneModel;
 import com.infiniteautomation.mango.rest.latest.model.system.TimezoneUtility;
 import com.infiniteautomation.mango.spring.service.MailingListService;
 import com.infiniteautomation.mango.spring.service.UsersService;
-import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.db.pair.StringStringPair;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.ICoreLicense;
@@ -98,9 +97,9 @@ import net.jazdw.rql.parser.ASTNode;
 @Api(value = "Server Information v2", description = "Server Information")
 @RestController
 @RequestMapping("/server")
-public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
+public class ServerRestController extends AbstractMangoRestController {
 
-    private final Log log = LogFactory.getLog(ServerRestV2Controller.class);
+    private final Log log = LogFactory.getLog(ServerRestController.class);
 
     private final MangoSessionRegistry sessionRegistry;
     private final MailingListService mailingListService;
@@ -111,7 +110,7 @@ public class ServerRestV2Controller extends AbstractMangoRestV2Controller {
     private TimezoneModel defaultServerTimezone;
 
     @Autowired
-    public ServerRestV2Controller(UsersService userService, MailingListService mailingListService, MangoSessionRegistry sessionRegistry) {
+    public ServerRestController(UsersService userService, MailingListService mailingListService, MangoSessionRegistry sessionRegistry) {
         this.userService = userService;
         this.mailingListService = mailingListService;
         this.sessionRegistry = sessionRegistry;

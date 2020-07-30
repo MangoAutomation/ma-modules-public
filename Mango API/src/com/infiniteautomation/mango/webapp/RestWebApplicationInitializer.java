@@ -38,6 +38,13 @@ public class RestWebApplicationInitializer implements WebApplicationInitializer 
         this.env = env;
     }
 
+    /**
+     * Note: When updating the dispatcher mappings, also update
+     * <ul>
+     * <li>{@link com.infiniteautomation.mango.rest.latest.MangoRestDispatcherConfiguration#CONTEXT_ID}</li>
+     * <li>{@link com.infiniteautomation.mango.rest.latest.MangoRestDispatcherConfiguration#DISPATCHER_NAME}</li>
+     * </ul>
+     */
     @Override
     public void onStartup(ServletContext context) throws ServletException {
         boolean enableSwagger = env.getProperty("swagger.enabled", Boolean.class, false);
@@ -78,6 +85,7 @@ public class RestWebApplicationInitializer implements WebApplicationInitializer 
         ServletRegistration.Dynamic latestRestDispatcher = context.addServlet(com.infiniteautomation.mango.rest.latest.MangoRestDispatcherConfiguration.DISPATCHER_NAME, new DispatcherServlet(latestRestContext));
         latestRestDispatcher.setLoadOnStartup(3);
         latestRestDispatcher.setAsyncSupported(true);
+
         latestRestDispatcher.addMapping("/rest/v3/*");
         latestRestDispatcher.addMapping("/rest/latest/*");
     }

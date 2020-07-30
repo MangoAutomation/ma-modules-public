@@ -34,7 +34,7 @@ import com.infiniteautomation.mango.rest.latest.bulk.BulkResponse;
 import com.infiniteautomation.mango.rest.latest.bulk.VoAction;
 import com.infiniteautomation.mango.rest.latest.bulk.VoIndividualRequest;
 import com.infiniteautomation.mango.rest.latest.bulk.VoIndividualResponse;
-import com.infiniteautomation.mango.rest.latest.exception.AbstractRestV2Exception;
+import com.infiniteautomation.mango.rest.latest.exception.AbstractRestException;
 import com.infiniteautomation.mango.rest.latest.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.latest.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.latest.exception.NotFoundRestException;
@@ -270,13 +270,13 @@ public class EventDetectorsRestController {
     public static class EventDetectorBulkResponse extends BulkResponse<EventDetectorIndividualResponse> {
     }
 
-    private final TemporaryResourceManager<EventDetectorBulkResponse, AbstractRestV2Exception> bulkResourceManager;
+    private final TemporaryResourceManager<EventDetectorBulkResponse, AbstractRestException> bulkResourceManager;
 
     @ApiOperation(value = "Bulk get/create/update/delete event detectors",
             notes = "User must have read permission for the data point or edit permission for the data source",
             consumes=MediaTypes.CSV_VALUE)
     @RequestMapping(method = RequestMethod.POST, value="/bulk", consumes=MediaTypes.CSV_VALUE)
-    public ResponseEntity<TemporaryResource<EventDetectorBulkResponse, AbstractRestV2Exception>> bulkEventDetectorOperationCSV(
+    public ResponseEntity<TemporaryResource<EventDetectorBulkResponse, AbstractRestException>> bulkEventDetectorOperationCSV(
             @RequestBody
             List<AbstractEventDetectorModel<? extends AbstractEventDetectorVO>> eds,
 
@@ -311,7 +311,7 @@ public class EventDetectorsRestController {
     @ApiOperation(value = "Bulk get/create/update/delete event detectors",
             notes = "User must have read permission for the data point or edit permission for the data source")
     @RequestMapping(method = RequestMethod.POST, value="/bulk")
-    public ResponseEntity<TemporaryResource<EventDetectorBulkResponse, AbstractRestV2Exception>> bulkEventDetectorOperation(
+    public ResponseEntity<TemporaryResource<EventDetectorBulkResponse, AbstractRestException>> bulkEventDetectorOperation(
             @RequestBody
             EventDetectorBulkRequest requestBody,
 
@@ -337,7 +337,7 @@ public class EventDetectorsRestController {
         Long expiration = requestBody.getExpiration();
         Long timeout = requestBody.getTimeout();
 
-        TemporaryResource<EventDetectorBulkResponse, AbstractRestV2Exception> responseBody = bulkResourceManager.newTemporaryResource(
+        TemporaryResource<EventDetectorBulkResponse, AbstractRestException> responseBody = bulkResourceManager.newTemporaryResource(
                 RESOURCE_TYPE_BULK_EVENT_DETECTOR, resourceId, user.getId(), expiration, timeout, (resource) -> {
 
                     EventDetectorBulkResponse bulkResponse = new EventDetectorBulkResponse();
@@ -358,7 +358,7 @@ public class EventDetectorsRestController {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(builder.path("/full-event-detectors/bulk/{id}").buildAndExpand(responseBody.getId()).toUri());
-        return new ResponseEntity<TemporaryResource<EventDetectorBulkResponse, AbstractRestV2Exception>>(responseBody, headers, HttpStatus.CREATED);
+        return new ResponseEntity<TemporaryResource<EventDetectorBulkResponse, AbstractRestException>>(responseBody, headers, HttpStatus.CREATED);
     }
 
     @ApiOperation(
@@ -372,7 +372,7 @@ public class EventDetectorsRestController {
             ASTNode query,
             Translations translations) {
 
-        List<TemporaryResource<EventDetectorBulkResponse, AbstractRestV2Exception>> preFiltered =
+        List<TemporaryResource<EventDetectorBulkResponse, AbstractRestException>> preFiltered =
                 this.bulkResourceManager.list().stream()
                 .filter((tr) -> service.getPermissionService().hasAdminRole(user) || user.getId() == tr.getUserId())
                 .collect(Collectors.toList());
@@ -386,7 +386,7 @@ public class EventDetectorsRestController {
     @ApiOperation(value = "Update a bulk  event detector operation using its id", notes = "Only allowed operation is to change the status to CANCELLED. " +
             "User can only update their own bulk operations unless they are an admin.")
     @RequestMapping(method = RequestMethod.PUT, value="/bulk/{id}")
-    public TemporaryResource<EventDetectorBulkResponse, AbstractRestV2Exception> updateBulkDataPointOperation(
+    public TemporaryResource<EventDetectorBulkResponse, AbstractRestException> updateBulkDataPointOperation(
             @ApiParam(value = "Temporary resource id", required = true, allowMultiple = false)
             @PathVariable String id,
 
@@ -396,7 +396,7 @@ public class EventDetectorsRestController {
             @AuthenticationPrincipal
             User user) {
 
-        TemporaryResource<EventDetectorBulkResponse, AbstractRestV2Exception> resource = bulkResourceManager.get(id);
+        TemporaryResource<EventDetectorBulkResponse, AbstractRestException> resource = bulkResourceManager.get(id);
 
         if (!service.getPermissionService().hasAdminRole(user) && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
@@ -413,14 +413,14 @@ public class EventDetectorsRestController {
 
     @ApiOperation(value = "Get the status of a bulk event detector operation using its id", notes = "User can only get their own bulk operations unless they are an admin")
     @RequestMapping(method = RequestMethod.GET, value="/bulk/{id}")
-    public TemporaryResource<EventDetectorBulkResponse, AbstractRestV2Exception> getBulkDataPointTagOperation(
+    public TemporaryResource<EventDetectorBulkResponse, AbstractRestException> getBulkDataPointTagOperation(
             @ApiParam(value = "Temporary resource id", required = true, allowMultiple = false)
             @PathVariable String id,
 
             @AuthenticationPrincipal
             User user) {
 
-        TemporaryResource<EventDetectorBulkResponse, AbstractRestV2Exception> resource = bulkResourceManager.get(id);
+        TemporaryResource<EventDetectorBulkResponse, AbstractRestException> resource = bulkResourceManager.get(id);
 
         if (!service.getPermissionService().hasAdminRole(user) && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
@@ -440,7 +440,7 @@ public class EventDetectorsRestController {
             @AuthenticationPrincipal
             User user) {
 
-        TemporaryResource<EventDetectorBulkResponse, AbstractRestV2Exception> resource = bulkResourceManager.get(id);
+        TemporaryResource<EventDetectorBulkResponse, AbstractRestException> resource = bulkResourceManager.get(id);
 
         if (!service.getPermissionService().hasAdminRole(user) && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();

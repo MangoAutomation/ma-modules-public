@@ -22,7 +22,7 @@ import com.serotonin.m2m2.i18n.TranslatableMessage;
  * @author Terry Packer
  */
 @JsonIgnoreProperties({"stackTrace", "message", "suppressed"})
-public abstract class AbstractRestV2Exception extends RuntimeException implements TranslatableExceptionI {
+public abstract class AbstractRestException extends RuntimeException implements TranslatableExceptionI {
 
     private static final long serialVersionUID = 1L;
     //Code for Error (may be HTTP code or Custom Mango Error Code?)
@@ -30,29 +30,29 @@ public abstract class AbstractRestV2Exception extends RuntimeException implement
     protected final IMangoRestErrorCode mangoCode;
     protected final TranslatableMessage translatableMessage;
 
-    public AbstractRestV2Exception(HttpStatus httpCode) {
+    public AbstractRestException(HttpStatus httpCode) {
         this(httpCode, null, new TranslatableMessage("rest.httpStatus." + httpCode.value()));
     }
 
-    public AbstractRestV2Exception(HttpStatus httpCode, Throwable cause) {
+    public AbstractRestException(HttpStatus httpCode, Throwable cause) {
         this(httpCode, null, new TranslatableMessage("rest.httpStatusMessage." + httpCode.value(), cause != null ? cause.toString() : ""), cause);
     }
 
-    public AbstractRestV2Exception(HttpStatus httpCode, IMangoRestErrorCode mangoCode) {
+    public AbstractRestException(HttpStatus httpCode, IMangoRestErrorCode mangoCode) {
         this(httpCode, mangoCode, new TranslatableMessage("rest.httpStatus." + httpCode.value()));
     }
 
-    public AbstractRestV2Exception(HttpStatus httpCode, IMangoRestErrorCode mangoCode, Throwable cause) {
+    public AbstractRestException(HttpStatus httpCode, IMangoRestErrorCode mangoCode, Throwable cause) {
         this(httpCode, mangoCode, new TranslatableMessage("rest.httpStatusMessage." + httpCode.value(), cause != null ? cause.toString() : ""), cause);
     }
 
-    public AbstractRestV2Exception(HttpStatus httpCode, IMangoRestErrorCode mangoCode, TranslatableMessage message) {
+    public AbstractRestException(HttpStatus httpCode, IMangoRestErrorCode mangoCode, TranslatableMessage message) {
         this.httpCode = httpCode;
         this.mangoCode = mangoCode;
         this.translatableMessage = message;
     }
 
-    public AbstractRestV2Exception(HttpStatus httpCode, IMangoRestErrorCode mangoCode, TranslatableMessage message, Throwable cause) {
+    public AbstractRestException(HttpStatus httpCode, IMangoRestErrorCode mangoCode, TranslatableMessage message, Throwable cause) {
         super(cause);
         this.httpCode = httpCode;
         this.mangoCode = mangoCode;

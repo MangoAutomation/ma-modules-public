@@ -15,7 +15,7 @@ import com.serotonin.m2m2.module.SourceLocation;
 /**
  * @author Jared Wiltshire
  */
-public class ScriptRestException extends AbstractRestV2Exception {
+public class ScriptRestException extends AbstractRestException {
 
     private static final long serialVersionUID = 1L;
     private final String fileName;

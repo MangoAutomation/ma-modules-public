@@ -14,7 +14,7 @@ import com.serotonin.m2m2.i18n.TranslatableMessage;
  *
  * @author Terry Packer
  */
-public class InvalidRQLRestException extends AbstractRestV2Exception{
+public class InvalidRQLRestException extends AbstractRestException {
 
     private static final long serialVersionUID = 1L;
     @JsonProperty

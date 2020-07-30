@@ -7,7 +7,7 @@ import com.infiniteautomation.mango.permission.UserRolesDetails;
 import com.infiniteautomation.mango.rest.latest.bulk.BulkRequest;
 import com.infiniteautomation.mango.rest.latest.bulk.BulkResponse;
 import com.infiniteautomation.mango.rest.latest.bulk.VoAction;
-import com.infiniteautomation.mango.rest.latest.exception.AbstractRestV2Exception;
+import com.infiniteautomation.mango.rest.latest.exception.AbstractRestException;
 import com.infiniteautomation.mango.rest.latest.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.latest.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.latest.model.FilteredStreamWithTotal;
@@ -69,7 +69,7 @@ public class UserRestController {
 
     //Bulk management
     private static final String RESOURCE_TYPE_BULK_USER = "BULK_USER";
-    private final TemporaryResourceManager<UserBulkResponse, AbstractRestV2Exception> bulkResourceManager;
+    private final TemporaryResourceManager<UserBulkResponse, AbstractRestException> bulkResourceManager;
     private final BiFunction<User, User, UserModel> map = (vo, user) -> new UserModel(vo);
     private final UsersService service;
     private final MangoSessionRegistry sessionRegistry;
@@ -410,7 +410,7 @@ public class UserRestController {
             notes = "User must have read/edit permission for the user",
             consumes = MediaTypes.CSV_VALUE)
     @RequestMapping(method = RequestMethod.POST, value = "/bulk", consumes = MediaTypes.CSV_VALUE)
-    public ResponseEntity<TemporaryResource<UserBulkResponse, AbstractRestV2Exception>> bulkUserOperationCSV(
+    public ResponseEntity<TemporaryResource<UserBulkResponse, AbstractRestException>> bulkUserOperationCSV(
             @RequestBody
                     List<UserActionAndModel> users,
 
@@ -442,7 +442,7 @@ public class UserRestController {
 
     @ApiOperation(value = "Bulk get/create/update/delete users", notes = "User must have read/edit permission for the user")
     @RequestMapping(method = RequestMethod.POST, value = "/bulk")
-    public ResponseEntity<TemporaryResource<UserBulkResponse, AbstractRestV2Exception>> bulkUserOperation(
+    public ResponseEntity<TemporaryResource<UserBulkResponse, AbstractRestException>> bulkUserOperation(
             @RequestBody
                     UserBulkRequest requestBody,
 
@@ -466,7 +466,7 @@ public class UserRestController {
         Long expiration = requestBody.getExpiration();
         Long timeout = requestBody.getTimeout();
 
-        TemporaryResource<UserBulkResponse, AbstractRestV2Exception> responseBody = bulkResourceManager.newTemporaryResource(
+        TemporaryResource<UserBulkResponse, AbstractRestException> responseBody = bulkResourceManager.newTemporaryResource(
                 RESOURCE_TYPE_BULK_USER, resourceId, user.getId(), expiration, timeout, (resource) -> {
 
                     UserBulkResponse bulkResponse = new UserBulkResponse();
@@ -514,7 +514,7 @@ public class UserRestController {
     @ApiOperation(value = "Update a bulk user operation using its id", notes = "Only allowed operation is to change the status to CANCELLED. " +
             "User can only update their own bulk operations unless they are an admin.")
     @RequestMapping(method = RequestMethod.PUT, value = "/bulk/{id}")
-    public TemporaryResource<UserBulkResponse, AbstractRestV2Exception> updateBulkUserOperation(
+    public TemporaryResource<UserBulkResponse, AbstractRestException> updateBulkUserOperation(
             @ApiParam(value = "Temporary resource id", required = true)
             @PathVariable String id,
 
@@ -524,7 +524,7 @@ public class UserRestController {
             @AuthenticationPrincipal
                     User user) {
 
-        TemporaryResource<UserBulkResponse, AbstractRestV2Exception> resource = bulkResourceManager.get(id);
+        TemporaryResource<UserBulkResponse, AbstractRestException> resource = bulkResourceManager.get(id);
 
         if (!service.getPermissionService().hasAdminRole(user) && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
@@ -541,14 +541,14 @@ public class UserRestController {
 
     @ApiOperation(value = "Get the status of a bulk user operation using its id", notes = "User can only get their own bulk data point operations unless they are an admin")
     @RequestMapping(method = RequestMethod.GET, value = "/bulk/{id}")
-    public TemporaryResource<UserBulkResponse, AbstractRestV2Exception> getBulkUserOperation(
+    public TemporaryResource<UserBulkResponse, AbstractRestException> getBulkUserOperation(
             @ApiParam(value = "Temporary resource id", required = true)
             @PathVariable String id,
 
             @AuthenticationPrincipal
                     User user) {
 
-        TemporaryResource<UserBulkResponse, AbstractRestV2Exception> resource = bulkResourceManager.get(id);
+        TemporaryResource<UserBulkResponse, AbstractRestException> resource = bulkResourceManager.get(id);
 
         if (!service.getPermissionService().hasAdminRole(user) && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
@@ -568,7 +568,7 @@ public class UserRestController {
             @AuthenticationPrincipal
                     User user) {
 
-        TemporaryResource<UserBulkResponse, AbstractRestV2Exception> resource = bulkResourceManager.get(id);
+        TemporaryResource<UserBulkResponse, AbstractRestException> resource = bulkResourceManager.get(id);
 
         if (!service.getPermissionService().hasAdminRole(user) && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();

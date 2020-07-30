@@ -13,7 +13,7 @@ import com.serotonin.m2m2.i18n.TranslatableMessage;
  *
  * @author Terry Packer
  */
-public class NotFoundRestException extends AbstractRestV2Exception {
+public class NotFoundRestException extends AbstractRestException {
 
     private static final long serialVersionUID = 1L;
 

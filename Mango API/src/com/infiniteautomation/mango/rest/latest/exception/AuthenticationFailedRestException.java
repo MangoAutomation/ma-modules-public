@@ -17,7 +17,7 @@ import com.serotonin.m2m2.web.mvc.spring.security.authentication.MangoPasswordAu
 /**
  * @author Jared Wiltshire
  */
-public class AuthenticationFailedRestException extends AbstractRestV2Exception {
+public class AuthenticationFailedRestException extends AbstractRestException {
     private static final long serialVersionUID = 1L;
 
     private AuthenticationFailedRestException(MangoRestErrorCode code, TranslatableMessage message, AuthenticationException cause) {

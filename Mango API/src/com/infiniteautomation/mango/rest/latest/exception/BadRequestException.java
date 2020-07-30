@@ -11,7 +11,7 @@ import com.serotonin.m2m2.i18n.TranslatableMessage;
 /**
  * @author Jared Wiltshire
  */
-public class BadRequestException extends AbstractRestV2Exception {
+public class BadRequestException extends AbstractRestException {
     private static final long serialVersionUID = 1L;
 
     public BadRequestException() {

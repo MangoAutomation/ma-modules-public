@@ -25,7 +25,7 @@ import io.swagger.annotations.ApiOperation;
 @Api(value="Logout", description="Logout")
 @RestController
 @RequestMapping("/logout")
-public class LogoutRestV2Controller {
+public class LogoutRestController {
 
 	/**
 	 * POST Logout action

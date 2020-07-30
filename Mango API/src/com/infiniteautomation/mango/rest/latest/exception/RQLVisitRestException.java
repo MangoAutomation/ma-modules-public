@@ -15,7 +15,7 @@ import net.jazdw.rql.parser.ASTNode;
 /**
  * @author Jared Wiltshire
  */
-public class RQLVisitRestException extends AbstractRestV2Exception {
+public class RQLVisitRestException extends AbstractRestException {
 
     private static final long serialVersionUID = 1L;
     @JsonProperty

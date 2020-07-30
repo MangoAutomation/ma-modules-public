@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.infiniteautomation.mango.rest.latest.exception.AbstractRestV2Exception;
+import com.infiniteautomation.mango.rest.latest.exception.AbstractRestException;
 import com.infiniteautomation.mango.rest.latest.model.system.actions.SystemActionResult;
 import com.infiniteautomation.mango.rest.latest.model.system.actions.SystemActionTemporaryResourceManager;
 import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResource;
@@ -45,7 +45,7 @@ public class SystemActionsRestController {
      */
     @ApiOperation(value = "Get Action Progress", notes = "Polls temporary resource for results.")
     @RequestMapping( method = {RequestMethod.GET}, value = {"/system-actions/status/{id}"})
-    public TemporaryResource<SystemActionResult, AbstractRestV2Exception> getStatus(
+    public TemporaryResource<SystemActionResult, AbstractRestException> getStatus(
             @ApiParam(value = "Valid running action id", required = true, allowMultiple = false)
             @PathVariable String id,
             @AuthenticationPrincipal User user) {
@@ -60,7 +60,7 @@ public class SystemActionsRestController {
      */
     @ApiOperation(value = "Cancel a system action", notes = "Cancels action and removes resource.")
     @RequestMapping( method = {RequestMethod.DELETE}, value = {"/system-actions/status/{id}"})
-    public TemporaryResource<SystemActionResult, AbstractRestV2Exception> cancel(
+    public TemporaryResource<SystemActionResult, AbstractRestException> cancel(
             @ApiParam(value = "Valid running action id", required = true, allowMultiple = false)
             @PathVariable String id,
             @AuthenticationPrincipal User user) {

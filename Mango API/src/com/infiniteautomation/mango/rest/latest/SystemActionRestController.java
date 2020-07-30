@@ -50,11 +50,11 @@ import io.swagger.annotations.ApiResponses;
 @PreAuthorize("isAdmin()")
 @RestController
 @RequestMapping("/actions")
-public class SystemActionRestV2Controller extends AbstractMangoRestV2Controller{
+public class SystemActionRestController extends AbstractMangoRestController {
 
     private MangoRestTemporaryResourceContainer<SystemActionTemporaryResource> resources;
 
-    public SystemActionRestV2Controller(){
+    public SystemActionRestController(){
         this.resources = new MangoRestTemporaryResourceContainer<>("SYSACTION_");
     }
 

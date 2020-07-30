@@ -39,7 +39,7 @@ import io.swagger.annotations.ApiParam;
 @Api(value = "Login")
 @RestController
 @RequestMapping("/login")
-public class LoginRestV2Controller {
+public class LoginRestController {
 
     public static final String LOGIN_DEFAULT_URI_HEADER = "X-Mango-Default-URI";
     public static final String LOGIN_DEFAULT_URI_REQUIRED_HEADER = "X-Mango-Default-URI-Required";

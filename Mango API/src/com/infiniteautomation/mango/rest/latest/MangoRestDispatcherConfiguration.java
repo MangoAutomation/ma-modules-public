@@ -10,7 +10,7 @@ import java.util.TimeZone;
 
 import javax.annotation.PostConstruct;
 
-import com.infiniteautomation.mango.rest.latest.resolver.TranslationsResolver;
+import com.infiniteautomation.mango.webapp.RestWebApplicationInitializer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -41,7 +41,7 @@ import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvParser;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.infiniteautomation.mango.rest.latest.JsonEmportV2Controller.ImportStatusProvider;
+import com.infiniteautomation.mango.rest.latest.JsonEmportController.ImportStatusProvider;
 import com.infiniteautomation.mango.rest.latest.genericcsv.CsvJacksonModule;
 import com.infiniteautomation.mango.rest.latest.genericcsv.GenericCSVMessageConverter;
 import com.infiniteautomation.mango.rest.latest.mapping.HtmlHttpMessageConverter;
@@ -49,14 +49,11 @@ import com.infiniteautomation.mango.rest.latest.mapping.JScienceModule;
 import com.infiniteautomation.mango.rest.latest.mapping.JsonStreamMessageConverter;
 import com.infiniteautomation.mango.rest.latest.mapping.MangoPermissionModelConverter;
 import com.infiniteautomation.mango.rest.latest.mapping.MangoPermissionModelDeserializer;
-import com.infiniteautomation.mango.rest.latest.mapping.MangoRestV2JacksonModule;
+import com.infiniteautomation.mango.rest.latest.mapping.MangoRestJacksonModule;
 import com.infiniteautomation.mango.rest.latest.mapping.PointValueTimeStreamCsvMessageConverter;
 import com.infiniteautomation.mango.rest.latest.mapping.SerotoninJsonMessageConverter;
 import com.infiniteautomation.mango.rest.latest.mapping.SqlMessageConverter;
 import com.infiniteautomation.mango.rest.latest.model.RestModelMapper;
-import com.infiniteautomation.mango.rest.latest.resolver.PartialUpdateArgumentResolver;
-import com.infiniteautomation.mango.rest.latest.resolver.RemainingPathResolver;
-import com.infiniteautomation.mango.rest.latest.resolver.RqlResolver;
 import com.infiniteautomation.mango.rest.latest.util.MangoRestTemporaryResourceContainer;
 import com.infiniteautomation.mango.spring.MangoCommonConfiguration;
 import com.infiniteautomation.mango.spring.MangoRuntimeContextConfiguration;
@@ -72,8 +69,14 @@ import com.serotonin.m2m2.web.mvc.spring.security.MangoMethodSecurityConfigurati
 @EnableWebMvc
 @ComponentScan(basePackages = { "com.infiniteautomation.mango.rest.latest" }, excludeFilters = {})
 public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
-    public static final String CONTEXT_ID = "restV2Context";
-    public static final String DISPATCHER_NAME = "restV2DispatcherServlet";
+    /**
+     * Note: Dispatcher mapping is set here
+     * <ul>
+     * <li>{@link RestWebApplicationInitializer#onStartup(javax.servlet.ServletContext)}</li>
+     * </ul>
+     */
+    public static final String CONTEXT_ID = "restV3Context";
+    public static final String DISPATCHER_NAME = "restV3DispatcherServlet";
 
     final ObjectMapper mapper;
     final List<HandlerMethodArgumentResolver> handlerMethodArgumentResolvers;
@@ -97,7 +100,7 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
         this.asyncTaskExecutor = asyncTaskExecutor;
 
         mapper
-        .registerModule(new MangoRestV2JacksonModule())
+        .registerModule(new MangoRestJacksonModule())
         .registerModule(new Jdk8Module())
         .registerModule(new JScienceModule());
 

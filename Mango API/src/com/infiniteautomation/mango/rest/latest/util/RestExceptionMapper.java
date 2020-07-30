@@ -3,7 +3,7 @@
  */
 package com.infiniteautomation.mango.rest.latest.util;
 
-import com.infiniteautomation.mango.rest.latest.exception.AbstractRestV2Exception;
+import com.infiniteautomation.mango.rest.latest.exception.AbstractRestException;
 import com.infiniteautomation.mango.rest.latest.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.latest.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.latest.exception.ResourceNotFoundException;
@@ -16,13 +16,13 @@ import com.serotonin.m2m2.vo.permission.PermissionException;
 /**
  * @author Jared Wiltshire
  */
-public interface RestExceptionMapper extends ExceptionMapper<AbstractRestV2Exception> {
+public interface RestExceptionMapper extends ExceptionMapper<AbstractRestException> {
 
     // TODO the exceptions and status codes are taken from MangoSpringExceptionHandler
     // we should make it easier to reuse the logic from that class elsewhere
-    public default AbstractRestV2Exception mapException(Throwable e) {
-        if (e instanceof AbstractRestV2Exception) {
-            return (AbstractRestV2Exception) e;
+    public default AbstractRestException mapException(Throwable e) {
+        if (e instanceof AbstractRestException) {
+            return (AbstractRestException) e;
         } else if (e instanceof PermissionException) {
             PermissionException exception = (PermissionException) e;
             return new AccessDeniedException(exception.getTranslatableMessage(), exception);

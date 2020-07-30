@@ -36,7 +36,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.infiniteautomation.mango.rest.latest.exception.AbstractRestV2Exception;
+import com.infiniteautomation.mango.rest.latest.exception.AbstractRestException;
 import com.infiniteautomation.mango.rest.latest.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.latest.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.latest.exception.GenericRestException;
@@ -112,7 +112,7 @@ import io.swagger.annotations.ApiParam;
 @Api(value = "Point Values", description = "Point Values")
 @RestController("PointValueV2RestController")
 @RequestMapping("/point-values")
-public class PointValueRestController extends AbstractMangoRestV2Controller{
+public class PointValueRestController extends AbstractMangoRestController {
 
     private static Log LOG = LogFactory.getLog(PointValueRestController.class);
 
@@ -1130,10 +1130,10 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             notes = "User must have edit access to data source and its points, use created header to track progress/cancel"
             )
     @RequestMapping(method = RequestMethod.POST, value="/purge")
-    public ResponseEntity<TemporaryResource<PurgePointValuesResponseModel, AbstractRestV2Exception>> purgePointValues(HttpServletRequest request,
-            @RequestBody(required = true) PurgeDataPointValuesModel model,
-            @AuthenticationPrincipal User user,
-            UriComponentsBuilder builder) {
+    public ResponseEntity<TemporaryResource<PurgePointValuesResponseModel, AbstractRestException>> purgePointValues(HttpServletRequest request,
+                                                                                                                    @RequestBody(required = true) PurgeDataPointValuesModel model,
+                                                                                                                    @AuthenticationPrincipal User user,
+                                                                                                                    UriComponentsBuilder builder) {
 
         return purgePointValues(
                 user,
@@ -1142,10 +1142,10 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
     }
 
 
-    private ResponseEntity<TemporaryResource<PurgePointValuesResponseModel, AbstractRestV2Exception>>  purgePointValues(
+    private ResponseEntity<TemporaryResource<PurgePointValuesResponseModel, AbstractRestException>>  purgePointValues(
             User user,  PurgeDataPointValuesModel model, UriComponentsBuilder builder) throws ValidationException {
         model.ensureValid();
-        TemporaryResource<PurgePointValuesResponseModel, AbstractRestV2Exception> response = resourceManager.newTemporaryResource(
+        TemporaryResource<PurgePointValuesResponseModel, AbstractRestException> response = resourceManager.newTemporaryResource(
                 "DATA_POINT_PURGE", null, user.getId(), model.getExpiry(), model.getTimeout(),
                 (resource) -> {
                     PurgePointValuesResponseModel result = new PurgePointValuesResponseModel();
@@ -1229,7 +1229,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             notes = "Only allowed operation is to change the status to CANCELLED. " +
             "User can only update their own purge task unless they are an admin.")
     @RequestMapping(method = RequestMethod.PUT, value="/purge/{id}")
-    public TemporaryResource<PurgePointValuesResponseModel, AbstractRestV2Exception> updateDataPointPurge(
+    public TemporaryResource<PurgePointValuesResponseModel, AbstractRestException> updateDataPointPurge(
             @ApiParam(value = "Temporary resource id", required = true, allowMultiple = false)
             @PathVariable String id,
 
@@ -1239,7 +1239,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @AuthenticationPrincipal
             User user) {
 
-        TemporaryResource<PurgePointValuesResponseModel, AbstractRestV2Exception> resource = resourceManager.get(id);
+        TemporaryResource<PurgePointValuesResponseModel, AbstractRestException> resource = resourceManager.get(id);
 
         if (!permissionService.hasAdminRole(user) && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
@@ -1257,14 +1257,14 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
     @ApiOperation(value = "Get the status of a purge operation using its id",
             notes = "User can only get their own status unless they are an admin")
     @RequestMapping(method = RequestMethod.GET, value="/purge/{id}")
-    public TemporaryResource<PurgePointValuesResponseModel, AbstractRestV2Exception> getDataPointPurgeStatus(
+    public TemporaryResource<PurgePointValuesResponseModel, AbstractRestException> getDataPointPurgeStatus(
             @ApiParam(value = "Temporary resource id", required = true, allowMultiple = false)
             @PathVariable String id,
 
             @AuthenticationPrincipal
             User user) {
 
-        TemporaryResource<PurgePointValuesResponseModel, AbstractRestV2Exception> resource = resourceManager.get(id);
+        TemporaryResource<PurgePointValuesResponseModel, AbstractRestException> resource = resourceManager.get(id);
 
         if (!permissionService.hasAdminRole(user) && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
@@ -1284,7 +1284,7 @@ public class PointValueRestController extends AbstractMangoRestV2Controller{
             @AuthenticationPrincipal
             User user) {
 
-        TemporaryResource<PurgePointValuesResponseModel, AbstractRestV2Exception> resource = resourceManager.get(id);
+        TemporaryResource<PurgePointValuesResponseModel, AbstractRestException> resource = resourceManager.get(id);
 
         if (!permissionService.hasAdminRole(user) && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();

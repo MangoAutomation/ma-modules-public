@@ -8,8 +8,6 @@ import java.util.List;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
-import javax.servlet.http.HttpServletRequest;
-
 import com.serotonin.m2m2.i18n.Translations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -22,7 +20,6 @@ import com.infiniteautomation.mango.rest.latest.model.FilteredStreamWithTotal;
 import com.infiniteautomation.mango.rest.latest.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.latest.model.StreamWithTotal;
 import com.infiniteautomation.mango.rest.latest.model.event.EventInstanceModel;
-import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.rt.event.EventInstance;
 import com.serotonin.m2m2.vo.User;
@@ -44,12 +41,12 @@ import net.jazdw.rql.parser.ASTNode;
 @Api(value="User Events", description="User events are all un-acknowledged events for a user")
 @RestController()
 @RequestMapping("/user-events")
-public class UserEventsV2Controller extends AbstractMangoRestV2Controller{
+public class UserEventsController extends AbstractMangoRestController {
 
     private final BiFunction<EventInstance, User, EventInstanceModel> map;
 
     @Autowired
-    public UserEventsV2Controller(RestModelMapper modelMapper) {
+    public UserEventsController(RestModelMapper modelMapper) {
         this.map = (vo, user) -> {
             return modelMapper.map(vo, EventInstanceModel.class, user);
         };

@@ -12,7 +12,7 @@ import com.infiniteautomation.mango.io.messaging.MessageSendException;
  *
  * @author Terry Packer
  */
-public class SendMessageFailedRestException extends AbstractRestV2Exception {
+public class SendMessageFailedRestException extends AbstractRestException {
 
     private static final long serialVersionUID = 1L;
 

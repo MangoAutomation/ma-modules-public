@@ -28,7 +28,6 @@ import com.infiniteautomation.mango.rest.latest.exception.AlreadyExistsRestExcep
 import com.infiniteautomation.mango.rest.latest.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.latest.model.FilteredStreamWithTotal;
 import com.infiniteautomation.mango.rest.latest.model.StreamWithTotal;
-import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.vo.User;
 
 import io.swagger.annotations.Api;
@@ -43,7 +42,7 @@ import net.jazdw.rql.parser.ASTNode;
 @Api(value="Virtual Serial Ports", description="Admin only endpoints to manage Virtual ports")
 @RestController()
 @RequestMapping("/virtual-serial-ports")
-public class VirtualSerialPortRestV2Controller extends AbstractMangoRestV2Controller{
+public class VirtualSerialPortRestController extends AbstractMangoRestController {
 
     @PreAuthorize("isAdmin()")
     @ApiOperation(

@@ -12,7 +12,7 @@ import com.serotonin.m2m2.i18n.TranslatableMessage;
  *
  * @author Terry Packer
  */
-public class GenericRestException extends AbstractRestV2Exception{
+public class GenericRestException extends AbstractRestException {
 
     private static final long serialVersionUID = 1L;
 

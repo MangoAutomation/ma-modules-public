@@ -5,7 +5,7 @@ package com.infiniteautomation.mango.rest.latest.temporaryResource;
 
 import java.util.Date;
 
-import com.infiniteautomation.mango.rest.latest.exception.AbstractRestV2Exception;
+import com.infiniteautomation.mango.rest.latest.exception.AbstractRestException;
 import com.infiniteautomation.mango.rest.latest.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.latest.exception.ServerErrorException;
 import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResource.StatusUpdateException;
@@ -26,7 +26,7 @@ import com.serotonin.timer.TimerTask;
 /**
  * @author Jared Wiltshire
  */
-public final class MangoTaskTemporaryResourceManager<T> extends TemporaryResourceManager<T, AbstractRestV2Exception> implements RestExceptionMapper {
+public final class MangoTaskTemporaryResourceManager<T> extends TemporaryResourceManager<T, AbstractRestException> implements RestExceptionMapper {
 
     static class TaskData {
         HighPriorityTask mainTask;
@@ -47,7 +47,7 @@ public final class MangoTaskTemporaryResourceManager<T> extends TemporaryResourc
     }
 
     @Override
-    public void resourceAdded(TemporaryResource<T, AbstractRestV2Exception> resource) {
+    public void resourceAdded(TemporaryResource<T, AbstractRestException> resource) {
         if (this.websocketHandler != null) {
             this.websocketHandler.notify(CrudNotificationType.CREATE, resource);
         }
@@ -57,7 +57,7 @@ public final class MangoTaskTemporaryResourceManager<T> extends TemporaryResourc
     }
 
     @Override
-    public void resourceRemoved(TemporaryResource<T, AbstractRestV2Exception> resource) {
+    public void resourceRemoved(TemporaryResource<T, AbstractRestException> resource) {
         if (this.websocketHandler != null) {
             this.websocketHandler.notify(CrudNotificationType.DELETE, resource);
         }
@@ -69,7 +69,7 @@ public final class MangoTaskTemporaryResourceManager<T> extends TemporaryResourc
     }
 
     @Override
-    public void resourceUpdated(TemporaryResource<T, AbstractRestV2Exception> resource) {
+    public void resourceUpdated(TemporaryResource<T, AbstractRestException> resource) {
         if (this.websocketHandler != null) {
             this.websocketHandler.notify(CrudNotificationType.UPDATE, resource);
         }
@@ -80,7 +80,7 @@ public final class MangoTaskTemporaryResourceManager<T> extends TemporaryResourc
     }
 
     @Override
-    public void resourceCompleted(TemporaryResource<T, AbstractRestV2Exception> resource) {
+    public void resourceCompleted(TemporaryResource<T, AbstractRestException> resource) {
         if (this.websocketHandler != null) {
             this.websocketHandler.notify(CrudNotificationType.UPDATE, resource);
         }
@@ -95,7 +95,7 @@ public final class MangoTaskTemporaryResourceManager<T> extends TemporaryResourc
         this.scheduleRemoval(resource);
     }
 
-    private void scheduleTask(TemporaryResource<T, AbstractRestV2Exception> resource) {
+    private void scheduleTask(TemporaryResource<T, AbstractRestException> resource) {
         TaskData tasks = (TaskData) resource.getData();
 
         User user = UserDao.getInstance().get(resource.getUserId());
@@ -113,7 +113,7 @@ public final class MangoTaskTemporaryResourceManager<T> extends TemporaryResourc
                     try {
                         resource.runTask();
                     } catch (Exception e) {
-                        AbstractRestV2Exception error = MangoTaskTemporaryResourceManager.this.mapException(e);
+                        AbstractRestException error = MangoTaskTemporaryResourceManager.this.mapException(e);
                         resource.safeError(error);
                     }
                 });
@@ -137,7 +137,7 @@ public final class MangoTaskTemporaryResourceManager<T> extends TemporaryResourc
                 }
 
                 ServerErrorException ex = msg == null ? new ServerErrorException() : new ServerErrorException(msg);
-                AbstractRestV2Exception error = MangoTaskTemporaryResourceManager.this.mapException(ex);
+                AbstractRestException error = MangoTaskTemporaryResourceManager.this.mapException(ex);
                 resource.safeError(error);
             }
         };
@@ -146,7 +146,7 @@ public final class MangoTaskTemporaryResourceManager<T> extends TemporaryResourc
         this.scheduleTimeout(resource);
     }
 
-    private void scheduleTimeout(TemporaryResource<T, AbstractRestV2Exception> resource) {
+    private void scheduleTimeout(TemporaryResource<T, AbstractRestException> resource) {
         if (resource.getTimeout() <= 0) return;
 
         TaskData tasks = (TaskData) resource.getData();
@@ -184,7 +184,7 @@ public final class MangoTaskTemporaryResourceManager<T> extends TemporaryResourc
         });
     }
 
-    private void scheduleRemoval(TemporaryResource<T, AbstractRestV2Exception> resource) {
+    private void scheduleRemoval(TemporaryResource<T, AbstractRestException> resource) {
         if (resource.getExpiration() <= 0) {
             resource.remove();
             return;

@@ -14,7 +14,7 @@ import com.infiniteautomation.mango.io.messaging.email.EmailFailedException;
  * @author Terry Packer
  *
  */
-public class SendEmailFailedRestException extends AbstractRestV2Exception {
+public class SendEmailFailedRestException extends AbstractRestException {
 
     private static final long serialVersionUID = 1L;
 

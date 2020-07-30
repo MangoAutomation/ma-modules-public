@@ -10,7 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.infiniteautomation.mango.rest.latest.exception.AbstractRestV2Exception;
+import com.infiniteautomation.mango.rest.latest.exception.AbstractRestException;
 import com.infiniteautomation.mango.rest.latest.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.latest.temporaryResource.MangoTaskTemporaryResourceManager;
 import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResource;
@@ -34,7 +34,7 @@ import com.serotonin.m2m2.vo.User;
 @Component
 public class SystemActionTemporaryResourceManager {
 
-    protected final TemporaryResourceManager<SystemActionResult, AbstractRestV2Exception> resourceManager;
+    protected final TemporaryResourceManager<SystemActionResult, AbstractRestException> resourceManager;
     protected final PermissionService service;
 
     @Autowired
@@ -54,13 +54,13 @@ public class SystemActionTemporaryResourceManager {
      * @param task
      * @return
      */
-    public <T extends SystemActionResult> ResponseEntity<TemporaryResource<T, AbstractRestV2Exception>> create(
+    public <T extends SystemActionResult> ResponseEntity<TemporaryResource<T, AbstractRestException>> create(
             SystemActionModel requestBody,
             User user,
             UriComponentsBuilder builder,
             String permissionTypeName,
             String resourceType,
-            ResourceTask<SystemActionResult, AbstractRestV2Exception> task){
+            ResourceTask<SystemActionResult, AbstractRestException> task){
         requestBody.ensureValid();
 
         Long expiration = requestBody.getExpiration();
@@ -78,12 +78,12 @@ public class SystemActionTemporaryResourceManager {
         }
 
         @SuppressWarnings("unchecked")
-        TemporaryResource<T, AbstractRestV2Exception> responseBody = (TemporaryResource<T, AbstractRestV2Exception>) resourceManager.newTemporaryResource(
+        TemporaryResource<T, AbstractRestException> responseBody = (TemporaryResource<T, AbstractRestException>) resourceManager.newTemporaryResource(
                 resourceType, null, user.getId(), expiration, timeout, task);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(builder.path("/system-actions/status/{id}").buildAndExpand(responseBody.getId()).toUri());
-        return new ResponseEntity<TemporaryResource<T, AbstractRestV2Exception>>(responseBody, headers, HttpStatus.CREATED);
+        return new ResponseEntity<TemporaryResource<T, AbstractRestException>>(responseBody, headers, HttpStatus.CREATED);
     }
 
     /**
@@ -92,8 +92,8 @@ public class SystemActionTemporaryResourceManager {
      * @param user
      * @return
      */
-    public TemporaryResource<SystemActionResult, AbstractRestV2Exception> getStatus(String id, User user) {
-        TemporaryResource<SystemActionResult, AbstractRestV2Exception> resource = resourceManager.get(id);
+    public TemporaryResource<SystemActionResult, AbstractRestException> getStatus(String id, User user) {
+        TemporaryResource<SystemActionResult, AbstractRestException> resource = resourceManager.get(id);
 
         if (!service.hasAdminRole(user) && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
@@ -108,8 +108,8 @@ public class SystemActionTemporaryResourceManager {
      * @param user
      * @return
      */
-    public TemporaryResource<SystemActionResult, AbstractRestV2Exception> cancel(String id, User user) {
-        TemporaryResource<SystemActionResult, AbstractRestV2Exception> resource = resourceManager.get(id);
+    public TemporaryResource<SystemActionResult, AbstractRestException> cancel(String id, User user) {
+        TemporaryResource<SystemActionResult, AbstractRestException> resource = resourceManager.get(id);
 
         if (!service.hasAdminRole(user) && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();

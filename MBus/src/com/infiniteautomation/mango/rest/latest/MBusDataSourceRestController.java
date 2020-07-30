@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.infiniteautomation.mango.rest.latest.exception.AbstractRestV2Exception;
+import com.infiniteautomation.mango.rest.latest.exception.AbstractRestException;
 import com.infiniteautomation.mango.rest.latest.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.latest.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.latest.exception.ServerErrorException;
@@ -70,7 +70,7 @@ public class MBusDataSourceRestController {
     private static final String RESOURCE_TYPE_MBUS = "MBUS";
 
     private final DataSourceService service;
-    private final TemporaryResourceManager<MBusScanResult, AbstractRestV2Exception> temporaryResourceManager;
+    private final TemporaryResourceManager<MBusScanResult, AbstractRestException> temporaryResourceManager;
     private final ExecutorService executor;
 
     @Autowired
@@ -83,7 +83,7 @@ public class MBusDataSourceRestController {
     @PreAuthorize("hasDataSourcePermission()")
     @ApiOperation(value = "Start an MBus scan")
     @RequestMapping(method = RequestMethod.POST, value= {"/scan"})
-    public ResponseEntity<TemporaryResource<MBusScanResult, AbstractRestV2Exception>> operation(
+    public ResponseEntity<TemporaryResource<MBusScanResult, AbstractRestException>> operation(
             @ApiParam(value = "Resource expiry milliseconds", required = false,
             allowMultiple = false) @RequestParam(value = "expiry",
             required = false) Long expiry,
@@ -101,7 +101,7 @@ public class MBusDataSourceRestController {
         if(requestBody.getDataSourceXid() != null)
             ensureNotRunning(requestBody.getDataSourceXid(), user);
 
-        TemporaryResource<MBusScanResult, AbstractRestV2Exception> responseBody = temporaryResourceManager.newTemporaryResource(
+        TemporaryResource<MBusScanResult, AbstractRestException> responseBody = temporaryResourceManager.newTemporaryResource(
                 RESOURCE_TYPE_MBUS, null, user.getId(), expiry, timeout, (resource)-> {
 
                     //Start the discovery
@@ -119,7 +119,7 @@ public class MBusDataSourceRestController {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(builder.path("/mbus-data-sources/scan/{id}").buildAndExpand(responseBody.getId()).toUri());
-        return new ResponseEntity<TemporaryResource<MBusScanResult, AbstractRestV2Exception>>(responseBody, headers, HttpStatus.CREATED);
+        return new ResponseEntity<TemporaryResource<MBusScanResult, AbstractRestException>>(responseBody, headers, HttpStatus.CREATED);
 
     }
 
@@ -128,10 +128,10 @@ public class MBusDataSourceRestController {
         private volatile boolean cancelled;
         private final MBusScanRequest requestBody;
         private final PermissionHolder user;
-        private final TemporaryResource<MBusScanResult, AbstractRestV2Exception> resource;
+        private final TemporaryResource<MBusScanResult, AbstractRestException> resource;
 
         public MBusScan(MBusScanRequest requestBody, PermissionHolder user,
-                TemporaryResource<MBusScanResult, AbstractRestV2Exception> resource) {
+                TemporaryResource<MBusScanResult, AbstractRestException> resource) {
             this.requestBody = requestBody;
             this.user = user;
             this.resource = resource;
@@ -199,7 +199,7 @@ public class MBusDataSourceRestController {
 
     @ApiOperation(value = "Get a list of current MBus scans", notes = "User can only get their own operations unless they are an admin")
     @RequestMapping(method = RequestMethod.GET, value="/scan")
-    public List<TemporaryResource<MBusScanResult, AbstractRestV2Exception>> getOperations(
+    public List<TemporaryResource<MBusScanResult, AbstractRestException>> getOperations(
             @AuthenticationPrincipal User user) {
 
         return this.temporaryResourceManager.list().stream()
@@ -209,12 +209,12 @@ public class MBusDataSourceRestController {
 
     @ApiOperation(value = "Get the status of an MBus scan using its id", notes = "User can only get their own operations unless they are an admin")
     @RequestMapping(method = RequestMethod.GET, value="/scan/{id}")
-    public TemporaryResource<MBusScanResult, AbstractRestV2Exception> getOperation(
+    public TemporaryResource<MBusScanResult, AbstractRestException> getOperation(
             @ApiParam(value = "Temporary resource id", required = true, allowMultiple = false)
             @PathVariable String id,
             @AuthenticationPrincipal User user) {
 
-        TemporaryResource<MBusScanResult, AbstractRestV2Exception> resource = temporaryResourceManager.get(id);
+        TemporaryResource<MBusScanResult, AbstractRestException> resource = temporaryResourceManager.get(id);
 
         if (!service.getPermissionService().hasAdminRole(user) && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
@@ -228,7 +228,7 @@ public class MBusDataSourceRestController {
                     "May also be used to remove a completed temporary resource by passing remove=true, otherwise the resource is removed when it expires." +
             "User can only cancel their own operations unless they are an admin.")
     @RequestMapping(method = RequestMethod.POST, value="/scan/{id}")
-    public TemporaryResource<MBusScanResult, AbstractRestV2Exception> cancelOperation(
+    public TemporaryResource<MBusScanResult, AbstractRestException> cancelOperation(
             @ApiParam(value = "Temporary resource id", required = true, allowMultiple = false)
             @PathVariable String id,
 
@@ -237,7 +237,7 @@ public class MBusDataSourceRestController {
 
             @AuthenticationPrincipal User user) {
 
-        TemporaryResource<MBusScanResult, AbstractRestV2Exception> resource = temporaryResourceManager.get(id);
+        TemporaryResource<MBusScanResult, AbstractRestException> resource = temporaryResourceManager.get(id);
 
         if (!service.getPermissionService().hasAdminRole(user) && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
@@ -255,14 +255,14 @@ public class MBusDataSourceRestController {
             notes = "Will only remove an operation if it is complete. " +
             "User can only remove their own operations unless they are an admin.")
     @RequestMapping(method = RequestMethod.DELETE, value="/scan/{id}")
-    public TemporaryResource<MBusScanResult, AbstractRestV2Exception> removeOperation(
+    public TemporaryResource<MBusScanResult, AbstractRestException> removeOperation(
             @ApiParam(value = "Temporary resource id", required = true, allowMultiple = false)
             @PathVariable String id,
 
             @AuthenticationPrincipal
             User user) {
 
-        TemporaryResource<MBusScanResult, AbstractRestV2Exception> resource = temporaryResourceManager.get(id);
+        TemporaryResource<MBusScanResult, AbstractRestException> resource = temporaryResourceManager.get(id);
 
         if (!service.getPermissionService().hasAdminRole(user) && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();

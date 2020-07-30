@@ -39,7 +39,7 @@ import io.swagger.annotations.ApiResponses;
 @Api(value = "Session Exception Information", description = "Endpoints to help with collection of server side errors")
 @RestController
 @RequestMapping("/exception")
-public class SessionExceptionRestV2Controller extends AbstractMangoRestV2Controller{
+public class SessionExceptionRestController extends AbstractMangoRestController {
 
     //Session Keys for all stored exceptions
     private final String [] exceptionKeys = {Common.SESSION_USER_EXCEPTION,  WebAttributes.AUTHENTICATION_EXCEPTION, WebAttributes.ACCESS_DENIED_403};
@@ -47,7 +47,7 @@ public class SessionExceptionRestV2Controller extends AbstractMangoRestV2Control
     private final PermissionService permissionService;
 
     @Autowired
-    public SessionExceptionRestV2Controller(PermissionService permissionService) {
+    public SessionExceptionRestController(PermissionService permissionService) {
         this.permissionService = permissionService;
     }
 

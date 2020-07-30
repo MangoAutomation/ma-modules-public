@@ -68,13 +68,13 @@ import io.swagger.annotations.ApiParam;
 @Api(value="JSON Emport")
 @RestController
 @RequestMapping("/json-emport")
-public class JsonEmportV2Controller extends AbstractMangoRestV2Controller {
+public class JsonEmportController extends AbstractMangoRestController {
 
     private final MangoRestTemporaryResourceContainer<ImportStatusProvider> importStatusResources;
     private final JsonConfigImportWebSocketHandler websocket;
     private final EmportService service;
     @Autowired
-    public JsonEmportV2Controller(
+    public JsonEmportController(
             JsonConfigImportWebSocketHandler websocket,
             MangoRestTemporaryResourceContainer<ImportStatusProvider> importStatusResources,
             EmportService service) {

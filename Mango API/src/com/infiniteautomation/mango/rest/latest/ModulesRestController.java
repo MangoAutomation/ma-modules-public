@@ -56,7 +56,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.rest.latest.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.latest.exception.GenericRestException;
-import com.infiniteautomation.mango.rest.latest.exception.ModuleRestV2Exception;
+import com.infiniteautomation.mango.rest.latest.exception.ModuleRestException;
 import com.infiniteautomation.mango.rest.latest.exception.ServerErrorException;
 import com.infiniteautomation.mango.rest.latest.exception.ValidationFailedRestException;
 import com.infiniteautomation.mango.rest.latest.model.CredentialsModel;
@@ -369,7 +369,7 @@ public class ModulesRestController {
             throw new NotFoundException();
         module.setMarkedForDeletion(delete);
         if(module.isMarkedForDeletion() != delete)
-            throw new ModuleRestV2Exception(HttpStatus.BAD_REQUEST, new TranslatableMessage("rest.modules.error.dependencyFailure"));
+            throw new ModuleRestException(HttpStatus.BAD_REQUEST, new TranslatableMessage("rest.modules.error.dependencyFailure"));
 
         return new ModuleModel(module);
     }
@@ -389,7 +389,7 @@ public class ModulesRestController {
             throw new NotFoundException();
         module.setMarkedForDeletion(delete);
         if(module.isMarkedForDeletion() != delete)
-            throw new ModuleRestV2Exception(HttpStatus.BAD_REQUEST, new TranslatableMessage("rest.modules.error.dependencyFailure"));
+            throw new ModuleRestException(HttpStatus.BAD_REQUEST, new TranslatableMessage("rest.modules.error.dependencyFailure"));
 
         return ResponseEntity.ok(new ModuleModel(module));
     }

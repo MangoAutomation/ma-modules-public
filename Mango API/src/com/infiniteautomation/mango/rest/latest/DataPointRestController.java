@@ -36,7 +36,7 @@ import com.infiniteautomation.mango.rest.latest.bulk.BulkResponse;
 import com.infiniteautomation.mango.rest.latest.bulk.VoAction;
 import com.infiniteautomation.mango.rest.latest.bulk.VoIndividualRequest;
 import com.infiniteautomation.mango.rest.latest.bulk.VoIndividualResponse;
-import com.infiniteautomation.mango.rest.latest.exception.AbstractRestV2Exception;
+import com.infiniteautomation.mango.rest.latest.exception.AbstractRestException;
 import com.infiniteautomation.mango.rest.latest.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.latest.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.latest.model.ActionAndModel;
@@ -92,7 +92,7 @@ public class DataPointRestController {
     public static class DataPointBulkResponse extends BulkResponse<DataPointIndividualResponse> {
     }
 
-    private TemporaryResourceManager<DataPointBulkResponse, AbstractRestV2Exception> bulkResourceManager;
+    private TemporaryResourceManager<DataPointBulkResponse, AbstractRestException> bulkResourceManager;
 
     private final BiFunction<DataPointVO, User, DataPointModel> map;
     private final Map<String, Function<Object, Object>> valueConverters;
@@ -266,7 +266,7 @@ public class DataPointRestController {
             notes = "User must have read/edit permission for the data point",
             consumes=MediaTypes.CSV_VALUE)
     @RequestMapping(method = RequestMethod.POST, value="/bulk", consumes=MediaTypes.CSV_VALUE)
-    public ResponseEntity<TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception>> bulkDataPointOperationCSV(
+    public ResponseEntity<TemporaryResource<DataPointBulkResponse, AbstractRestException>> bulkDataPointOperationCSV(
             @RequestBody
             List<ActionAndModel<DataPointModel>> points,
 
@@ -297,7 +297,7 @@ public class DataPointRestController {
 
     @ApiOperation(value = "Bulk get/create/update/delete data points", notes = "User must have read/edit permission for the data point")
     @RequestMapping(method = RequestMethod.POST, value="/bulk")
-    public ResponseEntity<TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception>> bulkDataPointOperation(
+    public ResponseEntity<TemporaryResource<DataPointBulkResponse, AbstractRestException>> bulkDataPointOperation(
             @RequestBody
             DataPointBulkRequest requestBody,
 
@@ -320,7 +320,7 @@ public class DataPointRestController {
         Long expiration = requestBody.getExpiration();
         Long timeout = requestBody.getTimeout();
 
-        TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception> responseBody = bulkResourceManager.newTemporaryResource(
+        TemporaryResource<DataPointBulkResponse, AbstractRestException> responseBody = bulkResourceManager.newTemporaryResource(
                 RESOURCE_TYPE_BULK_DATA_POINT, resourceId, user.getId(), expiration, timeout, (resource) -> {
 
                     DataPointBulkResponse bulkResponse = new DataPointBulkResponse();
@@ -342,7 +342,7 @@ public class DataPointRestController {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(builder.path("/data-points/bulk/{id}").buildAndExpand(responseBody.getId()).toUri());
-        return new ResponseEntity<TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception>>(responseBody, headers, HttpStatus.CREATED);
+        return new ResponseEntity<TemporaryResource<DataPointBulkResponse, AbstractRestException>>(responseBody, headers, HttpStatus.CREATED);
     }
 
     @ApiOperation(
@@ -369,7 +369,7 @@ public class DataPointRestController {
     @ApiOperation(value = "Update a bulk data point operation using its id", notes = "Only allowed operation is to change the status to CANCELLED. " +
             "User can only update their own bulk operations unless they are an admin.")
     @RequestMapping(method = RequestMethod.PUT, value="/bulk/{id}")
-    public TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception> updateBulkDataPointOperation(
+    public TemporaryResource<DataPointBulkResponse, AbstractRestException> updateBulkDataPointOperation(
             @ApiParam(value = "Temporary resource id", required = true, allowMultiple = false)
             @PathVariable String id,
 
@@ -379,7 +379,7 @@ public class DataPointRestController {
             @AuthenticationPrincipal
             User user) {
 
-        TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception> resource = bulkResourceManager.get(id);
+        TemporaryResource<DataPointBulkResponse, AbstractRestException> resource = bulkResourceManager.get(id);
 
         if (!service.getPermissionService().hasAdminRole(user) && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
@@ -396,14 +396,14 @@ public class DataPointRestController {
 
     @ApiOperation(value = "Get the status of a bulk data point operation using its id", notes = "User can only get their own bulk data point operations unless they are an admin")
     @RequestMapping(method = RequestMethod.GET, value="/bulk/{id}")
-    public TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception> getBulkDataPointTagOperation(
+    public TemporaryResource<DataPointBulkResponse, AbstractRestException> getBulkDataPointTagOperation(
             @ApiParam(value = "Temporary resource id", required = true, allowMultiple = false)
             @PathVariable String id,
 
             @AuthenticationPrincipal
             User user) {
 
-        TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception> resource = bulkResourceManager.get(id);
+        TemporaryResource<DataPointBulkResponse, AbstractRestException> resource = bulkResourceManager.get(id);
 
         if (!service.getPermissionService().hasAdminRole(user) && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
@@ -423,7 +423,7 @@ public class DataPointRestController {
             @AuthenticationPrincipal
             User user) {
 
-        TemporaryResource<DataPointBulkResponse, AbstractRestV2Exception> resource = bulkResourceManager.get(id);
+        TemporaryResource<DataPointBulkResponse, AbstractRestException> resource = bulkResourceManager.get(id);
 
         if (!service.getPermissionService().hasAdminRole(user) && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();

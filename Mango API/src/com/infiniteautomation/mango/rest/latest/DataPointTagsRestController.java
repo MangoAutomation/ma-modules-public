@@ -31,7 +31,7 @@ import com.infiniteautomation.mango.rest.latest.bulk.BulkRequest;
 import com.infiniteautomation.mango.rest.latest.bulk.BulkResponse;
 import com.infiniteautomation.mango.rest.latest.bulk.IndividualRequest;
 import com.infiniteautomation.mango.rest.latest.bulk.RestExceptionIndividualResponse;
-import com.infiniteautomation.mango.rest.latest.exception.AbstractRestV2Exception;
+import com.infiniteautomation.mango.rest.latest.exception.AbstractRestException;
 import com.infiniteautomation.mango.rest.latest.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.latest.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.latest.model.FilteredStreamWithTotal;
@@ -105,7 +105,7 @@ public class DataPointTagsRestController {
     public static class TagBulkResponse extends BulkResponse<TagIndividualResponse> {
     }
 
-    private final TemporaryResourceManager<TagBulkResponse, AbstractRestV2Exception> bulkResourceManager;
+    private final TemporaryResourceManager<TagBulkResponse, AbstractRestException> bulkResourceManager;
     private final DataPointService dataPointService;
     private final DataPointTagsDao dataPointTagsDao;
     private final DataPointDao dataPointDao;
@@ -406,7 +406,7 @@ public class DataPointTagsRestController {
 
     @ApiOperation(value = "Bulk get/set/add data point tags for a list of XIDs for CSV", notes = "User must have read/edit permission for the data point")
     @RequestMapping(method = RequestMethod.POST, value="/bulk", consumes=MediaTypes.CSV_VALUE)
-    public ResponseEntity<TemporaryResource<TagBulkResponse, AbstractRestV2Exception>> bulkDataPointTagOperationCSV(
+    public ResponseEntity<TemporaryResource<TagBulkResponse, AbstractRestException>> bulkDataPointTagOperationCSV(
             @RequestBody
             List<ActionAndTags> requestBody,
 
@@ -434,7 +434,7 @@ public class DataPointTagsRestController {
 
     @ApiOperation(value = "Bulk get/set/add data point tags for a list of XIDs", notes = "User must have read/edit permission for the data point")
     @RequestMapping(method = RequestMethod.POST, value="/bulk")
-    public ResponseEntity<TemporaryResource<TagBulkResponse, AbstractRestV2Exception>> bulkDataPointTagOperation(
+    public ResponseEntity<TemporaryResource<TagBulkResponse, AbstractRestException>> bulkDataPointTagOperation(
             @RequestBody
             TagBulkRequest requestBody,
 
@@ -455,7 +455,7 @@ public class DataPointTagsRestController {
         Long expiration = requestBody.getExpiration();
         Long timeout = requestBody.getTimeout();
 
-        TemporaryResource<TagBulkResponse, AbstractRestV2Exception> responseBody =
+        TemporaryResource<TagBulkResponse, AbstractRestException> responseBody =
                 bulkResourceManager.newTemporaryResource(RESOURCE_TYPE_BULK_DATA_POINT_TAGS, resourceId, user.getId(), expiration, timeout, (resource) -> {
                     TagBulkResponse bulkResponse = new TagBulkResponse();
 
@@ -474,7 +474,7 @@ public class DataPointTagsRestController {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(builder.path("/data-point-tags/bulk/{id}").buildAndExpand(responseBody.getId()).toUri());
-        return new ResponseEntity<TemporaryResource<TagBulkResponse, AbstractRestV2Exception>>(responseBody, headers, HttpStatus.CREATED);
+        return new ResponseEntity<TemporaryResource<TagBulkResponse, AbstractRestException>>(responseBody, headers, HttpStatus.CREATED);
     }
 
     @ApiOperation(value = "Get a list of current bulk tag operations", notes = "User can only get their own bulk tag operations unless they are an admin")
@@ -485,7 +485,7 @@ public class DataPointTagsRestController {
             ASTNode query,
             Translations translations) {
 
-        List<TemporaryResource<TagBulkResponse, AbstractRestV2Exception>> preFiltered = this.bulkResourceManager.list().stream()
+        List<TemporaryResource<TagBulkResponse, AbstractRestException>> preFiltered = this.bulkResourceManager.list().stream()
                 .filter((tr) -> permissionService.hasAdminRole(user) || user.getId() == tr.getUserId())
                 .collect(Collectors.toList());
 
@@ -498,7 +498,7 @@ public class DataPointTagsRestController {
     @ApiOperation(value = "Update a bulk tag operation using its id", notes = "Only allowed operation is to change the status to CANCELLED. " +
             "User can only update their own bulk operations unless they are an admin.")
     @RequestMapping(method = RequestMethod.PUT, value="/bulk/{id}")
-    public TemporaryResource<TagBulkResponse, AbstractRestV2Exception> updateBulkDataPointTagOperation(
+    public TemporaryResource<TagBulkResponse, AbstractRestException> updateBulkDataPointTagOperation(
             @ApiParam(value = "Temporary resource id", required = true, allowMultiple = false)
             @PathVariable String id,
 
@@ -508,7 +508,7 @@ public class DataPointTagsRestController {
             @AuthenticationPrincipal
             User user) {
 
-        TemporaryResource<TagBulkResponse, AbstractRestV2Exception> resource = bulkResourceManager.get(id);
+        TemporaryResource<TagBulkResponse, AbstractRestException> resource = bulkResourceManager.get(id);
 
         if (!permissionService.hasAdminRole(user) && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
@@ -525,14 +525,14 @@ public class DataPointTagsRestController {
 
     @ApiOperation(value = "Get the status of a bulk tag operation using its id", notes = "User can only get their own bulk tag operations unless they are an admin")
     @RequestMapping(method = RequestMethod.GET, value="/bulk/{id}")
-    public TemporaryResource<TagBulkResponse, AbstractRestV2Exception> getBulkDataPointTagOperation(
+    public TemporaryResource<TagBulkResponse, AbstractRestException> getBulkDataPointTagOperation(
             @ApiParam(value = "Temporary resource id", required = true, allowMultiple = false)
             @PathVariable String id,
 
             @AuthenticationPrincipal
             User user) {
 
-        TemporaryResource<TagBulkResponse, AbstractRestV2Exception> resource = bulkResourceManager.get(id);
+        TemporaryResource<TagBulkResponse, AbstractRestException> resource = bulkResourceManager.get(id);
 
         if (!permissionService.hasAdminRole(user) && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();
@@ -552,7 +552,7 @@ public class DataPointTagsRestController {
             @AuthenticationPrincipal
             User user) {
 
-        TemporaryResource<TagBulkResponse, AbstractRestV2Exception> resource = bulkResourceManager.get(id);
+        TemporaryResource<TagBulkResponse, AbstractRestException> resource = bulkResourceManager.get(id);
 
         if (!permissionService.hasAdminRole(user) && user.getId() != resource.getUserId()) {
             throw new AccessDeniedException();

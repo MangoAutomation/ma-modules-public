@@ -15,7 +15,7 @@ import org.springframework.http.ResponseEntity;
  * 
  * @author Terry Packer
  */
-public abstract class AbstractMangoRestV2Controller {
+public abstract class AbstractMangoRestController {
 
 	/**
 	 * For created resources

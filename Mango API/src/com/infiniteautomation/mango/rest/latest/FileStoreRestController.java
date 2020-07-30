@@ -86,14 +86,14 @@ import springfox.documentation.annotations.ApiIgnore;
 @Api(value="File Store", description="Allow read/write access to file storage areas")
 @RestController()
 @RequestMapping("/file-stores")
-public class FileStoreRestV2Controller extends AbstractMangoRestV2Controller {
+public class FileStoreRestController extends AbstractMangoRestController {
 
     private final FileStoreService service;
     private final String cacheControlHeader;
 
     @Autowired
-    public FileStoreRestV2Controller(FileStoreService fileStoreService, @Value("${web.cache.maxAge.rest:0}") long maxAge,
-            ScriptService scriptService, RoleService roleService) {
+    public FileStoreRestController(FileStoreService fileStoreService, @Value("${web.cache.maxAge.rest:0}") long maxAge,
+                                   ScriptService scriptService, RoleService roleService) {
         // use the rest max age setting but dont honor the nocache setting
         this.cacheControlHeader = CacheControl.maxAge(maxAge, TimeUnit.SECONDS).getHeaderValue();
         this.service = fileStoreService;

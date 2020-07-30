@@ -96,8 +96,8 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     //Anything that extends our Base Exception
-    @ExceptionHandler({AbstractRestV2Exception.class})
-    public ResponseEntity<Object> handleMangoError(HttpServletRequest request, HttpServletResponse response, AbstractRestV2Exception ex, WebRequest req) {
+    @ExceptionHandler({AbstractRestException.class})
+    public ResponseEntity<Object> handleMangoError(HttpServletRequest request, HttpServletResponse response, AbstractRestException ex, WebRequest req) {
         return handleExceptionInternal(ex, ex, new HttpHeaders(), ex.getStatus(), req);
     }
 

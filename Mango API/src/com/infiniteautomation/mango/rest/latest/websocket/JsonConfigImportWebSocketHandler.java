@@ -9,11 +9,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
-import com.infiniteautomation.mango.rest.latest.JsonEmportV2Controller.ImportStatusProvider;
+import com.infiniteautomation.mango.rest.latest.JsonEmportController.ImportStatusProvider;
 import com.infiniteautomation.mango.rest.latest.model.emport.JsonEmportControlModel;
 import com.infiniteautomation.mango.rest.latest.util.MangoRestTemporaryResourceContainer;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.vo.User;
 
 
 @Component("jsonConfigImportWebSocketHandlerV2")

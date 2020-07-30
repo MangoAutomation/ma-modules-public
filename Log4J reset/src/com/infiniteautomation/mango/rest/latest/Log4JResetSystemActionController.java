@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.infiniteautomation.mango.rest.latest.exception.AbstractRestV2Exception;
+import com.infiniteautomation.mango.rest.latest.exception.AbstractRestException;
 import com.infiniteautomation.mango.rest.latest.exception.ServerErrorException;
 import com.infiniteautomation.mango.rest.latest.model.system.actions.SystemActionTemporaryResourceManager;
 import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResource;
@@ -46,7 +46,7 @@ public class Log4JResetSystemActionController {
 
     @ApiOperation(value = "Log4J Utility", notes = "is admin or has log4J Reset Permission, reset and test logging")
     @RequestMapping(method = RequestMethod.POST, value="/system-actions/log4JUtil")
-    public ResponseEntity<TemporaryResource<Log4JUtilResult, AbstractRestV2Exception>> reset(
+    public ResponseEntity<TemporaryResource<Log4JUtilResult, AbstractRestException>> reset(
             @RequestBody Log4JUtilModel requestBody,
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
