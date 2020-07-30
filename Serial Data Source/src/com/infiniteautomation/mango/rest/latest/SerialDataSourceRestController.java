@@ -1,7 +1,7 @@
 /**
  * Copyright (C) 2019 Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2;
+package com.infiniteautomation.mango.rest.latest;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -18,9 +18,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.infiniteautomation.mango.regex.MatchCallback;
-import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
-import com.infiniteautomation.mango.rest.v2.model.SerialTestResultModel;
-import com.infiniteautomation.mango.rest.v2.model.SerialValidationModel;
+import com.infiniteautomation.mango.rest.latest.exception.BadRequestException;
+import com.infiniteautomation.mango.rest.latest.model.SerialTestResultModel;
+import com.infiniteautomation.mango.rest.latest.model.SerialValidationModel;
 import com.infiniteautomation.mango.spring.service.DataSourceService;
 import com.infiniteautomation.serial.rt.SerialDataSourceRT;
 import com.infiniteautomation.serial.vo.SerialDataSourceVO;

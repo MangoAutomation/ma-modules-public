@@ -2,13 +2,13 @@
  * Copyright (C) 2020  Infinite Automation Software. All rights reserved.
  */
 
-package com.infiniteautomation.mango.rest.v2.model;
+package com.infiniteautomation.mango.rest.latest.model;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.infiniteautomation.mango.permission.MangoPermission;
-import com.infiniteautomation.mango.rest.v2.model.permissions.MangoPermissionModel;
+import com.infiniteautomation.mango.rest.latest.model.permissions.MangoPermissionModel;
 import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;

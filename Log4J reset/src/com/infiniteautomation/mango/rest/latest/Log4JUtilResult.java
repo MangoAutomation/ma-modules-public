@@ -1,9 +1,9 @@
 /**
  * Copyright (C) 2018  Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2;
+package com.infiniteautomation.mango.rest.latest;
 
-import com.infiniteautomation.mango.rest.v2.model.system.actions.SystemActionResult;
+import com.infiniteautomation.mango.rest.latest.model.system.actions.SystemActionResult;
 
 /**
  * @author Terry Packer

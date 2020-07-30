@@ -1,7 +1,7 @@
 /**
  * Copyright (C) 2019  Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2.views;
+package com.infiniteautomation.mango.rest.latest.views;
 
 /**
  * Marker to indicate this field is only viewable by admin.

@@ -2,7 +2,7 @@
  * Copyright (C) 2015 Infinite Automation Systems. All rights reserved.
  * http://infiniteautomation.com/
  */
-package com.infiniteautomation.mango.rest.v2.websocket;
+package com.infiniteautomation.mango.rest.latest.websocket;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectWriter;

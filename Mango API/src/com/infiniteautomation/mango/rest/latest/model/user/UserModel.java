@@ -1,7 +1,7 @@
 /**
  * Copyright (C) 2018 Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2.model.user;
+package com.infiniteautomation.mango.rest.latest.model.user;
 
 import java.util.Date;
 import java.util.HashSet;
@@ -10,9 +10,9 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.infiniteautomation.mango.rest.v2.model.AbstractVoModel;
-import com.infiniteautomation.mango.rest.v2.model.time.TimePeriod;
-import com.infiniteautomation.mango.rest.v2.model.time.TimePeriodType;
+import com.infiniteautomation.mango.rest.latest.model.AbstractVoModel;
+import com.infiniteautomation.mango.rest.latest.model.time.TimePeriod;
+import com.infiniteautomation.mango.rest.latest.model.time.TimePeriodType;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.rt.event.AlarmLevels;

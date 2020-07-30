@@ -1,7 +1,7 @@
 /**
  * Copyright (C) 2018  Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2;
+package com.infiniteautomation.mango.rest.latest;
 
 import java.io.IOException;
 import java.net.URI;
@@ -31,15 +31,15 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
-import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
-import com.infiniteautomation.mango.rest.v2.model.StreamedVORqlQueryWithTotal;
-import com.infiniteautomation.mango.rest.v2.model.event.AbstractEventTypeModel;
-import com.infiniteautomation.mango.rest.v2.model.event.handlers.AbstractEventHandlerModel;
-import com.infiniteautomation.mango.rest.v2.model.javascript.MangoJavaScriptModel;
-import com.infiniteautomation.mango.rest.v2.model.javascript.MangoJavaScriptResultModel;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.DataTypeEnum;
-import com.infiniteautomation.mango.rest.v2.patch.PatchVORequestBody;
+import com.infiniteautomation.mango.rest.latest.model.RestModelMapper;
+import com.infiniteautomation.mango.rest.latest.model.StreamedArrayWithTotal;
+import com.infiniteautomation.mango.rest.latest.model.StreamedVORqlQueryWithTotal;
+import com.infiniteautomation.mango.rest.latest.model.event.AbstractEventTypeModel;
+import com.infiniteautomation.mango.rest.latest.model.event.handlers.AbstractEventHandlerModel;
+import com.infiniteautomation.mango.rest.latest.model.javascript.MangoJavaScriptModel;
+import com.infiniteautomation.mango.rest.latest.model.javascript.MangoJavaScriptResultModel;
+import com.infiniteautomation.mango.rest.latest.model.pointValue.DataTypeEnum;
+import com.infiniteautomation.mango.rest.latest.patch.PatchVORequestBody;
 import com.infiniteautomation.mango.spring.db.EventHandlerTableDefinition;
 import com.infiniteautomation.mango.spring.service.EventHandlerService;
 import com.infiniteautomation.mango.spring.service.MangoJavaScriptService;

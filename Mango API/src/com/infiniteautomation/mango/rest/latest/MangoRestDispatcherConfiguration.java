@@ -1,7 +1,7 @@
 /**
  * Copyright (C) 2018  Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2;
+package com.infiniteautomation.mango.rest.latest;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -10,7 +10,7 @@ import java.util.TimeZone;
 
 import javax.annotation.PostConstruct;
 
-import com.infiniteautomation.mango.rest.v2.resolver.TranslationsResolver;
+import com.infiniteautomation.mango.rest.latest.resolver.TranslationsResolver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -41,23 +41,23 @@ import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvParser;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.infiniteautomation.mango.rest.v2.JsonEmportV2Controller.ImportStatusProvider;
-import com.infiniteautomation.mango.rest.v2.genericcsv.CsvJacksonModule;
-import com.infiniteautomation.mango.rest.v2.genericcsv.GenericCSVMessageConverter;
-import com.infiniteautomation.mango.rest.v2.mapping.HtmlHttpMessageConverter;
-import com.infiniteautomation.mango.rest.v2.mapping.JScienceModule;
-import com.infiniteautomation.mango.rest.v2.mapping.JsonStreamMessageConverter;
-import com.infiniteautomation.mango.rest.v2.mapping.MangoPermissionModelConverter;
-import com.infiniteautomation.mango.rest.v2.mapping.MangoPermissionModelDeserializer;
-import com.infiniteautomation.mango.rest.v2.mapping.MangoRestV2JacksonModule;
-import com.infiniteautomation.mango.rest.v2.mapping.PointValueTimeStreamCsvMessageConverter;
-import com.infiniteautomation.mango.rest.v2.mapping.SerotoninJsonMessageConverter;
-import com.infiniteautomation.mango.rest.v2.mapping.SqlMessageConverter;
-import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
-import com.infiniteautomation.mango.rest.v2.resolver.PartialUpdateArgumentResolver;
-import com.infiniteautomation.mango.rest.v2.resolver.RemainingPathResolver;
-import com.infiniteautomation.mango.rest.v2.resolver.RqlResolver;
-import com.infiniteautomation.mango.rest.v2.util.MangoRestTemporaryResourceContainer;
+import com.infiniteautomation.mango.rest.latest.JsonEmportV2Controller.ImportStatusProvider;
+import com.infiniteautomation.mango.rest.latest.genericcsv.CsvJacksonModule;
+import com.infiniteautomation.mango.rest.latest.genericcsv.GenericCSVMessageConverter;
+import com.infiniteautomation.mango.rest.latest.mapping.HtmlHttpMessageConverter;
+import com.infiniteautomation.mango.rest.latest.mapping.JScienceModule;
+import com.infiniteautomation.mango.rest.latest.mapping.JsonStreamMessageConverter;
+import com.infiniteautomation.mango.rest.latest.mapping.MangoPermissionModelConverter;
+import com.infiniteautomation.mango.rest.latest.mapping.MangoPermissionModelDeserializer;
+import com.infiniteautomation.mango.rest.latest.mapping.MangoRestV2JacksonModule;
+import com.infiniteautomation.mango.rest.latest.mapping.PointValueTimeStreamCsvMessageConverter;
+import com.infiniteautomation.mango.rest.latest.mapping.SerotoninJsonMessageConverter;
+import com.infiniteautomation.mango.rest.latest.mapping.SqlMessageConverter;
+import com.infiniteautomation.mango.rest.latest.model.RestModelMapper;
+import com.infiniteautomation.mango.rest.latest.resolver.PartialUpdateArgumentResolver;
+import com.infiniteautomation.mango.rest.latest.resolver.RemainingPathResolver;
+import com.infiniteautomation.mango.rest.latest.resolver.RqlResolver;
+import com.infiniteautomation.mango.rest.latest.util.MangoRestTemporaryResourceContainer;
 import com.infiniteautomation.mango.spring.MangoCommonConfiguration;
 import com.infiniteautomation.mango.spring.MangoRuntimeContextConfiguration;
 import com.serotonin.m2m2.web.MediaTypes;
@@ -70,7 +70,7 @@ import com.serotonin.m2m2.web.mvc.spring.security.MangoMethodSecurityConfigurati
 @Configuration("MangoV2RestDispatcherConfiguration")
 @Import({MangoCommonConfiguration.class, MangoMethodSecurityConfiguration.class, MangoWebSocketConfiguration.class})
 @EnableWebMvc
-@ComponentScan(basePackages = { "com.infiniteautomation.mango.rest.v2" }, excludeFilters = {})
+@ComponentScan(basePackages = { "com.infiniteautomation.mango.rest.latest" }, excludeFilters = {})
 public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
     public static final String CONTEXT_ID = "restV2Context";
     public static final String DISPATCHER_NAME = "restV2DispatcherServlet";

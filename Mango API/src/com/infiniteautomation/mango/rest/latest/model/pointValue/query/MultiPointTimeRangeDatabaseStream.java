@@ -2,7 +2,7 @@
  * @copyright 2017 {@link http://infiniteautomation.com|Infinite Automation Systems, Inc.} All rights reserved.
  * @author Terry Packer
  */
-package com.infiniteautomation.mango.rest.v2.model.pointValue.query;
+package com.infiniteautomation.mango.rest.latest.model.pointValue.query;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -13,7 +13,7 @@ import java.util.ListIterator;
 import java.util.Map;
 
 import com.infiniteautomation.mango.db.query.QueryCancelledException;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeWriter;
+import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueTimeWriter;
 import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.rt.dataImage.AnnotatedIdPointValueTime;
 import com.serotonin.m2m2.rt.dataImage.IAnnotated;

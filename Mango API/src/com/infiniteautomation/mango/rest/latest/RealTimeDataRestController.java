@@ -1,7 +1,7 @@
 /**
  * Copyright (C) 2018 Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2;
+package com.infiniteautomation.mango.rest.latest;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,10 +15,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.infiniteautomation.mango.rest.v2.model.FilteredStreamWithTotal;
-import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
-import com.infiniteautomation.mango.rest.v2.model.StreamWithTotal;
-import com.infiniteautomation.mango.rest.v2.model.realtime.RealTimeDataPointValueModel;
+import com.infiniteautomation.mango.rest.latest.model.FilteredStreamWithTotal;
+import com.infiniteautomation.mango.rest.latest.model.RestModelMapper;
+import com.infiniteautomation.mango.rest.latest.model.StreamWithTotal;
+import com.infiniteautomation.mango.rest.latest.model.realtime.RealTimeDataPointValueModel;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.Translations;

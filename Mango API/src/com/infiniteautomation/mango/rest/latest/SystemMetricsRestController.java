@@ -2,7 +2,7 @@
  * Copyright (C) 2016 Infinite Automation Software. All rights reserved.
  *
  */
-package com.infiniteautomation.mango.rest.v2;
+package com.infiniteautomation.mango.rest.latest;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.infiniteautomation.mango.monitor.ValueMonitor;
 import com.infiniteautomation.mango.permission.MangoPermission;
-import com.infiniteautomation.mango.rest.v2.model.ValueMonitorModel;
+import com.infiniteautomation.mango.rest.latest.model.ValueMonitorModel;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.serotonin.m2m2.Common;

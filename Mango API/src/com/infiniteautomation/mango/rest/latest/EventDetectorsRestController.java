@@ -1,7 +1,7 @@
 /**
  * Copyright (C) 2019  Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2;
+package com.infiniteautomation.mango.rest.latest;
 
 import java.net.URI;
 import java.util.HashMap;
@@ -29,30 +29,30 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.infiniteautomation.mango.rest.v2.bulk.BulkRequest;
-import com.infiniteautomation.mango.rest.v2.bulk.BulkResponse;
-import com.infiniteautomation.mango.rest.v2.bulk.VoAction;
-import com.infiniteautomation.mango.rest.v2.bulk.VoIndividualRequest;
-import com.infiniteautomation.mango.rest.v2.bulk.VoIndividualResponse;
-import com.infiniteautomation.mango.rest.v2.exception.AbstractRestV2Exception;
-import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
-import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
-import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
-import com.infiniteautomation.mango.rest.v2.model.ActionAndModel;
-import com.infiniteautomation.mango.rest.v2.model.FilteredStreamWithTotal;
-import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
-import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
-import com.infiniteautomation.mango.rest.v2.model.StreamedSeroJsonVORqlQuery;
-import com.infiniteautomation.mango.rest.v2.model.StreamedVORqlQueryWithTotal;
-import com.infiniteautomation.mango.rest.v2.model.event.detectors.AbstractEventDetectorModel;
-import com.infiniteautomation.mango.rest.v2.model.event.detectors.rt.AbstractEventDetectorRTModel;
-import com.infiniteautomation.mango.rest.v2.patch.PatchVORequestBody;
-import com.infiniteautomation.mango.rest.v2.temporaryResource.MangoTaskTemporaryResourceManager;
-import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource;
-import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource.TemporaryResourceStatus;
-import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceManager;
-import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceStatusUpdate;
-import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceWebSocketHandler;
+import com.infiniteautomation.mango.rest.latest.bulk.BulkRequest;
+import com.infiniteautomation.mango.rest.latest.bulk.BulkResponse;
+import com.infiniteautomation.mango.rest.latest.bulk.VoAction;
+import com.infiniteautomation.mango.rest.latest.bulk.VoIndividualRequest;
+import com.infiniteautomation.mango.rest.latest.bulk.VoIndividualResponse;
+import com.infiniteautomation.mango.rest.latest.exception.AbstractRestV2Exception;
+import com.infiniteautomation.mango.rest.latest.exception.AccessDeniedException;
+import com.infiniteautomation.mango.rest.latest.exception.BadRequestException;
+import com.infiniteautomation.mango.rest.latest.exception.NotFoundRestException;
+import com.infiniteautomation.mango.rest.latest.model.ActionAndModel;
+import com.infiniteautomation.mango.rest.latest.model.FilteredStreamWithTotal;
+import com.infiniteautomation.mango.rest.latest.model.RestModelMapper;
+import com.infiniteautomation.mango.rest.latest.model.StreamedArrayWithTotal;
+import com.infiniteautomation.mango.rest.latest.model.StreamedSeroJsonVORqlQuery;
+import com.infiniteautomation.mango.rest.latest.model.StreamedVORqlQueryWithTotal;
+import com.infiniteautomation.mango.rest.latest.model.event.detectors.AbstractEventDetectorModel;
+import com.infiniteautomation.mango.rest.latest.model.event.detectors.rt.AbstractEventDetectorRTModel;
+import com.infiniteautomation.mango.rest.latest.patch.PatchVORequestBody;
+import com.infiniteautomation.mango.rest.latest.temporaryResource.MangoTaskTemporaryResourceManager;
+import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResource;
+import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResource.TemporaryResourceStatus;
+import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResourceManager;
+import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResourceStatusUpdate;
+import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResourceWebSocketHandler;
 import com.infiniteautomation.mango.spring.db.EventDetectorTableDefinition;
 import com.infiniteautomation.mango.spring.service.EventDetectorsService;
 import com.infiniteautomation.mango.spring.service.EventHandlerService;

@@ -2,7 +2,7 @@
  * Copyright (C) 2017 Infinite Automation Software. All rights reserved.
  */
 
-package com.infiniteautomation.mango.rest.v2.exception;
+package com.infiniteautomation.mango.rest.latest.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;

@@ -2,13 +2,13 @@
  * @copyright 2017 {@link http://infiniteautomation.com|Infinite Automation Systems, Inc.} All rights reserved.
  * @author Terry Packer
  */
-package com.infiniteautomation.mango.rest.v2.model.pointValue;
+package com.infiniteautomation.mango.rest.latest.model.pointValue;
 
 import java.io.IOException;
 import java.util.Map;
 
 import com.infiniteautomation.mango.db.query.QueryCancelledException;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.query.LatestQueryInfo;
+import com.infiniteautomation.mango.rest.latest.model.pointValue.query.LatestQueryInfo;
 import com.serotonin.m2m2.vo.DataPointVO;
 
 /**

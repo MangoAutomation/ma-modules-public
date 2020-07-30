@@ -1,16 +1,16 @@
 /**
  * Copyright (C) 2019  Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2.model.event;
+package com.infiniteautomation.mango.rest.latest.model.event;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
-import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
-import com.infiniteautomation.mango.rest.v2.model.RestModelMapping;
-import com.infiniteautomation.mango.rest.v2.model.comment.UserCommentModel;
+import com.infiniteautomation.mango.rest.latest.model.RestModelMapper;
+import com.infiniteautomation.mango.rest.latest.model.RestModelMapping;
+import com.infiniteautomation.mango.rest.latest.model.comment.UserCommentModel;
 import com.serotonin.m2m2.vo.event.EventInstanceI;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 

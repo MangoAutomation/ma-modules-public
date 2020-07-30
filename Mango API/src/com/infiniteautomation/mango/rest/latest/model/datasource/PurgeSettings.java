@@ -2,12 +2,12 @@
  * Copyright (C) 2014 Infinite Automation Software. All rights reserved.
  * @author Terry Packer
  */
-package com.infiniteautomation.mango.rest.v2.model.datasource;
+package com.infiniteautomation.mango.rest.latest.model.datasource;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.infiniteautomation.mango.rest.v2.model.time.TimePeriod;
-import com.infiniteautomation.mango.rest.v2.model.time.TimePeriodType;
+import com.infiniteautomation.mango.rest.latest.model.time.TimePeriod;
+import com.infiniteautomation.mango.rest.latest.model.time.TimePeriodType;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 
 /**

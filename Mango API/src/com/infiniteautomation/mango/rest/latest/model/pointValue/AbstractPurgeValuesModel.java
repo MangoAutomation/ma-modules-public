@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2019  Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2.model.pointValue;
+package com.infiniteautomation.mango.rest.latest.model.pointValue;
 
 import java.util.Date;
 
-import com.infiniteautomation.mango.rest.v2.model.time.TimePeriod;
+import com.infiniteautomation.mango.rest.latest.model.time.TimePeriod;
 import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.m2m2.i18n.ProcessResult;
 

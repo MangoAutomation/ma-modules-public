@@ -2,7 +2,7 @@
  * Copyright (C) 2018 Infinite Automation Software. All rights reserved.
  * @author Terry Packer
  */
-package com.infiniteautomation.mango.rest.v2;
+package com.infiniteautomation.mango.rest.latest;
 
 import java.util.Collections;
 import java.util.Set;
@@ -20,7 +20,7 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 import org.springframework.web.socket.server.HandshakeHandler;
 import org.springframework.web.socket.server.HandshakeInterceptor;
 
-import com.infiniteautomation.mango.rest.v2.websocket.WebSocketMapping;
+import com.infiniteautomation.mango.rest.latest.websocket.WebSocketMapping;
 
 
 /**
@@ -35,7 +35,7 @@ import com.infiniteautomation.mango.rest.v2.websocket.WebSocketMapping;
  */
 @Configuration("mangoWebSocketV2Configuration")
 @EnableWebSocket
-@ComponentScan(basePackages = {"com.infiniteautomation.mango.rest.v2"})
+@ComponentScan(basePackages = {"com.infiniteautomation.mango.rest.latest"})
 public class MangoWebSocketConfiguration implements WebSocketConfigurer {
 
     @Autowired

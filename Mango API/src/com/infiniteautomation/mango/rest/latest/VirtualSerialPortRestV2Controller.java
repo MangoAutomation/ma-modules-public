@@ -2,7 +2,7 @@
  * Copyright (C) 2017 Infinite Automation Software. All rights reserved.
  *
  */
-package com.infiniteautomation.mango.rest.v2;
+package com.infiniteautomation.mango.rest.latest;
 
 import java.net.URI;
 import java.util.List;
@@ -24,10 +24,10 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.io.serial.virtual.VirtualSerialPortConfig;
 import com.infiniteautomation.mango.io.serial.virtual.VirtualSerialPortConfigDao;
-import com.infiniteautomation.mango.rest.v2.exception.AlreadyExistsRestException;
-import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
-import com.infiniteautomation.mango.rest.v2.model.FilteredStreamWithTotal;
-import com.infiniteautomation.mango.rest.v2.model.StreamWithTotal;
+import com.infiniteautomation.mango.rest.latest.exception.AlreadyExistsRestException;
+import com.infiniteautomation.mango.rest.latest.exception.NotFoundRestException;
+import com.infiniteautomation.mango.rest.latest.model.FilteredStreamWithTotal;
+import com.infiniteautomation.mango.rest.latest.model.StreamWithTotal;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.vo.User;
 

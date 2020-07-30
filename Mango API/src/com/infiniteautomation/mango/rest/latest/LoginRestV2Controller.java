@@ -2,7 +2,7 @@
  * Copyright (C) 2017 Infinite Automation Software. All rights reserved.
  *
  */
-package com.infiniteautomation.mango.rest.v2;
+package com.infiniteautomation.mango.rest.latest;
 
 import java.io.IOException;
 
@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.infiniteautomation.mango.rest.v2.model.user.UserModel;
+import com.infiniteautomation.mango.rest.latest.model.user.UserModel;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.module.DefaultPagesDefinition;
 import com.serotonin.m2m2.module.DefaultPagesDefinition.LoginUriInfo;
@@ -50,7 +50,7 @@ public class LoginRestV2Controller {
      * end point is actually reached the user is either already authenticated or not.
      * The Spring Security authentication success handler forwards the request here.</p>
      *
-     * <p>Authentication exceptions are re-thrown and mapped to rest bodies in {@link com.infiniteautomation.mango.rest.v2.exception.RestExceptionHandler MangoSpringExceptionHandler}</p>
+     * <p>Authentication exceptions are re-thrown and mapped to rest bodies in {@link com.infiniteautomation.mango.rest.latest.exception.RestExceptionHandler MangoSpringExceptionHandler}</p>
      *
      * <p>Ensure that the URLs in MangoSecurityConfiguration are changed if you change the @RequestMapping value</p>
      */

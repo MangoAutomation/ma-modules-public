@@ -2,7 +2,7 @@
  * @copyright 2017 {@link http://infiniteautomation.com|Infinite Automation Systems, Inc.} All rights reserved.
  * @author Terry Packer
  */
-package com.infiniteautomation.mango.rest.v2.model.pointValue.query;
+package com.infiniteautomation.mango.rest.latest.model.pointValue.query;
 
 import java.time.Instant;
 import java.time.ZoneId;
@@ -12,10 +12,10 @@ import java.util.TimeZone;
 
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
-import com.infiniteautomation.mango.rest.v2.exception.ValidationFailedRestException;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueField;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.RollupEnum;
+import com.infiniteautomation.mango.rest.latest.exception.BadRequestException;
+import com.infiniteautomation.mango.rest.latest.exception.ValidationFailedRestException;
+import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueField;
+import com.infiniteautomation.mango.rest.latest.model.pointValue.RollupEnum;
 import com.infiniteautomation.mango.util.Functions;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.SystemSettingsDao;

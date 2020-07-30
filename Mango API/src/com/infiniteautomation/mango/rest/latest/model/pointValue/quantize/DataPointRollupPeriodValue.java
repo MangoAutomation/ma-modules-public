@@ -1,15 +1,15 @@
 /**
  * Copyright (C) 2018 Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2.model.pointValue.quantize;
+package com.infiniteautomation.mango.rest.latest.model.pointValue.quantize;
 
 import java.io.IOException;
 
 import com.goebl.simplify.Point;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.DataPointValueTime;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueField;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeWriter;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.RollupEnum;
+import com.infiniteautomation.mango.rest.latest.model.pointValue.DataPointValueTime;
+import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueField;
+import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueTimeWriter;
+import com.infiniteautomation.mango.rest.latest.model.pointValue.RollupEnum;
 import com.infiniteautomation.mango.statistics.AnalogStatistics;
 import com.infiniteautomation.mango.statistics.NoStatisticsGenerator;
 import com.infiniteautomation.mango.statistics.StartsAndRuntimeList;

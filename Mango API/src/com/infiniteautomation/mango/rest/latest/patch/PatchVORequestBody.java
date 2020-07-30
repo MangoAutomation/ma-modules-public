@@ -1,7 +1,7 @@
 /**
  * Copyright (C) 2018  Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2.patch;
+package com.infiniteautomation.mango.rest.latest.patch;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;

@@ -2,7 +2,7 @@
  * Copyright (C) 2017 Infinite Automation Software. All rights reserved.
  *
  */
-package com.infiniteautomation.mango.rest.v2;
+package com.infiniteautomation.mango.rest.latest;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -26,9 +26,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
-import com.infiniteautomation.mango.rest.v2.util.MangoRestTemporaryResourceContainer;
-import com.infiniteautomation.mango.rest.v2.util.SystemActionTemporaryResource;
+import com.infiniteautomation.mango.rest.latest.exception.NotFoundRestException;
+import com.infiniteautomation.mango.rest.latest.util.MangoRestTemporaryResourceContainer;
+import com.infiniteautomation.mango.rest.latest.util.SystemActionTemporaryResource;
 import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.module.SystemActionDefinition;
 import com.serotonin.m2m2.vo.User;

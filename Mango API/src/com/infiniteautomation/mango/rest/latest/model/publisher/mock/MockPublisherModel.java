@@ -2,10 +2,10 @@
  * Copyright (C) 2020  Infinite Automation Software. All rights reserved.
  */
 
-package com.infiniteautomation.mango.rest.v2.model.publisher.mock;
+package com.infiniteautomation.mango.rest.latest.model.publisher.mock;
 
-import com.infiniteautomation.mango.rest.v2.model.publisher.AbstractPublishedPointModel;
-import com.infiniteautomation.mango.rest.v2.model.publisher.AbstractPublisherModel;
+import com.infiniteautomation.mango.rest.latest.model.publisher.AbstractPublishedPointModel;
+import com.infiniteautomation.mango.rest.latest.model.publisher.AbstractPublisherModel;
 import com.serotonin.m2m2.vo.publish.mock.MockPublishedPointVO;
 import com.serotonin.m2m2.vo.publish.mock.MockPublisherDefinition;
 import com.serotonin.m2m2.vo.publish.mock.MockPublisherVO;

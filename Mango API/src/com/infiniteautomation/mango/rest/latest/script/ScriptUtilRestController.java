@@ -1,4 +1,4 @@
-package com.infiniteautomation.mango.rest.v2.script;
+package com.infiniteautomation.mango.rest.latest.script;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.infiniteautomation.mango.rest.v2.exception.ServerErrorException;
-import com.infiniteautomation.mango.rest.v2.model.javascript.MangoJavaScriptModel;
-import com.infiniteautomation.mango.rest.v2.model.javascript.MangoJavaScriptResultModel;
+import com.infiniteautomation.mango.rest.latest.exception.ServerErrorException;
+import com.infiniteautomation.mango.rest.latest.model.javascript.MangoJavaScriptModel;
+import com.infiniteautomation.mango.rest.latest.model.javascript.MangoJavaScriptResultModel;
 import com.infiniteautomation.mango.spring.service.MangoJavaScriptService;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.script.ScriptPermissions;

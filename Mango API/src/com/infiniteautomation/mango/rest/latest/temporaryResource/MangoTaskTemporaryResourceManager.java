@@ -1,17 +1,17 @@
 /*
  * Copyright (C) 2018 Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2.temporaryResource;
+package com.infiniteautomation.mango.rest.latest.temporaryResource;
 
 import java.util.Date;
 
-import com.infiniteautomation.mango.rest.v2.exception.AbstractRestV2Exception;
-import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
-import com.infiniteautomation.mango.rest.v2.exception.ServerErrorException;
-import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource.StatusUpdateException;
-import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource.TemporaryResourceStatus;
-import com.infiniteautomation.mango.rest.v2.util.CrudNotificationType;
-import com.infiniteautomation.mango.rest.v2.util.RestExceptionMapper;
+import com.infiniteautomation.mango.rest.latest.exception.AbstractRestV2Exception;
+import com.infiniteautomation.mango.rest.latest.exception.AccessDeniedException;
+import com.infiniteautomation.mango.rest.latest.exception.ServerErrorException;
+import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResource.StatusUpdateException;
+import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResource.TemporaryResourceStatus;
+import com.infiniteautomation.mango.rest.latest.util.CrudNotificationType;
+import com.infiniteautomation.mango.rest.latest.util.RestExceptionMapper;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.UserDao;

@@ -1,7 +1,7 @@
 /**
  * Copyright (C) 2018 Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2.model.pointValue.query;
+package com.infiniteautomation.mango.rest.latest.model.pointValue.query;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -10,9 +10,9 @@ import java.util.Map;
 import java.util.Set;
 
 import com.infiniteautomation.mango.db.query.QueryCancelledException;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueField;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeWriter;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.DataPointStatisticsGenerator;
+import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueField;
+import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueTimeWriter;
+import com.infiniteautomation.mango.rest.latest.model.pointValue.quantize.DataPointStatisticsGenerator;
 import com.infiniteautomation.mango.statistics.AnalogStatistics;
 import com.infiniteautomation.mango.statistics.StartsAndRuntimeList;
 import com.infiniteautomation.mango.statistics.ValueChangeCounter;

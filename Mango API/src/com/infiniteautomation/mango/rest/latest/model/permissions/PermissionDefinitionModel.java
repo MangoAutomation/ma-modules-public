@@ -2,7 +2,7 @@
  * Copyright (C) 2017 Infinite Automation Software. All rights reserved.
  */
 
-package com.infiniteautomation.mango.rest.v2.model.permissions;
+package com.infiniteautomation.mango.rest.latest.model.permissions;
 
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.Module;

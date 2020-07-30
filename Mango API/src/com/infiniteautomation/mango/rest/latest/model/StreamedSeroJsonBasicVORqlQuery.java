@@ -2,7 +2,7 @@
  * Copyright (C) 2020  Infinite Automation Software. All rights reserved.
  */
 
-package com.infiniteautomation.mango.rest.v2.model;
+package com.infiniteautomation.mango.rest.latest.model;
 
 import java.io.IOException;
 import java.util.Map;
@@ -13,7 +13,7 @@ import org.jooq.Field;
 import org.springframework.http.HttpStatus;
 
 import com.infiniteautomation.mango.db.query.ConditionSortLimit;
-import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
+import com.infiniteautomation.mango.rest.latest.exception.GenericRestException;
 import com.infiniteautomation.mango.spring.db.AbstractBasicTableDefinition;
 import com.infiniteautomation.mango.spring.service.AbstractBasicVOService;
 import com.serotonin.json.JsonException;

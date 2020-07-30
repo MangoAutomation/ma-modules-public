@@ -2,7 +2,7 @@
  * Copyright (C) 2020  Infinite Automation Software. All rights reserved.
  */
 
-package com.infiniteautomation.mango.rest.v2.model.pointValue;
+package com.infiniteautomation.mango.rest.latest.model.pointValue;
 
 /**
  * Left here for legacy purposes in the point value rest controller.

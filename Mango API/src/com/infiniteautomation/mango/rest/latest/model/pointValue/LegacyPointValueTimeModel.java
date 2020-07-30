@@ -2,7 +2,7 @@
  * Copyright (C) 2020  Infinite Automation Software. All rights reserved.
  */
 
-package com.infiniteautomation.mango.rest.v2.model.pointValue;
+package com.infiniteautomation.mango.rest.latest.model.pointValue;
 
 /**
  * Use PointValueTimeModel instead, this is here for compatibility with

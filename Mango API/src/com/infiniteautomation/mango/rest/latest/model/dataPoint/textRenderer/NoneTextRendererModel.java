@@ -2,7 +2,7 @@
  * Copyright (C) 2015 Infinite Automation Software. All rights reserved.
  * @author Terry Packer
  */
-package com.infiniteautomation.mango.rest.v2.model.dataPoint.textRenderer;
+package com.infiniteautomation.mango.rest.latest.model.dataPoint.textRenderer;
 
 import com.serotonin.m2m2.view.text.NoneRenderer;
 

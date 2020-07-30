@@ -2,10 +2,10 @@
  * Copyright (C) 2020  Infinite Automation Software. All rights reserved.
  */
 
-package com.infiniteautomation.mango.rest.v2.model.user;
+package com.infiniteautomation.mango.rest.latest.model.user;
 
-import com.infiniteautomation.mango.rest.v2.bulk.RestExceptionIndividualResponse;
-import com.infiniteautomation.mango.rest.v2.bulk.VoAction;
+import com.infiniteautomation.mango.rest.latest.bulk.RestExceptionIndividualResponse;
+import com.infiniteautomation.mango.rest.latest.bulk.VoAction;
 
 /**
  *

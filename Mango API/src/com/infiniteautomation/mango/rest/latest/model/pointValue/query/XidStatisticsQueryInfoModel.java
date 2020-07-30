@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2018 Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2.model.pointValue.query;
+package com.infiniteautomation.mango.rest.latest.model.pointValue.query;
 
 import java.time.ZonedDateTime;
 
-import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueField;
+import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueField;
 
 /**
  *
@@ -26,7 +26,7 @@ public class XidStatisticsQueryInfoModel extends XidTimeRangeQueryModel {
     }
     
     /* (non-Javadoc)
-     * @see com.infiniteautomation.mango.rest.v2.model.pointValue.query.XidTimeRangeQueryModel#isBookend()
+     * @see com.infiniteautomation.mango.rest.latest.model.pointValue.query.XidTimeRangeQueryModel#isBookend()
      */
     @Override
     public boolean isBookend() {

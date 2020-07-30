@@ -1,7 +1,7 @@
 /**
  * Copyright (C) 2018  Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2.model.system.actions;
+package com.infiniteautomation.mango.rest.latest.model.system.actions;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -10,13 +10,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.infiniteautomation.mango.rest.v2.exception.AbstractRestV2Exception;
-import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
-import com.infiniteautomation.mango.rest.v2.temporaryResource.MangoTaskTemporaryResourceManager;
-import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource;
-import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceManager;
-import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceManager.ResourceTask;
-import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceWebSocketHandler;
+import com.infiniteautomation.mango.rest.latest.exception.AbstractRestV2Exception;
+import com.infiniteautomation.mango.rest.latest.exception.AccessDeniedException;
+import com.infiniteautomation.mango.rest.latest.temporaryResource.MangoTaskTemporaryResourceManager;
+import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResource;
+import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResourceManager;
+import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResourceManager.ResourceTask;
+import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResourceWebSocketHandler;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.serotonin.m2m2.module.ModuleRegistry;

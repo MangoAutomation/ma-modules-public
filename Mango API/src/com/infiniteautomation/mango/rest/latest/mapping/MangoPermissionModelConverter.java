@@ -2,14 +2,14 @@
  * Copyright (C) 2020  Infinite Automation Software. All rights reserved.
  */
 
-package com.infiniteautomation.mango.rest.v2.mapping;
+package com.infiniteautomation.mango.rest.latest.mapping;
 
 import org.springframework.core.convert.converter.Converter;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
-import com.infiniteautomation.mango.rest.v2.model.permissions.MangoPermissionModel;
+import com.infiniteautomation.mango.rest.latest.exception.BadRequestException;
+import com.infiniteautomation.mango.rest.latest.model.permissions.MangoPermissionModel;
 
 /**
  * Class used to convert @RequestParam Strings into MangoPermissionModels

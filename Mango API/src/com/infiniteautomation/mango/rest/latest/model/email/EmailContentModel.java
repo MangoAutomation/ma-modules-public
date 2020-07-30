@@ -1,7 +1,7 @@
 /**
  * Copyright (C) 2019  Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2.model.email;
+package com.infiniteautomation.mango.rest.latest.model.email;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;

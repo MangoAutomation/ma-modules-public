@@ -1,9 +1,9 @@
 /**
  * Copyright (C) 2018  Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2.model.event;
+package com.infiniteautomation.mango.rest.latest.model.event;
 
-import com.infiniteautomation.mango.rest.v2.model.datasource.AbstractDataSourceModel;
+import com.infiniteautomation.mango.rest.latest.model.datasource.AbstractDataSourceModel;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.rt.event.type.DataSourceEventType;
 

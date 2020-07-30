@@ -1,7 +1,7 @@
 /**
  * Copyright (C) 2017 Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2;
+package com.infiniteautomation.mango.rest.latest;
 
 import java.util.HashMap;
 import java.util.List;
@@ -27,22 +27,22 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.db.query.ConditionSortLimitWithTagKeys;
-import com.infiniteautomation.mango.rest.v2.bulk.BulkRequest;
-import com.infiniteautomation.mango.rest.v2.bulk.BulkResponse;
-import com.infiniteautomation.mango.rest.v2.bulk.IndividualRequest;
-import com.infiniteautomation.mango.rest.v2.bulk.RestExceptionIndividualResponse;
-import com.infiniteautomation.mango.rest.v2.exception.AbstractRestV2Exception;
-import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
-import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
-import com.infiniteautomation.mango.rest.v2.model.FilteredStreamWithTotal;
-import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
-import com.infiniteautomation.mango.rest.v2.model.StreamedVORqlQueryWithTotal;
-import com.infiniteautomation.mango.rest.v2.temporaryResource.MangoTaskTemporaryResourceManager;
-import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource;
-import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource.TemporaryResourceStatus;
-import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceManager;
-import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceStatusUpdate;
-import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResourceWebSocketHandler;
+import com.infiniteautomation.mango.rest.latest.bulk.BulkRequest;
+import com.infiniteautomation.mango.rest.latest.bulk.BulkResponse;
+import com.infiniteautomation.mango.rest.latest.bulk.IndividualRequest;
+import com.infiniteautomation.mango.rest.latest.bulk.RestExceptionIndividualResponse;
+import com.infiniteautomation.mango.rest.latest.exception.AbstractRestV2Exception;
+import com.infiniteautomation.mango.rest.latest.exception.AccessDeniedException;
+import com.infiniteautomation.mango.rest.latest.exception.BadRequestException;
+import com.infiniteautomation.mango.rest.latest.model.FilteredStreamWithTotal;
+import com.infiniteautomation.mango.rest.latest.model.StreamedArrayWithTotal;
+import com.infiniteautomation.mango.rest.latest.model.StreamedVORqlQueryWithTotal;
+import com.infiniteautomation.mango.rest.latest.temporaryResource.MangoTaskTemporaryResourceManager;
+import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResource;
+import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResource.TemporaryResourceStatus;
+import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResourceManager;
+import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResourceStatusUpdate;
+import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResourceWebSocketHandler;
 import com.infiniteautomation.mango.spring.service.DataPointService;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.RQLUtils;

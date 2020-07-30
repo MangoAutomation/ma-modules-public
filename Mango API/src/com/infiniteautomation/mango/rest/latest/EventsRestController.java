@@ -1,7 +1,7 @@
 /**
  * Copyright (C) 2019  Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2;
+package com.infiniteautomation.mango.rest.latest;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -30,15 +30,15 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.db.query.ConditionSortLimit;
-import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
-import com.infiniteautomation.mango.rest.v2.model.StreamedArray;
-import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
-import com.infiniteautomation.mango.rest.v2.model.StreamedVORqlQueryWithTotal;
-import com.infiniteautomation.mango.rest.v2.model.TranslatableMessageModel;
-import com.infiniteautomation.mango.rest.v2.model.event.DataPointEventSummaryModel;
-import com.infiniteautomation.mango.rest.v2.model.event.EventInstanceModel;
-import com.infiniteautomation.mango.rest.v2.model.event.EventLevelSummaryModel;
-import com.infiniteautomation.mango.rest.v2.model.event.EventQueryBySourceType;
+import com.infiniteautomation.mango.rest.latest.model.RestModelMapper;
+import com.infiniteautomation.mango.rest.latest.model.StreamedArray;
+import com.infiniteautomation.mango.rest.latest.model.StreamedArrayWithTotal;
+import com.infiniteautomation.mango.rest.latest.model.StreamedVORqlQueryWithTotal;
+import com.infiniteautomation.mango.rest.latest.model.TranslatableMessageModel;
+import com.infiniteautomation.mango.rest.latest.model.event.DataPointEventSummaryModel;
+import com.infiniteautomation.mango.rest.latest.model.event.EventInstanceModel;
+import com.infiniteautomation.mango.rest.latest.model.event.EventLevelSummaryModel;
+import com.infiniteautomation.mango.rest.latest.model.event.EventQueryBySourceType;
 import com.infiniteautomation.mango.spring.db.EventInstanceTableDefinition;
 import com.infiniteautomation.mango.spring.service.DataPointService;
 import com.infiniteautomation.mango.spring.service.DataSourceService;

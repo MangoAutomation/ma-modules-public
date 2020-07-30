@@ -2,7 +2,7 @@
  * Copyright (C) 2014 Infinite Automation Software. All rights reserved.
  * @author Terry Packer
  */
-package com.infiniteautomation.mango.rest.v2.model.thread;
+package com.infiniteautomation.mango.rest.latest.model.thread;
 
 import java.lang.Thread.State;
 import java.lang.management.LockInfo;

@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2020 Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2.resolver;
+package com.infiniteautomation.mango.rest.latest.resolver;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;

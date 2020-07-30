@@ -1,7 +1,7 @@
 /**
  * Copyright (C) 2018  Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2.model.system.actions;
+package com.infiniteautomation.mango.rest.latest.model.system.actions;
 
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.vo.Validatable;

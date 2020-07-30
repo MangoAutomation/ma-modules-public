@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2018 Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2.genericcsv;
+package com.infiniteautomation.mango.rest.latest.genericcsv;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

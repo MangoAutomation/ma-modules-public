@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2019  Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2.model.javascript;
+package com.infiniteautomation.mango.rest.latest.model.javascript;
 
 import java.util.List;
 
-import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeModel;
+import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueTimeModel;
 import com.infiniteautomation.mango.util.script.MangoJavaScriptAction;
 import com.infiniteautomation.mango.util.script.MangoJavaScriptError;
 import com.infiniteautomation.mango.util.script.MangoJavaScriptResult;

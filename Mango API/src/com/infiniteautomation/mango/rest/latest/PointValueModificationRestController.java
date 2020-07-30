@@ -1,7 +1,7 @@
 /**
  * Copyright (C) 2019  Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2;
+package com.infiniteautomation.mango.rest.latest;
 
 import java.time.ZonedDateTime;
 import java.util.HashMap;
@@ -23,9 +23,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.infiniteautomation.mango.rest.v2.model.pointValue.XidPointValueTimeModel;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.emport.PointValueTimeDeleteResult;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.emport.PointValueTimeImportResult;
+import com.infiniteautomation.mango.rest.latest.model.pointValue.XidPointValueTimeModel;
+import com.infiniteautomation.mango.rest.latest.model.pointValue.emport.PointValueTimeDeleteResult;
+import com.infiniteautomation.mango.rest.latest.model.pointValue.emport.PointValueTimeImportResult;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;

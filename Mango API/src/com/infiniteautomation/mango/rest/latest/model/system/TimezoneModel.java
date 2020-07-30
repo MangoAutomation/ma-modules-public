@@ -2,7 +2,7 @@
  * Copyright (C) 2015 Infinite Automation Software. All rights reserved.
  * @author Terry Packer
  */
-package com.infiniteautomation.mango.rest.v2.model.system;
+package com.infiniteautomation.mango.rest.latest.model.system;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

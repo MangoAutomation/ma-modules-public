@@ -2,7 +2,7 @@
  * Copyright (C) 2015 Infinite Automation Software. All rights reserved.
  * @author Terry Packer
  */
-package com.infiniteautomation.mango.rest.v2;
+package com.infiniteautomation.mango.rest.latest;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,14 +28,14 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
-import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
-import com.infiniteautomation.mango.rest.v2.model.FilteredStreamWithTotal;
-import com.infiniteautomation.mango.rest.v2.model.JSONStreamedArray;
-import com.infiniteautomation.mango.rest.v2.model.StreamWithTotal;
-import com.infiniteautomation.mango.rest.v2.model.filestore.FileModel;
-import com.infiniteautomation.mango.rest.v2.model.logging.LogMessageModel;
-import com.infiniteautomation.mango.rest.v2.model.logging.LogQueryArrayStream;
+import com.infiniteautomation.mango.rest.latest.exception.AccessDeniedException;
+import com.infiniteautomation.mango.rest.latest.exception.NotFoundRestException;
+import com.infiniteautomation.mango.rest.latest.model.FilteredStreamWithTotal;
+import com.infiniteautomation.mango.rest.latest.model.JSONStreamedArray;
+import com.infiniteautomation.mango.rest.latest.model.StreamWithTotal;
+import com.infiniteautomation.mango.rest.latest.model.filestore.FileModel;
+import com.infiniteautomation.mango.rest.latest.model.logging.LogMessageModel;
+import com.infiniteautomation.mango.rest.latest.model.logging.LogQueryArrayStream;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.vo.User;

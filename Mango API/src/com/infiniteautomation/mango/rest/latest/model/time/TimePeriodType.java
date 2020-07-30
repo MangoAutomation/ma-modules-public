@@ -2,7 +2,7 @@
  * Copyright (C) 2014 Infinite Automation Software. All rights reserved.
  * @author Terry Packer
  */
-package com.infiniteautomation.mango.rest.v2.model.time;
+package com.infiniteautomation.mango.rest.latest.model.time;
 
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.Common;

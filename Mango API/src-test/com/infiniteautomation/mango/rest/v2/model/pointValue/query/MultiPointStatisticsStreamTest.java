@@ -1,7 +1,7 @@
 /**
  * Copyright (C) 2018 Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2.model.pointValue.query;
+package com.infiniteautomation.mango.rest.latest.model.pointValue.query;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -37,10 +37,10 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.infiniteautomation.mango.db.query.QueryCancelledException;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueField;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeJsonWriter;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream.StreamContentType;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeWriter;
+import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueField;
+import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueTimeJsonWriter;
+import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueTimeStream.StreamContentType;
+import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueTimeWriter;
 import com.infiniteautomation.mango.statistics.AnalogStatistics;
 import com.infiniteautomation.mango.statistics.StartsAndRuntime;
 import com.infiniteautomation.mango.statistics.StartsAndRuntimeList;
@@ -1163,7 +1163,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
     class ValueChangeCounterVerifier implements StatisticsVerifier<ValueChangeCounter> {
 
         /* (non-Javadoc)
-         * @see com.infiniteautomation.mango.rest.v2.model.pointValue.query.MultiPointStatisticsStreamTest.StatisticsVerifier#verify(com.infiniteautomation.mango.rest.v2.model.pointValue.query.MultiPointStatisticsStreamTest.DataPointWrapper, com.serotonin.m2m2.view.stats.StatisticsGenerator, com.fasterxml.jackson.databind.JsonNode)
+         * @see com.infiniteautomation.mango.rest.latest.model.pointValue.query.MultiPointStatisticsStreamTest.StatisticsVerifier#verify(com.infiniteautomation.mango.rest.latest.model.pointValue.query.MultiPointStatisticsStreamTest.DataPointWrapper, com.serotonin.m2m2.view.stats.StatisticsGenerator, com.fasterxml.jackson.databind.JsonNode)
          */
         @Override
         public void verify(DataPointWrapper<ValueChangeCounter> w, ValueChangeCounter gen,
@@ -1203,7 +1203,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
     class StartsAndRuntimeListVerifier implements StatisticsVerifier<StartsAndRuntimeList> {
 
         /* (non-Javadoc)
-         * @see com.infiniteautomation.mango.rest.v2.model.pointValue.query.MultiPointStatisticsStreamTest.StatisticsVerifier#verify(com.infiniteautomation.mango.rest.v2.model.pointValue.query.MultiPointStatisticsStreamTest.DataPointWrapper, com.serotonin.m2m2.view.stats.StatisticsGenerator, com.fasterxml.jackson.databind.JsonNode)
+         * @see com.infiniteautomation.mango.rest.latest.model.pointValue.query.MultiPointStatisticsStreamTest.StatisticsVerifier#verify(com.infiniteautomation.mango.rest.latest.model.pointValue.query.MultiPointStatisticsStreamTest.DataPointWrapper, com.serotonin.m2m2.view.stats.StatisticsGenerator, com.fasterxml.jackson.databind.JsonNode)
          */
         @Override
         public void verify(DataPointWrapper<StartsAndRuntimeList> w, StartsAndRuntimeList gen,
@@ -1258,7 +1258,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
     class AnalogStatisticsVerifier implements StatisticsVerifier<AnalogStatistics> {
 
         /* (non-Javadoc)
-         * @see com.infiniteautomation.mango.rest.v2.model.pointValue.query.MultiPointStatisticsStreamTest.StatisticsVerifier#verify(com.infiniteautomation.mango.rest.v2.model.pointValue.query.MultiPointStatisticsStreamTest.DataPointWrapper, com.serotonin.m2m2.view.stats.StatisticsGenerator, com.fasterxml.jackson.databind.JsonNode)
+         * @see com.infiniteautomation.mango.rest.latest.model.pointValue.query.MultiPointStatisticsStreamTest.StatisticsVerifier#verify(com.infiniteautomation.mango.rest.latest.model.pointValue.query.MultiPointStatisticsStreamTest.DataPointWrapper, com.serotonin.m2m2.view.stats.StatisticsGenerator, com.fasterxml.jackson.databind.JsonNode)
          */
         @Override
         public void verify(DataPointWrapper<AnalogStatistics> w, AnalogStatistics gen,

@@ -1,7 +1,7 @@
 /**
  * Copyright (C) 2018  Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2;
+package com.infiniteautomation.mango.rest.latest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -10,10 +10,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.infiniteautomation.mango.rest.v2.exception.AbstractRestV2Exception;
-import com.infiniteautomation.mango.rest.v2.model.system.actions.SystemActionResult;
-import com.infiniteautomation.mango.rest.v2.model.system.actions.SystemActionTemporaryResourceManager;
-import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource;
+import com.infiniteautomation.mango.rest.latest.exception.AbstractRestV2Exception;
+import com.infiniteautomation.mango.rest.latest.model.system.actions.SystemActionResult;
+import com.infiniteautomation.mango.rest.latest.model.system.actions.SystemActionTemporaryResourceManager;
+import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResource;
 import com.serotonin.m2m2.vo.User;
 
 import io.swagger.annotations.Api;

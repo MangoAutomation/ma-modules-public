@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2018 Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2.temporaryResource;
+package com.infiniteautomation.mango.rest.latest.temporaryResource;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +12,7 @@ import java.util.function.Consumer;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.infiniteautomation.mango.rest.v2.util.ExceptionMapper;
+import com.infiniteautomation.mango.rest.latest.util.ExceptionMapper;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
 
 /**

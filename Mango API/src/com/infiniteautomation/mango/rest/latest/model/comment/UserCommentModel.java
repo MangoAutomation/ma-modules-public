@@ -3,10 +3,10 @@
  *
  * @author Terry Packer
  */
-package com.infiniteautomation.mango.rest.v2.model.comment;
+package com.infiniteautomation.mango.rest.latest.model.comment;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.infiniteautomation.mango.rest.v2.model.AbstractVoModel;
+import com.infiniteautomation.mango.rest.latest.model.AbstractVoModel;
 import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.m2m2.vo.comment.UserCommentVO;
 

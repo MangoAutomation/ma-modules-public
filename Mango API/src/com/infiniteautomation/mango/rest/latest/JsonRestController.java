@@ -1,7 +1,7 @@
 /**
  * Copyright (C) 2020 Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2;
+package com.infiniteautomation.mango.rest.latest;
 
 import java.io.UnsupportedEncodingException;
 import java.util.stream.Stream;
@@ -21,10 +21,10 @@ import org.springframework.web.servlet.HandlerMapping;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.infiniteautomation.mango.db.query.pojo.RQLFilterJsonNode;
-import com.infiniteautomation.mango.rest.v2.model.ArrayWithTotal;
-import com.infiniteautomation.mango.rest.v2.model.FilteredStreamWithTotal;
-import com.infiniteautomation.mango.rest.v2.model.jsondata.JsonDataModel;
-import com.infiniteautomation.mango.rest.v2.resolver.RemainingPath;
+import com.infiniteautomation.mango.rest.latest.model.ArrayWithTotal;
+import com.infiniteautomation.mango.rest.latest.model.FilteredStreamWithTotal;
+import com.infiniteautomation.mango.rest.latest.model.jsondata.JsonDataModel;
+import com.infiniteautomation.mango.rest.latest.resolver.RemainingPath;
 import com.infiniteautomation.mango.spring.service.JsonDataService;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.vo.json.JsonDataVO;

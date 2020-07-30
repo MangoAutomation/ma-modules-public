@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2018 Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2.temporaryResource;
+package com.infiniteautomation.mango.rest.latest.temporaryResource;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -15,13 +15,13 @@ import org.springframework.web.socket.WebSocketSession;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource.TemporaryResourceStatus;
-import com.infiniteautomation.mango.rest.v2.util.CrudNotificationType;
-import com.infiniteautomation.mango.rest.v2.websocket.MultiSessionWebSocketHandler;
-import com.infiniteautomation.mango.rest.v2.websocket.WebSocketMapping;
-import com.infiniteautomation.mango.rest.v2.websocket.WebSocketNotification;
-import com.infiniteautomation.mango.rest.v2.websocket.WebSocketRequest;
-import com.infiniteautomation.mango.rest.v2.websocket.WebSocketResponse;
+import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResource.TemporaryResourceStatus;
+import com.infiniteautomation.mango.rest.latest.util.CrudNotificationType;
+import com.infiniteautomation.mango.rest.latest.websocket.MultiSessionWebSocketHandler;
+import com.infiniteautomation.mango.rest.latest.websocket.WebSocketMapping;
+import com.infiniteautomation.mango.rest.latest.websocket.WebSocketNotification;
+import com.infiniteautomation.mango.rest.latest.websocket.WebSocketRequest;
+import com.infiniteautomation.mango.rest.latest.websocket.WebSocketResponse;
 import com.serotonin.m2m2.vo.User;
 
 /**

@@ -2,15 +2,15 @@
  * Copyright (C) 2017 Infinite Automation Software. All rights reserved.
  *
  */
-package com.infiniteautomation.mango.rest.v2.mapping;
+package com.infiniteautomation.mango.rest.latest.mapping;
 
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.infiniteautomation.mango.io.serial.virtual.VirtualSerialPortConfig;
-import com.infiniteautomation.mango.rest.v2.exception.ExceptionMixin;
-import com.infiniteautomation.mango.rest.v2.model.JSONStreamedArray;
-import com.infiniteautomation.mango.rest.v2.model.permissions.MangoPermissionModel;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream;
+import com.infiniteautomation.mango.rest.latest.exception.ExceptionMixin;
+import com.infiniteautomation.mango.rest.latest.model.JSONStreamedArray;
+import com.infiniteautomation.mango.rest.latest.model.permissions.MangoPermissionModel;
+import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueTimeStream;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 
 /**

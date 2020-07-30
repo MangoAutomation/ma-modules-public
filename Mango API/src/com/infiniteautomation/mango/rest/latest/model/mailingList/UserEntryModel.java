@@ -3,7 +3,7 @@
  *
  * @author Terry Packer
  */
-package com.infiniteautomation.mango.rest.v2.model.mailingList;
+package com.infiniteautomation.mango.rest.latest.model.mailingList;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonGetter;

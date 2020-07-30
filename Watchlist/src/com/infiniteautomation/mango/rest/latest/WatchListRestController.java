@@ -2,7 +2,7 @@
  * Copyright (C) 2020  Infinite Automation Software. All rights reserved.
  */
 
-package com.infiniteautomation.mango.rest.v2;
+package com.infiniteautomation.mango.rest.latest;
 
 import java.io.IOException;
 import java.net.URI;
@@ -31,22 +31,22 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.infiniteautomation.mango.rest.v2.bulk.VoAction;
-import com.infiniteautomation.mango.rest.v2.model.ActionAndModel;
-import com.infiniteautomation.mango.rest.v2.model.JSONStreamedArray;
-import com.infiniteautomation.mango.rest.v2.model.ListWithTotal;
-import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
-import com.infiniteautomation.mango.rest.v2.model.StreamedArray;
-import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
-import com.infiniteautomation.mango.rest.v2.model.StreamedSeroJsonVORqlQuery;
-import com.infiniteautomation.mango.rest.v2.model.StreamedVORqlQueryWithTotal;
-import com.infiniteautomation.mango.rest.v2.model.WatchListModel;
-import com.infiniteautomation.mango.rest.v2.model.WatchListModelMapping;
-import com.infiniteautomation.mango.rest.v2.model.WatchListSummaryModel;
-import com.infiniteautomation.mango.rest.v2.model.WatchListSummaryModelMapping;
-import com.infiniteautomation.mango.rest.v2.model.dataPoint.DataPointModel;
-import com.infiniteautomation.mango.rest.v2.model.event.EventInstanceModel;
-import com.infiniteautomation.mango.rest.v2.patch.PatchVORequestBody;
+import com.infiniteautomation.mango.rest.latest.bulk.VoAction;
+import com.infiniteautomation.mango.rest.latest.model.ActionAndModel;
+import com.infiniteautomation.mango.rest.latest.model.JSONStreamedArray;
+import com.infiniteautomation.mango.rest.latest.model.ListWithTotal;
+import com.infiniteautomation.mango.rest.latest.model.RestModelMapper;
+import com.infiniteautomation.mango.rest.latest.model.StreamedArray;
+import com.infiniteautomation.mango.rest.latest.model.StreamedArrayWithTotal;
+import com.infiniteautomation.mango.rest.latest.model.StreamedSeroJsonVORqlQuery;
+import com.infiniteautomation.mango.rest.latest.model.StreamedVORqlQueryWithTotal;
+import com.infiniteautomation.mango.rest.latest.model.WatchListModel;
+import com.infiniteautomation.mango.rest.latest.model.WatchListModelMapping;
+import com.infiniteautomation.mango.rest.latest.model.WatchListSummaryModel;
+import com.infiniteautomation.mango.rest.latest.model.WatchListSummaryModelMapping;
+import com.infiniteautomation.mango.rest.latest.model.dataPoint.DataPointModel;
+import com.infiniteautomation.mango.rest.latest.model.event.EventInstanceModel;
+import com.infiniteautomation.mango.rest.latest.patch.PatchVORequestBody;
 import com.infiniteautomation.mango.spring.db.UserTableDefinition;
 import com.infiniteautomation.mango.spring.service.WatchListService;
 import com.infiniteautomation.mango.util.RQLUtils;

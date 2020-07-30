@@ -2,14 +2,14 @@
  * Copyright (C) 2015 Infinite Automation Software. All rights reserved.
  * @author Terry Packer
  */
-package com.infiniteautomation.mango.rest.v2.model.pointValue;
+package com.infiniteautomation.mango.rest.latest.model.pointValue;
 
 import java.io.IOException;
 import java.util.List;
 
 import javax.measure.unit.Unit;
 
-import com.infiniteautomation.mango.rest.v2.model.pointValue.query.LatestQueryInfo;
+import com.infiniteautomation.mango.rest.latest.model.pointValue.query.LatestQueryInfo;
 import com.infiniteautomation.mango.statistics.AnalogStatistics;
 import com.infiniteautomation.mango.statistics.NoStatisticsGenerator;
 import com.infiniteautomation.mango.statistics.StartsAndRuntime;

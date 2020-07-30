@@ -1,7 +1,7 @@
 /**
  * Copyright (C) 2019  Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2.mapping;
+package com.infiniteautomation.mango.rest.latest.mapping;
 
 import java.io.IOException;
 
@@ -14,7 +14,7 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.infiniteautomation.mango.io.serial.virtual.SerialServerSocketBridgeConfig;
 import com.infiniteautomation.mango.io.serial.virtual.SerialSocketBridgeConfig;
 import com.infiniteautomation.mango.io.serial.virtual.VirtualSerialPortConfig;
-import com.infiniteautomation.mango.rest.v2.exception.ServerErrorException;
+import com.infiniteautomation.mango.rest.latest.exception.ServerErrorException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 
 /**

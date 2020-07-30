@@ -2,7 +2,7 @@
  * Copyright (C) 2015 Infinite Automation Software. All rights reserved.
  * @author Terry Packer
  */
-package com.infiniteautomation.mango.rest.v2;
+package com.infiniteautomation.mango.rest.latest;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -21,9 +21,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.infiniteautomation.mango.rest.v2.model.workitem.BackgroundProcessingQueueCounts;
-import com.infiniteautomation.mango.rest.v2.model.workitem.BackgroundProcessingRejectedTaskStats;
-import com.infiniteautomation.mango.rest.v2.model.workitem.BackgroundProcessingRunningStats;
+import com.infiniteautomation.mango.rest.latest.model.workitem.BackgroundProcessingQueueCounts;
+import com.infiniteautomation.mango.rest.latest.model.workitem.BackgroundProcessingRejectedTaskStats;
+import com.infiniteautomation.mango.rest.latest.model.workitem.BackgroundProcessingRunningStats;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.WorkItemInfo;
 import com.infiniteautomation.mango.util.exception.ValidationException;

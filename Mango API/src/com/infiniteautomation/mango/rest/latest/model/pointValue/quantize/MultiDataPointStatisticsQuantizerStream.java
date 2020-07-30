@@ -2,7 +2,7 @@
  * @copyright 2017 {@link http://infiniteautomation.com|Infinite Automation Systems, Inc.} All rights reserved.
  * @author Terry Packer
  */
-package com.infiniteautomation.mango.rest.v2.model.pointValue.quantize;
+package com.infiniteautomation.mango.rest.latest.model.pointValue.quantize;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -18,11 +18,11 @@ import com.infiniteautomation.mango.db.query.QueryCancelledException;
 import com.infiniteautomation.mango.quantize.BucketCalculator;
 import com.infiniteautomation.mango.quantize.BucketsBucketCalculator;
 import com.infiniteautomation.mango.quantize.TimePeriodBucketCalculator;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.DataPointValueTime;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeWriter;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.RollupEnum;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.query.ZonedDateTimeRangeQueryInfo;
-import com.infiniteautomation.mango.rest.v2.model.time.TimePeriodType;
+import com.infiniteautomation.mango.rest.latest.model.pointValue.DataPointValueTime;
+import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueTimeWriter;
+import com.infiniteautomation.mango.rest.latest.model.pointValue.RollupEnum;
+import com.infiniteautomation.mango.rest.latest.model.pointValue.query.ZonedDateTimeRangeQueryInfo;
+import com.infiniteautomation.mango.rest.latest.model.time.TimePeriodType;
 import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.rt.dataImage.IdPointValueTime;
 import com.serotonin.m2m2.vo.DataPointVO;

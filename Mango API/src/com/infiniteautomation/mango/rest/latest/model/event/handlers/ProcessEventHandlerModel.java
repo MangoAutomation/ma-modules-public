@@ -1,7 +1,7 @@
 /**
  * Copyright (C) 2018  Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2.model.event.handlers;
+package com.infiniteautomation.mango.rest.latest.model.event.handlers;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.serotonin.m2m2.module.ModuleRegistry;

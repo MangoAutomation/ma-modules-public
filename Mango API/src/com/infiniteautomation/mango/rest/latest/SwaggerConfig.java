@@ -1,7 +1,7 @@
 /**
  * Copyright (C) 2018  Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2;
+package com.infiniteautomation.mango.rest.latest;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -23,7 +23,7 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import com.fasterxml.classmate.TypeResolver;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.infiniteautomation.mango.rest.v2.model.ArbitraryJsonData;
+import com.infiniteautomation.mango.rest.latest.model.ArbitraryJsonData;
 import com.infiniteautomation.mango.spring.ConditionalOnProperty;
 import com.infiniteautomation.mangoApi.rootRest.MangoRestSwaggerResourceProvider;
 import com.serotonin.m2m2.Common;

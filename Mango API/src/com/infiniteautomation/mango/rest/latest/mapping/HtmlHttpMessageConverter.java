@@ -2,7 +2,7 @@
  * Copyright (C) 2015 Infinite Automation Software. All rights reserved.
  * @author Terry Packer
  */
-package com.infiniteautomation.mango.rest.v2.mapping;
+package com.infiniteautomation.mango.rest.latest.mapping;
 
 import java.util.ArrayList;
 

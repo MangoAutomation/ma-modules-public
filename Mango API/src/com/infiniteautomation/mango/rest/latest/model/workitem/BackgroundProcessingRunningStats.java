@@ -2,7 +2,7 @@
  * Copyright (C) 2017 Infinite Automation Software. All rights reserved.
  *
  */
-package com.infiniteautomation.mango.rest.v2.model.workitem;
+package com.infiniteautomation.mango.rest.latest.model.workitem;
 
 import java.util.List;
 

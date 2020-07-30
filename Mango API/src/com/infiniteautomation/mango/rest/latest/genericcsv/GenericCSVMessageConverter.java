@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2018 Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2.genericcsv;
+package com.infiniteautomation.mango.rest.latest.genericcsv;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -46,7 +46,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.ser.FilterProvider;
 import com.fasterxml.jackson.databind.util.TokenBuffer;
-import com.infiniteautomation.mango.rest.v2.model.ArrayWithTotal;
+import com.infiniteautomation.mango.rest.latest.model.ArrayWithTotal;
 import com.serotonin.m2m2.web.MediaTypes;
 
 import au.com.bytecode.opencsv.CSVReader;

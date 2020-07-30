@@ -1,7 +1,7 @@
 /**
  * Copyright (C) 2019  Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2;
+package com.infiniteautomation.mango.rest.latest;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.infiniteautomation.mango.rest.v2.model.datasource.DataSourceDefaultEventTypeModel;
+import com.infiniteautomation.mango.rest.latest.model.datasource.DataSourceDefaultEventTypeModel;
 import com.infiniteautomation.mango.spring.service.DataSourceService;
 import com.serotonin.m2m2.module.DataSourceDefinition;
 import com.serotonin.m2m2.util.ExportCodes;

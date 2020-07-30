@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2017 Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2.model.dataPoint;
+package com.infiniteautomation.mango.rest.latest.model.dataPoint;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,9 +11,9 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.infiniteautomation.mango.rest.v2.model.AbstractVoModel;
-import com.infiniteautomation.mango.rest.v2.model.dataPoint.textRenderer.BaseTextRendererModel;
-import com.infiniteautomation.mango.rest.v2.model.permissions.MangoPermissionModel;
+import com.infiniteautomation.mango.rest.latest.model.AbstractVoModel;
+import com.infiniteautomation.mango.rest.latest.model.dataPoint.textRenderer.BaseTextRendererModel;
+import com.infiniteautomation.mango.rest.latest.model.permissions.MangoPermissionModel;
 import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;

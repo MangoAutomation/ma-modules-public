@@ -1,10 +1,10 @@
 /*
  * Copyright (C) 2018 Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2.bulk;
+package com.infiniteautomation.mango.rest.latest.bulk;
 
-import com.infiniteautomation.mango.rest.v2.exception.AbstractRestV2Exception;
-import com.infiniteautomation.mango.rest.v2.util.RestExceptionMapper;
+import com.infiniteautomation.mango.rest.latest.exception.AbstractRestV2Exception;
+import com.infiniteautomation.mango.rest.latest.util.RestExceptionMapper;
 
 /**
  * @author Jared Wiltshire

@@ -2,7 +2,7 @@
  * Copyright (C) 2017 Infinite Automation Software. All rights reserved.
  *
  */
-package com.infiniteautomation.mango.rest.v2;
+package com.infiniteautomation.mango.rest.latest;
 
 import java.io.IOException;
 import java.net.URI;
@@ -31,16 +31,16 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.infiniteautomation.mango.emport.ImportTask;
-import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
-import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
-import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
-import com.infiniteautomation.mango.rest.v2.model.RestValidationResult.RestMessageLevel;
-import com.infiniteautomation.mango.rest.v2.model.RestValidationResult.RestValidationMessage;
-import com.infiniteautomation.mango.rest.v2.model.emport.JsonConfigImportStateEnum;
-import com.infiniteautomation.mango.rest.v2.model.emport.JsonEmportControlModel;
-import com.infiniteautomation.mango.rest.v2.util.MangoRestTemporaryResource;
-import com.infiniteautomation.mango.rest.v2.util.MangoRestTemporaryResourceContainer;
-import com.infiniteautomation.mango.rest.v2.websocket.JsonConfigImportWebSocketHandler;
+import com.infiniteautomation.mango.rest.latest.exception.BadRequestException;
+import com.infiniteautomation.mango.rest.latest.exception.GenericRestException;
+import com.infiniteautomation.mango.rest.latest.exception.NotFoundRestException;
+import com.infiniteautomation.mango.rest.latest.model.RestValidationResult.RestMessageLevel;
+import com.infiniteautomation.mango.rest.latest.model.RestValidationResult.RestValidationMessage;
+import com.infiniteautomation.mango.rest.latest.model.emport.JsonConfigImportStateEnum;
+import com.infiniteautomation.mango.rest.latest.model.emport.JsonEmportControlModel;
+import com.infiniteautomation.mango.rest.latest.util.MangoRestTemporaryResource;
+import com.infiniteautomation.mango.rest.latest.util.MangoRestTemporaryResourceContainer;
+import com.infiniteautomation.mango.rest.latest.websocket.JsonConfigImportWebSocketHandler;
 import com.infiniteautomation.mango.spring.service.EmportService;
 import com.infiniteautomation.mango.util.ConfigurationExportData;
 import com.serotonin.db.pair.StringStringPair;

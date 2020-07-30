@@ -2,7 +2,7 @@
  * Copyright (C) 2020  Infinite Automation Software. All rights reserved.
  */
 
-package com.infiniteautomation.mango.rest.v2.model.permissions;
+package com.infiniteautomation.mango.rest.latest.model.permissions;
 
 import com.infiniteautomation.mango.permission.MangoPermission;
 

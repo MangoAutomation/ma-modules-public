@@ -2,10 +2,10 @@
  * Copyright (C) 2017 Infinite Automation Software. All rights reserved.
  *
  */
-package com.infiniteautomation.mango.rest.v2.model.event.detectors;
+package com.infiniteautomation.mango.rest.latest.model.event.detectors;
 
-import com.infiniteautomation.mango.rest.v2.model.time.TimePeriod;
-import com.infiniteautomation.mango.rest.v2.model.time.TimePeriodType;
+import com.infiniteautomation.mango.rest.latest.model.time.TimePeriod;
+import com.infiniteautomation.mango.rest.latest.model.time.TimePeriodType;
 import com.serotonin.m2m2.vo.event.detector.TimeoutDetectorVO;
 
 /**

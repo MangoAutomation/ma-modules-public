@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2019 Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2;
+package com.infiniteautomation.mango.rest.latest;
 
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
@@ -46,10 +46,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
-import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
-import com.infiniteautomation.mango.rest.v2.model.event.RaiseEventModel;
-import com.infiniteautomation.mango.rest.v2.model.session.MangoSessionDataModel;
+import com.infiniteautomation.mango.rest.latest.exception.GenericRestException;
+import com.infiniteautomation.mango.rest.latest.model.RestModelMapper;
+import com.infiniteautomation.mango.rest.latest.model.event.RaiseEventModel;
+import com.infiniteautomation.mango.rest.latest.model.session.MangoSessionDataModel;
 import com.infiniteautomation.mango.spring.ConditionalOnProperty;
 import com.infiniteautomation.mango.spring.session.MangoSessionDataStore;
 import com.infiniteautomation.mango.util.exception.NotFoundException;

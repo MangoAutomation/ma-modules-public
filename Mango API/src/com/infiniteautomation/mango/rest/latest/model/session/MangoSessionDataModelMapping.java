@@ -2,15 +2,15 @@
  * Copyright (C) 2020  Infinite Automation Software. All rights reserved.
  */
 
-package com.infiniteautomation.mango.rest.v2.model.session;
+package com.infiniteautomation.mango.rest.latest.model.session;
 
 import java.util.Date;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
-import com.infiniteautomation.mango.rest.v2.model.RestModelMapping;
+import com.infiniteautomation.mango.rest.latest.model.RestModelMapper;
+import com.infiniteautomation.mango.rest.latest.model.RestModelMapping;
 import com.infiniteautomation.mango.spring.ConditionalOnProperty;
 import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.vo.MangoSessionDataVO;

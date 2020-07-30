@@ -1,7 +1,7 @@
 /**
  * Copyright (C) 2018 Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2;
+package com.infiniteautomation.mango.rest.latest;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -21,10 +21,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.RollupEnum;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.query.PointValueTimeCacheControl;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.query.ZonedDateTimeRangeQueryInfo;
+import com.infiniteautomation.mango.rest.latest.exception.NotFoundRestException;
+import com.infiniteautomation.mango.rest.latest.model.pointValue.RollupEnum;
+import com.infiniteautomation.mango.rest.latest.model.pointValue.query.PointValueTimeCacheControl;
+import com.infiniteautomation.mango.rest.latest.model.pointValue.query.ZonedDateTimeRangeQueryInfo;
 import com.infiniteautomation.mango.spring.service.DataPointService;
 import com.serotonin.db.MappedRowCallback;
 import com.serotonin.m2m2.Common;

@@ -2,7 +2,7 @@
  * Copyright (C) 2019 Infinite Automation Software. All rights reserved.
  * @author Terry Packer
  */
-package com.infiniteautomation.mango.rest.v2.websocket;
+package com.infiniteautomation.mango.rest.latest.websocket;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

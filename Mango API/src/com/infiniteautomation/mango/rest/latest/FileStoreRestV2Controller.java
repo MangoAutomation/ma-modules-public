@@ -2,7 +2,7 @@
  * Copyright (C) 2017 Infinite Automation Software. All rights reserved.
  *
  */
-package com.infiniteautomation.mango.rest.v2;
+package com.infiniteautomation.mango.rest.latest;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -55,14 +55,14 @@ import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.google.common.collect.Sets;
-import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
-import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
-import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
-import com.infiniteautomation.mango.rest.v2.exception.ResourceNotFoundException;
-import com.infiniteautomation.mango.rest.v2.model.RoleViews;
-import com.infiniteautomation.mango.rest.v2.model.filestore.FileModel;
-import com.infiniteautomation.mango.rest.v2.model.filestore.FileStoreModel;
-import com.infiniteautomation.mango.rest.v2.resolver.RemainingPath;
+import com.infiniteautomation.mango.rest.latest.exception.AccessDeniedException;
+import com.infiniteautomation.mango.rest.latest.exception.GenericRestException;
+import com.infiniteautomation.mango.rest.latest.exception.NotFoundRestException;
+import com.infiniteautomation.mango.rest.latest.exception.ResourceNotFoundException;
+import com.infiniteautomation.mango.rest.latest.model.RoleViews;
+import com.infiniteautomation.mango.rest.latest.model.filestore.FileModel;
+import com.infiniteautomation.mango.rest.latest.model.filestore.FileStoreModel;
+import com.infiniteautomation.mango.rest.latest.resolver.RemainingPath;
 import com.infiniteautomation.mango.spring.script.ScriptService;
 import com.infiniteautomation.mango.spring.service.FileStoreService;
 import com.infiniteautomation.mango.spring.service.RoleService;

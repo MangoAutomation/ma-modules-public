@@ -2,7 +2,7 @@
  * Copyright (C) 2017 Infinite Automation Software. All rights reserved.
  *
  */
-package com.infiniteautomation.mango.rest.v2.model.modules;
+package com.infiniteautomation.mango.rest.latest.model.modules;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import com.serotonin.m2m2.module.Module;

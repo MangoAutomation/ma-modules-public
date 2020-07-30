@@ -2,7 +2,7 @@
  * Copyright (C) 2017 Infinite Automation Software. All rights reserved.
  *
  */
-package com.infiniteautomation.mango.rest.v2.exception;
+package com.infiniteautomation.mango.rest.latest.exception;
 
 import java.io.IOException;
 
@@ -33,9 +33,9 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import com.infiniteautomation.mango.db.query.RQLToCondition.RQLVisitException;
 import com.infiniteautomation.mango.io.messaging.MessageSendException;
 import com.infiniteautomation.mango.io.messaging.email.EmailFailedException;
-import com.infiniteautomation.mango.rest.v2.advice.MangoRequestBodyAdvice;
-import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
-import com.infiniteautomation.mango.rest.v2.views.AdminView;
+import com.infiniteautomation.mango.rest.latest.advice.MangoRequestBodyAdvice;
+import com.infiniteautomation.mango.rest.latest.model.RestModelMapper;
+import com.infiniteautomation.mango.rest.latest.views.AdminView;
 import com.infiniteautomation.mango.spring.components.EmailAddressVerificationService.EmailAddressInUseException;
 import com.infiniteautomation.mango.spring.script.MangoScriptException;
 import com.infiniteautomation.mango.spring.service.PermissionService;
@@ -59,7 +59,7 @@ import com.serotonin.m2m2.web.mvc.spring.security.authentication.MangoPasswordAu
  *
  * @author Terry Packer
  */
-@ControllerAdvice(basePackages= {"com.infiniteautomation.mango.rest.v2"})
+@ControllerAdvice(basePackages= {"com.infiniteautomation.mango.rest.latest"})
 public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
     private final Log LOG = LogFactory.getLog(RestExceptionHandler.class);

@@ -1,14 +1,14 @@
 /*
  * Copyright (C) 2018 Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2.websocket;
+package com.infiniteautomation.mango.rest.latest.websocket;
 
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.infiniteautomation.mango.rest.v2.util.CrudNotificationType;
+import com.infiniteautomation.mango.rest.latest.util.CrudNotificationType;
 
 public final class WebSocketNotification<T> implements WebSocketMessage {
     /**

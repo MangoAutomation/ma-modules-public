@@ -1,7 +1,7 @@
 /**
  * Copyright (C) 2019  Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2;
+package com.infiniteautomation.mango.rest.latest;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,21 +16,21 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
-import com.infiniteautomation.mango.rest.v2.model.FilteredStreamWithTotal;
-import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
-import com.infiniteautomation.mango.rest.v2.model.StreamWithTotal;
-import com.infiniteautomation.mango.rest.v2.model.dataPoint.DataPointModel;
-import com.infiniteautomation.mango.rest.v2.model.datasource.AbstractDataSourceModel;
-import com.infiniteautomation.mango.rest.v2.model.event.AbstractEventTypeModel;
-import com.infiniteautomation.mango.rest.v2.model.event.AuditEventTypeModel;
-import com.infiniteautomation.mango.rest.v2.model.event.DataPointEventTypeModel;
-import com.infiniteautomation.mango.rest.v2.model.event.DataSourceEventTypeModel;
-import com.infiniteautomation.mango.rest.v2.model.event.EventTypeVOModel;
-import com.infiniteautomation.mango.rest.v2.model.event.PublisherEventTypeModel;
-import com.infiniteautomation.mango.rest.v2.model.event.SystemEventTypeModel;
-import com.infiniteautomation.mango.rest.v2.model.event.detectors.AbstractPointEventDetectorModel;
-import com.infiniteautomation.mango.rest.v2.model.publisher.AbstractPublisherModel;
+import com.infiniteautomation.mango.rest.latest.exception.BadRequestException;
+import com.infiniteautomation.mango.rest.latest.model.FilteredStreamWithTotal;
+import com.infiniteautomation.mango.rest.latest.model.RestModelMapper;
+import com.infiniteautomation.mango.rest.latest.model.StreamWithTotal;
+import com.infiniteautomation.mango.rest.latest.model.dataPoint.DataPointModel;
+import com.infiniteautomation.mango.rest.latest.model.datasource.AbstractDataSourceModel;
+import com.infiniteautomation.mango.rest.latest.model.event.AbstractEventTypeModel;
+import com.infiniteautomation.mango.rest.latest.model.event.AuditEventTypeModel;
+import com.infiniteautomation.mango.rest.latest.model.event.DataPointEventTypeModel;
+import com.infiniteautomation.mango.rest.latest.model.event.DataSourceEventTypeModel;
+import com.infiniteautomation.mango.rest.latest.model.event.EventTypeVOModel;
+import com.infiniteautomation.mango.rest.latest.model.event.PublisherEventTypeModel;
+import com.infiniteautomation.mango.rest.latest.model.event.SystemEventTypeModel;
+import com.infiniteautomation.mango.rest.latest.model.event.detectors.AbstractPointEventDetectorModel;
+import com.infiniteautomation.mango.rest.latest.model.publisher.AbstractPublisherModel;
 import com.infiniteautomation.mango.spring.service.DataPointService;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.exception.NotFoundException;

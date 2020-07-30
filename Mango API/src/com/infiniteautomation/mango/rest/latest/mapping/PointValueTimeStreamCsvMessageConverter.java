@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2017 Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2.mapping;
+package com.infiniteautomation.mango.rest.latest.mapping;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -33,18 +33,18 @@ import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema.ColumnType;
 import com.infiniteautomation.mango.db.query.QueryCancelledException;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueField;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeCsvWriter;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeStream.StreamContentType;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeWriter;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.RollupEnum;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.XidPointValueTimeModel;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.MultiDataPointDefaultRollupStatisticsQuantizerStream;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.quantize.MultiDataPointStatisticsQuantizerStream;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.query.LatestQueryInfo;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.query.MultiPointLatestDatabaseStream;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.query.MultiPointTimeRangeDatabaseStream;
+import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueField;
+import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueTimeCsvWriter;
+import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueTimeStream;
+import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueTimeStream.StreamContentType;
+import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueTimeWriter;
+import com.infiniteautomation.mango.rest.latest.model.pointValue.RollupEnum;
+import com.infiniteautomation.mango.rest.latest.model.pointValue.XidPointValueTimeModel;
+import com.infiniteautomation.mango.rest.latest.model.pointValue.quantize.MultiDataPointDefaultRollupStatisticsQuantizerStream;
+import com.infiniteautomation.mango.rest.latest.model.pointValue.quantize.MultiDataPointStatisticsQuantizerStream;
+import com.infiniteautomation.mango.rest.latest.model.pointValue.query.LatestQueryInfo;
+import com.infiniteautomation.mango.rest.latest.model.pointValue.query.MultiPointLatestDatabaseStream;
+import com.infiniteautomation.mango.rest.latest.model.pointValue.query.MultiPointTimeRangeDatabaseStream;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.web.MediaTypes;
 

@@ -2,7 +2,7 @@
  * Copyright (C) 2020  Infinite Automation Software. All rights reserved.
  */
 
-package com.infiniteautomation.mango.rest.v2;
+package com.infiniteautomation.mango.rest.latest;
 
 import java.util.HashMap;
 import java.util.List;
@@ -19,10 +19,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.infiniteautomation.mango.rest.v2.model.ListWithTotal;
-import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
-import com.infiniteautomation.mango.rest.v2.model.StreamedBasicVORqlQueryWithTotal;
-import com.infiniteautomation.mango.rest.v2.model.audit.AuditEventInstanceModel;
+import com.infiniteautomation.mango.rest.latest.model.ListWithTotal;
+import com.infiniteautomation.mango.rest.latest.model.StreamedArrayWithTotal;
+import com.infiniteautomation.mango.rest.latest.model.StreamedBasicVORqlQueryWithTotal;
+import com.infiniteautomation.mango.rest.latest.model.audit.AuditEventInstanceModel;
 import com.infiniteautomation.mango.spring.service.AuditEventService;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.i18n.TranslatableMessage;

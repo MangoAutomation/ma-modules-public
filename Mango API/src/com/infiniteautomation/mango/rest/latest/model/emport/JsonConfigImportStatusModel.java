@@ -1,13 +1,13 @@
 /**
  * Copyright (C) 2019  Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2.model.emport;
+package com.infiniteautomation.mango.rest.latest.model.emport;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import com.infiniteautomation.mango.rest.v2.model.RestValidationResult.RestValidationMessage;
+import com.infiniteautomation.mango.rest.latest.model.RestValidationResult.RestValidationMessage;
 
 /**
  * Status about a running import

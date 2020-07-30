@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2020 Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2.resolver;
+package com.infiniteautomation.mango.rest.latest.resolver;
 
 import com.serotonin.m2m2.i18n.Translations;
 import org.springframework.core.MethodParameter;

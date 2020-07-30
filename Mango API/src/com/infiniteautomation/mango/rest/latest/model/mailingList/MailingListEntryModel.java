@@ -1,7 +1,7 @@
 /**
  * Copyright (C) 2018  Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2.model.mailingList;
+package com.infiniteautomation.mango.rest.latest.model.mailingList;
 
 import com.serotonin.m2m2.db.dao.MailingListDao;
 import com.serotonin.m2m2.vo.mailingList.MailingList;

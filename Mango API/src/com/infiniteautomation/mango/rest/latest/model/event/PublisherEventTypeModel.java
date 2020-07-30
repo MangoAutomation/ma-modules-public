@@ -1,9 +1,9 @@
 /**
  * Copyright (C) 2018  Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2.model.event;
+package com.infiniteautomation.mango.rest.latest.model.event;
 
-import com.infiniteautomation.mango.rest.v2.model.publisher.AbstractPublisherModel;
+import com.infiniteautomation.mango.rest.latest.model.publisher.AbstractPublisherModel;
 import com.serotonin.m2m2.rt.event.type.PublisherEventType;
 
 /**

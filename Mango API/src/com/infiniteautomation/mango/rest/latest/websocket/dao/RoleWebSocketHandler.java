@@ -1,15 +1,15 @@
 /**
  * Copyright (C) 2018 Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2.websocket.dao;
+package com.infiniteautomation.mango.rest.latest.websocket.dao;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
-import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
-import com.infiniteautomation.mango.rest.v2.model.role.RoleModelMapping;
-import com.infiniteautomation.mango.rest.v2.websocket.WebSocketMapping;
+import com.infiniteautomation.mango.rest.latest.model.RestModelMapper;
+import com.infiniteautomation.mango.rest.latest.model.role.RoleModelMapping;
+import com.infiniteautomation.mango.rest.latest.websocket.WebSocketMapping;
 import com.infiniteautomation.mango.spring.events.DaoEvent;
 import com.infiniteautomation.mango.spring.service.RoleService;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;

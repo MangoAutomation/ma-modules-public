@@ -2,12 +2,12 @@
  * Copyright (C) 2016 Infinite Automation Software. All rights reserved.
  *
  */
-package com.infiniteautomation.mango.rest.v2.util;
+package com.infiniteautomation.mango.rest.latest.util;
 
 import java.util.Date;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
+import com.infiniteautomation.mango.rest.latest.exception.NotFoundRestException;
 import com.serotonin.m2m2.Common;
 
 /**

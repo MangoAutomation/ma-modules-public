@@ -2,12 +2,12 @@
  * Copyright (C) 2017 Infinite Automation Software. All rights reserved.
  *
  */
-package com.infiniteautomation.mango.rest.v2.model.event.detectors.rt;
+package com.infiniteautomation.mango.rest.latest.model.event.detectors.rt;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeModel;
+import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueTimeModel;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.event.detectors.StateChangeCountDetectorRT;
 import com.serotonin.m2m2.vo.event.detector.StateChangeCountDetectorVO;

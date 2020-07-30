@@ -71,11 +71,11 @@ public class RestWebApplicationInitializer implements WebApplicationInitializer 
          * REST V2
          */
         AnnotationConfigWebApplicationContext restV2Context = new AnnotationConfigWebApplicationContext();
-        restV2Context.setId(com.infiniteautomation.mango.rest.v2.MangoRestDispatcherConfiguration.CONTEXT_ID);
+        restV2Context.setId(com.infiniteautomation.mango.rest.latest.MangoRestDispatcherConfiguration.CONTEXT_ID);
         restV2Context.setParent(rootRestContext);
-        restV2Context.register(com.infiniteautomation.mango.rest.v2.MangoRestDispatcherConfiguration.class);
+        restV2Context.register(com.infiniteautomation.mango.rest.latest.MangoRestDispatcherConfiguration.class);
 
-        ServletRegistration.Dynamic restV2Dispatcher = context.addServlet(com.infiniteautomation.mango.rest.v2.MangoRestDispatcherConfiguration.DISPATCHER_NAME, new DispatcherServlet(restV2Context));
+        ServletRegistration.Dynamic restV2Dispatcher = context.addServlet(com.infiniteautomation.mango.rest.latest.MangoRestDispatcherConfiguration.DISPATCHER_NAME, new DispatcherServlet(restV2Context));
         restV2Dispatcher.setLoadOnStartup(3);
         restV2Dispatcher.setAsyncSupported(true);
         restV2Dispatcher.addMapping("/rest/v2/*");

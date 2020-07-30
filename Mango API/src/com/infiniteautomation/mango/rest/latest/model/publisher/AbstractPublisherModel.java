@@ -1,7 +1,7 @@
 /**
  * Copyright (C) 2019  Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2.model.publisher;
+package com.infiniteautomation.mango.rest.latest.model.publisher;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,11 +11,11 @@ import org.springframework.http.HttpStatus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
-import com.infiniteautomation.mango.rest.v2.model.AbstractVoModel;
-import com.infiniteautomation.mango.rest.v2.model.datasource.EventTypeAlarmLevelModel;
-import com.infiniteautomation.mango.rest.v2.model.time.TimePeriod;
-import com.infiniteautomation.mango.rest.v2.model.time.TimePeriodType;
+import com.infiniteautomation.mango.rest.latest.exception.GenericRestException;
+import com.infiniteautomation.mango.rest.latest.model.AbstractVoModel;
+import com.infiniteautomation.mango.rest.latest.model.datasource.EventTypeAlarmLevelModel;
+import com.infiniteautomation.mango.rest.latest.model.time.TimePeriod;
+import com.infiniteautomation.mango.rest.latest.model.time.TimePeriodType;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.module.PublisherDefinition;

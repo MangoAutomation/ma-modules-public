@@ -2,7 +2,7 @@
  * Copyright (C) 2014 Infinite Automation Software. All rights reserved.
  * @author Terry Packer
  */
-package com.infiniteautomation.mango.rest.v2;
+package com.infiniteautomation.mango.rest.latest;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
@@ -23,8 +23,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.infiniteautomation.mango.rest.v2.model.thread.ThreadModel;
-import com.infiniteautomation.mango.rest.v2.model.thread.ThreadModelProperty;
+import com.infiniteautomation.mango.rest.latest.model.thread.ThreadModel;
+import com.infiniteautomation.mango.rest.latest.model.thread.ThreadModelProperty;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;

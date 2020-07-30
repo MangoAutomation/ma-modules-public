@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2019 Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2.model.event.handlers;
+package com.infiniteautomation.mango.rest.latest.model.event.handlers;
 
 import java.util.Collections;
 import java.util.Set;

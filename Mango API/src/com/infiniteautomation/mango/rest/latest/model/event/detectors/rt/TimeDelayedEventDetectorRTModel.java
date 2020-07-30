@@ -2,7 +2,7 @@
  * Copyright (C) 2020  Infinite Automation Software. All rights reserved.
  */
 
-package com.infiniteautomation.mango.rest.v2.model.event.detectors.rt;
+package com.infiniteautomation.mango.rest.latest.model.event.detectors.rt;
 
 import java.util.Date;
 

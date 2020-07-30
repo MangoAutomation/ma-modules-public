@@ -1,7 +1,7 @@
 /**
  * Copyright (C) 2016 Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2;
+package com.infiniteautomation.mango.rest.latest;
 
 import java.util.HashSet;
 import java.util.Set;

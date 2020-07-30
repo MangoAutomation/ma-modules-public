@@ -2,14 +2,14 @@
  * Copyright (C) 2015 Infinite Automation Software. All rights reserved.
  * @author Terry Packer
  */
-package com.infiniteautomation.mango.rest.v2.model.logging;
+package com.infiniteautomation.mango.rest.latest.model.logging;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.infiniteautomation.mango.rest.v2.model.JSONStreamedArray;
+import com.infiniteautomation.mango.rest.latest.model.JSONStreamedArray;
 import com.serotonin.m2m2.Common;
 
 import com.serotonin.m2m2.i18n.Translations;

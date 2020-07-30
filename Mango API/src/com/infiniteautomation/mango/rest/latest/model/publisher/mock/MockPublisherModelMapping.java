@@ -2,12 +2,12 @@
  * Copyright (C) 2020  Infinite Automation Software. All rights reserved.
  */
 
-package com.infiniteautomation.mango.rest.v2.model.publisher.mock;
+package com.infiniteautomation.mango.rest.latest.model.publisher.mock;
 
 import org.springframework.stereotype.Component;
 
-import com.infiniteautomation.mango.rest.v2.model.RestModelJacksonMapping;
-import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
+import com.infiniteautomation.mango.rest.latest.model.RestModelJacksonMapping;
+import com.infiniteautomation.mango.rest.latest.model.RestModelMapper;
 import com.infiniteautomation.mango.spring.ConditionalOnProperty;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.vo.publish.mock.MockPublisherDefinition;

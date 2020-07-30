@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2018 Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2.bulk;
+package com.infiniteautomation.mango.rest.latest.bulk;
 
 import java.util.Collection;
 import java.util.Collections;

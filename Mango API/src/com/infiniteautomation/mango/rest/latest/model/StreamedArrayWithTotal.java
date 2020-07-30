@@ -1,7 +1,7 @@
 /**
  * Copyright (C) 2017 Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2.model;
+package com.infiniteautomation.mango.rest.latest.model;
 
 /**
  * Model for typical RQL query results, an object with two members, the array of items and a total.

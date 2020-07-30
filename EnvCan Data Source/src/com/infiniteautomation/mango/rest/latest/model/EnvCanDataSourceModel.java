@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2019  Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2.model;
+package com.infiniteautomation.mango.rest.latest.model;
 
 import java.util.Date;
 
-import com.infiniteautomation.mango.rest.v2.model.datasource.AbstractPollingDataSourceModel;
+import com.infiniteautomation.mango.rest.latest.model.datasource.AbstractPollingDataSourceModel;
 import com.serotonin.m2m2.envcan.EnvCanDataSourceDefinition;
 import com.serotonin.m2m2.envcan.EnvCanDataSourceVO;
 

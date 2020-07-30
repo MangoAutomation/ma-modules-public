@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2019 Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2;
+package com.infiniteautomation.mango.rest.latest;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.infiniteautomation.mango.rest.v2.resolver.RemainingPath;
+import com.infiniteautomation.mango.rest.latest.resolver.RemainingPath;
 import com.infiniteautomation.mango.spring.script.EvalContext;
 import com.infiniteautomation.mango.spring.script.PathMangoScript;
 import com.infiniteautomation.mango.spring.script.ScriptService;

@@ -1,7 +1,7 @@
 /**
  * Copyright (C) 2020 Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2.model.realtime;
+package com.infiniteautomation.mango.rest.latest.model.realtime;
 
 import java.util.Map;
 

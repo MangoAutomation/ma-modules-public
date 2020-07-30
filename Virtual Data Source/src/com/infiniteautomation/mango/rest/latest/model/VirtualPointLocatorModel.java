@@ -2,9 +2,9 @@
  * Copyright (C) 2015 Infinite Automation Software. All rights reserved.
  * @author Terry Packer
  */
-package com.infiniteautomation.mango.rest.v2.model;
+package com.infiniteautomation.mango.rest.latest.model;
 
-import com.infiniteautomation.mango.rest.v2.model.dataPoint.AbstractPointLocatorModel;
+import com.infiniteautomation.mango.rest.latest.model.dataPoint.AbstractPointLocatorModel;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.virtual.vo.AlternateBooleanChangeVO;

@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2017 Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2.model.dataPoint;
+package com.infiniteautomation.mango.rest.latest.model.dataPoint;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.serotonin.m2m2.Common;

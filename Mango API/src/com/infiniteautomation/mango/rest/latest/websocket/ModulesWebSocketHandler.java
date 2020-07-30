@@ -2,11 +2,11 @@
  * Copyright (C) 2017 Infinite Automation Software. All rights reserved.
  *
  */
-package com.infiniteautomation.mango.rest.v2.websocket;
+package com.infiniteautomation.mango.rest.latest.websocket;
 
 import com.infiniteautomation.mango.permission.MangoPermission;
-import com.infiniteautomation.mango.rest.v2.model.modules.ModuleNotificationModel;
-import com.infiniteautomation.mango.rest.v2.model.modules.ModuleNotificationTypeEnum;
+import com.infiniteautomation.mango.rest.latest.model.modules.ModuleNotificationModel;
+import com.infiniteautomation.mango.rest.latest.model.modules.ModuleNotificationTypeEnum;
 import com.infiniteautomation.mango.spring.service.ModulesService;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.ModuleNotificationListener;

@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 2018 Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2.temporaryResource;
+package com.infiniteautomation.mango.rest.latest.temporaryResource;
 
-import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource.TemporaryResourceStatus;
+import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResource.TemporaryResourceStatus;
 
 /**
  * @author Jared Wiltshire

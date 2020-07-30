@@ -1,15 +1,15 @@
 /**
  * Copyright (C) 2019  Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2;
+package com.infiniteautomation.mango.rest.latest;
 
 import org.springframework.stereotype.Component;
 
 import com.infiniteautomation.asciifile.AsciiFileDataSourceDefinition;
 import com.infiniteautomation.asciifile.vo.AsciiFileDataSourceVO;
-import com.infiniteautomation.mango.rest.v2.model.AsciiFileDataSourceModel;
-import com.infiniteautomation.mango.rest.v2.model.RestModelJacksonMapping;
-import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
+import com.infiniteautomation.mango.rest.latest.model.AsciiFileDataSourceModel;
+import com.infiniteautomation.mango.rest.latest.model.RestModelJacksonMapping;
+import com.infiniteautomation.mango.rest.latest.model.RestModelMapper;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 /**

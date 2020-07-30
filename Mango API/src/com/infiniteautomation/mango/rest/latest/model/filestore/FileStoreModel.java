@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2019 Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2.model.filestore;
+package com.infiniteautomation.mango.rest.latest.model.filestore;
 
 import com.fasterxml.jackson.annotation.JsonView;
-import com.infiniteautomation.mango.rest.v2.model.RoleViews;
-import com.infiniteautomation.mango.rest.v2.model.permissions.MangoPermissionModel;
+import com.infiniteautomation.mango.rest.latest.model.RoleViews;
+import com.infiniteautomation.mango.rest.latest.model.permissions.MangoPermissionModel;
 import com.serotonin.m2m2.vo.FileStore;
 
 public class FileStoreModel {

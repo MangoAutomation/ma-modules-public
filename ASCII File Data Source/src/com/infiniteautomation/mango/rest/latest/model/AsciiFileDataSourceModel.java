@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2019  Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2.model;
+package com.infiniteautomation.mango.rest.latest.model;
 
 import com.infiniteautomation.asciifile.AsciiFileDataSourceDefinition;
 import com.infiniteautomation.asciifile.vo.AsciiFileDataSourceVO;
-import com.infiniteautomation.mango.rest.v2.model.datasource.AbstractPollingDataSourceModel;
+import com.infiniteautomation.mango.rest.latest.model.datasource.AbstractPollingDataSourceModel;
 
 import io.swagger.annotations.ApiModel;
 

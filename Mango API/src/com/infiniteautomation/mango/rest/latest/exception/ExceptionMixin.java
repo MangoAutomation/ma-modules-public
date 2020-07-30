@@ -1,13 +1,13 @@
 /**
  * Copyright (C) 2019  Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2.exception;
+package com.infiniteautomation.mango.rest.latest.exception;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonView;
-import com.infiniteautomation.mango.rest.v2.views.AdminView;
+import com.infiniteautomation.mango.rest.latest.views.AdminView;
 
 /**
  * Limit output for exceptions

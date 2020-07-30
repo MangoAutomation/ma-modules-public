@@ -2,7 +2,7 @@
  * Copyright (C) 2017 Infinite Automation Software. All rights reserved.
  *
  */
-package com.infiniteautomation.mango.rest.v2;
+package com.infiniteautomation.mango.rest.latest;
 
 import java.io.IOException;
 import java.net.SocketException;
@@ -46,16 +46,16 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.infiniteautomation.mango.io.messaging.SentMessage;
 import com.infiniteautomation.mango.io.messaging.email.EmailMessage;
 import com.infiniteautomation.mango.io.serial.SerialPortIdentifier;
-import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
-import com.infiniteautomation.mango.rest.v2.exception.NotFoundRestException;
-import com.infiniteautomation.mango.rest.v2.exception.ServerErrorException;
-import com.infiniteautomation.mango.rest.v2.model.FilteredStreamWithTotal;
-import com.infiniteautomation.mango.rest.v2.model.StreamWithTotal;
-import com.infiniteautomation.mango.rest.v2.model.email.EmailContentModel;
-import com.infiniteautomation.mango.rest.v2.model.server.NetworkInterfaceModel;
-import com.infiniteautomation.mango.rest.v2.model.server.ServerCommandModel;
-import com.infiniteautomation.mango.rest.v2.model.system.TimezoneModel;
-import com.infiniteautomation.mango.rest.v2.model.system.TimezoneUtility;
+import com.infiniteautomation.mango.rest.latest.exception.BadRequestException;
+import com.infiniteautomation.mango.rest.latest.exception.NotFoundRestException;
+import com.infiniteautomation.mango.rest.latest.exception.ServerErrorException;
+import com.infiniteautomation.mango.rest.latest.model.FilteredStreamWithTotal;
+import com.infiniteautomation.mango.rest.latest.model.StreamWithTotal;
+import com.infiniteautomation.mango.rest.latest.model.email.EmailContentModel;
+import com.infiniteautomation.mango.rest.latest.model.server.NetworkInterfaceModel;
+import com.infiniteautomation.mango.rest.latest.model.server.ServerCommandModel;
+import com.infiniteautomation.mango.rest.latest.model.system.TimezoneModel;
+import com.infiniteautomation.mango.rest.latest.model.system.TimezoneUtility;
 import com.infiniteautomation.mango.spring.service.MailingListService;
 import com.infiniteautomation.mango.spring.service.UsersService;
 import com.infiniteautomation.mango.util.RQLUtils;

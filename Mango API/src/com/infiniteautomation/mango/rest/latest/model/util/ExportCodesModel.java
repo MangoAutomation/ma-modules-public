@@ -1,7 +1,7 @@
 /**
  * Copyright (C) 2018 Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2.model.util;
+package com.infiniteautomation.mango.rest.latest.model.util;
 
 import java.util.ArrayList;
 import java.util.List;

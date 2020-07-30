@@ -1,26 +1,26 @@
 /*
  * Copyright (C) 2020 Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2;
+package com.infiniteautomation.mango.rest.latest;
 
 import com.infiniteautomation.mango.permission.UserRolesDetails;
-import com.infiniteautomation.mango.rest.v2.bulk.BulkRequest;
-import com.infiniteautomation.mango.rest.v2.bulk.BulkResponse;
-import com.infiniteautomation.mango.rest.v2.bulk.VoAction;
-import com.infiniteautomation.mango.rest.v2.exception.AbstractRestV2Exception;
-import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
-import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
-import com.infiniteautomation.mango.rest.v2.model.FilteredStreamWithTotal;
-import com.infiniteautomation.mango.rest.v2.model.StreamedArrayWithTotal;
-import com.infiniteautomation.mango.rest.v2.model.StreamedSeroJsonVORqlQuery;
-import com.infiniteautomation.mango.rest.v2.model.StreamedVORqlQueryWithTotal;
-import com.infiniteautomation.mango.rest.v2.model.datasource.RuntimeStatusModel;
-import com.infiniteautomation.mango.rest.v2.model.permissions.UserRolesDetailsModel;
-import com.infiniteautomation.mango.rest.v2.model.user.*;
-import com.infiniteautomation.mango.rest.v2.patch.PatchVORequestBody;
-import com.infiniteautomation.mango.rest.v2.patch.PatchVORequestBody.PatchIdField;
-import com.infiniteautomation.mango.rest.v2.temporaryResource.*;
-import com.infiniteautomation.mango.rest.v2.temporaryResource.TemporaryResource.TemporaryResourceStatus;
+import com.infiniteautomation.mango.rest.latest.bulk.BulkRequest;
+import com.infiniteautomation.mango.rest.latest.bulk.BulkResponse;
+import com.infiniteautomation.mango.rest.latest.bulk.VoAction;
+import com.infiniteautomation.mango.rest.latest.exception.AbstractRestV2Exception;
+import com.infiniteautomation.mango.rest.latest.exception.AccessDeniedException;
+import com.infiniteautomation.mango.rest.latest.exception.BadRequestException;
+import com.infiniteautomation.mango.rest.latest.model.FilteredStreamWithTotal;
+import com.infiniteautomation.mango.rest.latest.model.StreamedArrayWithTotal;
+import com.infiniteautomation.mango.rest.latest.model.StreamedSeroJsonVORqlQuery;
+import com.infiniteautomation.mango.rest.latest.model.StreamedVORqlQueryWithTotal;
+import com.infiniteautomation.mango.rest.latest.model.datasource.RuntimeStatusModel;
+import com.infiniteautomation.mango.rest.latest.model.permissions.UserRolesDetailsModel;
+import com.infiniteautomation.mango.rest.latest.model.user.*;
+import com.infiniteautomation.mango.rest.latest.patch.PatchVORequestBody;
+import com.infiniteautomation.mango.rest.latest.patch.PatchVORequestBody.PatchIdField;
+import com.infiniteautomation.mango.rest.latest.temporaryResource.*;
+import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResource.TemporaryResourceStatus;
 import com.infiniteautomation.mango.spring.db.UserTableDefinition;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.spring.service.UsersService;

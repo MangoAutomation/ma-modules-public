@@ -1,10 +1,10 @@
 /**
  * Copyright (C) 2018  Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2.model.event;
+package com.infiniteautomation.mango.rest.latest.model.event;
 
-import com.infiniteautomation.mango.rest.v2.model.dataPoint.DataPointModel;
-import com.infiniteautomation.mango.rest.v2.model.event.detectors.AbstractPointEventDetectorModel;
+import com.infiniteautomation.mango.rest.latest.model.dataPoint.DataPointModel;
+import com.infiniteautomation.mango.rest.latest.model.event.detectors.AbstractPointEventDetectorModel;
 import com.serotonin.m2m2.rt.event.type.DataPointEventType;
 
 /**

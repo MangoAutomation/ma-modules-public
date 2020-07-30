@@ -1,16 +1,16 @@
 /**
  * Copyright (C) 2019  Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2.model.datasource;
+package com.infiniteautomation.mango.rest.latest.model.datasource;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.infiniteautomation.mango.rest.v2.model.time.TimePeriod;
+import com.infiniteautomation.mango.rest.latest.model.time.TimePeriod;
 import com.serotonin.m2m2.vo.dataSource.PollingDataSourceVO;
 
 import io.swagger.annotations.ApiModelProperty;
 
-import com.infiniteautomation.mango.rest.v2.model.time.TimePeriodType;
+import com.infiniteautomation.mango.rest.latest.model.time.TimePeriodType;
 
 /**
  * @author Terry Packer

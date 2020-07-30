@@ -2,7 +2,7 @@
  * Copyright (C) 2015 Infinite Automation Systems. All rights reserved.
  * http://infiniteautomation.com/
  */
-package com.infiniteautomation.mango.rest.v2;
+package com.infiniteautomation.mango.rest.latest;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.RequestContextUtils;
 
-import com.infiniteautomation.mango.rest.v2.exception.AccessDeniedException;
+import com.infiniteautomation.mango.rest.latest.exception.AccessDeniedException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.vo.User;

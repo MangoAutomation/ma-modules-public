@@ -2,7 +2,7 @@
  * Copyright (C) 2014 Infinite Automation Software. All rights reserved.
  * @author Terry Packer
  */
-package com.infiniteautomation.mango.rest.v2.websocket.pointValue;
+package com.infiniteautomation.mango.rest.latest.websocket.pointValue;
 
 /**
  * @author Terry Packer

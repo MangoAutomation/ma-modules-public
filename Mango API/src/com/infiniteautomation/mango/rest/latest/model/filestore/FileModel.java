@@ -1,4 +1,4 @@
-package com.infiniteautomation.mango.rest.v2.model.filestore;
+package com.infiniteautomation.mango.rest.latest.model.filestore;
 
 import java.util.Date;
 

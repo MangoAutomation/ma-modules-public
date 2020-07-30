@@ -2,9 +2,9 @@
  * Copyright (C) 2020  Infinite Automation Software. All rights reserved.
  */
 
-package com.infiniteautomation.mango.rest.v2.model.dataPoint.mock;
+package com.infiniteautomation.mango.rest.latest.model.dataPoint.mock;
 
-import com.infiniteautomation.mango.rest.v2.model.dataPoint.AbstractPointLocatorModel;
+import com.infiniteautomation.mango.rest.latest.model.dataPoint.AbstractPointLocatorModel;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.vo.dataPoint.MockPointLocatorVO;
 

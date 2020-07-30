@@ -2,7 +2,7 @@
  * Copyright (C) 2016 Infinite Automation Software. All rights reserved.
  *
  */
-package com.infiniteautomation.mango.rest.v2;
+package com.infiniteautomation.mango.rest.latest;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -54,22 +54,22 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.infiniteautomation.mango.rest.v2.exception.BadRequestException;
-import com.infiniteautomation.mango.rest.v2.exception.GenericRestException;
-import com.infiniteautomation.mango.rest.v2.exception.ModuleRestV2Exception;
-import com.infiniteautomation.mango.rest.v2.exception.ServerErrorException;
-import com.infiniteautomation.mango.rest.v2.exception.ValidationFailedRestException;
-import com.infiniteautomation.mango.rest.v2.model.CredentialsModel;
-import com.infiniteautomation.mango.rest.v2.model.modules.AngularJSModuleDefinitionGroupModel;
-import com.infiniteautomation.mango.rest.v2.model.modules.CoreModuleModel;
-import com.infiniteautomation.mango.rest.v2.model.modules.ModuleModel;
-import com.infiniteautomation.mango.rest.v2.model.modules.ModuleUpgradeModel;
-import com.infiniteautomation.mango.rest.v2.model.modules.ModuleUpgradesModel;
-import com.infiniteautomation.mango.rest.v2.model.modules.UpdateLicensePayloadModel;
-import com.infiniteautomation.mango.rest.v2.model.modules.UpgradeStatusModel;
-import com.infiniteautomation.mango.rest.v2.model.modules.UpgradeUploadResult;
-import com.infiniteautomation.mango.rest.v2.model.modules.UpgradeUploadResult.InvalidModule;
-import com.infiniteautomation.mango.rest.v2.util.MangoStoreClient;
+import com.infiniteautomation.mango.rest.latest.exception.BadRequestException;
+import com.infiniteautomation.mango.rest.latest.exception.GenericRestException;
+import com.infiniteautomation.mango.rest.latest.exception.ModuleRestV2Exception;
+import com.infiniteautomation.mango.rest.latest.exception.ServerErrorException;
+import com.infiniteautomation.mango.rest.latest.exception.ValidationFailedRestException;
+import com.infiniteautomation.mango.rest.latest.model.CredentialsModel;
+import com.infiniteautomation.mango.rest.latest.model.modules.AngularJSModuleDefinitionGroupModel;
+import com.infiniteautomation.mango.rest.latest.model.modules.CoreModuleModel;
+import com.infiniteautomation.mango.rest.latest.model.modules.ModuleModel;
+import com.infiniteautomation.mango.rest.latest.model.modules.ModuleUpgradeModel;
+import com.infiniteautomation.mango.rest.latest.model.modules.ModuleUpgradesModel;
+import com.infiniteautomation.mango.rest.latest.model.modules.UpdateLicensePayloadModel;
+import com.infiniteautomation.mango.rest.latest.model.modules.UpgradeStatusModel;
+import com.infiniteautomation.mango.rest.latest.model.modules.UpgradeUploadResult;
+import com.infiniteautomation.mango.rest.latest.model.modules.UpgradeUploadResult.InvalidModule;
+import com.infiniteautomation.mango.rest.latest.util.MangoStoreClient;
 import com.infiniteautomation.mango.spring.service.ModulesService;
 import com.infiniteautomation.mango.spring.service.ModulesService.UpgradeStatus;
 import com.infiniteautomation.mango.spring.service.PermissionService;

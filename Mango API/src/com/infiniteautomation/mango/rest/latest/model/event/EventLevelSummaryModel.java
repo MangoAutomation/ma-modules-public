@@ -1,7 +1,7 @@
 /**
  * Copyright (C) 2019  Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2.model.event;
+package com.infiniteautomation.mango.rest.latest.model.event;
 
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 

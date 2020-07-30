@@ -2,7 +2,7 @@
  * Copyright (C) 2020  Infinite Automation Software. All rights reserved.
  */
 
-package com.infiniteautomation.mango.rest.v2.websocket.pointValue;
+package com.infiniteautomation.mango.rest.latest.websocket.pointValue;
 
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -16,10 +16,10 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.infiniteautomation.mango.rest.v2.model.pointValue.PointValueTimeModel;
-import com.infiniteautomation.mango.rest.v2.websocket.MangoWebSocketErrorType;
-import com.infiniteautomation.mango.rest.v2.websocket.MangoWebSocketHandler;
-import com.infiniteautomation.mango.rest.v2.websocket.WebSocketSendException;
+import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueTimeModel;
+import com.infiniteautomation.mango.rest.latest.websocket.MangoWebSocketErrorType;
+import com.infiniteautomation.mango.rest.latest.websocket.MangoWebSocketHandler;
+import com.infiniteautomation.mango.rest.latest.websocket.WebSocketSendException;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.Functions;
 import com.serotonin.m2m2.Common;

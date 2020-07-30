@@ -1,18 +1,18 @@
 /**
  * Copyright (C) 2019  Infinite Automation Software. All rights reserved.
  */
-package com.infiniteautomation.mango.rest.v2.websocket;
+package com.infiniteautomation.mango.rest.latest.websocket;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.infiniteautomation.mango.rest.v2.model.ArrayWithTotal;
-import com.infiniteautomation.mango.rest.v2.model.FilteredStreamWithTotal;
-import com.infiniteautomation.mango.rest.v2.model.RestModelMapper;
-import com.infiniteautomation.mango.rest.v2.model.event.DataPointEventSummaryModel;
-import com.infiniteautomation.mango.rest.v2.model.event.EventActionEnum;
-import com.infiniteautomation.mango.rest.v2.model.event.EventInstanceModel;
-import com.infiniteautomation.mango.rest.v2.model.event.EventLevelSummaryModel;
+import com.infiniteautomation.mango.rest.latest.model.ArrayWithTotal;
+import com.infiniteautomation.mango.rest.latest.model.FilteredStreamWithTotal;
+import com.infiniteautomation.mango.rest.latest.model.RestModelMapper;
+import com.infiniteautomation.mango.rest.latest.model.event.DataPointEventSummaryModel;
+import com.infiniteautomation.mango.rest.latest.model.event.EventActionEnum;
+import com.infiniteautomation.mango.rest.latest.model.event.EventInstanceModel;
+import com.infiniteautomation.mango.rest.latest.model.event.EventLevelSummaryModel;
 import com.infiniteautomation.mango.spring.service.EventInstanceService;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
