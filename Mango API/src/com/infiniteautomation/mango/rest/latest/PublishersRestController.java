@@ -49,7 +49,7 @@ import net.jazdw.rql.parser.ASTNode;
  */
 @Api(value="Mango Publishers")
 @RestController
-@RequestMapping("/publishers-v2")
+@RequestMapping("/publishers")
 public class PublishersRestController {
 
     private final PublisherService service;
@@ -114,7 +114,7 @@ public class PublishersRestController {
             HttpServletRequest request) {
 
         PublisherVO<?> vo = this.service.insert(model.toVO());
-        URI location = builder.path("/publishers-v2/{xid}").buildAndExpand(new Object[]{vo.getXid()}).toUri();
+        URI location = builder.path("/publishers/{xid}").buildAndExpand(new Object[]{vo.getXid()}).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
         return new ResponseEntity<>(map.apply(vo, user), headers, HttpStatus.CREATED);
@@ -130,7 +130,7 @@ public class PublishersRestController {
             HttpServletRequest request) {
 
         PublisherVO<?> vo = this.service.update(xid, model.toVO());
-        URI location = builder.path("/publishers-v2/{xid}").buildAndExpand(new Object[]{vo.getXid()}).toUri();
+        URI location = builder.path("/publishers/{xid}").buildAndExpand(new Object[]{vo.getXid()}).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
         return new ResponseEntity<>(map.apply(vo, user), headers, HttpStatus.OK);
@@ -154,7 +154,7 @@ public class PublishersRestController {
 
         PublisherVO<?> vo = service.update(xid, model.toVO());
 
-        URI location = builder.path("/publishers-v2/{xid}").buildAndExpand(vo.getXid()).toUri();
+        URI location = builder.path("/publishers/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
 

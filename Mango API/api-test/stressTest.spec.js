@@ -24,7 +24,7 @@ const DataPoint = client.DataPoint;
 
 class Publisher extends MangoObject {
     static get baseUrl() {
-        return '/rest/latest/publishers-v2';
+        return '/rest/latest/publishers';
     }
 }
 
