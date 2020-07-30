@@ -206,7 +206,7 @@ public class WatchListDao extends AbstractVoDao<WatchListVO, WatchListTableDefin
 
             select = select.join(permissionsGranted).on(
                     permissionsGranted.field(PermissionMappingTable.PERMISSIONS_MAPPING.permissionId).in(
-                            WatchListTableDefinition.READ_PERMISSION_ALIAS, WatchListTableDefinition.EDIT_PERMISSION_ALIAS)
+                            WatchListTableDefinition.READ_PERMISSION_ALIAS)
                     .or(this.table.getAlias("userId").eq(((User)user).getId())));
         }
         return select;
