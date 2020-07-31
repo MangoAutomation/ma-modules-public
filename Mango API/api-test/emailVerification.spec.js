@@ -70,7 +70,7 @@ describe('Email verification', function() {
     });
     
     beforeEach('Create public client', function() {
-        this.publicClient = createClient({username: null, password: null});
+        this.publicClient = createClient();
     });
 
     it('Can retrieve the public key', function() {
