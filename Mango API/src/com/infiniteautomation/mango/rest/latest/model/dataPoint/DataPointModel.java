@@ -360,6 +360,14 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
         this.readPermission = readPermission;
     }
 
+    public MangoPermissionModel getEditPermission() {
+        return editPermission;
+    }
+
+    public void setEditPermission(MangoPermissionModel editPermission) {
+        this.editPermission = editPermission;
+    }
+
     public MangoPermissionModel getSetPermission() {
         return setPermission;
     }
