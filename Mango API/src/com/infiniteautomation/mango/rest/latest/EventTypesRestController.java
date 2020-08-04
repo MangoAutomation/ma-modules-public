@@ -313,7 +313,7 @@ public class EventTypesRestController {
                     throw new BadRequestException();
 
                 for(DataSourceVO vo : dataSourceDao.getAll()) {
-                    if(permissionService.hasDataSourceEditPermission(user, vo)) {
+                    if(permissionService.hasPermission(user, vo.getReadPermission())) {
                         AbstractDataSourceModel<?> dsModel = modelMapper.map(vo, AbstractDataSourceModel.class, user);
                         DataSourceEventTypeModel model = new DataSourceEventTypeModel(new DataSourceEventType(vo.getId(), 0), dsModel);
                         types.add(new EventTypeVOModel<DataSourceEventType, AbstractDataSourceModel<?>, String>(model, new TranslatableMessage("event.eventsFor", vo.getName()), false, true, true));
@@ -417,7 +417,7 @@ public class EventTypesRestController {
                 if(ds == null)
                     throw new NotFoundException();
 
-                permissionService.ensureDataSourceEditPermission(user, ds);
+                permissionService.ensurePermission(user, ds.getReadPermission());
                 AbstractDataSourceModel<?> dsModel = modelMapper.map(ds, AbstractDataSourceModel.class, user);
                 for(EventTypeVO type : ds.getEventTypes()) {
                     DataSourceEventType eventType = (DataSourceEventType)type.getEventType();

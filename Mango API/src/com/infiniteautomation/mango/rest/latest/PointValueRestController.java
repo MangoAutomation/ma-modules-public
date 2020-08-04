@@ -1131,9 +1131,9 @@ public class PointValueRestController extends AbstractMangoRestController {
             )
     @RequestMapping(method = RequestMethod.POST, value="/purge")
     public ResponseEntity<TemporaryResource<PurgePointValuesResponseModel, AbstractRestException>> purgePointValues(HttpServletRequest request,
-                                                                                                                    @RequestBody(required = true) PurgeDataPointValuesModel model,
-                                                                                                                    @AuthenticationPrincipal User user,
-                                                                                                                    UriComponentsBuilder builder) {
+            @RequestBody(required = true) PurgeDataPointValuesModel model,
+            @AuthenticationPrincipal User user,
+            UriComponentsBuilder builder) {
 
         return purgePointValues(
                 user,
@@ -1196,7 +1196,7 @@ public class PointValueRestController extends AbstractMangoRestController {
                                 throw new NotFoundException();
 
                             //Ensure edit permission
-                            permissionService.ensureDataSourceEditPermission(user, ds);
+                            permissionService.ensurePermission(user, dp.getEditPermission());
 
                             //Do purge based on settings
                             if(model.isPurgeAll())

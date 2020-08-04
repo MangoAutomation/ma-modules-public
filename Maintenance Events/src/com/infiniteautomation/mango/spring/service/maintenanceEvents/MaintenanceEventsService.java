@@ -3,8 +3,6 @@
  */
 package com.infiniteautomation.mango.spring.service.maintenanceEvents;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
@@ -42,12 +40,9 @@ import com.serotonin.timer.CronTimerTrigger;
 @Service
 public class MaintenanceEventsService extends AbstractVOService<MaintenanceEventVO, MaintenanceEventsTableDefinition, MaintenanceEventDao>{
 
-    private final DataSourceDao dataSourceDao;
-
     @Autowired
-    public MaintenanceEventsService(MaintenanceEventDao dao, DataSourceDao dataSourceDao, PermissionService permissionService) {
+    public MaintenanceEventsService(MaintenanceEventDao dao, PermissionService permissionService) {
         super(dao, permissionService);
-        this.dataSourceDao = dataSourceDao;
     }
 
     @Override
@@ -192,12 +187,10 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
      */
     public static class DataPointPermissionsCheckCallback implements MappedRowCallback<DataPointVO> {
 
-        final Map<Integer, DataSourceVO> sources = new HashMap<>();
         final MutableBoolean hasPermission = new MutableBoolean(true);
         final boolean read;
         final PermissionHolder user;
         final PermissionService permissionService;
-        final DataSourceDao dataSourceDao;
 
         public boolean hasPermission() {
             return hasPermission.booleanValue();
@@ -208,11 +201,10 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
          * @param read = true to check read permission, false = check edit permission
          */
         public DataPointPermissionsCheckCallback(PermissionHolder user, boolean read,
-                PermissionService permissionService, DataSourceDao dataSourceDao) {
+                PermissionService permissionService) {
             this.user = user;
             this.read = read;
             this.permissionService = permissionService;
-            this.dataSourceDao = dataSourceDao;
         }
 
         @Override
@@ -224,19 +216,10 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
             }else {
                 if(read) {
                     if(!permissionService.hasPermission(user, point.getReadPermission())) {
-                        DataSourceVO source = sources.computeIfAbsent(point.getDataSourceId(), k -> {
-                            DataSourceVO newDs = dataSourceDao.get(k);
-                            return newDs;
-                        });
-                        if(!permissionService.hasDataSourceEditPermission(user, source))
-                            hasPermission.setFalse();
+                        hasPermission.setFalse();
                     }
                 }else {
-                    DataSourceVO source = sources.computeIfAbsent(point.getDataSourceId(), k -> {
-                        DataSourceVO newDs = dataSourceDao.get(k);
-                        return newDs;
-                    });
-                    if(!permissionService.hasDataSourceEditPermission(user, source))
+                    if(!permissionService.hasPermission(user, point.getEditPermission()))
                         hasPermission.setFalse();
                 }
             }
@@ -251,6 +234,7 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
     public static class DataSourcePermissionsCheckCallback implements MappedRowCallback<DataSourceVO> {
 
         final MutableBoolean hasPermission = new MutableBoolean(true);
+        final boolean read;
         final PermissionHolder user;
         final PermissionService permissionService;
 
@@ -262,8 +246,9 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
          *
          * @param read = true to check read permission, false = check edit permission
          */
-        public DataSourcePermissionsCheckCallback(PermissionHolder user, PermissionService permissionService) {
+        public DataSourcePermissionsCheckCallback(PermissionHolder user, boolean read, PermissionService permissionService) {
             this.user = user;
+            this.read = read;
             this.permissionService = permissionService;
         }
 
@@ -274,8 +259,16 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
                 //short circuit the logic if we already failed
                 return;
             }else {
-                if(!permissionService.hasDataSourceEditPermission(user, source))
-                    hasPermission.setFalse();
+                if(read) {
+                    if(read) {
+                        if(!permissionService.hasPermission(user, source.getReadPermission())) {
+                            hasPermission.setFalse();
+                        }
+                    }else {
+                        if(!permissionService.hasPermission(user, source.getEditPermission()))
+                            hasPermission.setFalse();
+                    }
+                }
             }
         }
     }
@@ -290,18 +283,18 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
         if(permissionService.hasAdminRole(user))
             return true;
         else if(permissionService.hasDataSourcePermission(user))
-            //TODO Review how this permission works
+            //TODO Mango 4.0 Review how this permission works
             return true;
         else {
             if(vo.getDataPoints().size() > 0) {
-                DataPointPermissionsCheckCallback callback = new DataPointPermissionsCheckCallback(user, false, this.permissionService, this.dataSourceDao);
+                DataPointPermissionsCheckCallback callback = new DataPointPermissionsCheckCallback(user, false, this.permissionService);
                 dao.getPoints(vo.getId(), callback);
                 if(!callback.hasPermission.booleanValue())
                     return false;
             }
 
             if(vo.getDataSources().size() > 0) {
-                DataSourcePermissionsCheckCallback callback = new DataSourcePermissionsCheckCallback(user, this.permissionService);
+                DataSourcePermissionsCheckCallback callback = new DataSourcePermissionsCheckCallback(user, false, this.permissionService);
                 dao.getDataSources(vo.getId(), callback);
                 if(!callback.hasPermission.booleanValue())
                     return false;
@@ -319,24 +312,20 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
             return true;
         else {
             if(vo.getDataPoints().size() > 0) {
-                DataPointPermissionsCheckCallback callback = new DataPointPermissionsCheckCallback(user, true, this.permissionService, this.dataSourceDao);
+                DataPointPermissionsCheckCallback callback = new DataPointPermissionsCheckCallback(user, true, this.permissionService);
                 dao.getPoints(vo.getId(), callback);
                 if(!callback.hasPermission.booleanValue())
                     return false;
             }
 
             if(vo.getDataSources().size() > 0) {
-                DataSourcePermissionsCheckCallback callback = new DataSourcePermissionsCheckCallback(user, this.permissionService);
+                DataSourcePermissionsCheckCallback callback = new DataSourcePermissionsCheckCallback(user, true, this.permissionService);
                 dao.getDataSources(vo.getId(), callback);
                 if(!callback.hasPermission.booleanValue())
                     return false;
             }
         }
         return true;
-    }
-
-    public DataSourceDao getDataSourceDao() {
-        return this.dataSourceDao;
     }
 
     @Override

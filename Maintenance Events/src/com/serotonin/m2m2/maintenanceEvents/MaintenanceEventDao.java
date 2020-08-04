@@ -176,7 +176,7 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
      * @param maintenanceEventId
      * @param callback
      */
-    public void getDataSources(int maintenanceEventId, final MappedRowCallback<DataSourceVO> callback){
+    public void getDataSources(int maintenanceEventId, final MappedRowCallback<DataSourceVO> callback) {
         RowMapper<DataSourceVO> mapper = dataSourceDao.getRowMapper();
         this.ejt.query(SELECT_DATA_SOURCES, new Object[]{maintenanceEventId}, new RowCallbackHandler(){
             private int row = 0;

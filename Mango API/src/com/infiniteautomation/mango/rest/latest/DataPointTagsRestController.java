@@ -254,7 +254,7 @@ public class DataPointTagsRestController {
         return dataPoint.getTags();
     }
 
-    @ApiOperation(value = "Set data point tags by data point XID", notes = "User must have edit permission for the data point's data source")
+    @ApiOperation(value = "Set data point tags by data point XID", notes = "User must have edit permission for the data points")
     @RequestMapping(method = RequestMethod.POST, value="/point/{xid}")
     public Map<String, String> setTagsForDataPoint(
             @ApiParam(value = "Data point XID", required = true, allowMultiple = false)
@@ -267,7 +267,7 @@ public class DataPointTagsRestController {
             DataPointVO dataPoint = dataPointService.get(xid);
 
             PermissionHolder user = Common.getUser();
-            permissionService.ensureDataSourceEditPermission(user, dataPoint.getDataSourceId());
+            permissionService.ensurePermission(user, dataPoint.getEditPermission());
 
             dataPoint.setTags(tags);
             dataPointTagsDao.saveDataPointTags(dataPoint);
@@ -276,7 +276,7 @@ public class DataPointTagsRestController {
         });
     }
 
-    @ApiOperation(value = "Merge data point tags by data point XID", notes = "User must have edit permission for the data point's data source." +
+    @ApiOperation(value = "Merge data point tags by data point XID", notes = "User must have edit permission for the data points." +
             "Adds/deletes a tag or replaces the tag value for each tag key. Any other existing tags will be kept. Set the tag value to null to delete the tag.")
     @RequestMapping(method = RequestMethod.PUT, value="/point/{xid}")
     public Map<String, String> mergeTagsForDataPoint(
@@ -289,7 +289,7 @@ public class DataPointTagsRestController {
         return dataPointTagsDao.doInTransaction(txStatus -> {
             DataPointVO dataPoint = dataPointService.get(xid);
             PermissionHolder user = Common.getUser();
-            permissionService.ensureDataSourceEditPermission(user, dataPoint.getDataSourceId());
+            permissionService.ensurePermission(user, dataPoint.getEditPermission());
 
             Map<String, String> existingTags = dataPointTagsDao.getTagsForDataPointId(dataPoint.getId());
 

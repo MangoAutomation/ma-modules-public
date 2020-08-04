@@ -37,7 +37,7 @@ public class DataPointWebSocketHandler extends DaoNotificationWebSocketHandler<D
 
     @Override
     protected boolean hasPermission(PermissionHolder user, DataPointVO vo) {
-        return permissionService.hasAdminRole(user) || permissionService.hasDataSourceEditPermission(user, vo.getDataSourceId());
+        return permissionService.hasAdminRole(user) || permissionService.hasPermission(user, vo.getEditPermission());
     }
 
     @Override

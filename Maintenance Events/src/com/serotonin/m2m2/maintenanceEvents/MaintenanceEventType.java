@@ -6,15 +6,19 @@ package com.serotonin.m2m2.maintenanceEvents;
 
 import java.io.IOException;
 
+import com.infiniteautomation.mango.spring.service.DataPointService;
+import com.infiniteautomation.mango.spring.service.DataSourceService;
 import com.infiniteautomation.mango.spring.service.PermissionService;
+import com.infiniteautomation.mango.spring.service.maintenanceEvents.MaintenanceEventsService;
+import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.serotonin.json.JsonException;
 import com.serotonin.json.JsonReader;
 import com.serotonin.json.ObjectWriter;
-import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.rt.event.type.DuplicateHandling;
 import com.serotonin.m2m2.rt.event.type.EventType;
-import com.serotonin.m2m2.vo.DataPointVO;
+import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 public class MaintenanceEventType extends EventType {
@@ -107,19 +111,20 @@ public class MaintenanceEventType extends EventType {
 
     @Override
     public boolean hasPermission(PermissionHolder user, PermissionService service) {
-        MaintenanceEventVO vo = MaintenanceEventDao.getInstance().get(maintenanceId);
-        if(vo == null)
-            return false;
-        else {
-            for(int dsId : vo.getDataSources())
-                if(!service.hasDataSourceEditPermission(user, dsId))
-                    return false;
+        DataSourceService dataSourceService = Common.getBean(DataSourceService.class);
+        DataPointService dataPointService = Common.getBean(DataPointService.class);
+        MaintenanceEventsService maintenanceEventService = Common.getBean(MaintenanceEventsService.class);
 
-            for(int dpId : vo.getDataPoints()) {
-                DataPointVO dp = DataPointDao.getInstance().get(dpId);
-                if(dp != null && !service.hasPermission(user, dp.getReadPermission()))
-                    return false;
+        try {
+            MaintenanceEventVO vo = maintenanceEventService.get(maintenanceId);
+            for(int dsId : vo.getDataSources()) {
+                dataSourceService.get(dsId);
             }
+            for(int dpId : vo.getDataPoints()) {
+                dataPointService.get(dpId);
+            }
+        }catch(NotFoundException | PermissionException e) {
+            return false;
         }
         return true;
     }

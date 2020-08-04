@@ -231,13 +231,13 @@ public class MaintenanceEventsRestController {
         } else {
             return new StreamedVORqlQueryWithTotal<>(service, rql, null, null, item -> {
                 if(item.getDataPoints().size() > 0) {
-                    DataPointPermissionsCheckCallback callback = new DataPointPermissionsCheckCallback(user, true, this.service.getPermissionService(), this.service.getDataSourceDao());
+                    DataPointPermissionsCheckCallback callback = new DataPointPermissionsCheckCallback(user, true, this.service.getPermissionService());
                     dao.getPoints(item.getId(), callback);
                     if(!callback.hasPermission())
                         return false;
                 }
                 if(item.getDataSources().size() > 0) {
-                    DataSourcePermissionsCheckCallback callback = new DataSourcePermissionsCheckCallback(user, this.service.getPermissionService());
+                    DataSourcePermissionsCheckCallback callback = new DataSourcePermissionsCheckCallback(user, true, this.service.getPermissionService());
                     dao.getDataSources(item.getId(), callback);
                     if(!callback.hasPermission())
                         return false;
@@ -260,13 +260,13 @@ public class MaintenanceEventsRestController {
         } else {
             export.put("maintenanceEvents", new StreamedSeroJsonVORqlQuery<>(service, rql, null, null, item -> {
                 if(item.getDataPoints().size() > 0) {
-                    DataPointPermissionsCheckCallback callback = new DataPointPermissionsCheckCallback(user, true, this.service.getPermissionService(), this.service.getDataSourceDao());
+                    DataPointPermissionsCheckCallback callback = new DataPointPermissionsCheckCallback(user, true, this.service.getPermissionService());
                     dao.getPoints(item.getId(), callback);
                     if(!callback.hasPermission())
                         return false;
                 }
                 if(item.getDataSources().size() > 0) {
-                    DataSourcePermissionsCheckCallback callback = new DataSourcePermissionsCheckCallback(user, this.service.getPermissionService());
+                    DataSourcePermissionsCheckCallback callback = new DataSourcePermissionsCheckCallback(user, true, this.service.getPermissionService());
                     dao.getDataSources(item.getId(), callback);
                     if(!callback.hasPermission())
                         return false;
