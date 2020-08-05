@@ -79,6 +79,9 @@ public class MaintenanceEventsServiceTest extends AbstractVOServiceWithPermissio
                 //Get the data points and add our roles to the read roles
                 for(int dpId : vo.getDataPoints()) {
                     DataPointVO dp = DataPointDao.getInstance().get(dpId);
+                    dp.setEditPermission(permission);
+                    DataPointDao.getInstance().update(dp.getId(), dp);
+
                     DataSourceVO ds = DataSourceDao.getInstance().get(dp.getDataSourceId());
                     ds.setEditPermission(permission);
                     DataSourceDao.getInstance().update(ds.getId(), ds);
@@ -195,4 +198,27 @@ public class MaintenanceEventsServiceTest extends AbstractVOServiceWithPermissio
         }, getReadRolesContextKey(), getReadRolesContextKey());
     }
 
+    @Override
+    @Test
+    public void testCannotRemoveReadAccess() {
+        //NoOp
+    }
+
+    @Test
+    public void testCannotRemoveToggleAccess() {
+        runTest(() -> {
+            MaintenanceEventVO vo = newVO(editUser);
+            setReadPermission(MangoPermission.createOrSet(roleService.getUserRole()), vo);
+            setEditPermission(MangoPermission.createOrSet(roleService.getUserRole()), vo);
+            getService().permissionService.runAsSystemAdmin(() -> {
+                service.insert(vo);
+            });
+            getService().permissionService.runAs(readUser, () -> {
+                MaintenanceEventVO fromDb = service.get(vo.getId());
+                assertVoEqual(vo, fromDb);
+                vo.setTogglePermission(MangoPermission.createOrSet(Collections.emptySet()));
+                service.update(fromDb.getId(), fromDb);
+            });
+        }, getReadRolesContextKey());
+    }
 }
