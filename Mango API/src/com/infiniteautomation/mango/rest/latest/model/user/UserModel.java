@@ -39,7 +39,8 @@ public class UserModel extends AbstractVoModel<User> {
     private boolean receiveOwnAuditEvents;
     private String timezone;
     private boolean muted;
-    private Set<String> permissions;
+    private Set<String> roles;
+    private Set<String> inheritedRoles;
     private String locale;
     private boolean passwordLocked;
     private String hashAlgorithm;
@@ -122,11 +123,14 @@ public class UserModel extends AbstractVoModel<User> {
     public void setMuted(boolean muted) {
         this.muted = muted;
     }
-    public Set<String> getPermissions() {
-        return permissions;
+    public Set<String> getRoles() {
+        return roles;
     }
-    public void setPermissions(Set<String> permissions) {
-        this.permissions = permissions;
+    public void setRoles(Set<String> roles) {
+        this.roles = roles;
+    }
+    public Set<String> getInheritedRoles() {
+        return inheritedRoles;
     }
     public String getLocale() {
         return locale;
@@ -241,9 +245,13 @@ public class UserModel extends AbstractVoModel<User> {
         this.timezone = StringUtils.isBlank(vo.getTimezone()) ? null : vo.getTimezone();
         this.muted = vo.isMuted();
         this.receiveOwnAuditEvents = vo.isReceiveOwnAuditEvents();
-        this.permissions = new HashSet<>();
+        this.roles = new HashSet<>();
         for(Role role : vo.getRoles()) {
-            permissions.add(role.getXid());
+            roles.add(role.getXid());
+        }
+        this.inheritedRoles = new HashSet<>();
+        for(Role role : vo.getAllInheritedRoles()) {
+            this.inheritedRoles.add(role.getXid());
         }
         this.locale = StringUtils.isBlank(vo.getLocale()) ? null : vo.getLocale();
         this.passwordLocked = vo.isPasswordLocked();
@@ -270,8 +278,8 @@ public class UserModel extends AbstractVoModel<User> {
         user.setTimezone(StringUtils.isBlank(timezone) ? null : timezone);
         user.setMuted(muted);
         user.setReceiveOwnAuditEvents(receiveOwnAuditEvents);
-        if(permissions != null) {
-            user.setRoles(Common.getBean(PermissionService.class).explodeLegacyPermissionGroupsToRoles(permissions));
+        if(roles != null) {
+            user.setRoles(Common.getBean(PermissionService.class).explodeLegacyPermissionGroupsToRoles(roles));
         }
         user.setLocale(StringUtils.isBlank(locale) ? null : locale);
         if(!StringUtils.isEmpty(hashAlgorithm)) {
