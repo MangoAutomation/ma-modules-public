@@ -29,7 +29,7 @@ describe('Sessions and expiry', function() {
             username,
             email: `${username}@example.com`,
             name: `${username}`,
-            permissions: ['user'],
+            roles: ['user'],
             password: this.testUserPassword
         });
         return this.testUser.save();
@@ -69,11 +69,11 @@ describe('Sessions and expiry', function() {
         });
     });
     
-    it('User\'s sessions are expired when their permissions are changed', function() {
+    it('User\'s sessions are expired when their roles are changed', function() {
         const loginClient = createClient();
 
         return loginClient.User.login(this.testUser.username, this.testUserPassword).then(() => {
-            this.testUser.permissions = ['user','superadmin'];
+            this.testUser.roles = ['user','superadmin'];
             return this.testUser.save();
         }).then(() => {
             return loginClient.User.current().then(response => {

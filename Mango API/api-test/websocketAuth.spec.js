@@ -42,7 +42,7 @@ describe('Websocket authentication', function() {
             username,
             email: `${username}@example.com`,
             name: `${username}`,
-            permissions: [],
+            roles: [],
             password: this.testUserPassword
         });
     });
@@ -70,7 +70,7 @@ describe('Websocket authentication', function() {
         
         this.testUser.password = this.testUserPassword;
         this.testUser.disabled = false;
-        this.testUser.permissions = [];
+        this.testUser.roles = [];
         return this.testUser.save();
     });
     
@@ -217,14 +217,14 @@ describe('Websocket authentication', function() {
             });
         }
         
-        it(`Terminates ${clientName} authentication websockets when user's permissions are changed`, function() {
+        it(`Terminates ${clientName} authentication websockets when user's roles are changed`, function() {
             return testWebSocketTermination.call(this, this.clients[clientName], () => {
                 const role = new Role({
                     xid: uuid(),
                     name: 'websocket auth test role'
                 });
                 return role.save().then(newRole => {
-                    this.testUser.permissions = [newRole.xid];
+                    this.testUser.roles = [newRole.xid];
                     return this.testUser.save();
                 });
             }, ({code, reason}) => {

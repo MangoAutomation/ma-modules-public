@@ -29,7 +29,7 @@ describe('Basic authentication', function() {
             username,
             email: `${username}@example.com`,
             name: `${username}`,
-            permissions: ['superadmin'],
+            roles: ['superadmin'],
             password: this.testUserPassword,
             locale: '',
             receiveAlarmEmails: 'IGNORE'

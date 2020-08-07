@@ -31,7 +31,7 @@ describe('Password reset', function() {
             username,
             email: `${username}@example.com`,
             name: `${username}`,
-            permissions: [],
+            roles: [],
             password: this.testUserPassword
         });
         return this.testUser.save();
@@ -83,7 +83,7 @@ describe('Password reset', function() {
             username: disabledUsername,
             email: `${disabledUsername}@example.com`,
             name: 'This is a name',
-            permissions: '',
+            roles: '',
             password: uuid(),
             disabled: true
         });

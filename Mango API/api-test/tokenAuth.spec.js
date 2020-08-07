@@ -31,7 +31,7 @@ describe('JSON Web Token authentication', function() {
             username,
             email: `${username}@example.com`,
             name: `${username}`,
-            permissions: [],
+            roles: [],
             password: this.testUserPassword
         });
         return this.testUser.save();
@@ -316,14 +316,14 @@ describe('JSON Web Token authentication', function() {
                 username: username1,
                 email: `${username1}@example.com`,
                 name: 'This is a name',
-                permissions: [],
+                roles: [],
                 password: uuid()
             });
             this.secondUser = new User({
                 username: username2,
                 email: `${username2}@example.com`,
                 name: 'This is a name',
-                permissions: [],
+                roles: [],
                 password: uuid()
             });
             return Promise.all([this.firstUser.save(), this.secondUser.save()]);
@@ -483,7 +483,7 @@ describe('JSON Web Token authentication', function() {
         }).then(user => {
             assert.strictEqual(user.username, this.testUser.username);
             user.name = 'Joe';
-            user.permissions = ['permissions'];
+            user.roles = ['permissions'];
             return jwtClient.restRequest({
                 path: `/rest/latest/users/${user.username}`,
                 method: 'PUT',
@@ -505,7 +505,7 @@ describe('JSON Web Token authentication', function() {
         }).then(user => {
             assert.strictEqual(user.username, config.username);
             user.name = 'Joe';
-            user.permissions = ['superamdin'];
+            user.roles = ['superamdin'];
             return jwtClient.restRequest({
                 path: `/rest/latest/users/${user.username}`,
                 method: 'PUT',

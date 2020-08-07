@@ -32,7 +32,7 @@ describe('Data point tags', function() {
             username,
             email: `${username}@example.com`,
             name: `${username}`,
-            permissions: [],
+            roles: [],
             password: this.testUserPassword
         });
         return this.testUser.save();

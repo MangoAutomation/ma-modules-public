@@ -235,10 +235,10 @@ describe('Email verification', function() {
                 }).then(s => deleteUser(s, newUser), e => deleteUserReject(e, newUser));
             });
             
-            it('Can\'t set permissions when registering', function() {
+            it('Can\'t set roles when registering', function() {
                 const newUser = createUser(this.publicClient);
                 newUser.disabled = false;
-                newUser.permissions = ['naughty-permission'];
+                newUser.roles = ['naughty-permission'];
 
                 // use default client logged in as admin to generate a token
                 return client.restRequest({
@@ -265,8 +265,8 @@ describe('Email verification', function() {
                     assert.isTrue(createdUser.disabled);
                     assert.isString(createdUser.emailVerified);
                     assert.isAbove(new Date(createdUser.emailVerified).valueOf(), 0);
-                    assert.lengthOf(createdUser.permissions, 1);
-                    assert.include(createdUser.permissions, 'user');
+                    assert.lengthOf(createdUser.roles, 1);
+                    assert.include(createdUser.roles, 'user');
                 }).then(s => deleteUser(s, newUser), e => deleteUserReject(e, newUser));
             });
             

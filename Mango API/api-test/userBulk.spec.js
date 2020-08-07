@@ -35,7 +35,7 @@ describe('User bulk operations ', function() {
             receiveAlarmEmails: 'IGNORE',
             receiveOwnAuditEvents: false,
             muted: false,
-            permissions: ['user'],
+            roles: ['user'],
             sessionExpirationOverride: true,
             sessionExpirationPeriod: {
                 periods: 1,

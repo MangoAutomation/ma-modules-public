@@ -50,7 +50,7 @@ describe('User endpoint tests', function() {
             receiveAlarmEmails: 'IGNORE',
             receiveOwnAuditEvents: false,
             muted: false,
-            permissions: [this.testUserRole.xid],
+            roles: [this.testUserRole.xid],
             sessionExpirationOverride: true,
             sessionExpirationPeriod: {
                 periods: 1,
@@ -94,7 +94,7 @@ describe('User endpoint tests', function() {
                 receiveAlarmEmails: 'IGNORE',
                 receiveOwnAuditEvents: false,
                 muted: false,
-                permissions: ['superadmin'],
+                roles: ['superadmin'],
                 sessionExpirationOverride: true,
                 sessionExpirationPeriod: {
                     periods: 1,
@@ -142,7 +142,7 @@ describe('User endpoint tests', function() {
             assert.isNull(user.emailVerified);
             assert.isString(user.created);
             assert.isAbove(new Date(user.created).valueOf(), 0);
-            assert.include(user.permissions, this.testUserSettings.permissions[0]);
+            assert.include(user.roles, this.testUserSettings.roles[0]);
         });
     });
     
@@ -180,14 +180,14 @@ describe('User endpoint tests', function() {
                 homeUrl: 'www.google.com',
                 receiveAlarmEmails: 'NONE',
                 receiveOwnAuditEvents: false,
-                permissions: [null, ''],
+                roles: [null, ''],
                 muted: false,
                 locale: ''
             });
         return testUser.save().then(user => {
             throw new Error('Should not have created user ' + user.username);
         }, error => {
-            assertValidationErrors(['permissions', 'permissions'], error);
+            assertValidationErrors(['roles', 'roles'], error);
         });
     });
     
@@ -222,11 +222,11 @@ describe('User endpoint tests', function() {
     
     it('Can\'t make self non admin', function() {
         return this.clients.admin.user.patch({
-            permissions: ['user']
+            roles: ['user']
         }).then(user => {
             throw new Error('Should not have updated user ' + user.username);
         }, error => {
-            assertValidationErrors(['permissions'], error);
+            assertValidationErrors(['roles'], error);
         });  
     });
     
@@ -250,13 +250,13 @@ describe('User endpoint tests', function() {
         }); 
     });
     
-    it('Can\'t update permissions as user', function() {
+    it('Can\'t update roles as user', function() {
         return this.clients.user.user.patch({
-            permissions: ['user']
+            roles: ['user']
         }).then(user => {
             throw new Error('Should not have updated user ' + user.username);
         }, error => {
-            assertValidationErrors(['permissions'], error);
+            assertValidationErrors(['roles'], error);
         }); 
     });
     
@@ -375,7 +375,7 @@ describe('User endpoint tests', function() {
             receiveAlarmEmails: 'IGNORE',
             receiveOwnAuditEvents: false,
             muted: false,
-            permissions: [],
+            roles: [],
             sessionExpirationOverride: true,
             sessionExpirationPeriod: {
                 periods: 1,
