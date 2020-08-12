@@ -385,7 +385,7 @@ public class EmailEventHandlerModel extends AbstractEventHandlerModel<EmailEvent
 
         if(vo.getScriptRoles() != null) {
             this.scriptPermissions = new HashSet<>();
-            for(Role role : vo.getScriptRoles().getAllInheritedRoles()) {
+            for(Role role : vo.getScriptRoles().getRoles()) {
                 this.scriptPermissions.add(role.getXid());
             }
         }

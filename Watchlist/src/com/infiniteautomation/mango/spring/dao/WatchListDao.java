@@ -188,7 +188,7 @@ public class WatchListDao extends AbstractVoDao<WatchListVO, WatchListTableDefin
             PermissionHolder user) {
         //Join on permissions
         if(!permissionService.hasAdminRole(user)) {
-            List<Integer> roleIds = user.getAllInheritedRoles().stream().map(r -> r.getId()).collect(Collectors.toList());
+            List<Integer> roleIds = permissionService.getAllInheritedRoles(user).stream().map(r -> r.getId()).collect(Collectors.toList());
 
             Condition roleIdsIn = RoleTableDefinition.roleIdField.in(roleIds);
 

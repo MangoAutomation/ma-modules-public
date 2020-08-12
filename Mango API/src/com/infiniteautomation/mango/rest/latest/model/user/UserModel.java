@@ -249,8 +249,11 @@ public class UserModel extends AbstractVoModel<User> {
         for(Role role : vo.getRoles()) {
             roles.add(role.getXid());
         }
+        //TODO Mango 4.0 move this into the model mapper and use map/unmap anywhere
+        // a user model is needed
         this.inheritedRoles = new HashSet<>();
-        for(Role role : vo.getAllInheritedRoles()) {
+        Set<Role> getAllInheritedRoles = Common.getBean(PermissionService.class).getAllInheritedRoles(vo);
+        for(Role role : getAllInheritedRoles) {
             this.inheritedRoles.add(role.getXid());
         }
         this.locale = StringUtils.isBlank(vo.getLocale()) ? null : vo.getLocale();
@@ -279,6 +282,8 @@ public class UserModel extends AbstractVoModel<User> {
         user.setMuted(muted);
         user.setReceiveOwnAuditEvents(receiveOwnAuditEvents);
         if(roles != null) {
+            //TODO Mango 4.0 move this into the model mapper and use map/unmap anywhere
+            // a user model is needed
             user.setRoles(Common.getBean(PermissionService.class).explodeLegacyPermissionGroupsToRoles(roles));
         }
         user.setLocale(StringUtils.isBlank(locale) ? null : locale);
