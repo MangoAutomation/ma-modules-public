@@ -128,7 +128,7 @@ public class DataPointTagsRestController {
             @AuthenticationPrincipal User user) {
 
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
-        ConditionSortLimitWithTagKeys conditions = (ConditionSortLimitWithTagKeys) dataPointDao.rqlToCondition(rql, null, null);
+        ConditionSortLimitWithTagKeys conditions = (ConditionSortLimitWithTagKeys) dataPointDao.rqlToCondition(rql, null, null, null);
 
         return new StreamedVORqlQueryWithTotal<>(dataPointService, conditions, dataPoint -> {
             Map<String, String> tags = dataPointTagsDao.getTagsForDataPointId(dataPoint.getId());
@@ -152,7 +152,7 @@ public class DataPointTagsRestController {
             @AuthenticationPrincipal User user) {
 
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
-        ConditionSortLimitWithTagKeys conditions = (ConditionSortLimitWithTagKeys) dataPointDao.rqlToCondition(rql, null, null);
+        ConditionSortLimitWithTagKeys conditions = (ConditionSortLimitWithTagKeys) dataPointDao.rqlToCondition(rql, null, null, null);
 
         return new StreamedVORqlQueryWithTotal<>(dataPointService, conditions, dataPoint -> {
             Map<String, String> tags = dataPointTagsDao.getTagsForDataPointId(dataPoint.getId());
@@ -183,7 +183,7 @@ public class DataPointTagsRestController {
 
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
 
-        ConditionSortLimitWithTagKeys conditions = (ConditionSortLimitWithTagKeys) dataPointDao.rqlToCondition(rql, null, null);
+        ConditionSortLimitWithTagKeys conditions = (ConditionSortLimitWithTagKeys) dataPointDao.rqlToCondition(rql, null, null, null);
 
         AtomicInteger count = new AtomicInteger();
 
@@ -210,7 +210,7 @@ public class DataPointTagsRestController {
 
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
 
-        ConditionSortLimitWithTagKeys conditions = (ConditionSortLimitWithTagKeys) dataPointDao.rqlToCondition(rql, null, null);
+        ConditionSortLimitWithTagKeys conditions = (ConditionSortLimitWithTagKeys) dataPointDao.rqlToCondition(rql, null, null, null);
 
         AtomicInteger count = new AtomicInteger();
 

@@ -136,7 +136,7 @@ public class WatchListRestController {
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
 
         Map<String, JsonStreamedArray> export = new HashMap<>();
-        export.put(WatchListEmportDefinition.elementId, new StreamedSeroJsonVORqlQuery<>(service, rql, fieldMap, valueConverters));
+        export.put(WatchListEmportDefinition.elementId, new StreamedSeroJsonVORqlQuery<>(service, rql, null, fieldMap, valueConverters));
         return export;
     }
 
@@ -366,7 +366,7 @@ public class WatchListRestController {
      * @return
      */
     private StreamedArrayWithTotal doQuery(ASTNode rql, PermissionHolder user) {
-        return new StreamedVORqlQueryWithTotal<>(service, rql, fieldMap, valueConverters, (item) -> {
+        return new StreamedVORqlQueryWithTotal<>(service, rql, null, fieldMap, valueConverters, (item) -> {
             return summaryMapping.map(item, user, mapper);
         });
     }

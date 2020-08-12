@@ -124,7 +124,7 @@ public class EventHandlersRestController {
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
-        return new StreamedVORqlQueryWithTotal<>(service, rql, this.fieldMap, this.valueConverters, item -> true, vo -> map.apply(vo, user));
+        return new StreamedVORqlQueryWithTotal<>(service, rql, null, this.fieldMap, this.valueConverters, item -> true, vo -> map.apply(vo, user));
     }
 
     @ApiOperation(

@@ -215,9 +215,9 @@ public class PublishersRestController {
 
         Map<String, JsonStreamedArray> export = new HashMap<>();
         if (service.getPermissionService().hasAdminRole(user)) {
-            export.put("publishers", new StreamedSeroJsonVORqlQuery<>(service, rql, null, null));
+            export.put("publishers", new StreamedSeroJsonVORqlQuery<>(service, rql, null, null, null));
         }else {
-            export.put("publishers", new StreamedSeroJsonVORqlQuery<>(service, rql, null, null,  vo -> service.hasReadPermission(user, vo)));
+            export.put("publishers", new StreamedSeroJsonVORqlQuery<>(service, rql, null, null, null,  vo -> service.hasReadPermission(user, vo)));
         }
         return export;
     }
@@ -230,9 +230,9 @@ public class PublishersRestController {
      */
     private StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
         if (service.getPermissionService().hasAdminRole(user)) {
-            return new StreamedVORqlQueryWithTotal<>(service, rql, null, null, vo -> map.apply(vo, user));
+            return new StreamedVORqlQueryWithTotal<>(service, rql, null, null, null, vo -> map.apply(vo, user));
         } else {
-            return new StreamedVORqlQueryWithTotal<>(service, rql, null, null, vo -> service.hasReadPermission(user, vo), vo -> map.apply(vo, user));
+            return new StreamedVORqlQueryWithTotal<>(service, rql, null, null, null, vo -> service.hasReadPermission(user, vo), vo -> map.apply(vo, user));
         }
     }
 

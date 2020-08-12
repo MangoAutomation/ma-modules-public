@@ -3,6 +3,38 @@
  */
 package com.infiniteautomation.mango.rest.latest;
 
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.jooq.Field;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.json.MappingJacksonValue;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import com.infiniteautomation.mango.db.query.RQLSubSelectCondition;
 import com.infiniteautomation.mango.permission.UserRolesDetails;
 import com.infiniteautomation.mango.rest.latest.bulk.BulkRequest;
 import com.infiniteautomation.mango.rest.latest.bulk.BulkResponse;
@@ -16,47 +48,38 @@ import com.infiniteautomation.mango.rest.latest.model.StreamedSeroJsonVORqlQuery
 import com.infiniteautomation.mango.rest.latest.model.StreamedVORqlQueryWithTotal;
 import com.infiniteautomation.mango.rest.latest.model.datasource.RuntimeStatusModel;
 import com.infiniteautomation.mango.rest.latest.model.permissions.UserRolesDetailsModel;
-import com.infiniteautomation.mango.rest.latest.model.user.*;
+import com.infiniteautomation.mango.rest.latest.model.user.ApproveUsersModel;
+import com.infiniteautomation.mango.rest.latest.model.user.ApprovedUsersModel;
+import com.infiniteautomation.mango.rest.latest.model.user.UserActionAndModel;
+import com.infiniteautomation.mango.rest.latest.model.user.UserIndividualRequest;
+import com.infiniteautomation.mango.rest.latest.model.user.UserIndividualResponse;
+import com.infiniteautomation.mango.rest.latest.model.user.UserModel;
 import com.infiniteautomation.mango.rest.latest.patch.PatchVORequestBody;
 import com.infiniteautomation.mango.rest.latest.patch.PatchVORequestBody.PatchIdField;
-import com.infiniteautomation.mango.rest.latest.temporaryResource.*;
+import com.infiniteautomation.mango.rest.latest.temporaryResource.MangoTaskTemporaryResourceManager;
+import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResource;
 import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResource.TemporaryResourceStatus;
-import com.infiniteautomation.mango.spring.db.UserTableDefinition;
+import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResourceManager;
+import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResourceStatusUpdate;
+import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResourceWebSocketHandler;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.spring.service.UsersService;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.infiniteautomation.mango.util.exception.TranslatableExceptionI;
 import com.serotonin.json.type.JsonStreamedArray;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.MediaTypes;
 import com.serotonin.m2m2.web.mvc.spring.security.MangoSessionRegistry;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import net.jazdw.rql.parser.ASTNode;
-import org.jooq.Field;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.json.MappingJacksonValue;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.util.UriComponentsBuilder;
-
-import javax.servlet.http.HttpServletRequest;
-import java.net.URI;
-import java.util.*;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * @author Terry Packer
@@ -74,20 +97,27 @@ public class UserRestController {
     private final UsersService service;
     private final MangoSessionRegistry sessionRegistry;
     private final Map<String, Field<?>> fieldMap;
+    private final Map<String, RQLSubSelectCondition> subSelectMap;
     private final Map<String, Function<Object, Object>> valueConverterMap;
+
     @Autowired
-    public UserRestController(UsersService service, TemporaryResourceWebSocketHandler websocket, MangoSessionRegistry sessionRegistry, UserTableDefinition userTable) {
+    public UserRestController(UsersService service, TemporaryResourceWebSocketHandler websocket, MangoSessionRegistry sessionRegistry, UserDao userDao) {
         this.bulkResourceManager = new MangoTaskTemporaryResourceManager<>(service.getPermissionService(), websocket);
 
         this.service = service;
         this.sessionRegistry = sessionRegistry;
 
         this.fieldMap = new HashMap<>(3);
-        this.fieldMap.put("lastPasswordChange", userTable.getAlias("passwordChangeTimestamp"));
-        this.fieldMap.put("created", userTable.getAlias("createdTs"));
-        this.fieldMap.put("emailVerified", userTable.getAlias("emailVerifiedTs"));
+        this.fieldMap.put("lastPasswordChange", userDao.getTable().getAlias("passwordChangeTimestamp"));
+        this.fieldMap.put("created", userDao.getTable().getAlias("createdTs"));
+        this.fieldMap.put("emailVerified", userDao.getTable().getAlias("emailVerifiedTs"));
 
-        this.valueConverterMap = Collections.singletonMap("receiveAlarmEmails", v -> {
+        this.subSelectMap = new HashMap<>(3);
+        this.subSelectMap.put("roles", userDao.createUserRoleCondition());
+        this.subSelectMap.put("inheritedRoles", userDao.createUserInheritedRoleCondition());
+
+        this.valueConverterMap = new HashMap<>();
+        this.valueConverterMap.put("receiveAlarmEmails", v -> {
             if (v instanceof String) {
                 return AlarmLevels.fromName((String) v).value();
             }
@@ -99,7 +129,7 @@ public class UserRestController {
             value = "Get User by username",
             response = UserModel.class,
             responseContainer = "List"
-    )
+            )
     @RequestMapping(method = RequestMethod.GET, value = "/{username}")
     public UserModel getUser(
             @ApiParam(value = "Valid username", required = true)
@@ -120,25 +150,25 @@ public class UserRestController {
             notes = "Use RQL formatted query",
             response = UserModel.class,
             responseContainer = "List"
-    )
+            )
     @RequestMapping(method = RequestMethod.GET)
     public StreamedArrayWithTotal queryRQL(
             HttpServletRequest request,
             @AuthenticationPrincipal User user) {
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
-        return doQuery(rql, user);
+        return doQuery(rql, user, null);
     }
 
     @ApiOperation(
             value = "Create User",
             notes = "Superadmin permission required",
             response = UserModel.class
-    )
+            )
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<UserModel> createUser(
             @ApiParam(value = "User", required = true)
             @RequestBody
-                    UserModel model,
+            UserModel model,
             UriComponentsBuilder builder) {
         User newUser = service.insert(model.toVO());
         URI location = builder.path("/users/{username}").buildAndExpand(newUser.getUsername()).toUri();
@@ -151,13 +181,13 @@ public class UserRestController {
             value = "Update User",
             notes = "Admin or Update Self only",
             response = UserModel.class
-    )
+            )
     @RequestMapping(method = RequestMethod.PUT, value = "/{username}")
     public ResponseEntity<UserModel> updateUser(
             @PathVariable String username,
             @ApiParam(value = "User", required = true)
             @RequestBody
-                    UserModel model,
+            UserModel model,
             @AuthenticationPrincipal User user,
             HttpServletRequest request,
             UriComponentsBuilder builder,
@@ -180,7 +210,7 @@ public class UserRestController {
             value = "Partially update a User",
             notes = "Admin or Patch Self only",
             response = UserModel.class
-    )
+            )
     @RequestMapping(method = RequestMethod.PATCH, value = "/{username}")
     public ResponseEntity<UserModel> patchUser(
             @PathVariable String username,
@@ -190,7 +220,7 @@ public class UserRestController {
                     modelClass = UserModel.class,
                     idType = PatchIdField.OTHER,
                     urlPathVariableName = "username")
-                    UserModel model,
+            UserModel model,
             @AuthenticationPrincipal User user,
             HttpServletRequest request,
             UriComponentsBuilder builder,
@@ -248,7 +278,7 @@ public class UserRestController {
     @ApiOperation(
             value = "Update a user's audio mute setting",
             notes = "If you do not provide the mute parameter the current setting will be toggled"
-    )
+            )
     @RequestMapping(method = RequestMethod.PUT, value = "/{username}/mute")
     public ResponseEntity<UserModel> updateMuted(
             @ApiParam(value = "Username", required = true)
@@ -256,7 +286,7 @@ public class UserRestController {
 
             @ApiParam(value = "Mute", defaultValue = "Toggle the current setting")
             @RequestParam(required = false)
-                    Boolean mute,
+            Boolean mute,
             HttpServletRequest request,
             UriComponentsBuilder builder,
             @AuthenticationPrincipal User user,
@@ -318,12 +348,12 @@ public class UserRestController {
             value = "Approve publicly registered User(s)",
             notes = "Superadmin permission required",
             response = UserModel.class
-    )
+            )
     @RequestMapping(method = RequestMethod.POST, value = "/approve-users")
     @PreAuthorize("isAdmin()")
     public ApprovedUsersModel approveUsers(
             @RequestBody()
-                    ApproveUsersModel model) {
+            ApproveUsersModel model) {
         ApprovedUsersModel result = new ApprovedUsersModel();
         for (String username : model.getUsernames()) {
             try {
@@ -351,12 +381,8 @@ public class UserRestController {
         if (!service.getPermissionService().hasAdminRole(user)) {
             rql = RQLUtils.addAndRestriction(rql, new ASTNode("eq", "id", user.getId()));
         }
-        export.put("users", new StreamedSeroJsonVORqlQuery<>(service, rql, fieldMap, valueConverterMap));
+        export.put("users", new StreamedSeroJsonVORqlQuery<>(service, rql, subSelectMap, fieldMap, valueConverterMap));
         return export;
-    }
-
-    public StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
-        return doQuery(rql, user, null);
     }
 
     protected StreamedArrayWithTotal doQuery(ASTNode rql, User user, Function<UserModel, ?> toModel) {
@@ -374,7 +400,7 @@ public class UserRestController {
             // Add some conditions to restrict based on user permissions
             rql = RQLUtils.addAndRestriction(rql, new ASTNode("eq", "id", user.getId()));
         }
-        return new StreamedVORqlQueryWithTotal<>(service, rql, this.fieldMap,
+        return new StreamedVORqlQueryWithTotal<>(service, rql, this.subSelectMap, this.fieldMap,
                 this.valueConverterMap, transformUser);
     }
 
@@ -412,10 +438,10 @@ public class UserRestController {
     @RequestMapping(method = RequestMethod.POST, value = "/bulk", consumes = MediaTypes.CSV_VALUE)
     public ResponseEntity<TemporaryResource<UserBulkResponse, AbstractRestException>> bulkUserOperationCSV(
             @RequestBody
-                    List<UserActionAndModel> users,
+            List<UserActionAndModel> users,
 
             @AuthenticationPrincipal
-                    User user,
+            User user,
             HttpServletRequest servletRequest,
             UriComponentsBuilder builder,
             Authentication authentication) {
@@ -444,10 +470,10 @@ public class UserRestController {
     @RequestMapping(method = RequestMethod.POST, value = "/bulk")
     public ResponseEntity<TemporaryResource<UserBulkResponse, AbstractRestException>> bulkUserOperation(
             @RequestBody
-                    UserBulkRequest requestBody,
+            UserBulkRequest requestBody,
 
             @AuthenticationPrincipal
-                    User user,
+            User user,
             HttpServletRequest servletRequest,
             Authentication authentication,
             UriComponentsBuilder builder) {
@@ -497,7 +523,7 @@ public class UserRestController {
     @RequestMapping(method = RequestMethod.GET, value = "/bulk")
     public MappingJacksonValue getBulkUserOperations(
             @AuthenticationPrincipal
-                    User user,
+            User user,
             ASTNode query,
             Translations translations) {
 
@@ -519,10 +545,10 @@ public class UserRestController {
             @PathVariable String id,
 
             @RequestBody
-                    TemporaryResourceStatusUpdate body,
+            TemporaryResourceStatusUpdate body,
 
             @AuthenticationPrincipal
-                    User user) {
+            User user) {
 
         TemporaryResource<UserBulkResponse, AbstractRestException> resource = bulkResourceManager.get(id);
 
@@ -546,7 +572,7 @@ public class UserRestController {
             @PathVariable String id,
 
             @AuthenticationPrincipal
-                    User user) {
+            User user) {
 
         TemporaryResource<UserBulkResponse, AbstractRestException> resource = bulkResourceManager.get(id);
 
@@ -559,14 +585,14 @@ public class UserRestController {
 
     @ApiOperation(value = "Remove a bulk user operation using its id",
             notes = "Will only remove a bulk operation if it is complete. " +
-                    "User can only remove their own bulk operations unless they are an admin.")
+            "User can only remove their own bulk operations unless they are an admin.")
     @RequestMapping(method = RequestMethod.DELETE, value = "/bulk/{id}")
     public void removeBulkUserOperation(
             @ApiParam(value = "Temporary resource id", required = true)
             @PathVariable String id,
 
             @AuthenticationPrincipal
-                    User user) {
+            User user) {
 
         TemporaryResource<UserBulkResponse, AbstractRestException> resource = bulkResourceManager.get(id);
 
@@ -578,9 +604,9 @@ public class UserRestController {
     }
 
     private UserIndividualResponse doIndividualRequest(UserIndividualRequest request,
-                                                       VoAction defaultAction, UserModel defaultBody,
-                                                       User user, HttpServletRequest servletRequest,
-                                                       Authentication authentication, UriComponentsBuilder builder) {
+            VoAction defaultAction, UserModel defaultBody,
+            User user, HttpServletRequest servletRequest,
+            Authentication authentication, UriComponentsBuilder builder) {
         UserIndividualResponse result = new UserIndividualResponse();
 
         try {

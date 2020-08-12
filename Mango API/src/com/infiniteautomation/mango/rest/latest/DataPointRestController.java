@@ -15,7 +15,6 @@ import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
-import com.serotonin.m2m2.i18n.Translations;
 import org.jooq.Field;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -60,6 +59,7 @@ import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.json.type.JsonStreamedArray;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
+import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.role.Role;
@@ -513,7 +513,7 @@ public class DataPointRestController {
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
 
         Map<String, JsonStreamedArray> export = new HashMap<>();
-        export.put("dataPoints", new StreamedSeroJsonVORqlQuery<>(service, rql, this.fieldMap, this.valueConverters));
+        export.put("dataPoints", new StreamedSeroJsonVORqlQuery<>(service, rql, null, this.fieldMap, this.valueConverters));
         return export;
     }
 
@@ -533,7 +533,7 @@ public class DataPointRestController {
 
             return pointModel;
         };
-        return new StreamedVORqlQueryWithTotal<>(service, rql, this.fieldMap, this.valueConverters, transformPoint);
+        return new StreamedVORqlQueryWithTotal<>(service, rql, null, this.fieldMap, this.valueConverters, transformPoint);
     }
 
     public class DataSourceSummary {

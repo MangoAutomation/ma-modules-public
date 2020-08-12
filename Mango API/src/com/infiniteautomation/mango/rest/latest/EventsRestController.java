@@ -217,7 +217,7 @@ public class EventsRestController {
         long ackTimestamp = Common.timer.currentTimeMillis();
 
         //Ensure we supply the mappings when converting the RQL
-        ConditionSortLimit conditions = service.rqlToCondition(rql, fieldMap, valueConverters);
+        ConditionSortLimit conditions = service.rqlToCondition(rql, null, fieldMap, valueConverters);
 
         service.customizedQuery(conditions, (EventInstanceVO vo, int index) -> {
             if(service.hasEditPermission(user, vo)) {
@@ -321,9 +321,9 @@ public class EventsRestController {
 
     private StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
         if (service.getPermissionService().hasAdminRole(user)) {
-            return new StreamedVORqlQueryWithTotal<>(service, rql, fieldMap, valueConverters, item -> true, vo -> map.apply(vo, user));
+            return new StreamedVORqlQueryWithTotal<>(service, rql, null, fieldMap, valueConverters, item -> true, vo -> map.apply(vo, user));
         } else {
-            return new StreamedVORqlQueryWithTotal<>(service, rql, fieldMap, valueConverters, item -> service.hasReadPermission(user, item), vo -> map.apply(vo, user));
+            return new StreamedVORqlQueryWithTotal<>(service, rql, null, fieldMap, valueConverters, item -> service.hasReadPermission(user, item), vo -> map.apply(vo, user));
         }
     }
 

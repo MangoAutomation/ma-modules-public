@@ -69,7 +69,7 @@ public class DataSourceWithPointsExport {
         private final List<Integer> dataSourceIds;
 
         public StreamedSeroJsonDataSourceRqlQuery(DataSourceService service, ASTNode rql, List<Integer> dataSourceIds) {
-            super(service, service.rqlToCondition(rql, null, null));
+            super(service, service.rqlToCondition(rql, null, null, null));
             this.dataSourceIds = dataSourceIds;
         }
 

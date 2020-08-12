@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.infiniteautomation.mango.db.query.ConditionSortLimit;
+import com.infiniteautomation.mango.db.query.RQLSubSelectCondition;
 import com.infiniteautomation.mango.rest.latest.exception.GenericRestException;
 import com.infiniteautomation.mango.spring.db.AbstractBasicTableDefinition;
 import com.infiniteautomation.mango.spring.service.AbstractBasicVOService;
@@ -40,25 +41,27 @@ public class StreamedBasicVORqlQueryWithTotal<T extends AbstractBasicVO, TABLE e
      * Use if permissions cannot be enforced in the RQL/Database query, this will perform a full query and count the results while respecting the limit.
      * @param service
      * @param rql
-     * @param fieldMap
-     * @param valueConverterMap
+     * @param subSelectMap - can be null
+     * @param fieldMap - can be null
+     * @param valueConverterMap - can be null
      * @param filter
      * @param toModel
      */
-    public StreamedBasicVORqlQueryWithTotal(SERVICE service, ASTNode rql, Map<String, Field<?>> fieldMap, Map<String, Function<Object, Object>> valueConverterMap, Predicate<T> filter, Function<T, ?> toModel) {
-        this(service, service.rqlToCondition(rql, fieldMap, valueConverterMap), filter, toModel);
+    public StreamedBasicVORqlQueryWithTotal(SERVICE service, ASTNode rql, Map<String, RQLSubSelectCondition> subSelectMap, Map<String, Field<?>> fieldMap, Map<String, Function<Object, Object>> valueConverterMap, Predicate<T> filter, Function<T, ?> toModel) {
+        this(service, service.rqlToCondition(rql, subSelectMap, fieldMap, valueConverterMap), filter, toModel);
     }
 
     /**
      * Variant to use if the permissions can be enforced via the RQL/Database query
      * @param service
      * @param rql
-     * @param fieldMap
-     * @param valueConverterMap
+     * @param subSelectMap - can be null
+     * @param fieldMap - can be null
+     * @param valueConverterMap - can be null
      * @param toModel
      */
-    public StreamedBasicVORqlQueryWithTotal(SERVICE service, ASTNode rql, Map<String, Field<?>> fieldMap, Map<String, Function<Object, Object>> valueConverterMap, Function<T, ?> toModel) {
-        this(service, service.rqlToCondition(rql, fieldMap, valueConverterMap), null, toModel);
+    public StreamedBasicVORqlQueryWithTotal(SERVICE service, ASTNode rql, Map<String, RQLSubSelectCondition> subSelectMap, Map<String, Field<?>> fieldMap, Map<String, Function<Object, Object>> valueConverterMap, Function<T, ?> toModel) {
+        this(service, service.rqlToCondition(rql, subSelectMap, fieldMap, valueConverterMap), null, toModel);
     }
 
     /**

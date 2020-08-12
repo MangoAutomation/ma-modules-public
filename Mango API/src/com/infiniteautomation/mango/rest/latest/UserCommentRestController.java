@@ -166,6 +166,6 @@ public class UserCommentRestController {
     }
 
     protected StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
-        return new StreamedBasicVORqlQueryWithTotal<>(service, rql, fieldMap, valueConverterMap, vo -> service.hasReadPermission(user, vo), vo -> map.apply(vo, user));
+        return new StreamedBasicVORqlQueryWithTotal<>(service, rql, null, fieldMap, valueConverterMap, vo -> service.hasReadPermission(user, vo), vo -> map.apply(vo, user));
     }
 }

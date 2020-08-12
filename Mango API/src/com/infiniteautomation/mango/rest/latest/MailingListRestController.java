@@ -201,7 +201,7 @@ public class MailingListRestController {
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
 
         Map<String, JsonStreamedArray> export = new HashMap<>();
-        export.put("mailingLists", new StreamedSeroJsonVORqlQuery<>(service, rql, null, null));
+        export.put("mailingLists", new StreamedSeroJsonVORqlQuery<>(service, rql, null, null, null));
         return export;
     }
 
@@ -213,6 +213,6 @@ public class MailingListRestController {
      */
     private StreamedArrayWithTotal doQuery(ASTNode rql, PermissionHolder user) {
         //We can filter in the database on the roles
-        return new StreamedVORqlQueryWithTotal<>(service, rql, null, null, item -> mapping.map(item, user, mapper));
+        return new StreamedVORqlQueryWithTotal<>(service, rql, null, null, null, item -> mapping.map(item, user, mapper));
     }
 }

@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
-import com.serotonin.m2m2.i18n.Translations;
 import org.jooq.Field;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -61,6 +60,7 @@ import com.infiniteautomation.mango.util.exception.TranslatableIllegalStateExcep
 import com.serotonin.json.type.JsonStreamedArray;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
+import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.event.detectors.PointEventDetectorRT;
 import com.serotonin.m2m2.vo.User;
@@ -539,9 +539,9 @@ public class EventDetectorsRestController {
 
         Map<String, JsonStreamedArray> export = new HashMap<>();
         if (service.getPermissionService().hasAdminRole(user)) {
-            export.put("eventDetectors", new StreamedSeroJsonVORqlQuery<>(service, rql, fieldMap, null));
+            export.put("eventDetectors", new StreamedSeroJsonVORqlQuery<>(service, rql, null, fieldMap, null));
         }else {
-            export.put("eventDetectors", new StreamedSeroJsonVORqlQuery<>(service, rql, fieldMap, null,  vo -> service.hasReadPermission(user, vo)));
+            export.put("eventDetectors", new StreamedSeroJsonVORqlQuery<>(service, rql, null, fieldMap, null,  vo -> service.hasReadPermission(user, vo)));
         }
         return export;
     }
@@ -549,9 +549,9 @@ public class EventDetectorsRestController {
     private StreamedArrayWithTotal doQuery(ASTNode rql, User user, Function<AbstractEventDetectorVO, ?> toModel) {
         //If we are admin or have overall data source permission we can view all
         if (service.getPermissionService().hasAdminRole(user)) {
-            return new StreamedVORqlQueryWithTotal<>(service, rql, fieldMap, null, toModel);
+            return new StreamedVORqlQueryWithTotal<>(service, rql, null, fieldMap, null, toModel);
         } else {
-            return new StreamedVORqlQueryWithTotal<>(service, rql, fieldMap, null, vo -> service.hasReadPermission(user, vo), toModel);
+            return new StreamedVORqlQueryWithTotal<>(service, rql, null, fieldMap, null, vo -> service.hasReadPermission(user, vo), toModel);
         }
     }
 }

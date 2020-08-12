@@ -236,7 +236,7 @@ public class WatchListService extends AbstractVOService<WatchListVO, WatchListTa
                 if(vo.getParams().size() > 0)
                     throw new ServerErrorException(new TranslatableMessage("watchList.queryParametersNotSupported"));
                 ASTNode rql = RQLUtils.parseRQLtoAST(vo.getQuery());
-                ConditionSortLimit conditions = dataPointService.rqlToCondition(rql, null, null);
+                ConditionSortLimit conditions = dataPointService.rqlToCondition(rql, null, null, null);
                 dataPointService.customizedQuery(conditions, (dp, index) -> {
                     callback.accept(dp);
                 });

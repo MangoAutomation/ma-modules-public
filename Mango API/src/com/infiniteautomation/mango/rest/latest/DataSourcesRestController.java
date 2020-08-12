@@ -301,7 +301,7 @@ public class DataSourcesRestController {
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
 
         Map<String, JsonStreamedArray> export = new HashMap<>();
-        export.put("dataSources", new StreamedSeroJsonVORqlQuery<>(service, rql, null, null));
+        export.put("dataSources", new StreamedSeroJsonVORqlQuery<>(service, rql, null, null, null));
         return export;
     }
 
@@ -321,7 +321,7 @@ public class DataSourcesRestController {
      * @return
      */
     private StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
-        return new StreamedVORqlQueryWithTotal<>(service, rql, null, null, vo -> map.apply(vo, user));
+        return new StreamedVORqlQueryWithTotal<>(service, rql, null, null, null, vo -> map.apply(vo, user));
     }
 
 }
