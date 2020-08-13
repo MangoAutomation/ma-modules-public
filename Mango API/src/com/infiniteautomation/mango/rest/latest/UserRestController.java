@@ -16,7 +16,6 @@ import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.jooq.Field;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -34,7 +33,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.infiniteautomation.mango.db.query.RQLSubSelectCondition;
 import com.infiniteautomation.mango.permission.UserRolesDetails;
 import com.infiniteautomation.mango.rest.latest.bulk.BulkRequest;
 import com.infiniteautomation.mango.rest.latest.bulk.BulkResponse;
@@ -68,10 +66,8 @@ import com.infiniteautomation.mango.util.RQLUtils;
 import com.infiniteautomation.mango.util.exception.TranslatableExceptionI;
 import com.serotonin.json.type.JsonStreamedArray;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.i18n.Translations;
-import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.MediaTypes;
 import com.serotonin.m2m2.web.mvc.spring.security.MangoSessionRegistry;
@@ -96,33 +92,12 @@ public class UserRestController {
     private final BiFunction<User, User, UserModel> map = (vo, user) -> new UserModel(vo);
     private final UsersService service;
     private final MangoSessionRegistry sessionRegistry;
-    private final Map<String, Field<?>> fieldMap;
-    private final Map<String, RQLSubSelectCondition> subSelectMap;
-    private final Map<String, Function<Object, Object>> valueConverterMap;
 
     @Autowired
-    public UserRestController(UsersService service, TemporaryResourceWebSocketHandler websocket, MangoSessionRegistry sessionRegistry, UserDao userDao) {
+    public UserRestController(UsersService service, TemporaryResourceWebSocketHandler websocket, MangoSessionRegistry sessionRegistry) {
         this.bulkResourceManager = new MangoTaskTemporaryResourceManager<>(service.getPermissionService(), websocket);
-
         this.service = service;
         this.sessionRegistry = sessionRegistry;
-
-        this.fieldMap = new HashMap<>(3);
-        this.fieldMap.put("lastPasswordChange", userDao.getTable().getAlias("passwordChangeTimestamp"));
-        this.fieldMap.put("created", userDao.getTable().getAlias("createdTs"));
-        this.fieldMap.put("emailVerified", userDao.getTable().getAlias("emailVerifiedTs"));
-
-        this.subSelectMap = new HashMap<>(3);
-        this.subSelectMap.put("roles", userDao.createUserRoleCondition());
-        this.subSelectMap.put("inheritedRoles", userDao.createUserInheritedRoleCondition());
-
-        this.valueConverterMap = new HashMap<>();
-        this.valueConverterMap.put("receiveAlarmEmails", v -> {
-            if (v instanceof String) {
-                return AlarmLevels.fromName((String) v).value();
-            }
-            return v;
-        });
     }
 
     @ApiOperation(
@@ -381,7 +356,7 @@ public class UserRestController {
         if (!service.getPermissionService().hasAdminRole(user)) {
             rql = RQLUtils.addAndRestriction(rql, new ASTNode("eq", "id", user.getId()));
         }
-        export.put("users", new StreamedSeroJsonVORqlQuery<>(service, rql, subSelectMap, fieldMap, valueConverterMap));
+        export.put("users", new StreamedSeroJsonVORqlQuery<>(service, rql, null, null, null));
         return export;
     }
 
@@ -400,8 +375,7 @@ public class UserRestController {
             // Add some conditions to restrict based on user permissions
             rql = RQLUtils.addAndRestriction(rql, new ASTNode("eq", "id", user.getId()));
         }
-        return new StreamedVORqlQueryWithTotal<>(service, rql, this.subSelectMap, this.fieldMap,
-                this.valueConverterMap, transformUser);
+        return new StreamedVORqlQueryWithTotal<>(service, rql, null, null, null, transformUser);
     }
 
     //Bulk operations
