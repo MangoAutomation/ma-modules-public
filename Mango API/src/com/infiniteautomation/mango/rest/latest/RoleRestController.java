@@ -70,7 +70,8 @@ public class RoleRestController {
         @ApiImplicitParam(name = "id", paramType="query", dataType = "int"),
         @ApiImplicitParam(name = "xid", paramType="query", dataType = "string"),
         @ApiImplicitParam(name = "name", paramType="query", dataType = "string"),
-        @ApiImplicitParam(name = "inherited", paramType="query", dataType = "string")
+        @ApiImplicitParam(name = "inherited", paramType="query", dataType = "string"),
+        @ApiImplicitParam(name = "inheritedBy", paramType="query", dataType = "string")
     })
     @ApiOperation(value = "Query Roles", response = RoleQueryResult.class)
     @RequestMapping(method = RequestMethod.GET)
