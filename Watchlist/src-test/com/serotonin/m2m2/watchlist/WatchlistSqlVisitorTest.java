@@ -4,19 +4,6 @@
  */
 package com.serotonin.m2m2.watchlist;
 
-import static org.junit.Assert.assertEquals;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
-
-import org.jooq.Field;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import com.infiniteautomation.mango.permission.MangoPermission;
 import com.infiniteautomation.mango.spring.dao.WatchListDao;
 import com.infiniteautomation.mango.spring.db.UserTableDefinition;
@@ -27,9 +14,17 @@ import com.serotonin.m2m2.MangoTestBase;
 import com.serotonin.m2m2.module.ModuleElementDefinition;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
-
 import net.jazdw.rql.parser.ASTNode;
 import net.jazdw.rql.parser.RQLParser;
+import org.jooq.Field;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  *
@@ -85,11 +80,10 @@ public class WatchlistSqlVisitorTest extends MangoTestBase {
         fieldMap.put("username", Common.getBean(UserTableDefinition.class).getXidAlias());
 
         Common.getBean(PermissionService.class).runAsSystemAdmin(() -> {
-
             service.customizedQuery(query, (wl,index) -> {
                 selectCounter.incrementAndGet();
                 assertEquals(users.get(0).getId(), wl.getUserId());
-                assertEquals(2, wl.getReadPermission().getUniqueRoles().size());
+                assertEquals(2, wl.getReadPermission().getRoles().stream().mapToLong(Collection::size).sum());
             });
             assertEquals(5, service.customizedCount(query));
         });

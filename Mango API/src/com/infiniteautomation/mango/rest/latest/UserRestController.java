@@ -3,37 +3,6 @@
  */
 package com.infiniteautomation.mango.rest.latest;
 
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.json.MappingJacksonValue;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.util.UriComponentsBuilder;
-
-import com.infiniteautomation.mango.permission.UserRolesDetails;
 import com.infiniteautomation.mango.rest.latest.bulk.BulkRequest;
 import com.infiniteautomation.mango.rest.latest.bulk.BulkResponse;
 import com.infiniteautomation.mango.rest.latest.bulk.VoAction;
@@ -45,22 +14,11 @@ import com.infiniteautomation.mango.rest.latest.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.latest.model.StreamedSeroJsonVORqlQuery;
 import com.infiniteautomation.mango.rest.latest.model.StreamedVORqlQueryWithTotal;
 import com.infiniteautomation.mango.rest.latest.model.datasource.RuntimeStatusModel;
-import com.infiniteautomation.mango.rest.latest.model.permissions.UserRolesDetailsModel;
-import com.infiniteautomation.mango.rest.latest.model.user.ApproveUsersModel;
-import com.infiniteautomation.mango.rest.latest.model.user.ApprovedUsersModel;
-import com.infiniteautomation.mango.rest.latest.model.user.UserActionAndModel;
-import com.infiniteautomation.mango.rest.latest.model.user.UserIndividualRequest;
-import com.infiniteautomation.mango.rest.latest.model.user.UserIndividualResponse;
-import com.infiniteautomation.mango.rest.latest.model.user.UserModel;
+import com.infiniteautomation.mango.rest.latest.model.user.*;
 import com.infiniteautomation.mango.rest.latest.patch.PatchVORequestBody;
 import com.infiniteautomation.mango.rest.latest.patch.PatchVORequestBody.PatchIdField;
-import com.infiniteautomation.mango.rest.latest.temporaryResource.MangoTaskTemporaryResourceManager;
-import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResource;
+import com.infiniteautomation.mango.rest.latest.temporaryResource.*;
 import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResource.TemporaryResourceStatus;
-import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResourceManager;
-import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResourceStatusUpdate;
-import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResourceWebSocketHandler;
-import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.spring.service.UsersService;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.infiniteautomation.mango.util.exception.TranslatableExceptionI;
@@ -71,11 +29,31 @@ import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.MediaTypes;
 import com.serotonin.m2m2.web.mvc.spring.security.MangoSessionRegistry;
-
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import net.jazdw.rql.parser.ASTNode;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.json.MappingJacksonValue;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import javax.servlet.http.HttpServletRequest;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author Terry Packer
@@ -292,31 +270,6 @@ public class UserRestController {
             @ApiParam(value = "Username", required = true)
             @PathVariable String username) {
         service.lockPassword(username);
-    }
-
-    @ApiOperation(value = "Get User Permissions Information for all users")
-    @RequestMapping(method = RequestMethod.GET, value = "/permissions")
-    public Set<UserRolesDetailsModel> getUserPermissions() {
-        Set<UserRolesDetailsModel> permissions = new TreeSet<>();
-        Set<UserRolesDetails> details = service.getPermissionDetailsForAllUsers();
-        for (UserRolesDetails detail : details) {
-            permissions.add(new UserRolesDetailsModel(detail));
-        }
-        return permissions;
-    }
-
-    @ApiOperation(value = "Get User Permissions Information for all users, exclude provided groups in query")
-    @RequestMapping(method = RequestMethod.GET, value = "/permissions/{query}")
-    public Set<UserRolesDetailsModel> getUserPermissions(
-            @ApiParam(value = "Query of permissions to show as already added", required = true)
-            @PathVariable String query) {
-
-        Set<UserRolesDetailsModel> permissions = new TreeSet<>();
-        Set<UserRolesDetails> details = service.getPermissionDetailsForAllUsers(PermissionService.explodeLegacyPermissionGroups(query));
-        for (UserRolesDetails detail : details) {
-            permissions.add(new UserRolesDetailsModel(detail));
-        }
-        return permissions;
     }
 
     @ApiOperation(
