@@ -70,7 +70,7 @@ public class WatchlistSqlVisitorTest extends MangoTestBase {
             wl.setXid(WatchListDao.getInstance().generateUniqueXid());
             wl.setName("Watchilst " + i);
             wl.setUserId(users.get(0).getId());
-            wl.setReadPermission(MangoPermission.createOrSet(users.get(0).getRoles()));
+            wl.setReadPermission(MangoPermission.requireAnyRole(users.get(0).getRoles()));
             WatchListDao.getInstance().insert(wl);
         }
 

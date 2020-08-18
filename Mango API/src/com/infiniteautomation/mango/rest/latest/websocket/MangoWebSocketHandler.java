@@ -45,7 +45,7 @@ public abstract class MangoWebSocketHandler extends TextWebSocketHandler {
     public final static CloseStatus NOT_AUTHORIZED = new CloseStatus(4003, "Not authorized");
 
     // default to any authenticated user
-    private static final MangoPermission DEFAULT_PERMISSION = MangoPermission.createOrSet(PermissionHolder.USER_ROLE);
+    private static final MangoPermission DEFAULT_PERMISSION = MangoPermission.requireAnyRole(PermissionHolder.USER_ROLE);
 
     protected final Log log = LogFactory.getLog(this.getClass());
 

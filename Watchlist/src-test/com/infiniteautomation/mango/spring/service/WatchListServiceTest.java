@@ -95,7 +95,7 @@ public class WatchListServiceTest extends AbstractVOServiceWithPermissionsTest<W
         vo.setName(UUID.randomUUID().toString());
         vo.setType(WatchListVO.STATIC_TYPE);
         vo.setUserId(owner.getId());
-        for(IDataPoint point : createMockDataPoints(5, false, MangoPermission.createOrSet(owner.getRoles()), MangoPermission.createOrSet(owner.getRoles()))) {
+        for(IDataPoint point : createMockDataPoints(5, false, MangoPermission.requireAnyRole(owner.getRoles()), MangoPermission.requireAnyRole(owner.getRoles()))) {
             vo.getPointList().add(point);
         }
         Map<String, Object> randomData = new HashMap<>();
@@ -145,15 +145,15 @@ public class WatchListServiceTest extends AbstractVOServiceWithPermissionsTest<W
             //Change Owner
             vo.setUserId(this.allUser.getId());
 
-            setReadPermission(MangoPermission.createOrSet(roleService.getUserRole()), vo);
-            setEditPermission(MangoPermission.createOrSet(roleService.getUserRole()), vo);
+            setReadPermission(MangoPermission.requireAnyRole(roleService.getUserRole()), vo);
+            setEditPermission(MangoPermission.requireAnyRole(roleService.getUserRole()), vo);
             getService().permissionService.runAsSystemAdmin(() -> {
                 service.insert(vo);
             });
             getService().permissionService.runAs(readUser, () -> {
                 WatchListVO fromDb = service.get(vo.getId());
                 assertVoEqual(vo, fromDb);
-                setReadPermission(MangoPermission.createOrSet(roleService.getSuperadminRole()), fromDb);
+                setReadPermission(MangoPermission.requireAnyRole(roleService.getSuperadminRole()), fromDb);
                 service.update(fromDb.getId(), fromDb);
             });
 
@@ -190,7 +190,7 @@ public class WatchListServiceTest extends AbstractVOServiceWithPermissionsTest<W
     public void testCountQueryEditPermissionEnforcement() {
         runTest(() -> {
             WatchListVO vo = newVO(editUser);
-            setEditPermission(MangoPermission.createOrSet(roleService.getSuperadminRole(), readRole), vo);
+            setEditPermission(MangoPermission.requireAnyRole(roleService.getSuperadminRole(), readRole), vo);
             getService().permissionService.runAsSystemAdmin(() -> {
                 return service.insert(vo);
             });
@@ -209,7 +209,7 @@ public class WatchListServiceTest extends AbstractVOServiceWithPermissionsTest<W
     @Override
     public void testQueryEditPermissionEnforcement() {
         WatchListVO vo = newVO(editUser);
-        setEditPermission(MangoPermission.createOrSet(roleService.getSuperadminRole(), readRole), vo);
+        setEditPermission(MangoPermission.requireAnyRole(roleService.getSuperadminRole(), readRole), vo);
         getService().permissionService.runAsSystemAdmin(() -> {
             service.insert(vo);
         });
@@ -223,7 +223,7 @@ public class WatchListServiceTest extends AbstractVOServiceWithPermissionsTest<W
         });
 
         WatchListVO readable = newVO(readUser);
-        setReadPermission(MangoPermission.createOrSet(roleService.getSuperadminRole(), editRole), readable);
+        setReadPermission(MangoPermission.requireAnyRole(roleService.getSuperadminRole(), editRole), readable);
         WatchListVO savedReadable = getService().permissionService.runAsSystemAdmin(() -> {
             return service.insert(readable);
         });

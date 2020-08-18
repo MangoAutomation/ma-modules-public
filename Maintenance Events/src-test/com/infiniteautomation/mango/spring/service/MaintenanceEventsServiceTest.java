@@ -183,15 +183,15 @@ public class MaintenanceEventsServiceTest extends AbstractVOServiceWithPermissio
     public void testAddReadRoleUserDoesNotHave() {
         runTest(() -> {
             MaintenanceEventVO vo = newVO(readUser);
-            setReadPermission(MangoPermission.createOrSet(roleService.getUserRole()), vo);
-            setEditPermission(MangoPermission.createOrSet(roleService.getUserRole()), vo);
+            setReadPermission(MangoPermission.requireAnyRole(roleService.getUserRole()), vo);
+            setEditPermission(MangoPermission.requireAnyRole(roleService.getUserRole()), vo);
             getService().permissionService.runAsSystemAdmin(() -> {
                 service.insert(vo);
             });
             getService().permissionService.runAs(readUser, () -> {
                 MaintenanceEventVO fromDb = service.get(vo.getId());
                 assertVoEqual(vo, fromDb);
-                vo.setTogglePermission(MangoPermission.createOrSet(roleService.getSuperadminRole()));
+                vo.setTogglePermission(MangoPermission.requireAnyRole(roleService.getSuperadminRole()));
                 service.update(fromDb.getId(), fromDb);
             });
 
@@ -208,15 +208,15 @@ public class MaintenanceEventsServiceTest extends AbstractVOServiceWithPermissio
     public void testCannotRemoveToggleAccess() {
         runTest(() -> {
             MaintenanceEventVO vo = newVO(editUser);
-            setReadPermission(MangoPermission.createOrSet(roleService.getUserRole()), vo);
-            setEditPermission(MangoPermission.createOrSet(roleService.getUserRole()), vo);
+            setReadPermission(MangoPermission.requireAnyRole(roleService.getUserRole()), vo);
+            setEditPermission(MangoPermission.requireAnyRole(roleService.getUserRole()), vo);
             getService().permissionService.runAsSystemAdmin(() -> {
                 service.insert(vo);
             });
             getService().permissionService.runAs(readUser, () -> {
                 MaintenanceEventVO fromDb = service.get(vo.getId());
                 assertVoEqual(vo, fromDb);
-                vo.setTogglePermission(MangoPermission.createOrSet(Collections.emptySet()));
+                vo.setTogglePermission(MangoPermission.requireAnyRole(Collections.emptySet()));
                 service.update(fromDb.getId(), fromDb);
             });
         }, getReadRolesContextKey());
