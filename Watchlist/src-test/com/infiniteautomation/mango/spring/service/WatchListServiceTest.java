@@ -156,8 +156,7 @@ public class WatchListServiceTest extends AbstractVOServiceWithPermissionsTest<W
                 setReadPermission(MangoPermission.requireAnyRole(roleService.getSuperadminRole()), fromDb);
                 service.update(fromDb.getId(), fromDb);
             });
-
-        }, getReadRolesContextKey(), getReadRolesContextKey());
+        }, getReadRolesContextKey());
     }
 
     @Test
