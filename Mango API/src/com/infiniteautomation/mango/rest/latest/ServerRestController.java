@@ -57,6 +57,7 @@ import com.infiniteautomation.mango.rest.latest.model.server.ServerCommandModel;
 import com.infiniteautomation.mango.rest.latest.model.system.TimezoneModel;
 import com.infiniteautomation.mango.rest.latest.model.system.TimezoneUtility;
 import com.infiniteautomation.mango.spring.service.MailingListService;
+import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.spring.service.UsersService;
 import com.serotonin.db.pair.StringStringPair;
 import com.serotonin.m2m2.Common;
@@ -105,15 +106,18 @@ public class ServerRestController extends AbstractMangoRestController {
     private final MailingListService mailingListService;
 
     private final UsersService userService;
+    private final PermissionService permissionService;
 
     private List<TimezoneModel> allTimezones;
     private TimezoneModel defaultServerTimezone;
 
     @Autowired
-    public ServerRestController(UsersService userService, MailingListService mailingListService, MangoSessionRegistry sessionRegistry) {
+    public ServerRestController(UsersService userService, MailingListService mailingListService,
+            PermissionService permissionService, MangoSessionRegistry sessionRegistry) {
         this.userService = userService;
         this.mailingListService = mailingListService;
         this.sessionRegistry = sessionRegistry;
+        this.permissionService = permissionService;
 
         this.allTimezones = TimezoneUtility.getTimeZoneIdsWithOffset();
         this.defaultServerTimezone = new TimezoneModel("",
@@ -186,11 +190,14 @@ public class ServerRestController extends AbstractMangoRestController {
 
         //Ensure permissions and existence
         MailingList sendTo = mailingListService.get(xid);
-        Set<String> emailUsers = mailingListService.getActiveRecipients(sendTo.getEntries(),
-                Common.timer.currentTimeMillis(),
-                RecipientListEntryType.MAILING_LIST,
-                RecipientListEntryType.ADDRESS,
-                RecipientListEntryType.USER);
+        Set<String> emailUsers = permissionService.runAsSystemAdmin(()->{
+            return mailingListService.getActiveRecipients(sendTo.getEntries(),
+                    Common.timer.currentTimeMillis(),
+                    RecipientListEntryType.MAILING_LIST,
+                    RecipientListEntryType.ADDRESS,
+                    RecipientListEntryType.USER);
+        });
+
 
         return sendTestEmail(emailUsers, null, contentModel.getSubject(), contentModel.toEmailContent(), (sent) -> {
             return new TranslatableMessage("common.emailSentToMailingList", xid);
