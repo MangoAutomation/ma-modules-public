@@ -244,7 +244,7 @@ public class JsonEmportController extends AbstractMangoRestController {
             this.start = new Date();
             this.state = JsonConfigImportStateEnum.RUNNING;
             this.progress = 0.0f;
-            this.task = service.getImportTask(root, this, true, user.getTranslations(), user);
+            this.task = service.getImportTask(root, this, true, user.getTranslations());
         }
 
         @JsonGetter
