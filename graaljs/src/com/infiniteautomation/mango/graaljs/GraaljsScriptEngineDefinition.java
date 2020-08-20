@@ -64,6 +64,11 @@ public class GraaljsScriptEngineDefinition extends ScriptEngineDefinition {
     public ScriptEngine createEngine(ScriptEngineFactory engineFactory, MangoScript script) {
         MangoFileSystem fs = new MangoFileSystem(FileSystem.newDefaultFileSystem(), fileStoreService, permissionService, loadFileStorePermission);
 
+        // TODO load('http://') doesnt work - only works with built in FS - https://github.com/graalvm/graaljs/issues/338
+        // TODO import('http://') doesn't work - https://github.com/graalvm/graaljs/issues/257 & maybe https://github.com/graalvm/graaljs/issues/255
+        // TODO import('filestore://') doesn't work - https://github.com/graalvm/graaljs/issues/257
+        // load('filestore://') does work
+
         ScriptEngine engine;
         if (permissionService.hasAdminRole(script)) {
             engine = GraalJSScriptEngine.create(null,
