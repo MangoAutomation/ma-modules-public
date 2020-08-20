@@ -3,22 +3,16 @@
  */
 package com.infiniteautomation.mango.graaljs;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Field;
-import java.lang.reflect.Member;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
-import java.security.AccessController;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineFactory;
-import javax.script.ScriptException;
-
+import com.infiniteautomation.mango.permission.MangoPermission;
+import com.infiniteautomation.mango.spring.script.MangoScript;
+import com.infiniteautomation.mango.spring.script.permissions.LoadFileStorePermission;
+import com.infiniteautomation.mango.spring.service.FileStoreService;
+import com.infiniteautomation.mango.spring.service.PermissionService;
+import com.oracle.truffle.js.runtime.JSContextOptions;
+import com.oracle.truffle.js.scriptengine.GraalJSEngineFactory;
+import com.oracle.truffle.js.scriptengine.GraalJSScriptEngine;
+import com.serotonin.m2m2.module.ScriptEngineDefinition;
+import com.serotonin.m2m2.module.SourceLocation;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.HostAccess;
 import org.graalvm.polyglot.PolyglotException;
@@ -29,15 +23,18 @@ import org.graalvm.polyglot.proxy.ProxyArray;
 import org.graalvm.polyglot.proxy.ProxyObject;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.infiniteautomation.mango.permission.MangoPermission;
-import com.infiniteautomation.mango.spring.script.MangoScript;
-import com.infiniteautomation.mango.spring.service.FileStoreService;
-import com.infiniteautomation.mango.spring.service.PermissionService;
-import com.oracle.truffle.js.runtime.JSContextOptions;
-import com.oracle.truffle.js.scriptengine.GraalJSEngineFactory;
-import com.oracle.truffle.js.scriptengine.GraalJSScriptEngine;
-import com.serotonin.m2m2.module.ScriptEngineDefinition;
-import com.serotonin.m2m2.module.SourceLocation;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineFactory;
+import javax.script.ScriptException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Member;
+import java.lang.reflect.Proxy;
+import java.security.AccessController;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Jared Wiltshire
@@ -50,6 +47,8 @@ public class GraaljsScriptEngineDefinition extends ScriptEngineDefinition {
     FileStoreService fileStoreService;
     @Autowired
     PermissionService permissionService;
+    @Autowired
+    LoadFileStorePermission loadFileStorePermission;
 
     @Override
     public boolean supports(ScriptEngineFactory engineFactory) {
@@ -63,7 +62,7 @@ public class GraaljsScriptEngineDefinition extends ScriptEngineDefinition {
 
     @Override
     public ScriptEngine createEngine(ScriptEngineFactory engineFactory, MangoScript script) {
-        MangoFileSystem fs = new MangoFileSystem(FileSystem.newDefaultFileSystem(), fileStoreService, permissionService);
+        MangoFileSystem fs = new MangoFileSystem(FileSystem.newDefaultFileSystem(), fileStoreService, permissionService, loadFileStorePermission);
 
         ScriptEngine engine;
         if (permissionService.hasAdminRole(script)) {
@@ -95,7 +94,7 @@ public class GraaljsScriptEngineDefinition extends ScriptEngineDefinition {
                     .allowHostClassLookup(null)
                     .allowIO(true)
                     .fileSystem(fs)
-                    .allowExperimentalOptions(true)
+                    .allowExperimentalOptions(true) // required for LOAD_FROM_URL_NAME
                     .option(JSContextOptions.LOAD_FROM_URL_NAME, "true"));
         }
 

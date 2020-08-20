@@ -19,6 +19,8 @@ import java.nio.file.attribute.FileAttribute;
 import java.util.Map;
 import java.util.Set;
 
+import com.infiniteautomation.mango.permission.MangoPermission;
+import com.infiniteautomation.mango.spring.script.permissions.LoadFileStorePermission;
 import org.graalvm.polyglot.io.FileSystem;
 
 import com.infiniteautomation.mango.spring.service.FileStoreService;
@@ -36,12 +38,17 @@ public class MangoFileSystem implements FileSystem {
     private final FileSystem delegate;
     private final FileStoreService fileStoreService;
     private final PermissionService permissionService;
+    private final LoadFileStorePermission loadFileStorePermission;
+    // superadmin only
+    private final MangoPermission accessAllPaths = new MangoPermission();
 
-    public MangoFileSystem(FileSystem delegate, FileStoreService fileStoreService, PermissionService permissionService) {
+    public MangoFileSystem(FileSystem delegate, FileStoreService fileStoreService, PermissionService permissionService,
+                           LoadFileStorePermission loadFileStorePermission) {
         super();
         this.delegate = delegate;
         this.fileStoreService = fileStoreService;
         this.permissionService = permissionService;
+        this.loadFileStorePermission = loadFileStorePermission;
     }
 
     @Override
@@ -54,15 +61,6 @@ public class MangoFileSystem implements FileSystem {
 
     @Override
     public Path parsePath(String path) {
-        // TODO fix when https://github.com/graalvm/graaljs/issues/257 hits release
-        if (path.indexOf(':') >= 0) {
-            try {
-                return parsePath(new URI(path));
-            } catch (URISyntaxException e) {
-                // fall through
-            }
-        }
-
         return delegate.parsePath(path);
     }
 
@@ -71,24 +69,23 @@ public class MangoFileSystem implements FileSystem {
         delegate.checkAccess(path, modes, linkOptions);
 
         PermissionHolder user = Common.getUser();
-        if (permissionService.hasAdminRole(user)) {
-            return;
-        }
-
         try {
-            try {
-                Path fileStorePath = fileStoreService.relativize(path);
-                String fileStoreName = fileStorePath.getName(0).toString();
-                if (modes.contains(AccessMode.WRITE)) {
-                    fileStoreService.getPathForWrite(fileStoreName, "");
-                } else {
-                    fileStoreService.getPathForRead(fileStoreName, "");
+            if (permissionService.hasPermission(user, loadFileStorePermission.getPermission())) {
+                try {
+                    Path fileStorePath = fileStoreService.relativize(path);
+                    String fileStoreName = fileStorePath.getName(0).toString();
+                    if (modes.contains(AccessMode.WRITE)) {
+                        fileStoreService.getPathForWrite(fileStoreName, "");
+                    } else {
+                        fileStoreService.getPathForRead(fileStoreName, "");
+                    }
+                    return;
+                } catch (IllegalArgumentException | NotFoundException e) {
+                    // not a file store path
                 }
-            } catch (IllegalArgumentException | NotFoundException e) {
-                // not a file store path
             }
 
-            permissionService.ensureAdminRole(user);
+            permissionService.ensurePermission(user, accessAllPaths);
         } catch (PermissionException e) {
             // file store denied access
             throw new SecurityException(e);
