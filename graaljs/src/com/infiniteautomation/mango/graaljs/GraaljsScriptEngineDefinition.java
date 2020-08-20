@@ -79,7 +79,7 @@ public class GraaljsScriptEngineDefinition extends ScriptEngineDefinition {
                     .option(JSContextOptions.LOAD_FROM_URL_NAME, "true"));
         } else {
             HostAccess disableReflection = HostAccess.newBuilder()
-                    .allowPublicAccess(true)
+                    .allowPublicAccess(true) // hopefully will get filtering support here - https://github.com/oracle/graal/issues/2425
                     .allowAllImplementations(true)
                     .allowArrayAccess(true)
                     .allowListAccess(true)
