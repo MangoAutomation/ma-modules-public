@@ -22,8 +22,8 @@ import java.util.Map;
  * @author Terry Packer
  */
 public class Upgrade3 extends DBUpgrade implements PermissionMigration {
-    private Map<MangoPermission, MangoPermission> permissionCache = new HashMap<>();
-    private Map<Role, Role> roleCache = new HashMap<>();
+    private final Map<MangoPermission, MangoPermission> permissionCache = new HashMap<>();
+    private final Map<Role, Role> roleCache = new HashMap<>();
 
     @Override
     protected void upgrade() throws Exception {
