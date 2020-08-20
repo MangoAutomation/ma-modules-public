@@ -9,6 +9,7 @@ import com.serotonin.db.spring.ExtendedJdbcTemplate;
 import com.serotonin.m2m2.db.DatabaseProxy;
 import com.serotonin.m2m2.db.upgrade.DBUpgrade;
 import com.serotonin.m2m2.db.upgrade.PermissionMigration;
+import com.serotonin.m2m2.vo.role.Role;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.io.OutputStream;
@@ -20,6 +21,8 @@ import java.util.Map;
  * @author Terry Packer
  */
 public class Upgrade6 extends DBUpgrade implements PermissionMigration {
+    private Map<MangoPermission, MangoPermission> permissionCache = new HashMap<>();
+    private Map<Role, Role> roleCache = new HashMap<>();
 
     @Override
     protected void upgrade() throws Exception {
@@ -99,5 +102,15 @@ public class Upgrade6 extends DBUpgrade implements PermissionMigration {
     @Override
     public ExtendedJdbcTemplate getJdbcTemplate() {
         return ejt;
+    }
+
+    @Override
+    public Map<MangoPermission, MangoPermission> permissionCache() {
+        return this.permissionCache;
+    }
+
+    @Override
+    public Map<Role, Role> roleCache() {
+        return this.roleCache;
     }
 }
