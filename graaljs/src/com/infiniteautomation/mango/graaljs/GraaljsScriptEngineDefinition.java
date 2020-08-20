@@ -61,24 +61,9 @@ public class GraaljsScriptEngineDefinition extends ScriptEngineDefinition {
         return permission.getPermission();
     }
 
-    /**
-     * No way to obtain the default file system for delegation, remove when <a href="https://github.com/oracle/graal/issues/2190">issue #2190</a> is resolved
-     * @return
-     */
-    private FileSystem newDefaultFileSystem() {
-        try {
-            Class<?> fsClass = GraaljsScriptEngineDefinition.class.getClassLoader().loadClass("com.oracle.truffle.polyglot.FileSystems");
-            Method newDefaultFileSystem = fsClass.getDeclaredMethod("newDefaultFileSystem");
-            newDefaultFileSystem.setAccessible(true);
-            return (FileSystem) newDefaultFileSystem.invoke(null);
-        } catch (Exception e) {
-            throw new RuntimeException("Error getting default filesystem", e);
-        }
-    }
-
     @Override
     public ScriptEngine createEngine(ScriptEngineFactory engineFactory, MangoScript script) {
-        MangoFileSystem fs = new MangoFileSystem(newDefaultFileSystem(), fileStoreService, permissionService);
+        MangoFileSystem fs = new MangoFileSystem(FileSystem.newDefaultFileSystem(), fileStoreService, permissionService);
 
         ScriptEngine engine;
         if (permissionService.hasAdminRole(script)) {
