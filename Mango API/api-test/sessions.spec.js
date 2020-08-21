@@ -69,18 +69,14 @@ describe('Sessions and expiry', function() {
         });
     });
     
-    it('User\'s sessions are expired when their roles are changed', function() {
+    it('User\'s sessions are not expired when their roles are changed', function() {
         const loginClient = createClient();
 
         return loginClient.User.login(this.testUser.username, this.testUserPassword).then(() => {
             this.testUser.roles = ['user','superadmin'];
             return this.testUser.save();
         }).then(() => {
-            return loginClient.User.current().then(response => {
-                throw new Error('Session should be expired');
-            }, error => {
-                assert.strictEqual(error.status, 401);
-            });
+            return loginClient.User.current();
         });
     });
     
