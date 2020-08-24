@@ -8,16 +8,14 @@ import com.infiniteautomation.mango.spring.script.MangoScript;
 import com.infiniteautomation.mango.spring.script.permissions.LoadFileStorePermission;
 import com.infiniteautomation.mango.spring.service.FileStoreService;
 import com.infiniteautomation.mango.spring.service.PermissionService;
+import com.oracle.truffle.js.lang.JavaScriptLanguage;
 import com.oracle.truffle.js.runtime.JSContextOptions;
 import com.oracle.truffle.js.scriptengine.GraalJSEngineFactory;
 import com.oracle.truffle.js.scriptengine.GraalJSScriptEngine;
 import com.serotonin.m2m2.module.ScriptEngineDefinition;
 import com.serotonin.m2m2.module.SourceLocation;
-import org.graalvm.polyglot.Context;
-import org.graalvm.polyglot.HostAccess;
-import org.graalvm.polyglot.PolyglotException;
+import org.graalvm.polyglot.*;
 import org.graalvm.polyglot.PolyglotException.StackFrame;
-import org.graalvm.polyglot.SourceSection;
 import org.graalvm.polyglot.io.FileSystem;
 import org.graalvm.polyglot.proxy.ProxyArray;
 import org.graalvm.polyglot.proxy.ProxyObject;
@@ -72,7 +70,7 @@ public class GraaljsScriptEngineDefinition extends ScriptEngineDefinition {
         ScriptEngine engine;
         if (permissionService.hasAdminRole(script)) {
             engine = GraalJSScriptEngine.create(null,
-                    Context.newBuilder("js")
+                    Context.newBuilder(JavaScriptLanguage.ID)
                     .allowHostAccess(HostAccess.ALL)
                     .allowAllAccess(true)
                     .fileSystem(fs)
@@ -94,7 +92,7 @@ public class GraaljsScriptEngineDefinition extends ScriptEngineDefinition {
                     .build();
 
             engine = GraalJSScriptEngine.create(null,
-                    Context.newBuilder("js")
+                    Context.newBuilder(JavaScriptLanguage.ID)
                     .allowHostAccess(disableReflection)
                     .allowHostClassLookup(null)
                     .allowIO(true)
