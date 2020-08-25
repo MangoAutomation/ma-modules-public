@@ -12,6 +12,7 @@ import org.graalvm.polyglot.Source;
 import org.graalvm.polyglot.Value;
 import org.graalvm.polyglot.io.FileSystem;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -42,11 +43,8 @@ public class CustomFileSystemTest {
         }
     }
 
-    /**
-     * https://github.com/graalvm/graaljs/issues/338
-     * @throws IOException
-     */
     @Test
+    @Ignore // https://github.com/graalvm/graaljs/issues/338
     public void testLoadHttpCustomFs() throws IOException {
         FileSystem fs = new DelegateFileSystem(FileSystem.newDefaultFileSystem(), Collections.emptyMap());
         Path sourceFile = Files.createTempFile("load-http-test", ".js");
@@ -98,6 +96,7 @@ public class CustomFileSystemTest {
     }
 
     @Test
+    @Ignore // https://github.com/graalvm/graaljs/issues/338
     public void testLoadHttpRealUrlCustomFs() throws IOException {
         FileSystem fs = new DelegateFileSystem(FileSystem.newDefaultFileSystem(), Collections.emptyMap());
         Path sourceFile = Files.createTempFile("load-http-test", ".js");
@@ -114,11 +113,8 @@ public class CustomFileSystemTest {
         }
     }
 
-    /**
-     * https://github.com/graalvm/graaljs/issues/257
-     * @throws IOException
-     */
     @Test
+    @Ignore // https://github.com/graalvm/graaljs/issues/257
     public void testImportHttpCustomFsWithMapping() throws IOException {
         Path fileToImport = Files.createTempFile("file-to-import", ".mjs");
         Files.write(fileToImport, Collections.singletonList("export const foo = 42;"));
