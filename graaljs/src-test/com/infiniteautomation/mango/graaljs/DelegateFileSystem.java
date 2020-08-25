@@ -17,18 +17,28 @@ import java.util.Set;
 
 public class DelegateFileSystem implements FileSystem {
     private final FileSystem delegate;
+    private final Map<String, Path> mappings;
 
-    public DelegateFileSystem(FileSystem delegate) {
+    public DelegateFileSystem(FileSystem delegate, Map<String, Path> mappings) {
         this.delegate = delegate;
+        this.mappings = mappings;
     }
 
     @Override
     public Path parsePath(URI uri) {
+        Path fromMappings = mappings.get(uri.toString());
+        if (fromMappings != null) {
+            return fromMappings;
+        }
         return delegate.parsePath(uri);
     }
 
     @Override
     public Path parsePath(String path) {
+        Path fromMappings = mappings.get(path);
+        if (fromMappings != null) {
+            return fromMappings;
+        }
         return delegate.parsePath(path);
     }
 
