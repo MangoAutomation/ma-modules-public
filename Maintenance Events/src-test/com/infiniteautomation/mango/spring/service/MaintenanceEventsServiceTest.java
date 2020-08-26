@@ -4,32 +4,24 @@
 
 package com.infiniteautomation.mango.spring.service;
 
-import static org.junit.Assert.assertEquals;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import com.infiniteautomation.mango.permission.MangoPermission;
 import com.infiniteautomation.mango.spring.service.maintenanceEvents.MaintenanceEventsService;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
-import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventDao;
-import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventVO;
-import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventsTableDefinition;
-import com.serotonin.m2m2.maintenanceEvents.RTMDefinition;
-import com.serotonin.m2m2.maintenanceEvents.SchemaDefinition;
-import com.serotonin.m2m2.module.ModuleElementDefinition;
+import com.serotonin.m2m2.maintenanceEvents.*;
 import com.serotonin.m2m2.module.definitions.permissions.DataSourcePermissionDefinition;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.IDataPoint;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.role.Role;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import java.util.Collections;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  *
@@ -39,10 +31,7 @@ public class MaintenanceEventsServiceTest extends AbstractVOServiceWithPermissio
 
     @BeforeClass
     public static void setup() {
-        List<ModuleElementDefinition> definitions = new ArrayList<>();
-        definitions.add(new SchemaDefinition());
-        definitions.add(new RTMDefinition());
-        addModule("maintenanceEvents", definitions);
+        loadModules();
     }
 
     @Override

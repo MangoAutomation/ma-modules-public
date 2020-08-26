@@ -11,7 +11,6 @@ import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.spring.service.WatchListService;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.MangoTestBase;
-import com.serotonin.m2m2.module.ModuleElementDefinition;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import net.jazdw.rql.parser.ASTNode;
@@ -21,7 +20,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.junit.Assert.assertEquals;
@@ -40,11 +42,7 @@ public class WatchlistSqlVisitorTest extends MangoTestBase {
 
     @BeforeClass
     public static void setupModule() {
-        List<ModuleElementDefinition> definitions = new ArrayList<>();
-        definitions.add(new WatchListSchemaDefinition());
-        definitions.add(new AuditEvent());
-        definitions.add(new WatchListCreatePermission());
-        addModule("watchlist", definitions);
+        loadModules();
     }
 
     @Override

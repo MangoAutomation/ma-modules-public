@@ -4,35 +4,29 @@
 
 package com.infiniteautomation.mango.spring.service;
 
-import static org.junit.Assert.assertEquals;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.jooq.Condition;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import com.infiniteautomation.mango.db.query.ConditionSortLimit;
 import com.infiniteautomation.mango.permission.MangoPermission;
 import com.infiniteautomation.mango.spring.dao.WatchListDao;
 import com.infiniteautomation.mango.spring.dao.WatchListTableDefinition;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.module.ModuleElementDefinition;
 import com.serotonin.m2m2.vo.IDataPoint;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.vo.role.Role;
-import com.serotonin.m2m2.watchlist.AuditEvent;
 import com.serotonin.m2m2.watchlist.WatchListCreatePermission;
-import com.serotonin.m2m2.watchlist.WatchListSchemaDefinition;
 import com.serotonin.m2m2.watchlist.WatchListVO;
+import org.jooq.Condition;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  *
@@ -42,11 +36,7 @@ public class WatchListServiceTest extends AbstractVOServiceWithPermissionsTest<W
 
     @BeforeClass
     public static void setup() {
-        List<ModuleElementDefinition> definitions = new ArrayList<>();
-        definitions.add(new WatchListSchemaDefinition());
-        definitions.add(new AuditEvent());
-        definitions.add(new WatchListCreatePermission());
-        addModule("watchList", definitions);
+        loadModules();
     }
 
     @Override
