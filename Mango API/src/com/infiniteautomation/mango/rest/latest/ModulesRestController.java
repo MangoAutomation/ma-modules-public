@@ -4,70 +4,9 @@
  */
 package com.infiniteautomation.mango.rest.latest;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Writer;
-import java.net.SocketTimeoutException;
-import java.net.URI;
-import java.net.UnknownHostException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.env.Environment;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.json.MappingJacksonValue;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
-import org.springframework.web.util.UriComponentsBuilder;
-
-import com.infiniteautomation.mango.rest.latest.exception.BadRequestException;
-import com.infiniteautomation.mango.rest.latest.exception.GenericRestException;
-import com.infiniteautomation.mango.rest.latest.exception.ModuleRestException;
-import com.infiniteautomation.mango.rest.latest.exception.ServerErrorException;
-import com.infiniteautomation.mango.rest.latest.exception.ValidationFailedRestException;
+import com.infiniteautomation.mango.rest.latest.exception.*;
 import com.infiniteautomation.mango.rest.latest.model.CredentialsModel;
-import com.infiniteautomation.mango.rest.latest.model.modules.AngularJSModuleDefinitionGroupModel;
-import com.infiniteautomation.mango.rest.latest.model.modules.CoreModuleModel;
-import com.infiniteautomation.mango.rest.latest.model.modules.ModuleModel;
-import com.infiniteautomation.mango.rest.latest.model.modules.ModuleUpgradeModel;
-import com.infiniteautomation.mango.rest.latest.model.modules.ModuleUpgradesModel;
-import com.infiniteautomation.mango.rest.latest.model.modules.UpdateLicensePayloadModel;
-import com.infiniteautomation.mango.rest.latest.model.modules.UpgradeStatusModel;
-import com.infiniteautomation.mango.rest.latest.model.modules.UpgradeUploadResult;
+import com.infiniteautomation.mango.rest.latest.model.modules.*;
 import com.infiniteautomation.mango.rest.latest.model.modules.UpgradeUploadResult.InvalidModule;
 import com.infiniteautomation.mango.rest.latest.util.MangoStoreClient;
 import com.infiniteautomation.mango.spring.service.ModulesService;
@@ -79,11 +18,7 @@ import com.serotonin.json.type.JsonArray;
 import com.serotonin.json.type.JsonObject;
 import com.serotonin.json.type.JsonString;
 import com.serotonin.json.type.JsonValue;
-import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.Constants;
-import com.serotonin.m2m2.ICoreLicense;
-import com.serotonin.m2m2.IMangoLifecycle;
-import com.serotonin.m2m2.UpgradeVersionState;
+import com.serotonin.m2m2.*;
 import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -97,10 +32,41 @@ import com.serotonin.m2m2.rt.maint.work.DatabaseBackupWorkItem;
 import com.serotonin.m2m2.shared.ModuleUtils;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.provider.Providers;
-
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.json.MappingJacksonValue;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import javax.servlet.http.HttpServletRequest;
+import java.io.*;
+import java.net.SocketTimeoutException;
+import java.net.URI;
+import java.net.UnknownHostException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 /**
  *
@@ -677,11 +643,12 @@ public class ModulesRestController {
     }
 
     private void saveLicense(String license) throws Exception {
+        Path coreDataPath = ModuleRegistry.CORE_MODULE.moduleDataPath();
 
         // If there is an existing license file, move it to a backup name. First check if the backup name exists, and
         // if so, delete it.
-        Path licenseFile = Common.MA_HOME_PATH.resolve("m2m2.license.xml");
-        Path backupFile = Common.MA_HOME_PATH.resolve("m2m2.license.old.xml");
+        Path licenseFile = coreDataPath.resolve("m2m2.license.xml");
+        Path backupFile = coreDataPath.resolve("m2m2.license.old.xml");
 
         if (Files.exists(licenseFile)) {
             Files.move(licenseFile, backupFile, StandardCopyOption.REPLACE_EXISTING);
