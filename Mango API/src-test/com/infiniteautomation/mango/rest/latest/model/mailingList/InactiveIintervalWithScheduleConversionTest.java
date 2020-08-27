@@ -23,7 +23,7 @@ import com.infiniteautomation.mango.scheduling.util.WeeklySchedule;
  * @author Terry Packer
  *
  */
-public class InactiveIintervalWithScheduleConversion {
+public class InactiveIintervalWithScheduleConversionTest {
 
     /**
      * Test to create a schedule of all sizes and slide it through
@@ -44,9 +44,6 @@ public class InactiveIintervalWithScheduleConversion {
                     }
                     inactive.add(startPos + actualLength);
                 }
-                if(startPos == 575 && length == 2)
-                    System.out.println("found it");
-                System.out.println("Testing from " + startPos + " to " + length);
                 //Convert to Weekly schedule
                 WeeklySchedule schedule = getInactiveIntervalsAsWeeklySchedule(inactive);
                 Set<Integer> actual = weeklyScheduleToInactiveIntervals(schedule);
@@ -54,7 +51,7 @@ public class InactiveIintervalWithScheduleConversion {
             }
         }
     }
-    
+
     /**
      * Very long running test so it doesn't run automatically
      */
@@ -90,33 +87,33 @@ public class InactiveIintervalWithScheduleConversion {
             }
         }
     }
-    
+
     public WeeklySchedule getInactiveIntervalsAsWeeklySchedule(Set<Integer> inactiveIntervals) {
-        
+
         if(inactiveIntervals == null)
             return null;
-        
+
         WeeklySchedule weeklySchedule = new WeeklySchedule();
         for(int k = 0; k < 7; k+=1) {
             weeklySchedule.addDay(new DailySchedule());
         }
-        
+
         Integer[] inactive = new Integer[inactiveIntervals.size()];
         inactiveIntervals.toArray(inactive);
         Arrays.sort(inactive);
-        
+
         int last = -2;
         for(Integer i : inactive) {
             if(i == null)
                 continue;
-            
+
             int dayIndex = i.intValue() / (4*24);
             int lastDayIndex;
             if(last != -2)
                 lastDayIndex = last / (4*24);
             else
                 lastDayIndex = dayIndex;
-            
+
             if(last == i.intValue() - 1 && dayIndex == lastDayIndex) { //Still inactive
                 last = i.intValue();
                 continue;
@@ -129,21 +126,21 @@ public class InactiveIintervalWithScheduleConversion {
                 }
                 last = -2;
             }
-            
+
             if(last != -2) {
                 int minute15 = (last+1) % (4*24); //At the end of the 15 minute period
                 int hr = (minute15 * 15) / 60;
                 int min = (minute15 * 15) % 60;
                 weeklySchedule.getDailySchedules().get(lastDayIndex).addChange(String.format("%02d:%02d", hr, min));
             }
-            
+
             last = i.intValue();
             int minute15 = i.intValue() % (4*24);
             int hr = (minute15 * 15) / 60;
             int min = (minute15 * 15) % 60;
             weeklySchedule.getDailySchedules().get(dayIndex).addChange(String.format("%02d:%02d", hr, min));
         }
-        
+
         if(last != -2 && last % (4*24) != 95) {
             int dayIndex = (last+1) / (4*24);
             int minute15 = (last+1) % (4*24);
@@ -151,25 +148,25 @@ public class InactiveIintervalWithScheduleConversion {
             int min = (minute15 * 15) % 60;
             weeklySchedule.getDailySchedules().get(dayIndex).addChange(String.format("%02d:%02d", hr, min));
         }
-        
+
         //Re-Order putting Sunday first
         //Sunday is last in the list, place it first
         DailySchedule sunday = weeklySchedule.getDailySchedules().remove(6);
         weeklySchedule.getDailySchedules().add(0, sunday);
-        
+
         return weeklySchedule;
     }
-    
+
     public Set<Integer> weeklyScheduleToInactiveIntervals(WeeklySchedule weeklySchedule) {
         if(weeklySchedule == null)
             return null;
-        
+
         //Modify a copy of the weekly schedule to put Monday first
         //TODO assert we have 7 days in the schedule
         List<DailySchedule> copy = new ArrayList<>(weeklySchedule.getDailySchedules());
         DailySchedule sunday = copy.remove(0);
         copy.add(copy.size(), sunday);
-        
+
         Set<Integer> inactiveIntervals = new TreeSet<>();
         for(int k = 0; k < copy.size(); k+=1) {
             int baseInterval = k * 96 ; //milliseconds per day
@@ -196,7 +193,7 @@ public class InactiveIintervalWithScheduleConversion {
                     deactivated = true;
                 }
             }
-            
+
             if(deactivated) {
                 while(lastInterval < 96) {
                     inactiveIntervals.add(baseInterval+lastInterval++);
@@ -206,7 +203,7 @@ public class InactiveIintervalWithScheduleConversion {
         return inactiveIntervals;
     }
 
-    
+
     /**
      * @param inactive
      * @param inactiveIntervals
@@ -218,7 +215,7 @@ public class InactiveIintervalWithScheduleConversion {
         while(expectedIt.hasNext()) {
             assertEquals(expectedIt.next(), actualIt.next());
         }
-        
+
     }
-    
+
 }
