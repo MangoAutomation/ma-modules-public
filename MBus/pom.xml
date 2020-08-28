@@ -1,5 +1,5 @@
-
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>ma-modules-public</artifactId>
         <groupId>com.infiniteautomation.mango</groupId>
@@ -29,18 +29,6 @@
             </plugin>
         </plugins>
     </build>
-    <repositories>
-        <repository>
-            <releases>
-                <updatePolicy>always</updatePolicy>
-            </releases>
-            <snapshots>
-                <updatePolicy>always</updatePolicy>
-            </snapshots>
-            <id>you-snapshots</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </repository>
-    </repositories>
     <dependencies>
         <dependency>
             <groupId>net.sf.json-lib</groupId>
@@ -58,23 +46,23 @@
             <artifactId>mbus4j-master</artifactId>
             <version>1.0.0</version>
         </dependency>
-		<dependency>
+        <dependency>
             <groupId>com.infiniteautomation.mango</groupId>
             <artifactId>mango-api</artifactId>
             <version>4.0.0-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
-                <dependency>
+        <dependency>
             <groupId>net.sf.mbus4j</groupId>
             <artifactId>mbus4j-slaves</artifactId>
             <version>1.0.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-jul</artifactId>
-			<version>${log4jVersion}</version>
-			<scope>test</scope>
-		</dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-jul</artifactId>
+            <version>${log4jVersion}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>
