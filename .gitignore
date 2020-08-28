@@ -4,3 +4,7 @@ Maintenance Events/web/angular/
 VMStat data source/\.vscode/
 .settings
 .project
+
+# IntelliJ settings
+*.iml
+.idea
