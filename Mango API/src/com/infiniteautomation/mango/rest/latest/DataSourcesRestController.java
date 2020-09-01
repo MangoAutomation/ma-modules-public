@@ -314,6 +314,14 @@ public class DataSourcesRestController {
         return new DataSourceWithPointsExport(service, rql, dataPointService, dataPointDao);
     }
 
+    @ApiOperation(value = "Force Poll", notes="Must have edit access and be a polling style data source")
+    @RequestMapping(method = RequestMethod.PUT, value = "/force-poll/{xid}")
+    public void forcePoll(
+            @PathVariable String xid,
+            UriComponentsBuilder builder) {
+        service.forceDataSourcePoll(xid);
+    }
+
     /**
      * Perform a query
      * @param rql
