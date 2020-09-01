@@ -11,16 +11,15 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -41,7 +40,6 @@ import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StreamUtils;
-import org.springframework.web.HttpMediaTypeNotAcceptableException;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -63,16 +61,13 @@ import com.infiniteautomation.mango.rest.latest.model.RoleViews;
 import com.infiniteautomation.mango.rest.latest.model.filestore.FileModel;
 import com.infiniteautomation.mango.rest.latest.model.filestore.FileStoreModel;
 import com.infiniteautomation.mango.rest.latest.resolver.RemainingPath;
-import com.infiniteautomation.mango.spring.script.ScriptService;
 import com.infiniteautomation.mango.spring.service.FileStoreService;
-import com.infiniteautomation.mango.spring.service.RoleService;
 import com.infiniteautomation.mango.util.exception.TranslatableIllegalArgumentException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.FileStore;
 import com.serotonin.m2m2.vo.User;
-
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -83,7 +78,7 @@ import springfox.documentation.annotations.ApiIgnore;
  *
  * @author Terry Packer
  */
-@Api(value="File Store", description="Allow read/write access to file storage areas")
+@Api(value="File Store")
 @RestController()
 @RequestMapping("/file-stores")
 public class FileStoreRestController extends AbstractMangoRestController {
@@ -92,8 +87,7 @@ public class FileStoreRestController extends AbstractMangoRestController {
     private final String cacheControlHeader;
 
     @Autowired
-    public FileStoreRestController(FileStoreService fileStoreService, @Value("${web.cache.maxAge.rest:0}") long maxAge,
-                                   ScriptService scriptService, RoleService roleService) {
+    public FileStoreRestController(FileStoreService fileStoreService, @Value("${web.cache.maxAge.rest:0}") long maxAge) {
         // use the rest max age setting but dont honor the nocache setting
         this.cacheControlHeader = CacheControl.maxAge(maxAge, TimeUnit.SECONDS).getHeaderValue();
         this.service = fileStoreService;
@@ -116,7 +110,7 @@ public class FileStoreRestController extends AbstractMangoRestController {
             )
     @RequestMapping(method = RequestMethod.POST, consumes=MediaType.MULTIPART_FORM_DATA_VALUE, value="/{name}/**")
     public ResponseEntity<List<FileModel>> uploadWithPath(
-            @ApiParam(value = "Valid File Store name", required = true, allowMultiple = false)
+            @ApiParam(value = "Valid File Store name", required = true)
             @PathVariable("name") String name,
 
             @AuthenticationPrincipal User user,
@@ -157,9 +151,9 @@ public class FileStoreRestController extends AbstractMangoRestController {
         //Put the file where it belongs
         List<FileModel> fileModels = new ArrayList<>();
 
-        MultiValueMap<String, MultipartFile> filemap = multipartRequest.getMultiFileMap();
-        for (String nameField : filemap.keySet()) {
-            for (MultipartFile file : filemap.get(nameField)) {
+        MultiValueMap<String, MultipartFile> filesMap = multipartRequest.getMultiFileMap();
+        for (String nameField : filesMap.keySet()) {
+            for (MultipartFile file : filesMap.get(nameField)) {
                 String filename;
                 if (file instanceof CommonsMultipartFile) {
                     FileItem fileItem = ((CommonsMultipartFile) file).getFileItem();
@@ -168,22 +162,15 @@ public class FileStoreRestController extends AbstractMangoRestController {
                     filename = file.getName();
                 }
 
-                try {
-                    File newFile = service.findUniqueFileName(outputDirectory, filename, overwrite);
-                    File parent = newFile.getParentFile();
-                    if (!parent.exists()) {
-                        parent.mkdirs();
-                    }
+                File newFile = service.findUniqueFileName(outputDirectory, filename, overwrite);
+                Files.createDirectories(newFile.toPath().getParent());
 
-                    try (OutputStream output = new FileOutputStream(newFile, false)) {
-                        try (InputStream input  = file.getInputStream()) {
-                            StreamUtils.copy(input, output);
-                        }
+                try (OutputStream output = new FileOutputStream(newFile, false)) {
+                    try (InputStream input  = file.getInputStream()) {
+                        StreamUtils.copy(input, output);
                     }
-                    fileModels.add(fileToModel(newFile, root, request.getServletContext()));
-                } catch(TranslatableException e) {
-                    throw new GenericRestException(HttpStatus.FORBIDDEN, e.getTranslatableMessage());
                 }
+                fileModels.add(fileToModel(newFile, root, request.getServletContext()));
             }
         }
 
@@ -196,15 +183,15 @@ public class FileStoreRestController extends AbstractMangoRestController {
             )
     @RequestMapping(method = RequestMethod.POST, value="/{fileStoreName}/**")
     public ResponseEntity<FileModel> createNewFolder(
-            @ApiParam(value = "Valid File Store name", required = true, allowMultiple = false)
+            @ApiParam(value = "Valid File Store name", required = true)
             @PathVariable("fileStoreName") String fileStoreName,
-            @ApiParam(value = "Move file/folder to", required = false, allowMultiple = false)
+            @ApiParam(value = "Move file/folder to")
             @RequestParam(required=false) String moveTo,
-            @ApiParam(value = "Copy file/folder to", required = false, allowMultiple = false)
+            @ApiParam(value = "Copy file/folder to")
             @RequestParam(required=false) String copyTo,
             @ApiIgnore @RemainingPath String pathInStore,
             @AuthenticationPrincipal User user,
-            HttpServletRequest request) throws IOException, URISyntaxException {
+            HttpServletRequest request) throws IOException {
 
         File fileOrFolder;
         try{
@@ -229,7 +216,7 @@ public class FileStoreRestController extends AbstractMangoRestController {
         }
     }
 
-    private ResponseEntity<FileModel> moveFileOrFolder(HttpServletRequest request, String fileStoreName, File root, File fileOrFolder, String moveTo) throws IOException, URISyntaxException {
+    private ResponseEntity<FileModel> moveFileOrFolder(HttpServletRequest request, String fileStoreName, File root, File fileOrFolder, String moveTo) throws IOException {
         if (!fileOrFolder.exists())
             throw new NotFoundRestException();
         try {
@@ -240,7 +227,7 @@ public class FileStoreRestController extends AbstractMangoRestController {
         }
     }
 
-    private ResponseEntity<FileModel> copyFileOrFolder(HttpServletRequest request, String fileStoreName, File root, File srcFile, String dst) throws IOException, URISyntaxException {
+    private ResponseEntity<FileModel> copyFileOrFolder(HttpServletRequest request, String fileStoreName, File root, File srcFile, String dst) throws IOException {
         if (!srcFile.exists())
             throw new NotFoundRestException();
         try {
@@ -251,7 +238,7 @@ public class FileStoreRestController extends AbstractMangoRestController {
         }
     }
 
-    private ResponseEntity<FileModel> createFolder(HttpServletRequest request, String fileStoreName, File root, File folder) throws IOException {
+    private ResponseEntity<FileModel> createFolder(HttpServletRequest request, String fileStoreName, File root, File folder) {
         if (folder.exists()) {
             if (folder.isDirectory()) {
                 throw new GenericRestException(HttpStatus.CONFLICT, new TranslatableMessage("filestore.directoryExists",
@@ -273,13 +260,13 @@ public class FileStoreRestController extends AbstractMangoRestController {
     @ApiOperation(value = "Delete a file or directory")
     @RequestMapping(method = RequestMethod.DELETE, value="/{name}/**")
     public ResponseEntity<Void> delete(
-            @ApiParam(value = "Valid File Store name", required = true, allowMultiple = false)
+            @ApiParam(value = "Valid File Store name", required = true)
             @PathVariable("name") String name,
-            @ApiParam(value = "Recurisve delete of directory", required = false, defaultValue="false", allowMultiple = false)
+            @ApiParam(value = "Recursive delete of directory", defaultValue="false")
             @RequestParam(required=false, defaultValue="false") boolean recursive,
             @ApiIgnore @RemainingPath String pathInStore,
             @AuthenticationPrincipal User user,
-            HttpServletRequest request) throws IOException, HttpMediaTypeNotAcceptableException {
+            HttpServletRequest request) throws IOException {
 
         File file = this.service.getPathForWrite(name, pathInStore).toFile();
 
@@ -298,11 +285,11 @@ public class FileStoreRestController extends AbstractMangoRestController {
 
     @ApiOperation(value = "Get a user file store model")
     @RequestMapping(method = RequestMethod.GET, value="/user-store/{storeName}")
-    public MappingJacksonValue getUserFileStoreModel(@ApiParam(value = "Valid File Store name", required = true, allowMultiple = false)
+    public MappingJacksonValue getUserFileStoreModel(@ApiParam(value = "Valid File Store name", required = true)
     @PathVariable("storeName") String storeName,
     @AuthenticationPrincipal User user,
     HttpServletRequest request,
-    HttpServletResponse response) throws IOException, HttpMediaTypeNotAcceptableException {
+    HttpServletResponse response) {
         FileStore fs = this.service.getByName(storeName);
 
         //Seeing the permissions fields should require write protection
@@ -318,9 +305,9 @@ public class FileStoreRestController extends AbstractMangoRestController {
     @ApiOperation(value = "Create a user file store")
     @RequestMapping(method = RequestMethod.POST, value="/user-store/{storeName}")
     public ResponseEntity<FileStoreModel> createUserFileStore(
-            @ApiParam(value = "Valid File Store name", required = true, allowMultiple = false)
+            @ApiParam(value = "Valid File Store name", required = true)
             @PathVariable("storeName") String storeName,
-            @ApiParam(value = "Valid File Store", required = true, allowMultiple = false)
+            @ApiParam(value = "Valid File Store", required = true)
             @RequestBody FileStoreModel fileStore,
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
@@ -343,9 +330,9 @@ public class FileStoreRestController extends AbstractMangoRestController {
     @ApiOperation(value = "Update a user file store")
     @RequestMapping(method = RequestMethod.PUT, value="/user-store/{id}")
     public ResponseEntity<FileStoreModel> updateUserFileStore(
-            @ApiParam(value = "Valid File Store name", required = true, allowMultiple = false)
+            @ApiParam(value = "Valid File Store name", required = true)
             @PathVariable("id") Integer id,
-            @ApiParam(value = "Valid File Store", required = true, allowMultiple = false)
+            @ApiParam(value = "Valid File Store", required = true)
             @RequestBody FileStoreModel fileStore,
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
@@ -365,9 +352,9 @@ public class FileStoreRestController extends AbstractMangoRestController {
     @ApiOperation(value = "Delete a user file store")
     @RequestMapping(method = RequestMethod.DELETE, value="/user-store/{storeName}")
     public FileStoreModel deleteUserFileStore(
-            @ApiParam(value = "Valid File Store name", required = true, allowMultiple = false)
+            @ApiParam(value = "Valid File Store name", required = true)
             @PathVariable("storeName") String storeName,
-            @ApiParam(value = "Purge all files in file store", required = false, defaultValue="false", allowMultiple = false)
+            @ApiParam(value = "Purge all files in file store", defaultValue="false")
             @RequestParam(required=false, defaultValue="false") boolean purgeFiles,
             @AuthenticationPrincipal User user) {
         FileStore toDelete = this.service.getByName(storeName);
@@ -382,14 +369,14 @@ public class FileStoreRestController extends AbstractMangoRestController {
     @ApiOperation(value = "List a directory or download a file from a store")
     @RequestMapping(method = RequestMethod.GET, value="/{name}/**")
     public ResponseEntity<?> download(
-            @ApiParam(value = "Valid File Store name", required = true, allowMultiple = false)
+            @ApiParam(value = "Valid File Store name", required = true)
             @PathVariable("name") String name,
-            @ApiParam(value = "Set content disposition to attachment", required = false, defaultValue="true", allowMultiple = false)
+            @ApiParam(value = "Set content disposition to attachment", defaultValue="true")
             @RequestParam(required=false, defaultValue="true") boolean download,
             @ApiIgnore @RemainingPath String pathInStore,
             @AuthenticationPrincipal User user,
             HttpServletRequest request,
-            HttpServletResponse response) throws IOException, HttpMediaTypeNotAcceptableException {
+            HttpServletResponse response) throws IOException {
 
         File file;
         try{
@@ -419,14 +406,14 @@ public class FileStoreRestController extends AbstractMangoRestController {
     @ApiOperation(value = "Download a file from a store")
     @RequestMapping(method = RequestMethod.GET, value="/download-file/{name}/**")
     public ResponseEntity<?> downloadOnly(
-            @ApiParam(value = "Valid File Store name", required = true, allowMultiple = false)
+            @ApiParam(value = "Valid File Store name", required = true)
             @PathVariable("name") String name,
-            @ApiParam(value = "Set content disposition to attachment", required = false, defaultValue="true", allowMultiple = false)
+            @ApiParam(value = "Set content disposition to attachment", defaultValue="true")
             @RequestParam(required=false, defaultValue="true") boolean download,
             @ApiIgnore @RemainingPath String pathInStore,
             @AuthenticationPrincipal User user,
             HttpServletRequest request,
-            HttpServletResponse response) throws IOException, HttpMediaTypeNotAcceptableException {
+            HttpServletResponse response) {
 
         File file = this.service.getPathForRead(name, pathInStore).toFile();
         return getFile(file, download, request, response);
@@ -438,7 +425,7 @@ public class FileStoreRestController extends AbstractMangoRestController {
         }
 
         HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.setContentType(MediaType.APPLICATION_JSON_UTF8);
+        responseHeaders.setContentType(MediaType.APPLICATION_JSON);
 
         if (directory.equals(root) && !root.exists())
             return new ResponseEntity<>(Collections.emptyList(), responseHeaders, HttpStatus.OK);
@@ -446,21 +433,17 @@ public class FileStoreRestController extends AbstractMangoRestController {
         if (!directory.exists())
             throw new ResourceNotFoundException(service.relativePath(root, directory));
 
-        Collection<File> files = Arrays.asList(directory.listFiles());
-        List<FileModel> found = new ArrayList<>(files.size());
+        List<FileModel> models = Files.list(directory.toPath())
+                .map(p -> fileToModel(p.toFile(), root, request.getServletContext()))
+                .collect(Collectors.toList());
 
-        for (File file : files)
-            found.add(fileToModel(file, root, request.getServletContext()));
-
-        Set<MediaType> mediaTypes = Sets.newHashSet(MediaType.APPLICATION_JSON_UTF8);
+        Set<MediaType> mediaTypes = Sets.newHashSet(MediaType.APPLICATION_JSON);
         request.setAttribute(HandlerMapping.PRODUCIBLE_MEDIA_TYPES_ATTRIBUTE, mediaTypes);
 
-        return new ResponseEntity<>(found, responseHeaders, HttpStatus.OK);
+        return new ResponseEntity<>(models, responseHeaders, HttpStatus.OK);
     }
 
-    protected ResponseEntity<FileSystemResource> getFile(File file, boolean download, HttpServletRequest request, HttpServletResponse response)
-            throws HttpMediaTypeNotAcceptableException {
-
+    protected ResponseEntity<FileSystemResource> getFile(File file, boolean download, HttpServletRequest request, HttpServletResponse response) {
         if (!file.exists() || !file.isFile()) {
             throw new ResourceNotFoundException();
         }
@@ -498,7 +481,7 @@ public class FileStoreRestController extends AbstractMangoRestController {
      * @return
      * @throws UnsupportedEncodingException
      */
-    public FileModel fileToModel(File file, File root, ServletContext context) throws UnsupportedEncodingException {
+    public FileModel fileToModel(File file, File root, ServletContext context) {
         FileModel model = new FileModel();
         model.setFilename(file.getName());
         model.setFolderPath(service.relativePath(root, file.getParentFile()));
