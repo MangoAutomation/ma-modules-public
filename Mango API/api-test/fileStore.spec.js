@@ -28,11 +28,12 @@ describe('Test File Store endpoints', function() {
 
     it('Lists all file stores', () => {
         return client.restRequest({
-            path: '/rest/latest/file-stores',
+            path: '/rest/latest/user-file-stores',
             method: 'GET',
         }).then(response => {
-          assert.isArray(response.data);
-          expect(response.data).to.contain('default');
+            assert.isObject(response.data);
+            assert.isArray(response.data.items);
+            assert.isObject(response.data.items.find(s => s.storeName === 'default'), 'Cant find default store');
         });
     });
 
@@ -598,7 +599,7 @@ describe('Test File Store endpoints', function() {
     it('Won\'t allow uploading large files', function() {
         this.timeout(60000);
         const uploadFile = tmp.fileSync();
-        
+
         return client.restRequest({
             path: '/rest/latest/testing/upload-limit',
             method: 'GET'
@@ -936,17 +937,17 @@ describe('Test File Store endpoints', function() {
         	assert.strictEqual(error.response.statusCode, 403);
         });
     });
-    
+
     describe('with partial range requests', function() {
         beforeEach('upload a random .mp3 file', function() {
             const uploadFile = tmp.fileSync({postfix: '.mp3'});
             this.randomBytes = crypto.randomBytes(1024);
             fs.writeFileSync(uploadFile.name, this.randomBytes);
-            
+
             this.fileName = path.basename(uploadFile.name);
             this.encodedFileName = encodeURI(this.fileName);
             this.path = `/rest/latest/file-stores/default/node-client-test/debug/${this.encodedFileName}`;
-            
+
             return client.restRequest({
                 path: '/rest/latest/file-stores/default/node-client-test/debug',
                 method: 'POST',
@@ -956,14 +957,14 @@ describe('Test File Store endpoints', function() {
                 assert.strictEqual(response.data[0].filename, this.fileName);
             });
         });
-        
+
         afterEach('cleanup file', function() {
             return client.restRequest({
                 path: this.path,
                 method: 'DELETE'
             }).then(null, error => null);
         });
-        
+
         it('for bytes=0-', function() {
             return client.restRequest({
                 path: this.path,
