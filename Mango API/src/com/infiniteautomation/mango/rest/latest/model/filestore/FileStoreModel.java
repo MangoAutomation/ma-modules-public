@@ -4,15 +4,15 @@
 package com.infiniteautomation.mango.rest.latest.model.filestore;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import com.infiniteautomation.mango.rest.latest.model.AbstractVoModel;
 import com.infiniteautomation.mango.rest.latest.model.RoleViews;
 import com.infiniteautomation.mango.rest.latest.model.permissions.MangoPermissionModel;
+import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.m2m2.vo.FileStore;
 
-public class FileStoreModel {
+public class FileStoreModel extends AbstractVoModel<FileStore> {
 
     private boolean fromDefinition;
-    private int id;
-    private String storeName;
     @JsonView(RoleViews.ShowRoles.class)
     private MangoPermissionModel readPermission;
     @JsonView(RoleViews.ShowRoles.class)
@@ -23,22 +23,6 @@ public class FileStoreModel {
     }
 
     public FileStoreModel() { }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getStoreName() {
-        return storeName;
-    }
-
-    public void setStoreName(String storeName) {
-        this.storeName = storeName;
-    }
 
     public MangoPermissionModel getReadPermission() {
         return readPermission;
@@ -64,23 +48,25 @@ public class FileStoreModel {
         this.fromDefinition = fromDefinition;
     }
 
+    @Override
     public void fromVO(FileStore vo) {
-        this.id = vo.getId();
-        this.storeName = vo.getStoreName();
+        super.fromVO(vo);
         this.readPermission = new MangoPermissionModel(vo.getReadPermission());
         this.writePermission = new MangoPermissionModel(vo.getWritePermission());
         this.fromDefinition = vo.isFromDefinition();
     }
 
-    public FileStore toVO() {
-        FileStore store = new FileStore();
-        store.setFromDefinition(false);
-        store.setId(id);
-        store.setStoreName(storeName);
-
+    @Override
+    public FileStore toVO() throws ValidationException {
+        FileStore store = super.toVO();
         store.setReadPermission(readPermission != null ? readPermission.getPermission() : null);
         store.setWritePermission(writePermission != null ? writePermission.getPermission() : null);
         return store;
+    }
+
+    @Override
+    protected FileStore newVO() {
+        return new FileStore();
     }
 
 }

@@ -9,9 +9,6 @@ import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -33,7 +30,6 @@ import com.infiniteautomation.mango.rest.latest.model.RoleViews;
 import com.infiniteautomation.mango.rest.latest.model.StreamWithTotal;
 import com.infiniteautomation.mango.rest.latest.model.filestore.FileStoreModel;
 import com.infiniteautomation.mango.spring.service.FileStoreService;
-import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.vo.FileStore;
@@ -73,13 +69,13 @@ public class UserFileStoresRestController {
     }
 
     @ApiOperation(value = "Get a user file store model")
-    @RequestMapping(method = RequestMethod.GET, value="/{storeName}")
+    @RequestMapping(method = RequestMethod.GET, value="/{xid}")
     public MappingJacksonValue getUserFileStoreModel(
-            @PathVariable("storeName") String storeName,
-            @AuthenticationPrincipal User user,
-            HttpServletRequest request,
-            HttpServletResponse response) {
-        FileStore fs = this.fileStoreService.getByName(storeName);
+            @PathVariable("xid") String xid,
+            @AuthenticationPrincipal User user) {
+
+        // TODO
+        FileStore fs = this.fileStoreService.getByName(xid);
 
         //Seeing the permissions fields should require write protection
         MappingJacksonValue resultWithView = new MappingJacksonValue(new FileStoreModel(fs));
@@ -96,55 +92,46 @@ public class UserFileStoresRestController {
     public ResponseEntity<FileStoreModel> createUserFileStore(
             @ApiParam(value = "File store to create", required = true)
             @RequestBody FileStoreModel fileStore,
-            @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
 
-        FileStore fs = this.fileStoreService.getByName(fileStore.getStoreName());
-        if(fs != null)
-            throw new GenericRestException(HttpStatus.CONFLICT, new TranslatableMessage("filestore.fileStoreExists", fileStore.getStoreName()));
-        fileStore.setId(Common.NEW_ID);
         FileStore newStore = this.fileStoreService.insert(fileStore.toVO());
-
-        URI location = builder.path("/user-file-stores/{storeName}").buildAndExpand(newStore.getStoreName()).toUri();
+        URI location = builder.path("/user-file-stores/{xid}").buildAndExpand(newStore.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
         return new ResponseEntity<>(new FileStoreModel(newStore), headers, HttpStatus.CREATED);
     }
 
     @ApiOperation(value = "Update a user file store")
-    @RequestMapping(method = RequestMethod.PUT, value="/{id}")
+    @RequestMapping(method = RequestMethod.PUT, value="/{xid}")
     public ResponseEntity<FileStoreModel> updateUserFileStore(
-            @ApiParam(value = "Valid File Store name", required = true)
-            @PathVariable("id") Integer id,
-            @ApiParam(value = "Valid File Store", required = true)
+            @ApiParam(value = "File store XID", required = true)
+            @PathVariable("xid") String xid,
+            @ApiParam(value = "Updated file store", required = true)
             @RequestBody FileStoreModel fileStore,
-            @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
 
-        FileStore existing = this.fileStoreService.get(id);
-        fileStore.setId(id);
+        FileStore existing = this.fileStoreService.get(xid);
         FileStore updated = this.fileStoreService.update(existing, fileStore.toVO());
 
-        URI location = builder.path("/user-file-stores/{storeName}").buildAndExpand(updated.getStoreName()).toUri();
+        URI location = builder.path("/user-file-stores/{xid}").buildAndExpand(updated.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
         return new ResponseEntity<>(new FileStoreModel(updated), headers, HttpStatus.OK);
     }
 
     @ApiOperation(value = "Delete a user file store")
-    @RequestMapping(method = RequestMethod.DELETE, value="/{storeName}")
+    @RequestMapping(method = RequestMethod.DELETE, value="/{xid}")
     public void deleteUserFileStore(
-            @ApiParam(value = "File Store name", required = true)
-            @PathVariable("storeName") String storeName,
+            @ApiParam(value = "File store XID", required = true)
+            @PathVariable("xid") String xid,
             @ApiParam(value = "Purge all files in file store", defaultValue="false")
-            @RequestParam(required=false, defaultValue="false") boolean purgeFiles,
-            @AuthenticationPrincipal User user) {
+            @RequestParam(required=false, defaultValue="false") boolean purgeFiles) {
 
-        FileStore toDelete = this.fileStoreService.getByName(storeName);
+        FileStore toDelete = this.fileStoreService.get(xid);
         try {
             this.fileStoreService.deleteFileStore(toDelete, purgeFiles);
         } catch(IOException e) {
-            throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, new TranslatableMessage("filestore.failedToPurgeFiles", storeName, e.getMessage()));
+            throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, new TranslatableMessage("filestore.failedToPurgeFiles", xid, e.getMessage()));
         }
     }
 }
