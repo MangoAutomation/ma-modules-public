@@ -1,5 +1,5 @@
 /**
- * Copyright 2017 Infinite Automation Systems Inc.
+ * Copyright 2020 Infinite Automation Systems Inc.
  * http://infiniteautomation.com/
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,17 +25,6 @@ const path = require('path');
 describe('Test File Store endpoints', function() {
     before('Login', function() { return login.call(this, client); });
     this.timeout(5000);
-
-    it('Lists all file stores', () => {
-        return client.restRequest({
-            path: '/rest/latest/user-file-stores',
-            method: 'GET',
-        }).then(response => {
-            assert.isObject(response.data);
-            assert.isArray(response.data.items);
-            assert.isObject(response.data.items.find(s => s.storeName === 'default'), 'Cant find default store');
-        });
-    });
 
     it('Uploads a random binary file to default store', () => {
         const uploadFile = tmp.fileSync();
