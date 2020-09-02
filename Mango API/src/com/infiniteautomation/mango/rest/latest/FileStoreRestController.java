@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.URI;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,12 +35,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.MediaTypeFactory;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -50,23 +47,18 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.multipart.commons.CommonsMultipartFile;
 import org.springframework.web.servlet.HandlerMapping;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import com.google.common.collect.Sets;
 import com.infiniteautomation.mango.rest.latest.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.latest.exception.GenericRestException;
 import com.infiniteautomation.mango.rest.latest.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.latest.exception.ResourceNotFoundException;
-import com.infiniteautomation.mango.rest.latest.model.RoleViews;
 import com.infiniteautomation.mango.rest.latest.model.filestore.FileModel;
-import com.infiniteautomation.mango.rest.latest.model.filestore.FileStoreModel;
 import com.infiniteautomation.mango.rest.latest.resolver.RemainingPath;
 import com.infiniteautomation.mango.spring.service.FileStoreService;
 import com.infiniteautomation.mango.util.exception.TranslatableIllegalArgumentException;
-import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.vo.FileStore;
 import com.serotonin.m2m2.vo.User;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -91,17 +83,6 @@ public class FileStoreRestController extends AbstractMangoRestController {
         // use the rest max age setting but dont honor the nocache setting
         this.cacheControlHeader = CacheControl.maxAge(maxAge, TimeUnit.SECONDS).getHeaderValue();
         this.service = fileStoreService;
-    }
-
-    @ApiOperation(
-            value = "List all file store names",
-            notes = "Must have read access to see the store"
-            )
-    @RequestMapping(method = RequestMethod.GET)
-    public List<String> list(
-            @AuthenticationPrincipal User user,
-            HttpServletRequest request) {
-        return this.service.getStoreNames();
     }
 
     @ApiOperation(
@@ -283,89 +264,7 @@ public class FileStoreRestController extends AbstractMangoRestController {
         return new ResponseEntity<>(null, HttpStatus.OK);
     }
 
-    @ApiOperation(value = "Get a user file store model")
-    @RequestMapping(method = RequestMethod.GET, value="/user-store/{storeName}")
-    public MappingJacksonValue getUserFileStoreModel(@ApiParam(value = "Valid File Store name", required = true)
-    @PathVariable("storeName") String storeName,
-    @AuthenticationPrincipal User user,
-    HttpServletRequest request,
-    HttpServletResponse response) {
-        FileStore fs = this.service.getByName(storeName);
-
-        //Seeing the permissions fields should require write protection
-        MappingJacksonValue resultWithView = new MappingJacksonValue(new FileStoreModel(fs));
-        if(service.hasEditPermission(user, fs)) {
-            resultWithView.setSerializationView(RoleViews.ShowRoles.class);
-        }else {
-            resultWithView.setSerializationView(Object.class);
-        }
-        return resultWithView;
-    }
-
-    @ApiOperation(value = "Create a user file store")
-    @RequestMapping(method = RequestMethod.POST, value="/user-store/{storeName}")
-    public ResponseEntity<FileStoreModel> createUserFileStore(
-            @ApiParam(value = "Valid File Store name", required = true)
-            @PathVariable("storeName") String storeName,
-            @ApiParam(value = "Valid File Store", required = true)
-            @RequestBody FileStoreModel fileStore,
-            @AuthenticationPrincipal User user,
-            UriComponentsBuilder builder) {
-        if(storeName == null || fileStore == null)
-            throw new NotFoundRestException();
-        fileStore.setStoreName(storeName);
-        FileStore fs = this.service.getByName(storeName);
-        if(fs != null)
-            throw new GenericRestException(HttpStatus.CONFLICT, new TranslatableMessage("filestore.fileStoreExists", fileStore.getStoreName()));
-        fileStore.setId(Common.NEW_ID);
-        FileStore newStore = this.service.insert(fileStore.toVO());
-
-        URI location = builder.path("/file-stores/user-store/{storeName}").buildAndExpand(newStore.getStoreName()).toUri();
-        HttpHeaders headers = new HttpHeaders();
-        headers.setLocation(location);
-
-        return new ResponseEntity<>(new FileStoreModel(newStore), headers, HttpStatus.CREATED);
-    }
-
-    @ApiOperation(value = "Update a user file store")
-    @RequestMapping(method = RequestMethod.PUT, value="/user-store/{id}")
-    public ResponseEntity<FileStoreModel> updateUserFileStore(
-            @ApiParam(value = "Valid File Store name", required = true)
-            @PathVariable("id") Integer id,
-            @ApiParam(value = "Valid File Store", required = true)
-            @RequestBody FileStoreModel fileStore,
-            @AuthenticationPrincipal User user,
-            UriComponentsBuilder builder) {
-        if(id == null || fileStore == null)
-            throw new NotFoundRestException();
-        FileStore existing = this.service.get(id);
-        fileStore.setId(id);
-        FileStore updated = this.service.update(existing, fileStore.toVO());
-
-        URI location = builder.path("/file-stores/user-store/{storeName}").buildAndExpand(updated.getStoreName()).toUri();
-        HttpHeaders headers = new HttpHeaders();
-        headers.setLocation(location);
-
-        return new ResponseEntity<>(new FileStoreModel(updated), headers, HttpStatus.OK);
-    }
-
-    @ApiOperation(value = "Delete a user file store")
-    @RequestMapping(method = RequestMethod.DELETE, value="/user-store/{storeName}")
-    public FileStoreModel deleteUserFileStore(
-            @ApiParam(value = "Valid File Store name", required = true)
-            @PathVariable("storeName") String storeName,
-            @ApiParam(value = "Purge all files in file store", defaultValue="false")
-            @RequestParam(required=false, defaultValue="false") boolean purgeFiles,
-            @AuthenticationPrincipal User user) {
-        FileStore toDelete = this.service.getByName(storeName);
-        try {
-            this.service.deleteFileStore(toDelete, purgeFiles);
-        } catch(IOException e) {
-            throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, new TranslatableMessage("filestore.failedToPurgeFiles", storeName, e.getMessage()));
-        }
-        return new FileStoreModel(toDelete);
-    }
-
+    // TODO Mango 4.0 remove this method, require user to specify list or download
     @ApiOperation(value = "List a directory or download a file from a store")
     @RequestMapping(method = RequestMethod.GET, value="/{name}/**")
     public ResponseEntity<?> download(

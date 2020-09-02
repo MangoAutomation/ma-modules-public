@@ -10,6 +10,7 @@ import com.serotonin.m2m2.vo.FileStore;
 
 public class FileStoreModel {
 
+    private boolean fromDefinition;
     private int id;
     private String storeName;
     @JsonView(RoleViews.ShowRoles.class)
@@ -55,15 +56,25 @@ public class FileStoreModel {
         this.writePermission = writePermission;
     }
 
+    public boolean isFromDefinition() {
+        return fromDefinition;
+    }
+
+    public void setFromDefinition(boolean fromDefinition) {
+        this.fromDefinition = fromDefinition;
+    }
+
     public void fromVO(FileStore vo) {
         this.id = vo.getId();
         this.storeName = vo.getStoreName();
         this.readPermission = new MangoPermissionModel(vo.getReadPermission());
         this.writePermission = new MangoPermissionModel(vo.getWritePermission());
+        this.fromDefinition = vo.isFromDefinition();
     }
 
     public FileStore toVO() {
         FileStore store = new FileStore();
+        store.setFromDefinition(false);
         store.setId(id);
         store.setStoreName(storeName);
 
