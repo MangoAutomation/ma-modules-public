@@ -3,8 +3,6 @@
  */
 package com.infiniteautomation.mango.spring.service.maintenanceEvents;
 
-import java.util.Objects;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.joda.time.DateTime;
@@ -50,7 +48,6 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
             throws PermissionException, ValidationException {
 
         PermissionHolder user = Common.getUser();
-        Objects.requireNonNull(user, "Permission holder must be set in security context");
 
         //Ensure they can create
         ensureCreatePermission(user, vo);
@@ -67,7 +64,6 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
     @Override
     public MaintenanceEventVO update(MaintenanceEventVO existing, MaintenanceEventVO vo) throws PermissionException, ValidationException {
         PermissionHolder user = Common.getUser();
-        Objects.requireNonNull(user, "Permission holder must be set in security context");
 
         ensureEditPermission(user, existing);
         vo.setId(existing.getId());
@@ -93,7 +89,6 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
     public MaintenanceEventVO delete(MaintenanceEventVO vo)
             throws PermissionException, NotFoundException {
         PermissionHolder user = Common.getUser();
-        Objects.requireNonNull(user, "Permission holder must be set in security context");
 
         ensureEditPermission(user, vo);
         RTMDefinition.instance.deleteMaintenanceEvent(vo.getId());
@@ -151,7 +146,6 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
 
     public MaintenanceEventRT getEventRT(String xid) throws NotFoundException, PermissionException, TranslatableIllegalStateException {
         PermissionHolder user = Common.getUser();
-        Objects.requireNonNull(user, "Permission holder must be set in security context");
 
         MaintenanceEventVO existing = dao.getByXid(xid);
         if(existing == null)
@@ -169,13 +163,10 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
      * @param vo
      */
     public void ensureTogglePermission(MaintenanceEventVO vo, PermissionHolder user) {
-        if(permissionService.hasAdminRole(user))
-            return;
-        else if(permissionService.hasDataSourcePermission(user))
-            //TODO Review how this permission works
-            return;
-        else if(!permissionService.hasPermission(user, vo.getTogglePermission()));
-        throw new PermissionException(new TranslatableMessage("maintenanceEvents.permission.unableToToggleEvent"), user);
+        // TODO Mango 4.0 review
+        if (!(permissionService.hasDataSourcePermission(user) || permissionService.hasPermission(user, vo.getTogglePermission()))) {
+            throw new PermissionException(new TranslatableMessage("maintenanceEvents.permission.unableToToggleEvent"), user);
+        }
     }
 
 
@@ -209,7 +200,7 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
 
         @Override
         public void row(DataPointVO point, int index) {
-
+            // TODO Mango 4.0 review
             if(!hasPermission.getValue()) {
                 //short circuit the logic if we already failed
                 return;
@@ -254,7 +245,7 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
 
         @Override
         public void row(DataSourceVO source, int index) {
-
+            // TODO Mango 4.0 review
             if(!hasPermission.getValue()) {
                 //short circuit the logic if we already failed
                 return;

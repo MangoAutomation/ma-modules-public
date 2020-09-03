@@ -62,9 +62,7 @@ public class WatchListModelMapping implements RestModelMapping<WatchListVO, Watc
 
         //Set the point summaries
         List<WatchListDataPointModel> points = new ArrayList<>();
-        watchListService.getWatchListPoints(vo.getId(), (point) -> {
-            points.add(new WatchListDataPointModel(point));
-        });
+        watchListService.getWatchListPoints(vo.getId(), (point) -> points.add(new WatchListDataPointModel(point)));
         model.setPoints(points);
 
         return model;
@@ -91,7 +89,7 @@ public class WatchListModelMapping implements RestModelMapping<WatchListVO, Watc
                 }catch(NotFoundException e) {
                     result.addContextualMessage("points", "watchList.validate.pointNotFound", summary.getXid());
                 }catch(PermissionException e) {
-                    result.addContextualMessage("points", "watchlist.vaildate.pointNoReadPermission", summary.getXid());
+                    result.addContextualMessage("points", "watchlist.validate.pointNoReadPermission", summary.getXid());
                 }
             }
         }

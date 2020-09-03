@@ -4,6 +4,13 @@
 
 package com.infiniteautomation.mango.spring.service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.infiniteautomation.mango.db.query.ConditionSortLimit;
 import com.infiniteautomation.mango.rest.latest.exception.ServerErrorException;
 import com.infiniteautomation.mango.spring.dao.WatchListDao;
@@ -25,13 +32,6 @@ import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.watchlist.WatchListCreatePermission;
 import com.serotonin.m2m2.watchlist.WatchListVO;
 import net.jazdw.rql.parser.ASTNode;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.function.Consumer;
 
 /**
  *
@@ -62,7 +62,6 @@ public class WatchListService extends AbstractVOService<WatchListVO, WatchListTa
     @Override
     public WatchListVO insert(WatchListVO vo) throws PermissionException, ValidationException {
         PermissionHolder user = Common.getUser();
-        Objects.requireNonNull(user, "Permission holder must be set in security context");
 
         //If user not set then set it
         if(vo.getUserId() <= 0 && user instanceof User) {
@@ -76,7 +75,6 @@ public class WatchListService extends AbstractVOService<WatchListVO, WatchListTa
     public WatchListVO update(WatchListVO existing, WatchListVO vo)
             throws PermissionException, ValidationException {
         PermissionHolder user = Common.getUser();
-        Objects.requireNonNull(user, "Permission holder must be set in security context");
 
         //If user not set then set it
         if(vo.getUserId() <= 0 && user instanceof User) {
@@ -172,7 +170,7 @@ public class WatchListService extends AbstractVOService<WatchListVO, WatchListTa
         //Validate Points
         for(IDataPoint point : vo.getPointList()) {
             if(!permissionService.hasPermission(user, point.getReadPermission())) {
-                response.addContextualMessage("points", "watchlist.vaildate.pointNoReadPermission", point.getXid());
+                response.addContextualMessage("points", "watchlist.validate.pointNoReadPermission", point.getXid());
             }
         }
 
@@ -184,7 +182,6 @@ public class WatchListService extends AbstractVOService<WatchListVO, WatchListTa
      */
     public void getWatchListPoints(int id, Consumer<DataPointVO> callback) {
         PermissionHolder user = Common.getUser();
-        Objects.requireNonNull(user, "Permission holder must be set in security context");
 
         this.dao.getPoints(id, (dp) -> {
             if(dataPointService.hasReadPermission(user, dp)) {
@@ -220,7 +217,6 @@ public class WatchListService extends AbstractVOService<WatchListVO, WatchListTa
      */
     public void getDataPoints(WatchListVO vo, Consumer<DataPointVO> callback) {
         PermissionHolder user = Common.getUser();
-        Objects.requireNonNull(user, "Permission holder must be set in security context");
 
         switch(vo.getType()) {
             case WatchListVO.STATIC_TYPE:
@@ -235,9 +231,7 @@ public class WatchListService extends AbstractVOService<WatchListVO, WatchListTa
                     throw new ServerErrorException(new TranslatableMessage("watchList.queryParametersNotSupported"));
                 ASTNode rql = RQLUtils.parseRQLtoAST(vo.getQuery());
                 ConditionSortLimit conditions = dataPointService.rqlToCondition(rql, null, null, null);
-                dataPointService.customizedQuery(conditions, (dp, index) -> {
-                    callback.accept(dp);
-                });
+                dataPointService.customizedQuery(conditions, (dp, index) -> callback.accept(dp));
                 break;
             case WatchListVO.TAGS_TYPE:
                 throw new ServerErrorException(new TranslatableMessage("watchList.queryParametersNotSupported"));
@@ -335,7 +329,7 @@ public class WatchListService extends AbstractVOService<WatchListVO, WatchListTa
      */
     protected static ASTNode addAndRestriction(ASTNode query, ASTNode restriction){
         //Root query node
-        ASTNode root = null;
+        ASTNode root;
 
         if(query == null){
             root = restriction;
