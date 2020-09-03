@@ -19,9 +19,11 @@ import com.serotonin.m2m2.module.EmportDefinition;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 public class MaintenanceEventEmportDefinition extends EmportDefinition {
+
+    public static final String ELEMENT_ID = "maintenanceEvents";
     @Override
     public String getElementId() {
-        return "maintenanceEvents";
+        return ELEMENT_ID;
     }
 
     @Override
