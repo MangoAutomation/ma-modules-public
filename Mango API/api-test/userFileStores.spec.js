@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-const {createClient, login} = require('@infinite-automation/mango-module-tools/test-helper/testHelper');
+const {createClient, login, uuid} = require('@infinite-automation/mango-module-tools/test-helper/testHelper');
 const client = createClient();
 const fs = require('fs');
 const tmp = require('tmp');
@@ -28,6 +28,27 @@ describe('User file stores', function() {
     });
     this.timeout(5000);
 
+    const createFileStore = (xid) => {
+        return client.restRequest({
+            path: '/rest/latest/user-file-stores',
+            method: 'POST',
+            data: {
+                xid,
+                name: 'name for ' + xid,
+                readPermission: [],
+                writePermission: []
+            }
+        });
+    };
+
+    const deleteFileStore = (xid) => {
+        return client.restRequest({
+            path: `/rest/latest/user-file-stores/${encodeURIComponent(xid)}`,
+            method: 'DELETE',
+            params: {purgeFiles: true}
+        }).catch(e => null);
+    };
+
     it('Lists all file stores', () => {
         return client.restRequest({
             path: '/rest/latest/user-file-stores',
@@ -35,13 +56,46 @@ describe('User file stores', function() {
         }).then(response => {
             assert.isObject(response.data);
             assert.isArray(response.data.items);
+            assert.isNotEmpty(response.data.items);
             assert.isObject(response.data.items.find(s => s.xid === 'default'), 'Cant find default store');
         });
     });
 
-    it.skip('Can create user file store');
+    it('Can create user file store', function() {
+        const xid = uuid();
+        return createFileStore(xid).then(response => {
+            assert.isObject(response.data);
+            assert.strictEqual(response.data.xid, xid);
+            assert.isNumber(response.data.id);
+            assert.isAtLeast(response.data.id, 1);
+            assert.isFalse(response.data.fromDefinition);
+            assert.isString(response.data.name);
+            assert.isArray(response.data.readPermission);
+            assert.isEmpty(response.data.readPermission);
+            assert.isArray(response.data.writePermission);
+            assert.isEmpty(response.data.writePermission);
+        }).finally(() => {
+            return deleteFileStore(xid);
+        });
+    });
 
     for (const invalidChar of ['\\', '/', '.']) {
-        it.skip(`Fails with invalid character ${invalidChar} in XID`);
+        it(`Fails with invalid character ${invalidChar} in XID`, function() {
+            const xid = uuid() + invalidChar;
+            return createFileStore(xid).then(response => {
+                assert.fail('Should fail');
+            }, error => {
+                assert.strictEqual(error.status, 422);
+                assert.isObject(error.data);
+                assert.isObject(error.data.result);
+                assert.isArray(error.data.result.messages);
+                assert.isNotEmpty(error.data.result.messages);
+                const message = error.data.result.messages.find(m => m.property === 'xid');
+                assert.isObject(message);
+                assert.strictEqual(message.level, 'ERROR');
+            }).finally(() => {
+                return deleteFileStore(xid);
+            });
+        });
     }
 });
