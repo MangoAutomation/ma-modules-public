@@ -110,8 +110,7 @@ public class UserFileStoresRestController {
             @RequestBody FileStoreModel fileStore,
             UriComponentsBuilder builder) {
 
-        FileStore existing = this.fileStoreService.get(xid);
-        FileStore updated = this.fileStoreService.update(existing, fileStore.toVO());
+        FileStore updated = this.fileStoreService.update(xid, fileStore.toVO());
 
         URI location = builder.path("/user-file-stores/{xid}").buildAndExpand(updated.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
