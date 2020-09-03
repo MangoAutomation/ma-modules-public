@@ -38,4 +38,10 @@ describe('User file stores', function() {
             assert.isObject(response.data.items.find(s => s.xid === 'default'), 'Cant find default store');
         });
     });
+
+    it.skip('Can create user file store');
+
+    for (const invalidChar of ['\\', '/', '.']) {
+        it.skip(`Fails with invalid character ${invalidChar} in XID`);
+    }
 });

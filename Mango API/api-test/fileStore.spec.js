@@ -346,7 +346,7 @@ describe('Test File Store endpoints', function() {
         	throw new Error('Returned successful response', response.status);
         }, error => {
             uploadFile.removeCallback();
-            assert.strictEqual(error.response.statusCode, 403);
+            assert.strictEqual(error.response.statusCode, 500);
         });
     });
 
@@ -364,7 +364,7 @@ describe('Test File Store endpoints', function() {
         }).then(response => {
             throw new Error('Returned successful response', response.status);
         }, error => {
-            assert.strictEqual(error.response.statusCode, 403);
+            assert.strictEqual(error.response.statusCode, 500);
         });
     });
 
@@ -921,9 +921,23 @@ describe('Test File Store endpoints', function() {
         	uploadFile.removeCallback();
         	throw error;
         }).then(response => {
-        	throw new Error('Returned successful response', response.status);
+        	throw new Error('Returned successful response ' + response.status);
         }, error => {
-        	assert.strictEqual(error.response.statusCode, 403);
+        	assert.strictEqual(error.response.statusCode, 500);
+        });
+    });
+
+    it('Can\'t move the file store root', function() {
+        return client.restRequest({
+            path: `/rest/latest/file-stores/default`,
+            method: 'POST',
+            params: {
+                moveTo: encodeURIComponent('moved_default')
+            }
+        }).then(response => {
+            throw new Error('Returned successful response ' + response.status);
+        }, error => {
+            assert.strictEqual(error.response.statusCode, 500);
         });
     });
 
