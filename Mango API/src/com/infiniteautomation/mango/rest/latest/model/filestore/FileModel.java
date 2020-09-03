@@ -6,6 +6,8 @@ public class FileModel {
 
     String folderPath;
     String filename;
+    String relativePath;
+    String fileStoreXid;
     String mimeType;
     Date lastModified;
     Long size;
@@ -80,5 +82,21 @@ public class FileModel {
 
     public void setFolderPath(String folderPath) {
         this.folderPath = folderPath;
+    }
+
+    public String getRelativePath() {
+        return relativePath;
+    }
+
+    public void setRelativePath(String relativePath) {
+        this.relativePath = relativePath;
+    }
+
+    public String getFileStoreXid() {
+        return fileStoreXid;
+    }
+
+    public void setFileStoreXid(String fileStoreXid) {
+        this.fileStoreXid = fileStoreXid;
     }
 }

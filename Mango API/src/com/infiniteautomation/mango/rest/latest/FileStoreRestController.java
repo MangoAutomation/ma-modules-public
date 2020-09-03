@@ -10,7 +10,6 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -51,6 +50,7 @@ import com.infiniteautomation.mango.rest.latest.exception.ResourceNotFoundExcept
 import com.infiniteautomation.mango.rest.latest.model.filestore.FileModel;
 import com.infiniteautomation.mango.rest.latest.resolver.RemainingPath;
 import com.infiniteautomation.mango.spring.service.FileStoreService;
+import com.infiniteautomation.mango.spring.service.FileStoreService.FileStorePath;
 import com.serotonin.m2m2.vo.User;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -95,8 +95,7 @@ public class FileStoreRestController extends AbstractMangoRestController {
             MultipartHttpServletRequest multipartRequest,
             HttpServletRequest request) throws IOException {
 
-        Path outputDirectory = this.service.createDirectory(name, pathInStore);
-        Path root = this.service.getPathForWrite(name, "");
+        FileStorePath outputDirectory = this.service.createDirectory(name, pathInStore);
 
         //Put the file where it belongs
         List<FileModel> fileModels = new ArrayList<>();
@@ -112,7 +111,7 @@ public class FileStoreRestController extends AbstractMangoRestController {
                     filename = file.getName();
                 }
 
-                Path newFile = findUniqueFileName(outputDirectory, filename, overwrite);
+                Path newFile = findUniqueFileName(outputDirectory.getAbsolutePath(), filename, overwrite);
                 Files.createDirectories(newFile.getParent());
 
                 try (OutputStream output = Files.newOutputStream(newFile)) {
@@ -120,7 +119,8 @@ public class FileStoreRestController extends AbstractMangoRestController {
                         StreamUtils.copy(input, output);
                     }
                 }
-                fileModels.add(fileToModel(newFile, root, request.getServletContext()));
+
+                fileModels.add(fileToModel(outputDirectory.resolve(newFile), request.getServletContext()));
             }
         }
 
@@ -143,15 +143,13 @@ public class FileStoreRestController extends AbstractMangoRestController {
             @AuthenticationPrincipal User user,
             HttpServletRequest request) {
 
-        Path root = this.service.getPathForWrite(fileStoreName, "");
-
         FileModel fileModel;
         if (copyTo != null) {
-            fileModel = fileToModel(service.copyFileOrFolder(fileStoreName, pathInStore, copyTo), root, request.getServletContext());
+            fileModel = fileToModel(service.copyFileOrFolder(fileStoreName, pathInStore, copyTo), request.getServletContext());
         } else if (moveTo != null) {
-            fileModel = fileToModel(service.moveFileOrFolder(fileStoreName, pathInStore, moveTo), root, request.getServletContext());
+            fileModel = fileToModel(service.moveFileOrFolder(fileStoreName, pathInStore, moveTo), request.getServletContext());
         } else {
-            fileModel = fileToModel(service.createDirectory(fileStoreName, pathInStore), root, request.getServletContext());
+            fileModel = fileToModel(service.createDirectory(fileStoreName, pathInStore), request.getServletContext());
         }
         return new ResponseEntity<>(fileModel, HttpStatus.OK);
     }
@@ -184,14 +182,13 @@ public class FileStoreRestController extends AbstractMangoRestController {
             HttpServletRequest request,
             HttpServletResponse response) {
 
-        Path file = this.service.getPathForRead(name, pathInStore);
-        Path root = this.service.getPathForRead(name, "");
+        FileStorePath file = this.service.forRead(name, pathInStore);
 
         // TODO Allow downloading directory as a zip
-        if (Files.isRegularFile(file)) {
-            return getFile(file, download, request, response);
+        if (Files.isRegularFile(file.getAbsolutePath())) {
+            return getFile(file.getAbsolutePath(), download, request, response);
         } else {
-            return listStoreContents(file, root, request);
+            return listStoreContents(file, request);
         }
     }
 
@@ -210,11 +207,12 @@ public class FileStoreRestController extends AbstractMangoRestController {
             HttpServletRequest request,
             HttpServletResponse response) {
 
-        Path file = this.service.getPathForRead(name, pathInStore);
-        return getFile(file, download, request, response);
+        FileStorePath file = this.service.forRead(name, pathInStore);
+        return getFile(file.getAbsolutePath(), download, request, response);
     }
 
-    protected ResponseEntity<List<FileModel>> listStoreContents(Path directory, Path root, HttpServletRequest request) {
+    protected ResponseEntity<List<FileModel>> listStoreContents(FileStorePath fileStorePath, HttpServletRequest request) {
+        Path directory = fileStorePath.getAbsolutePath();
         if (!Files.isDirectory(directory)) {
             throw new NotFoundRestException();
         }
@@ -222,13 +220,10 @@ public class FileStoreRestController extends AbstractMangoRestController {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
 
-        if (directory.equals(root) && !Files.isDirectory(root))
-            return new ResponseEntity<>(Collections.emptyList(), responseHeaders, HttpStatus.OK);
-
         List<FileModel> models;
         try {
             models = Files.list(directory)
-                    .map(p -> fileToModel(p, root, request.getServletContext()))
+                    .map(p -> fileToModel(fileStorePath.resolve(p), request.getServletContext()))
                     .collect(Collectors.toList());
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -278,12 +273,15 @@ public class FileStoreRestController extends AbstractMangoRestController {
      * @param context
      * @return
      */
-    private FileModel fileToModel(Path file, Path root, ServletContext context) {
+    private FileModel fileToModel(FileStorePath fileStorePath, ServletContext context) {
         try {
+            Path file = fileStorePath.getAbsolutePath();
             String fileName = file.getFileName().toString();
             FileModel model = new FileModel();
             model.setFilename(fileName);
-            model.setFolderPath(service.relativePath(root, file.getParent()));
+            model.setFolderPath(fileStorePath.getParent().standardizedPath());
+            model.setRelativePath(fileStorePath.standardizedPath());
+            model.setFileStoreXid(fileStorePath.getFileStore().getXid());
             model.setDirectory(Files.isDirectory(file));
             model.setLastModified(new Date(Files.getLastModifiedTime(file).toMillis()));
             model.setMimeType(context.getMimeType(fileName));
