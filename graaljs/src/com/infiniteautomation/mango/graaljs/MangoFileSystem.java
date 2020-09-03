@@ -3,6 +3,23 @@
  */
 package com.infiniteautomation.mango.graaljs;
 
+import java.io.IOException;
+import java.net.URI;
+import java.nio.channels.SeekableByteChannel;
+import java.nio.charset.Charset;
+import java.nio.file.AccessMode;
+import java.nio.file.CopyOption;
+import java.nio.file.DirectoryStream;
+import java.nio.file.DirectoryStream.Filter;
+import java.nio.file.LinkOption;
+import java.nio.file.OpenOption;
+import java.nio.file.Path;
+import java.nio.file.attribute.FileAttribute;
+import java.util.Map;
+import java.util.Set;
+
+import org.graalvm.polyglot.io.FileSystem;
+
 import com.infiniteautomation.mango.permission.MangoPermission;
 import com.infiniteautomation.mango.spring.script.permissions.LoadFileStorePermission;
 import com.infiniteautomation.mango.spring.service.FileStoreService;
@@ -11,17 +28,6 @@ import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
-import org.graalvm.polyglot.io.FileSystem;
-
-import java.io.IOException;
-import java.net.URI;
-import java.nio.channels.SeekableByteChannel;
-import java.nio.charset.Charset;
-import java.nio.file.*;
-import java.nio.file.DirectoryStream.Filter;
-import java.nio.file.attribute.FileAttribute;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Jared Wiltshire
@@ -65,12 +71,10 @@ public class MangoFileSystem implements FileSystem {
         try {
             if (permissionService.hasPermission(user, loadFileStorePermission.getPermission())) {
                 try {
-                    Path fileStorePath = fileStoreService.relativize(path);
-                    String fileStoreName = fileStorePath.getName(0).toString();
                     if (modes.contains(AccessMode.WRITE)) {
-                        fileStoreService.getPathForWrite(fileStoreName, "");
+                        fileStoreService.ensureWriteAccess(path);
                     } else {
-                        fileStoreService.getPathForRead(fileStoreName, "");
+                        fileStoreService.ensureReadAccess(path);
                     }
                     return;
                 } catch (IllegalArgumentException | NotFoundException e) {

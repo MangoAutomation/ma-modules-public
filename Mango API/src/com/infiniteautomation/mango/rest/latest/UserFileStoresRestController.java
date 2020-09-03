@@ -74,8 +74,7 @@ public class UserFileStoresRestController {
             @PathVariable("xid") String xid,
             @AuthenticationPrincipal User user) {
 
-        // TODO
-        FileStore fs = this.fileStoreService.getByName(xid);
+        FileStore fs = this.fileStoreService.get(xid);
 
         //Seeing the permissions fields should require write protection
         MappingJacksonValue resultWithView = new MappingJacksonValue(new FileStoreModel(fs));
@@ -126,9 +125,8 @@ public class UserFileStoresRestController {
             @ApiParam(value = "Purge all files in file store", defaultValue="false")
             @RequestParam(required=false, defaultValue="false") boolean purgeFiles) {
 
-        FileStore toDelete = this.fileStoreService.get(xid);
         try {
-            this.fileStoreService.deleteFileStore(toDelete, purgeFiles);
+            this.fileStoreService.delete(xid, purgeFiles);
         } catch(IOException e) {
             throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, new TranslatableMessage("filestore.failedToPurgeFiles", xid, e.getMessage()));
         }
