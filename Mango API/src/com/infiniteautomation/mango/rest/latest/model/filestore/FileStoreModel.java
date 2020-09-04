@@ -12,7 +12,7 @@ import com.serotonin.m2m2.vo.FileStore;
 
 public class FileStoreModel extends AbstractVoModel<FileStore> {
 
-    private boolean fromDefinition;
+    private boolean builtIn;
     @JsonView(RoleViews.ShowRoles.class)
     private MangoPermissionModel readPermission;
     @JsonView(RoleViews.ShowRoles.class)
@@ -40,12 +40,12 @@ public class FileStoreModel extends AbstractVoModel<FileStore> {
         this.writePermission = writePermission;
     }
 
-    public boolean isFromDefinition() {
-        return fromDefinition;
+    public boolean isBuiltIn() {
+        return builtIn;
     }
 
-    public void setFromDefinition(boolean fromDefinition) {
-        this.fromDefinition = fromDefinition;
+    public void setBuiltIn(boolean builtIn) {
+        this.builtIn = builtIn;
     }
 
     @Override
@@ -53,7 +53,7 @@ public class FileStoreModel extends AbstractVoModel<FileStore> {
         super.fromVO(vo);
         this.readPermission = new MangoPermissionModel(vo.getReadPermission());
         this.writePermission = new MangoPermissionModel(vo.getWritePermission());
-        this.fromDefinition = vo.isFromDefinition();
+        this.builtIn = vo.isBuiltIn();
     }
 
     @Override

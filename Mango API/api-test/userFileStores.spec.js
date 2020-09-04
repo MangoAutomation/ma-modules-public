@@ -68,7 +68,7 @@ describe('User file stores', function() {
             assert.strictEqual(response.data.xid, xid);
             assert.isNumber(response.data.id);
             assert.isAtLeast(response.data.id, 1);
-            assert.isFalse(response.data.fromDefinition);
+            assert.isFalse(response.data.builtIn);
             assert.isString(response.data.name);
             assert.isArray(response.data.readPermission);
             assert.isEmpty(response.data.readPermission);
