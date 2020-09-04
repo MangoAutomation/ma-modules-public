@@ -932,10 +932,24 @@ describe('Test File Store endpoints', function() {
             path: `/rest/latest/file-stores/default`,
             method: 'POST',
             params: {
-                moveTo: encodeURIComponent('moved_default')
+                moveTo: 'moved_default'
             }
         }).then(response => {
             throw new Error('Returned successful response ' + response.status);
+        }, error => {
+            assert.strictEqual(error.response.statusCode, 500);
+        });
+    });
+
+    it('Can\'t delete the file store root', function() {
+        return client.restRequest({
+            path: `/rest/latest/file-stores/default`,
+            method: 'DELETE',
+            params: {
+                recursive: true
+            }
+        }).then(response => {
+            assert.fail('Returned successful response ' + response.status);
         }, error => {
             assert.strictEqual(error.response.statusCode, 500);
         });
