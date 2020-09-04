@@ -4,7 +4,6 @@
 
 package com.infiniteautomation.mango.rest.latest;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,18 +18,15 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.db.query.pojo.RQLFilterJavaBean;
-import com.infiniteautomation.mango.rest.latest.exception.GenericRestException;
 import com.infiniteautomation.mango.rest.latest.model.FilteredStreamWithTotal;
 import com.infiniteautomation.mango.rest.latest.model.RoleViews;
 import com.infiniteautomation.mango.rest.latest.model.StreamWithTotal;
 import com.infiniteautomation.mango.rest.latest.model.filestore.FileStoreModel;
 import com.infiniteautomation.mango.spring.service.FileStoreService;
-import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.vo.FileStore;
 import com.serotonin.m2m2.vo.User;
@@ -121,14 +117,8 @@ public class UserFileStoresRestController {
     @RequestMapping(method = RequestMethod.DELETE, value="/{xid}")
     public void deleteUserFileStore(
             @ApiParam(value = "File store XID", required = true)
-            @PathVariable("xid") String xid,
-            @ApiParam(value = "Purge all files in file store", defaultValue="false")
-            @RequestParam(required=false, defaultValue="false") boolean purgeFiles) {
+            @PathVariable("xid") String xid) {
 
-        try {
-            this.fileStoreService.delete(xid, purgeFiles);
-        } catch(IOException e) {
-            throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, new TranslatableMessage("filestore.failedToPurgeFiles", xid, e.getMessage()));
-        }
+        this.fileStoreService.delete(xid);
     }
 }
