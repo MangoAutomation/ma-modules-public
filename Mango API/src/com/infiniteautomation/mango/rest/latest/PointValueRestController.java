@@ -1067,11 +1067,7 @@ public class PointValueRestController extends AbstractMangoRestController {
 
 
         DataPointVO vo = dataPointService.get(xid);
-        if (vo == null) {
-            throw new NotFoundRestException();
-        }else {
-            dataPointService.ensureSetPermission(user, vo);
-        }
+        dataPointService.ensureSetPermission(user, vo);
 
         ZoneId zoneId;
         if (timezone == null) {
@@ -1111,11 +1107,7 @@ public class PointValueRestController extends AbstractMangoRestController {
             @AuthenticationPrincipal User user
             ) {
         DataPointVO vo = dataPointService.get(xid);
-        if (vo == null) {
-            throw new NotFoundRestException();
-        }else {
-            dataPointService.ensureSetPermission(user, vo);
-        }
+        dataPointService.ensureSetPermission(user, vo);
         DataPointRT rt = Common.runtimeManager.getDataPoint(vo.getId());
         if(rt == null)
             throw new NotFoundRestException();
@@ -1358,11 +1350,6 @@ public class PointValueRestController extends AbstractMangoRestController {
         Map<Integer, DataPointVO> voMap = new LinkedHashMap<Integer, DataPointVO>();
         for(String xid : xids) {
             DataPointVO vo = dataPointService.get(xid);
-            if (vo == null) {
-                throw new NotFoundRestException();
-            }else {
-                dataPointService.ensureSetPermission(user, vo);
-            }
 
             //Validate the rollup
             switch(vo.getPointLocator().getDataTypeId()) {
