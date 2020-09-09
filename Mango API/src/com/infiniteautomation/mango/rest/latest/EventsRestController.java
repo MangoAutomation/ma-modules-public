@@ -321,7 +321,7 @@ public class EventsRestController {
 
     private StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
         if (service.getPermissionService().hasAdminRole(user)) {
-            return new StreamedVORqlQueryWithTotal<>(service, rql, null, fieldMap, valueConverters, item -> true, vo -> map.apply(vo, user));
+            return new StreamedVORqlQueryWithTotal<>(service, rql, null, fieldMap, valueConverters, null, vo -> map.apply(vo, user));
         } else {
             return new StreamedVORqlQueryWithTotal<>(service, rql, null, fieldMap, valueConverters, item -> service.hasReadPermission(user, item), vo -> map.apply(vo, user));
         }
