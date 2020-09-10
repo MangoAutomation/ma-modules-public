@@ -3,6 +3,30 @@
  */
 package com.infiniteautomation.mango.graaljs;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Member;
+import java.lang.reflect.Proxy;
+import java.security.AccessController;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineFactory;
+import javax.script.ScriptException;
+
+import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.HostAccess;
+import org.graalvm.polyglot.PolyglotException;
+import org.graalvm.polyglot.PolyglotException.StackFrame;
+import org.graalvm.polyglot.SourceSection;
+import org.graalvm.polyglot.io.FileSystem;
+import org.graalvm.polyglot.proxy.ProxyArray;
+import org.graalvm.polyglot.proxy.ProxyObject;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.infiniteautomation.mango.permission.MangoPermission;
 import com.infiniteautomation.mango.spring.script.MangoScript;
 import com.infiniteautomation.mango.spring.script.permissions.LoadFileStorePermission;
@@ -14,25 +38,6 @@ import com.oracle.truffle.js.scriptengine.GraalJSEngineFactory;
 import com.oracle.truffle.js.scriptengine.GraalJSScriptEngine;
 import com.serotonin.m2m2.module.ScriptEngineDefinition;
 import com.serotonin.m2m2.module.SourceLocation;
-import org.graalvm.polyglot.*;
-import org.graalvm.polyglot.PolyglotException.StackFrame;
-import org.graalvm.polyglot.io.FileSystem;
-import org.graalvm.polyglot.proxy.ProxyArray;
-import org.graalvm.polyglot.proxy.ProxyObject;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineFactory;
-import javax.script.ScriptException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Member;
-import java.lang.reflect.Proxy;
-import java.security.AccessController;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author Jared Wiltshire
@@ -146,5 +151,10 @@ public class GraaljsScriptEngineDefinition extends ScriptEngineDefinition {
 
         }
         return super.extractSourceLocation(e);
+    }
+
+    @Override
+    public boolean singleThreadedAccess() {
+        return true;
     }
 }
