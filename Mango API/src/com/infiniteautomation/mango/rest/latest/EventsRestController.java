@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.db.query.ConditionSortLimit;
+import com.infiniteautomation.mango.rest.latest.model.ListWithTotal;
 import com.infiniteautomation.mango.rest.latest.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.latest.model.StreamedArray;
 import com.infiniteautomation.mango.rest.latest.model.StreamedArrayWithTotal;
@@ -154,8 +155,7 @@ public class EventsRestController {
     @ApiOperation(
             value = "Query Events",
             notes = "Use RQL formatted query",
-            response=EventInstanceModel.class,
-            responseContainer="List"
+            response = EventQueryResult.class
             )
     @RequestMapping(method = RequestMethod.GET)
     public StreamedArrayWithTotal queryRQL(
@@ -221,8 +221,7 @@ public class EventsRestController {
 
     @ApiOperation(
             value = "Find Events for a set of sources found by the supplied sourceType RQL query, then query for events with these sources using eventsRql",
-            response=EventInstanceModel.class,
-            responseContainer="List"
+            response = EventQueryResult.class
             )
     @RequestMapping(method = RequestMethod.POST, value="/query/events-by-source-type")
     public StreamedArrayWithTotal queryForEventsBySourceType(@RequestBody
@@ -306,6 +305,12 @@ public class EventsRestController {
             this.put("referenceId2", eventTable.getAlias("typeRef2"));
             this.put("active", eventTable.getAlias("rtnTs"));
         }
+    }
 
+    /**
+     * For Swagger documentation use only.
+     * @author Jared Wiltshire
+     */
+    private interface EventQueryResult extends ListWithTotal<EventInstanceModel> {
     }
 }
