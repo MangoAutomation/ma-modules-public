@@ -4,14 +4,17 @@
 package com.infiniteautomation.mango.rest.latest;
 
 import java.net.URI;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
@@ -22,6 +25,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -44,6 +48,7 @@ import com.infiniteautomation.mango.spring.db.EventInstanceTableDefinition;
 import com.infiniteautomation.mango.spring.service.DataPointService;
 import com.infiniteautomation.mango.spring.service.DataSourceService;
 import com.infiniteautomation.mango.spring.service.EventInstanceService;
+import com.infiniteautomation.mango.spring.service.EventInstanceService.PeriodCounts;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.m2m2.Common;
@@ -160,8 +165,7 @@ public class EventsRestController {
     @RequestMapping(method = RequestMethod.GET)
     public StreamedArrayWithTotal queryRQL(
             @AuthenticationPrincipal User user,
-            HttpServletRequest request) {
-        ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
+            ASTNode rql) {
         return doQuery(rql, user);
     }
 
@@ -276,12 +280,30 @@ public class EventsRestController {
         }
     }
 
+    @ApiOperation("Query for event counts using RQL")
+    @RequestMapping(method = RequestMethod.POST, path = "/counts")
+    public List<PeriodCounts> eventCounts(
+            @AuthenticationPrincipal User user,
+            @RequestBody List<Instant> periodBoundaries,
+            ASTNode rql) {
+
+        // TODO Mango 4.0 clean up, add model, move restrictions to service
+        Assert.isTrue(periodBoundaries.size() >= 2, "periodBoundaries must have at least 2 elements");
+        List<Instant> sorted = new ArrayList<>(periodBoundaries);
+        Collections.sort(sorted);
+        Instant from = sorted.get(0);
+        Instant to = sorted.get(periodBoundaries.size() - 1);
+
+        rql = RQLUtils.addAndRestriction(rql, new ASTNode("ge", "activeTs", from));
+        rql = RQLUtils.addAndRestriction(rql, new ASTNode("lt", "activeTs", to));
+
+        ConditionSortLimit conditions = service.rqlToCondition(rql, Collections.emptyMap(), fieldMap, valueConverters);
+        return service.countQuery(conditions, sorted);
+    }
+
     private StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
-        if (service.getPermissionService().hasAdminRole(user)) {
-            return new StreamedVORqlQueryWithTotal<>(service, rql, null, fieldMap, valueConverters, null, vo -> map.apply(vo, user));
-        } else {
-            return new StreamedVORqlQueryWithTotal<>(service, rql, null, fieldMap, valueConverters, item -> service.hasReadPermission(user, item), vo -> map.apply(vo, user));
-        }
+        Predicate<EventInstanceVO> filter = service.getPermissionService().hasAdminRole(user) ? null : item -> service.hasReadPermission(user, item);
+        return new StreamedVORqlQueryWithTotal<>(service, rql, null, fieldMap, valueConverters, filter, vo -> map.apply(vo, user));
     }
 
     /**
