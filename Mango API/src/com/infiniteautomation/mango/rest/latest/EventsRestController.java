@@ -45,7 +45,6 @@ import com.infiniteautomation.mango.spring.service.DataSourceService;
 import com.infiniteautomation.mango.spring.service.EventInstanceService;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.infiniteautomation.mango.util.exception.ValidationException;
-import com.serotonin.db.MappedRowCallback;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -53,11 +52,8 @@ import com.serotonin.m2m2.rt.event.DataPointEventLevelSummary;
 import com.serotonin.m2m2.rt.event.EventInstance;
 import com.serotonin.m2m2.rt.event.UserEventLevelSummary;
 import com.serotonin.m2m2.rt.event.type.EventType.EventTypeNames;
-import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
-import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.event.EventInstanceVO;
-
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -87,9 +83,7 @@ public class EventsRestController {
             EventInstanceTableDefinition eventTable, DataSourceService dataSourceService, DataPointService dataPointService) {
         this.modelMapper = modelMapper;
         this.service = service;
-        this.map = (vo, user) -> {
-            return modelMapper.map(vo, EventInstanceModel.class, user);
-        };
+        this.map = (vo, user) -> modelMapper.map(vo, EventInstanceModel.class, user);
 
         this.valueConverters = new HashMap<>();
         this.fieldMap = new EventTableRqlMappings(eventTable);
@@ -104,9 +98,7 @@ public class EventsRestController {
     @RequestMapping(method = RequestMethod.GET, value = "/active")
     public List<EventInstanceModel> getActive(@AuthenticationPrincipal User user) {
         List<EventInstance> events = service.getAllActiveUserEvents();
-        return events.stream().map(s -> {
-            return modelMapper.map(events, EventInstanceModel.class, user);
-        }).collect(Collectors.toList());
+        return events.stream().map(s -> modelMapper.map(events, EventInstanceModel.class, user)).collect(Collectors.toList());
     }
 
     @ApiOperation(
@@ -141,7 +133,7 @@ public class EventsRestController {
             )
     @RequestMapping(method = RequestMethod.POST, value = "/data-point-summaries")
     public List<DataPointEventSummaryModel> getDataPointSummaries(
-            @RequestBody(required=true)
+            @RequestBody
             String[] xids,
             @AuthenticationPrincipal User user) {
         Collection<DataPointEventLevelSummary> summaries = service.getDataPointEventSummaries(xids);
@@ -149,12 +141,11 @@ public class EventsRestController {
     }
 
     @ApiOperation(
-            value = "Get event by ID",
-            notes = ""
-            )
+            value = "Get event by ID"
+    )
     @RequestMapping(method = RequestMethod.GET, value = "/{id}")
     public EventInstanceModel getById(
-            @ApiParam(value = "Valid Event ID", required = true, allowMultiple = false)
+            @ApiParam(value = "Valid Event ID", required = true)
             @PathVariable Integer id,
             @AuthenticationPrincipal User user) {
         return map.apply(service.get(id), user);
@@ -175,9 +166,8 @@ public class EventsRestController {
     }
 
     @ApiOperation(
-            value = "Acknowledge an existing event",
-            notes = ""
-            )
+            value = "Acknowledge an existing event"
+    )
     @RequestMapping(method = RequestMethod.PUT, value = "/acknowledge/{id}")
     public ResponseEntity<EventInstanceModel> acknowledgeEvent(
             @PathVariable Integer id,
@@ -196,9 +186,8 @@ public class EventsRestController {
     }
 
     @ApiOperation(
-            value = "Acknowledge many existing events",
-            notes = ""
-            )
+            value = "Acknowledge many existing events"
+    )
     @RequestMapping(method = RequestMethod.POST, value = "/acknowledge")
     public int acknowledgeManyEvents(
             @RequestBody(required=false) TranslatableMessageModel message,
@@ -231,8 +220,7 @@ public class EventsRestController {
     }
 
     @ApiOperation(
-            value = "Find Events for a set of soucres found by the supplied sourcTyperql query, then query for events with these sources using eventsRql",
-            notes = "",
+            value = "Find Events for a set of sources found by the supplied sourceType RQL query, then query for events with these sources using eventsRql",
             response=EventInstanceModel.class,
             responseContainer="List"
             )
@@ -250,27 +238,17 @@ public class EventsRestController {
         //Query for the sources
         switch(body.getSourceType()) {
             case "DATA_POINT":
-                dataPointService.customizedQuery(rql, new MappedRowCallback<DataPointVO>() {
-                    @Override
-                    public void row(DataPointVO vo, int index) {
-                        args.add(Integer.toString(vo.getId()));
-                    }
-                });
+                dataPointService.customizedQuery(rql, (vo, index) -> args.add(Integer.toString(vo.getId())));
                 if(args.size() > 1) {
                     query = new ASTNode("in", args);
-                    query = addAndRestriction(query, new ASTNode("eq", "typeName", EventTypeNames.DATA_POINT));
+                    query = RQLUtils.addAndRestriction(query, new ASTNode("eq", "typeName", EventTypeNames.DATA_POINT));
                 }
                 break;
             case "DATA_SOURCE":
-                dataSourceService.customizedQuery(rql, new MappedRowCallback<DataSourceVO>() {
-                    @Override
-                    public void row(DataSourceVO vo, int index) {
-                        args.add(Integer.toString(vo.getId()));
-                    }
-                });
+                dataSourceService.customizedQuery(rql, (vo, index) -> args.add(Integer.toString(vo.getId())));
                 if(args.size() > 1) {
                     query = new ASTNode("in", args);
-                    query = addAndRestriction(query, new ASTNode("eq", "typeName", EventTypeNames.DATA_SOURCE));
+                    query = RQLUtils.addAndRestriction(query, new ASTNode("eq", "typeName", EventTypeNames.DATA_SOURCE));
                 }
                 break;
             default:
@@ -283,7 +261,7 @@ public class EventsRestController {
         if(query != null) {
             //Apply the events query
             ASTNode eventQuery = RQLUtils.parseRQLtoAST(body.getEventsRql());
-            query = addAndRestriction(query, eventQuery);
+            query = RQLUtils.addAndRestriction(query, eventQuery);
             return doQuery(query, user);
         }else {
             return new StreamedArrayWithTotal() {
@@ -297,26 +275,6 @@ public class EventsRestController {
                 }
             };
         }
-    }
-
-    /**
-     * Append an AND Restriction to a query
-     * @param query - can be null
-     * @param restriction
-     * @return
-     */
-    private ASTNode addAndRestriction(ASTNode query, ASTNode restriction){
-        //Root query node
-        ASTNode root = null;
-
-        if(query == null){
-            root = restriction;
-        }else if(query.getName().equalsIgnoreCase("and")){
-            root = query.addArgument(restriction);
-        }else{
-            root = new ASTNode("and", restriction, query);
-        }
-        return root;
     }
 
     private StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
@@ -346,7 +304,6 @@ public class EventsRestController {
             this.put("eventType", eventTable.getAlias("typeName"));
             this.put("referenceId1", eventTable.getAlias("typeRef1"));
             this.put("referenceId2", eventTable.getAlias("typeRef2"));
-            this.put("acknowledged", eventTable.getAlias("ackTs"));
             this.put("active", eventTable.getAlias("rtnTs"));
         }
 
