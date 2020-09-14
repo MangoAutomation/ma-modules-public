@@ -4,10 +4,10 @@
 package com.infiniteautomation.mango.rest.latest;
 
 import java.net.URI;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -284,15 +284,15 @@ public class EventsRestController {
     @RequestMapping(method = RequestMethod.POST, path = "/counts")
     public List<PeriodCounts> eventCounts(
             @AuthenticationPrincipal User user,
-            @RequestBody List<Instant> periodBoundaries,
+            @RequestBody List<Date> periodBoundaries,
             ASTNode rql) {
 
         // TODO Mango 4.0 clean up, add model, move restrictions to service
         Assert.isTrue(periodBoundaries.size() >= 2, "periodBoundaries must have at least 2 elements");
-        List<Instant> sorted = new ArrayList<>(periodBoundaries);
+        List<Date> sorted = new ArrayList<>(periodBoundaries);
         Collections.sort(sorted);
-        Instant from = sorted.get(0);
-        Instant to = sorted.get(periodBoundaries.size() - 1);
+        Date from = sorted.get(0);
+        Date to = sorted.get(periodBoundaries.size() - 1);
 
         rql = RQLUtils.addAndRestriction(rql, new ASTNode("ge", "activeTs", from));
         rql = RQLUtils.addAndRestriction(rql, new ASTNode("lt", "activeTs", to));
