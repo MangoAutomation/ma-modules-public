@@ -9,6 +9,8 @@
 * Remove module defined queries and replace with /events/query/events-by-source-type
 * Rework /latest/realtime query endpoint since point hierarchy was removed now it only provides access to running data points
 * Add force poll of data source endpoint at PUT /rest/latest/data-sources/force-poll/{xid}
+* Allow querying on data point tags via RQL on the events query endpoint
+* Add endpoint to query event counts into bins of time ranges at POST /events/counts
 
 *Version 3.7.0*
 * Upgraded to work with core version 3.7.x
