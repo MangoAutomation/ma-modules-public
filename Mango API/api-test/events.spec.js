@@ -88,6 +88,7 @@ describe('Events tests', function(){
                         referenceId1: this.testPoint1.id,
                         duplicateHandling: 'ALLOW'
                     },
+                    context: {},
                     level: 'INFORMATION',
                     message: 'Dummy Point event'
                 }

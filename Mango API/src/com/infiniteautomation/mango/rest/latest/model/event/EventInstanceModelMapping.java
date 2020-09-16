@@ -44,7 +44,9 @@ public class EventInstanceModelMapping implements RestModelMapping<EventInstance
             if(evt.getEventType() instanceof DataPointEventType) {
                 //We are from the runtime so we already have the point
                 DataPointEventType eventType = (DataPointEventType)evt.getEventType();
-                eventType.setDataPoint((DataPointVO)((EventInstance) evt).getContext().get(PointEventDetectorRT.DATA_POINT_CONTEXT_KEY));
+                if(((EventInstance) evt).getContext() != null) {
+                    eventType.setDataPoint((DataPointVO)((EventInstance) evt).getContext().get(PointEventDetectorRT.DATA_POINT_CONTEXT_KEY));
+                }
             }
         }
         AbstractEventTypeModel<?,?,?> eventTypeModel = mapper.map(evt.getEventType(), AbstractEventTypeModel.class, user);
