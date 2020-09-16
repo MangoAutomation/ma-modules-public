@@ -397,7 +397,6 @@ public class EventTypesRestController {
                     throw new BadRequestException();
 
                 DataPointVO dp = this.dataPointService.get(referenceId1);
-                dp.setTags(DataPointTagsDao.getInstance().getTagsForDataPointId(dp.getId()));
 
                 for(AbstractPointEventDetectorVO vo : eventDetectorDao.getWithSource(dp.getId(), dp)) {
                     AbstractPointEventDetectorModel<?> edm =  modelMapper.map(vo, AbstractPointEventDetectorModel.class, user);
