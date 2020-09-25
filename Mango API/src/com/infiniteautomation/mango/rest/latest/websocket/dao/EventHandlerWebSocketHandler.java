@@ -12,7 +12,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import com.infiniteautomation.mango.rest.latest.model.RestModelMapper;
-import com.infiniteautomation.mango.rest.latest.model.event.AbstractEventTypeModel;
+import com.infiniteautomation.mango.rest.latest.model.event.AbstractEventTypeWithoutSourcesModel;
 import com.infiniteautomation.mango.rest.latest.model.event.handlers.AbstractEventHandlerModel;
 import com.infiniteautomation.mango.rest.latest.websocket.DaoNotificationWebSocketHandler;
 import com.infiniteautomation.mango.rest.latest.websocket.WebSocketMapping;
@@ -36,10 +36,10 @@ public class EventHandlerWebSocketHandler<T extends AbstractEventHandlerVO> exte
         this.service = service;
         //Map the event types into the model
         this.map = (vo, user) -> {
-            List<AbstractEventTypeModel<?,?, ?>> eventTypes = null;
+            List<AbstractEventTypeWithoutSourcesModel<?>> eventTypes = null;
             if(vo.getEventTypes() != null) {
                 eventTypes = vo.getEventTypes().stream().map(type -> {
-                    return (AbstractEventTypeModel<?,?, ?>) modelMapper.map(type, AbstractEventTypeModel.class, user);
+                    return (AbstractEventTypeWithoutSourcesModel<?>) modelMapper.map(type, AbstractEventTypeWithoutSourcesModel.class, user);
                 }).collect(Collectors.toList());
             }
             @SuppressWarnings("unchecked")

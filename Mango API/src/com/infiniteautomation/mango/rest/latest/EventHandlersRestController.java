@@ -34,7 +34,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.infiniteautomation.mango.rest.latest.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.latest.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.latest.model.StreamedVORqlQueryWithTotal;
-import com.infiniteautomation.mango.rest.latest.model.event.AbstractEventTypeModel;
+import com.infiniteautomation.mango.rest.latest.model.event.AbstractEventTypeWithoutSourcesModel;
 import com.infiniteautomation.mango.rest.latest.model.event.handlers.AbstractEventHandlerModel;
 import com.infiniteautomation.mango.rest.latest.model.javascript.MangoJavaScriptModel;
 import com.infiniteautomation.mango.rest.latest.model.javascript.MangoJavaScriptResultModel;
@@ -89,10 +89,10 @@ public class EventHandlersRestController {
 
         //Map the event types into the model
         this.map = (vo, user) -> {
-            List<AbstractEventTypeModel<?,?, ?>> eventTypes = null;
+            List<AbstractEventTypeWithoutSourcesModel<?>> eventTypes = null;
             if(vo.getEventTypes() != null) {
                 eventTypes = vo.getEventTypes().stream().map(type -> {
-                    return (AbstractEventTypeModel<?,?, ?>) modelMapper.map(type, AbstractEventTypeModel.class, user);
+                    return (AbstractEventTypeWithoutSourcesModel<?>) modelMapper.map(type, AbstractEventTypeWithoutSourcesModel.class, user);
                 }).collect(Collectors.toList());
             }
             @SuppressWarnings("unchecked")

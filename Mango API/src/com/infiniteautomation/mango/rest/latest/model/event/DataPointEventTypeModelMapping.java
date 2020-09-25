@@ -62,4 +62,5 @@ public class DataPointEventTypeModelMapping implements RestModelJacksonMapping<D
     public String getTypeName() {
         return EventType.EventTypeNames.DATA_POINT;
     }
+
 }

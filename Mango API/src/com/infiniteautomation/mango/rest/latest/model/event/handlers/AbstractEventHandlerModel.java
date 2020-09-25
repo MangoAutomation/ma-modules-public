@@ -9,7 +9,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.infiniteautomation.mango.permission.MangoPermission;
 import com.infiniteautomation.mango.rest.latest.model.AbstractVoModel;
-import com.infiniteautomation.mango.rest.latest.model.event.AbstractEventTypeModel;
+import com.infiniteautomation.mango.rest.latest.model.event.AbstractEventTypeWithoutSourcesModel;
 import com.infiniteautomation.mango.rest.latest.model.permissions.MangoPermissionModel;
 import com.serotonin.m2m2.rt.event.type.EventType;
 import com.serotonin.m2m2.vo.event.AbstractEventHandlerVO;
@@ -24,7 +24,7 @@ public abstract class AbstractEventHandlerModel<T extends AbstractEventHandlerVO
     public static final String HANDLER_TYPE = "handlerType";
 
     private boolean disabled;
-    private List<AbstractEventTypeModel<?,?, ?>> eventTypes;
+    private List<AbstractEventTypeWithoutSourcesModel<?>> eventTypes;
     protected MangoPermissionModel readPermission;
     protected MangoPermissionModel editPermission;
 
@@ -49,17 +49,16 @@ public abstract class AbstractEventHandlerModel<T extends AbstractEventHandlerVO
     public void setDisabled(boolean disabled) {
         this.disabled = disabled;
     }
-
     /**
      * @return the eventTypes
      */
-    public List<AbstractEventTypeModel<?,?, ?>> getEventTypes() {
+    public List<AbstractEventTypeWithoutSourcesModel<?>> getEventTypes() {
         return eventTypes;
     }
     /**
      * @param eventTypes the eventTypes to set
      */
-    public void setEventTypes(List<AbstractEventTypeModel<?,?, ?>> eventTypes) {
+    public void setEventTypes(List<AbstractEventTypeWithoutSourcesModel<?>> eventTypes) {
         this.eventTypes = eventTypes;
     }
 
@@ -93,7 +92,7 @@ public abstract class AbstractEventHandlerModel<T extends AbstractEventHandlerVO
         vo.setDisabled(disabled);
         if(eventTypes != null) {
             List<EventType> types = new ArrayList<>();
-            for(AbstractEventTypeModel<?,?, ?> etm : eventTypes) {
+            for(AbstractEventTypeWithoutSourcesModel<?> etm : eventTypes) {
                 types.add(etm.toVO());
             }
             vo.setEventTypes(types);
