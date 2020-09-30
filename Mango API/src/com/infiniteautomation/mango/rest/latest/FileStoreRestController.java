@@ -112,7 +112,6 @@ public class FileStoreRestController extends AbstractMangoRestController {
                 }
 
                 Path newFile = findUniqueFileName(outputDirectory.getAbsolutePath(), filename, overwrite);
-                Files.createDirectories(newFile.getParent());
 
                 try (OutputStream output = Files.newOutputStream(newFile)) {
                     try (InputStream input = file.getInputStream()) {
