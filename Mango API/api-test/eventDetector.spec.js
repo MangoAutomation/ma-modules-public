@@ -920,7 +920,7 @@ describe('Event detector service', function() {
                 assert.strictEqual(msg.payload.originalXid, originalXid);
                 gotUpdateEventDeferred.resolve();
               }else if(msg.payload.action === 'delete'){
-                assert.strictEqual(msg.payload.object.xid, ed.xid);
+                assert.strictEqual(msg.payload.xid, ed.xid);
                 assert.strictEqual(msg.payload.originalXid, null);
                 ws.close();
                 gotDeleteEventDeferred.resolve();

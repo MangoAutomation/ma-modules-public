@@ -494,7 +494,7 @@ describe('Mailing lists', function() {
                     const msg = JSON.parse(msgStr);
                     if(msg.payload.action === 'delete') {
                         assert.strictEqual(msg.status, 'OK');
-                        assert.strictEqual(msg.payload.object.xid, addressMailingList.xid);
+                        assert.strictEqual(msg.payload.xid, addressMailingList.xid);
                         listUpdatedDeferred.resolve();   
                     }
                 }catch(e){

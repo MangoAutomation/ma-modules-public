@@ -440,7 +440,7 @@ describe('Event handlers', function() {
                     const msg = JSON.parse(msgStr);
                     assert.strictEqual(msg.status, 'OK');
                     assert.strictEqual(msg.payload.action, 'delete');
-                    assert.strictEqual(msg.payload.object.xid, testContext.pointValueSetPointEventHandler.xid);
+                    assert.strictEqual(msg.payload.xid, testContext.pointValueSetPointEventHandler.xid);
                     listUpdatedDeferred.resolve();   
                 }catch(e){
                     listUpdatedDeferred.reject(e);
