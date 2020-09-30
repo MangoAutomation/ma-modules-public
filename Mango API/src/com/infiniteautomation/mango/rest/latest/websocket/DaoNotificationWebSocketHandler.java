@@ -4,14 +4,17 @@
  */
 package com.infiniteautomation.mango.rest.latest.websocket;
 
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.web.socket.WebSocketSession;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.infiniteautomation.mango.spring.events.DaoEvent;
 import com.infiniteautomation.mango.spring.events.DaoEventType;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.AbstractBasicVO;
+import com.serotonin.m2m2.vo.AbstractVO;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
-import org.springframework.web.socket.WebSocketSession;
 
 /**
  * @author Jared Wiltshire
@@ -105,12 +108,26 @@ public abstract class DaoNotificationWebSocketHandler<T extends AbstractBasicVO>
     }
 
     protected Object createNotification(String action, T vo, T originalVo, PermissionHolder user) {
-        Object model = createModel(vo, user);
-        if (model == null) {
-            return null;
-        }
+        Integer id = (vo instanceof AbstractBasicVO) ? ((AbstractBasicVO)vo).getId() : null;
+        String xid = (vo instanceof AbstractVO) ? ((AbstractVO)vo).getXid() : null;
+        String originalXid = (originalVo instanceof AbstractVO) ? ((AbstractVO)originalVo).getXid() : null;
 
-        DaoNotificationModel payload = new DaoNotificationModel("create".equals(action) ? "add" : action, model, originalVo);
+        DaoNotificationModel payload;
+        if(StringUtils.equals(action, "delete")) {
+            payload = new DaoNotificationModel(action, id, xid, null, originalXid, null);
+        }else {
+            Object model = createModel(vo, user);
+            if (model == null) {
+                return null;
+            }
+            Object originalModel;
+            if(originalVo == null) {
+                originalModel = null;
+            }else{
+                originalModel = createModel(originalVo, user);
+            }
+            payload = new DaoNotificationModel("create".equals(action) ? "add" : action, id, xid, model, originalXid, originalModel);
+        }
         return new MangoWebSocketResponseModel(MangoWebSocketResponseStatus.OK, payload);
     }
 }

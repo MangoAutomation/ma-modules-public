@@ -5,7 +5,6 @@
 package com.infiniteautomation.mango.rest.latest.websocket;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.serotonin.m2m2.vo.AbstractVO;
 
 /**
  * @author Jared Wiltshire
@@ -16,6 +15,18 @@ public class DaoNotificationModel {
      */
     @JsonProperty
     String action;
+
+    /**
+     * The id of the object
+     */
+    @JsonProperty
+    Integer id;
+
+    /**
+     * The current xid of the object
+     */
+    @JsonProperty
+    String xid;
 
     /**
      * The vo object
@@ -38,15 +49,13 @@ public class DaoNotificationModel {
     public DaoNotificationModel() {
     }
 
-    public DaoNotificationModel(String action, Object object) {
-        this(action, object, null);
-    }
-
-    public DaoNotificationModel(String action, Object object, Object originalObject) {
+    public DaoNotificationModel(String action, Integer id, String xid, Object object, String originalXid, Object originalObject) {
         this.action = action;
+        this.id = id;
+        this.xid = xid;
         this.object = object;
         this.originalObject = originalObject;
-        this.originalXid = (originalObject instanceof AbstractVO) ? ((AbstractVO)originalObject).getXid() : null;
+        this.originalXid = originalXid;
     }
 
     public String getAction() {
@@ -55,6 +64,22 @@ public class DaoNotificationModel {
 
     public void setAction(String action) {
         this.action = action;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public String getXid() {
+        return xid;
+    }
+
+    public void setXid(String xid) {
+        this.xid = xid;
     }
 
     public Object getObject() {
