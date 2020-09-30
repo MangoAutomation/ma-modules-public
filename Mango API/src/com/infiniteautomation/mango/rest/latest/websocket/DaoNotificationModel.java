@@ -40,21 +40,14 @@ public class DaoNotificationModel {
     @JsonProperty
     String originalXid;
 
-    /**
-     * Contains the the object prior to an update
-     */
-    @JsonProperty
-    Object originalObject;
-
     public DaoNotificationModel() {
     }
 
-    public DaoNotificationModel(String action, Integer id, String xid, Object object, String originalXid, Object originalObject) {
+    public DaoNotificationModel(String action, Integer id, String xid, Object object, String originalXid) {
         this.action = action;
         this.id = id;
         this.xid = xid;
         this.object = object;
-        this.originalObject = originalObject;
         this.originalXid = originalXid;
     }
 
@@ -97,13 +90,4 @@ public class DaoNotificationModel {
     public void setOriginalXid(String originalXid) {
         this.originalXid = originalXid;
     }
-
-    public Object getOriginalObject() {
-        return originalObject;
-    }
-
-    public void setOriginalObject(Object originalObject) {
-        this.originalObject = originalObject;
-    }
-
 }

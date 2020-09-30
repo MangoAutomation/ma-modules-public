@@ -114,19 +114,13 @@ public abstract class DaoNotificationWebSocketHandler<T extends AbstractBasicVO>
 
         DaoNotificationModel payload;
         if(StringUtils.equals(action, "delete")) {
-            payload = new DaoNotificationModel(action, id, xid, null, originalXid, null);
+            payload = new DaoNotificationModel(action, id, xid, null, originalXid);
         }else {
             Object model = createModel(vo, user);
             if (model == null) {
                 return null;
             }
-            Object originalModel;
-            if(originalVo == null) {
-                originalModel = null;
-            }else{
-                originalModel = createModel(originalVo, user);
-            }
-            payload = new DaoNotificationModel("create".equals(action) ? "add" : action, id, xid, model, originalXid, originalModel);
+            payload = new DaoNotificationModel("create".equals(action) ? "add" : action, id, xid, model, originalXid);
         }
         return new MangoWebSocketResponseModel(MangoWebSocketResponseStatus.OK, payload);
     }

@@ -11,6 +11,7 @@
 * Add force poll of data source endpoint at PUT /rest/latest/data-sources/force-poll/{xid}
 * Allow querying on data point tags via RQL on the events query endpoint
 * Add endpoint to query event counts into bins of time ranges at POST /events/counts
+* Add id/xid fields to Dao websocket messages
 
 *Version 3.7.0*
 * Upgraded to work with core version 3.7.x
