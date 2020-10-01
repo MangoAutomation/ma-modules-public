@@ -104,7 +104,7 @@ public class EventsRestController {
     @RequestMapping(method = RequestMethod.GET, value = "/active")
     public List<EventInstanceModel> getActive(@AuthenticationPrincipal User user) {
         List<EventInstance> events = service.getAllActiveUserEvents();
-        return events.stream().map(s -> modelMapper.map(events, EventInstanceModel.class, user)).collect(Collectors.toList());
+        return events.stream().map(e -> modelMapper.map(e, EventInstanceModel.class, user)).collect(Collectors.toList());
     }
 
     @ApiOperation(
