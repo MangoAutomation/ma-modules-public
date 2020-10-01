@@ -16,6 +16,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.env.Environment;
 import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.http.MediaType;
@@ -81,6 +82,7 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
     final ObjectMapper mapper;
     final List<HandlerMethodArgumentResolver> handlerMethodArgumentResolvers;
     final List<HttpMessageConverter<?>> converters;
+    final Environment env;
 
     /**
      * Should be supplied by
@@ -93,11 +95,13 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
             @Qualifier(MangoRuntimeContextConfiguration.REST_OBJECT_MAPPER_NAME) ObjectMapper mapper,
             RestModelMapper modelMapper,
             List<HandlerMethodArgumentResolver> handlerMethodArgumentResolvers,
-            AsyncTaskExecutor asyncTaskExecutor) {
+            AsyncTaskExecutor asyncTaskExecutor,
+            Environment env) {
         this.mapper = mapper;
         this.handlerMethodArgumentResolvers = handlerMethodArgumentResolvers;
         this.converters = new ArrayList<>();
         this.asyncTaskExecutor = asyncTaskExecutor;
+        this.env = env;
 
         mapper
         .registerModule(new MangoRestJacksonModule())
@@ -213,5 +217,6 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
     @Override
     public void configureAsyncSupport(AsyncSupportConfigurer configurer) {
         configurer.setTaskExecutor(asyncTaskExecutor);
+        configurer.setDefaultTimeout(env.getProperty("web.async.timeout", Long.TYPE, 120000L));
     }
 }
