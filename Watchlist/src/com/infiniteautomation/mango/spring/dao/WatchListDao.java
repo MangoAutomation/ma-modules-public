@@ -46,7 +46,6 @@ import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.AbstractVoDao;
 import com.serotonin.m2m2.db.dao.DataPointDao;
-import com.serotonin.m2m2.db.dao.PermissionDao;
 import com.serotonin.m2m2.db.dao.tables.MintermMappingTable;
 import com.serotonin.m2m2.db.dao.tables.PermissionMappingTable;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -69,22 +68,19 @@ public class WatchListDao extends AbstractVoDao<WatchListVO, WatchListTableDefin
     private final DataPointDao dataPointDao;
     private final UserTableDefinition userTable;
     private final PermissionService permissionService;
-    private final PermissionDao permissionDao;
 
     @Autowired
     private WatchListDao(WatchListTableDefinition table, DataPointDao dataPointDao,
             UserTableDefinition userTable,
             @Qualifier(MangoRuntimeContextConfiguration.DAO_OBJECT_MAPPER_NAME)ObjectMapper mapper,
             ApplicationEventPublisher publisher,
-            PermissionService permissionService,
-            PermissionDao permissionDao) {
+            PermissionService permissionService) {
         super(AuditEvent.TYPE_NAME, table,
                 new TranslatableMessage("internal.monitor.WATCHLIST_COUNT"),
                 mapper, publisher);
         this.dataPointDao = dataPointDao;
         this.userTable = userTable;
         this.permissionService = permissionService;
-        this.permissionDao = permissionDao;
     }
 
     /**
@@ -148,8 +144,11 @@ public class WatchListDao extends AbstractVoDao<WatchListVO, WatchListTableDefin
 
     @Override
     public void savePreRelationalData(WatchListVO existing, WatchListVO vo) {
-        permissionDao.permissionId(vo.getReadPermission());
-        permissionDao.permissionId(vo.getEditPermission());
+        MangoPermission readPermission = permissionService.findOrCreate(vo.getReadPermission().getRoles());
+        vo.setReadPermission(readPermission);
+
+        MangoPermission editPermission = permissionService.findOrCreate(vo.getEditPermission().getRoles());
+        vo.setEditPermission(editPermission);
     }
 
     @Override
@@ -162,10 +161,10 @@ public class WatchListDao extends AbstractVoDao<WatchListVO, WatchListTableDefin
         }
         if(existing != null) {
             if(!existing.getReadPermission().equals(vo.getReadPermission())) {
-                permissionDao.permissionDeleted(existing.getReadPermission());
+                permissionService.permissionDeleted(existing.getReadPermission());
             }
             if(!existing.getEditPermission().equals(vo.getEditPermission())) {
-                permissionDao.permissionDeleted(existing.getEditPermission());
+                permissionService.permissionDeleted(existing.getEditPermission());
             }
         }
     }
@@ -173,14 +172,14 @@ public class WatchListDao extends AbstractVoDao<WatchListVO, WatchListTableDefin
     @Override
     public void loadRelationalData(WatchListVO vo) {
         //Populate permissions
-        vo.setReadPermission(permissionDao.get(vo.getReadPermission().getId()));
-        vo.setEditPermission(permissionDao.get(vo.getEditPermission().getId()));
+        vo.setReadPermission(permissionService.get(vo.getReadPermission().getId()));
+        vo.setEditPermission(permissionService.get(vo.getEditPermission().getId()));
     }
 
     @Override
     public void deletePostRelationalData(WatchListVO vo) {
         //Clean permissions
-        permissionDao.permissionDeleted(vo.getReadPermission(), vo.getEditPermission());
+        permissionService.permissionDeleted(vo.getReadPermission(), vo.getEditPermission());
     }
 
     @Override

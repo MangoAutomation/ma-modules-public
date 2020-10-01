@@ -22,6 +22,7 @@ import org.springframework.stereotype.Repository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.infiniteautomation.mango.permission.MangoPermission;
 import com.infiniteautomation.mango.spring.MangoRuntimeContextConfiguration;
+import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.LazyInitSupplier;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.db.MappedRowCallback;
@@ -29,7 +30,6 @@ import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.AbstractVoDao;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
-import com.serotonin.m2m2.db.dao.PermissionDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.vo.DataPointVO;
@@ -49,7 +49,7 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
 
     private final DataPointDao dataPointDao;
     private final DataSourceDao dataSourceDao;
-    private final PermissionDao permissionDao;
+    private final PermissionService permissionService;
 
     private static final LazyInitSupplier<MaintenanceEventDao> springInstance = new LazyInitSupplier<>(() -> {
         Object o = Common.getRuntimeContext().getBean(MaintenanceEventDao.class);
@@ -64,13 +64,13 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
             DataPointDao dataPointDao, DataSourceDao dataSourceDao,
             @Qualifier(MangoRuntimeContextConfiguration.DAO_OBJECT_MAPPER_NAME)ObjectMapper mapper,
             ApplicationEventPublisher publisher,
-            PermissionDao permissionDao) {
+            PermissionService permissionService) {
         super(AuditEvent.TYPE_NAME,
                 table, new TranslatableMessage("header.maintenanceEvents"),
                 mapper, publisher);
         this.dataPointDao = dataPointDao;
         this.dataSourceDao = dataSourceDao;
-        this.permissionDao = permissionDao;
+        this.permissionService = permissionService;
         SELECT_POINTS = dataPointDao.getJoinedSelectQuery().getSQL() + " JOIN maintenanceEventDataPoints mep ON mep.dataPointId = dp.id WHERE mep.maintenanceEventId=?";
         SELECT_DATA_SOURCES = dataSourceDao.getJoinedSelectQuery().getSQL() + " JOIN maintenanceEventDataSources med ON med.dataSourceId = ds.id WHERE med.maintenanceEventId=?";
     }
@@ -98,7 +98,8 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
 
     @Override
     public void savePreRelationalData(MaintenanceEventVO existing, MaintenanceEventVO vo) {
-        permissionDao.permissionId(vo.getTogglePermission());
+        MangoPermission togglePermission = permissionService.findOrCreate(vo.getTogglePermission().getRoles());
+        vo.setTogglePermission(togglePermission);
     }
 
     @Override
@@ -113,7 +114,7 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
             ejt.update(DELETE_DATA_POINT_IDS, new Object[] {vo.getId()});
             ejt.batchUpdate(INSERT_DATA_POINT_IDS, new InsertDataPoints(vo));
             if(!existing.getTogglePermission().equals(vo.getTogglePermission())) {
-                permissionDao.permissionDeleted(existing.getTogglePermission());
+                permissionService.permissionDeleted(existing.getTogglePermission());
             }
         }
     }
@@ -123,13 +124,13 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
         vo.setDataPoints(queryForList(SELECT_POINT_IDS, new Object[] {vo.getId()}, Integer.class));
         vo.setDataSources(queryForList(SELECT_DATA_SOURCE_IDS, new Object[] {vo.getId()}, Integer.class));
         //Populate permissions
-        vo.setTogglePermission(permissionDao.get(vo.getTogglePermission().getId()));
+        vo.setTogglePermission(permissionService.get(vo.getTogglePermission().getId()));
     }
 
     @Override
     public void deletePostRelationalData(MaintenanceEventVO vo) {
         //Clean permissions
-        permissionDao.permissionDeleted(vo.getTogglePermission());
+        permissionService.permissionDeleted(vo.getTogglePermission());
     }
 
     /**
