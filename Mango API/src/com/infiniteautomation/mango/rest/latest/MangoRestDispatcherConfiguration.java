@@ -10,7 +10,6 @@ import java.util.TimeZone;
 
 import javax.annotation.PostConstruct;
 
-import com.infiniteautomation.mango.webapp.RestWebApplicationInitializer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -57,6 +56,7 @@ import com.infiniteautomation.mango.rest.latest.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.latest.util.MangoRestTemporaryResourceContainer;
 import com.infiniteautomation.mango.spring.MangoCommonConfiguration;
 import com.infiniteautomation.mango.spring.MangoRuntimeContextConfiguration;
+import com.infiniteautomation.mango.webapp.RestWebApplicationInitializer;
 import com.serotonin.m2m2.web.MediaTypes;
 import com.serotonin.m2m2.web.mvc.spring.security.MangoMethodSecurityConfiguration;
 
@@ -64,7 +64,7 @@ import com.serotonin.m2m2.web.mvc.spring.security.MangoMethodSecurityConfigurati
  * @author Terry Packer
  *
  */
-@Configuration("MangoV2RestDispatcherConfiguration")
+@Configuration
 @Import({MangoCommonConfiguration.class, MangoMethodSecurityConfiguration.class, MangoWebSocketConfiguration.class})
 @EnableWebMvc
 @ComponentScan(basePackages = { "com.infiniteautomation.mango.rest.latest" }, excludeFilters = {})
