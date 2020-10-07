@@ -31,7 +31,7 @@ public class SchemaDefinition extends DatabaseSchemaDefinition {
 
     @Override
     public int getDatabaseSchemaVersion() {
-        return 4;
+        return 5;
     }
 
 }

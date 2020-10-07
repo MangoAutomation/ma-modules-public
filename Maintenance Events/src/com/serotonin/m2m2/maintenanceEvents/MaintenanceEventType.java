@@ -5,7 +5,10 @@
 package com.serotonin.m2m2.maintenanceEvents;
 
 import java.io.IOException;
+import java.util.Map;
 
+import com.infiniteautomation.mango.permission.MangoPermission;
+import com.infiniteautomation.mango.permission.MangoPermission.MangoPermissionBuilder;
 import com.infiniteautomation.mango.spring.service.DataPointService;
 import com.infiniteautomation.mango.spring.service.DataSourceService;
 import com.infiniteautomation.mango.spring.service.PermissionService;
@@ -127,5 +130,39 @@ public class MaintenanceEventType extends EventType {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public MangoPermission getEventPermission(Map<String, Object> context, PermissionService service) {
+        DataSourceService dataSourceService = Common.getBean(DataSourceService.class);
+        DataPointService dataPointService = Common.getBean(DataPointService.class);
+        MaintenanceEventsService maintenanceEventService = Common.getBean(MaintenanceEventsService.class);
+
+        return maintenanceEventService.getPermissionService().runAsSystemAdmin(() -> {
+            MangoPermissionBuilder builder = MangoPermission.builder();
+            try {
+                MaintenanceEventVO vo = maintenanceEventService.get(maintenanceId);
+                try {
+                    for(int dsId : vo.getDataSources()) {
+                        MangoPermission read = dataSourceService.getReadPermission(dsId);
+                        read.getRoles().stream().forEach(minterm -> builder.minterm(minterm.stream()));
+                    }
+                }catch(NotFoundException e) {
+                    //Ignore this item
+                }
+                try {
+                    for(int dpId : vo.getDataPoints()) {
+                        MangoPermission read = dataPointService.getReadPermission(dpId);
+                        read.getRoles().stream().forEach(minterm -> builder.minterm(minterm.stream()));
+                    }
+                }catch(NotFoundException e) {
+                    //Ignore this item
+                }
+            }catch(NotFoundException e) {
+                //Ignore all of it
+            }
+            return builder.build();
+        });
+
     }
 }
