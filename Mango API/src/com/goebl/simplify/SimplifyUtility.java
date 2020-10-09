@@ -15,12 +15,12 @@ import com.serotonin.log.LogStopWatch;
  * @author Terry Packer
  */
 public class SimplifyUtility {
-    
+
     /**
-     * Simplify according to the requirements.  Either reduce the list to with 10% of 
-     *  desired target via Newton's Method or use a tolerance in one go. Optionally pre/post 
+     * Simplify according to the requirements.  Either reduce the list to with 10% of
+     *  desired target via Newton's Method or use a tolerance in one go. Optionally pre/post
      *  process the data to remove !Point.isProcessable() values and add them back in.
-     * 
+     *
      * @param simplifyTolerance
      * @param simplifyTarget
      * @param simplifyHighQuality
@@ -35,7 +35,7 @@ public class SimplifyUtility {
             boolean prePostProcess,
             List<T> list) {
         LogStopWatch logStopWatch = new LogStopWatch();
-        
+
         //PreProcess by removing all invalid values (to add back in at the end)
         List<T> unprocessable = new ArrayList<>();
         if(prePostProcess) {
@@ -57,7 +57,7 @@ public class SimplifyUtility {
                 //Compute target bounds as 10% of target
                 int lowerTarget = simplifyTarget - (int)(simplifyTarget * 0.1);
                 int upperTarget = simplifyTarget + (int)(simplifyTarget * 0.1);
-                
+
                 //Compute tolerance bounds and initial tolerance
                 Double max = Double.MIN_VALUE;
                 Double min = Double.MAX_VALUE;
@@ -71,36 +71,36 @@ public class SimplifyUtility {
                 double tolerance = difference / 20d;
                 double topBound = difference;
                 double bottomBound = 0;
-                
+
                 //Determine max iterations we can allow
                 int maxIterations = 100;
                 int iteration = 1;
-                
+
                 Simplify<T> simplify = new Simplify<T>();
                 simplified = simplify.simplify(list, tolerance, simplifyHighQuality);
                 List<T> best = simplified;
                 while(simplified.size() < lowerTarget || simplified.size() > upperTarget) {
-                    
+
                     if (simplified.size() > simplifyTarget) {
                         bottomBound = tolerance;
                     } else {
                         topBound = tolerance;
                     }
-                    
+
                     //Adjust tolerance
                     tolerance = bottomBound + (topBound - bottomBound) / 2.0d;
                     simplify = new Simplify<T>();
                     simplified = simplify.simplify(list, tolerance, simplifyHighQuality);
-                    
+
                     //Keep our best effort
                     if(Math.abs(simplifyTarget - simplified.size()) < Math.abs(simplifyTarget - best.size()))
                         best = simplified;
-    
+
                     if(iteration > maxIterations) {
                         simplified = best;
                         break;
                     }
-    
+
                     iteration++;
                 }
             }else {
@@ -119,18 +119,20 @@ public class SimplifyUtility {
                 }
             }
         }
-        
+
         //Post Process, add back in values
         if(prePostProcess) {
             simplified.addAll(unprocessable);
             Collections.sort(simplified);
         }
-        
+
         if(simplifyTolerance != null)
-            logStopWatch.stop("Finished Simplify, tolerance: " + simplifyTolerance);
-        else
-            logStopWatch.stop("Finished Simplify, target: " + simplifyTarget + " actual " + simplified.size());
+            logStopWatch.stop(() -> "Finished Simplify, tolerance: " + simplifyTolerance);
+        else {
+            int size = simplified.size();
+            logStopWatch.stop(() -> "Finished Simplify, target: " + simplifyTarget + " actual " + size);
+        }
         return simplified;
     }
-    
+
 }
