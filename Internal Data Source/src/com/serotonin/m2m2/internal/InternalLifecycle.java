@@ -10,7 +10,6 @@ import java.util.Iterator;
 import java.util.Map;
 
 import javax.measure.unit.NonSI;
-import javax.measure.unit.SI;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -21,6 +20,7 @@ import com.infiniteautomation.mango.spring.components.DiskUsageMonitoringService
 import com.infiniteautomation.mango.spring.components.ServerMonitoringService;
 import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.Common.Rollups;
 import com.serotonin.m2m2.Common.TimePeriods;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.IMangoLifecycle;
@@ -91,8 +91,10 @@ public class InternalLifecycle extends LifecycleDefinition {
     public static final String NOSQL_DATABASE_PARTITION_USABLE_SPACE_POINT_XID = "internal_mango_no_sql_db_usable_space";
     public static final String MA_HOME_PARTITION_TOTAL_SPACE_XID = "internal_mango_disk_total_space";
     public static final String MA_HOME_PARTITION_USED_SPACE_XID = "internal_mango_disk_used_space";
+    public static final String MA_HOME_PARTITION_USABLE_SPACE_XID = "internal_mango_disk_usable_space";
     public static final String JVM_USED_MEMORY_XID = "internal_jvm_used_memory";
     public static final String JVM_MAX_MEMORY_XID = "internal_jvm_max_memory";
+    public static final String JVM_FREE_MEMORY_XID = "internal_jvm_free_memory";
     public static final String CPU_SYSTEM_LOAD_XID = "internal_cpu_system_load";
     public static final String CPU_PROCESS_LOAD_XID = "internal_cpu_process_load";
 
@@ -146,8 +148,10 @@ public class InternalLifecycle extends LifecycleDefinition {
         monitors.put(NOSQL_DATABASE_PARTITION_USABLE_SPACE_POINT_XID, Common.MONITORED_VALUES.getMonitor(DiskUsageMonitoringService.NOSQL_PARTITION_USABLE_SPACE));
         monitors.put(MA_HOME_PARTITION_TOTAL_SPACE_XID, Common.MONITORED_VALUES.getMonitor(DiskUsageMonitoringService.MA_HOME_PARTITION_TOTAL_SPACE));
         monitors.put(MA_HOME_PARTITION_USED_SPACE_XID, Common.MONITORED_VALUES.getMonitor(DiskUsageMonitoringService.MA_HOME_PARTITION_USED_SPACE));
+        monitors.put(MA_HOME_PARTITION_USABLE_SPACE_XID, Common.MONITORED_VALUES.getMonitor(DiskUsageMonitoringService.MA_HOME_PARTITION_USABLE_SPACE));
         monitors.put(JVM_USED_MEMORY_XID, Common.MONITORED_VALUES.getMonitor(ServerMonitoringService.USED_MEMORY_ID));
-        monitors.put(JVM_MAX_MEMORY_XID, Common.MONITORED_VALUES.getMonitor(ServerMonitoringService.FREE_MEMORY_ID));
+        monitors.put(JVM_MAX_MEMORY_XID, Common.MONITORED_VALUES.getMonitor(ServerMonitoringService.MAX_MEMORY_ID));
+        monitors.put(JVM_FREE_MEMORY_XID, Common.MONITORED_VALUES.getMonitor(ServerMonitoringService.FREE_MEMORY_ID));
         monitors.put(CPU_SYSTEM_LOAD_XID, Common.MONITORED_VALUES.getMonitor(ServerMonitoringService.OS_CPU_LOAD_SYSTEM_ID));
         monitors.put(CPU_PROCESS_LOAD_XID, Common.MONITORED_VALUES.getMonitor(ServerMonitoringService.OS_CPU_LOAD_PROCESS_ID));
 
@@ -220,35 +224,39 @@ public class InternalLifecycle extends LifecycleDefinition {
                     dp.setChartColour("");
 
                     if (pl.getDataTypeId() == DataTypes.NUMERIC) {
+                        dp.setRollup(Rollups.AVERAGE);
                         switch(xid) {
                             case SQL_DATABASE_PARTITION_USABLE_SPACE_POINT_XID:
                             case NOSQL_DATABASE_PARTITION_USABLE_SPACE_POINT_XID:
                             case MA_HOME_PARTITION_TOTAL_SPACE_XID:
                             case MA_HOME_PARTITION_USED_SPACE_XID:
+                            case MA_HOME_PARTITION_USABLE_SPACE_XID:
                             case SQL_DATABASE_SIZE_POINT_XID:
                             case NOSQL_DATABASE_SIZE_POINT_XID:
+                                dp.setUnit(Common.GIBI(NonSI.BYTE));
                                 dp.setLoggingType(LoggingTypes.ON_CHANGE);
-                                dp.setTextRenderer(new AnalogRenderer("0.0", "GB", false));
+                                dp.setTextRenderer(new AnalogRenderer("0.0", " GiB", false));
                                 break;
                             case CPU_SYSTEM_LOAD_XID:
                             case CPU_PROCESS_LOAD_XID:
                                 dp.setLoggingType(LoggingTypes.ON_CHANGE);
-                                dp.setTextRenderer(new AnalogRenderer("0", "", false));
+                                dp.setTextRenderer(new AnalogRenderer("0", " %", false));
                                 break;
                             case JVM_USED_MEMORY_XID:
                             case JVM_MAX_MEMORY_XID:
-                                dp.setUnit(NonSI.BYTE);
-                                dp.setRenderedUnit(SI.MEGA(NonSI.BYTE));
+                            case JVM_FREE_MEMORY_XID:
+                                dp.setUnit(Common.MEBI(NonSI.BYTE));
                                 dp.setLoggingType(LoggingTypes.ON_CHANGE);
-                                dp.setTextRenderer(new AnalogRenderer("0", "MB", false));
+                                dp.setTextRenderer(new AnalogRenderer("0", " MiB", false));
                                 break;
                             case SYSTEM_UPTIME_POINT_XID:
+                                dp.setUnit(NonSI.HOUR);
                                 //This value changes often, log interval instance
                                 dp.setLoggingType(LoggingTypes.INTERVAL);
                                 dp.setIntervalLoggingPeriodType(Common.TimePeriods.MINUTES);
                                 dp.setIntervalLoggingPeriod(5);
                                 dp.setIntervalLoggingType(DataPointVO.IntervalLoggingTypes.INSTANT);
-                                dp.setTextRenderer(new AnalogRenderer("0.0", "", true));
+                                dp.setTextRenderer(new AnalogRenderer("0.0", " hrs", false));
                                 break;
                             default:
                                 //If we are numeric then we want to log on change
