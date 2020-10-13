@@ -133,15 +133,6 @@ public class WatchListDao extends AbstractVoDao<WatchListVO, WatchListTableDefin
         });
     }
 
-    /*
-     * Override to use select distinct due to permissions joins
-     */
-    @Override
-    public SelectJoinStep<Record> getSelectQuery(List<Field<?>> fields) {
-        return this.create.selectDistinct(fields)
-                .from(this.table.getTableAsAlias());
-    }
-
     @Override
     public void savePreRelationalData(WatchListVO existing, WatchListVO vo) {
         MangoPermission readPermission = permissionService.findOrCreate(vo.getReadPermission().getRoles());
