@@ -29,7 +29,6 @@ import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import com.infiniteautomation.mango.permission.MangoPermission;
-import com.infiniteautomation.mango.permission.MangoPermission.MangoPermissionBuilder;
 import com.serotonin.db.spring.ExtendedJdbcTemplate;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.upgrade.DBUpgrade;
@@ -51,9 +50,7 @@ public class Upgrade4 extends DBUpgrade implements PermissionMigration {
     private final Map<Integer, Integer> maintenanceEventPermissionMap = new HashMap<>();
     private final Map<Integer, MangoPermission> permissionMap = new HashMap<>();
 
-    private Map<Integer, List<Integer>> eventDataPointsMap = new HashMap<>();
     private Map<Integer, MangoPermission> dataPointPermissionMap = new HashMap<>();
-    private Map<Integer, List<Integer>> eventDataSourcesMap = new HashMap<>();
     private Map<Integer, MangoPermission> dataSourcePermissionMap = new HashMap<>();
 
     private final String SELECT_POINT_IDS = "SELECT dataPointId FROM maintenanceEventDataPoints WHERE maintenanceEventId=?";
@@ -77,7 +74,7 @@ public class Upgrade4 extends DBUpgrade implements PermissionMigration {
                 //Find the permission id for this me
                 Integer permissionId = maintenanceEventPermissionMap.computeIfAbsent(voId, (k) -> {
                     //Build the permission for this event
-                    MangoPermissionBuilder builder = MangoPermission.builder();
+                    Set<Role> allRequired = new HashSet<>();
 
                     List<Integer> dataPointIds = queryForList(SELECT_POINT_IDS, new Object[] {k}, Integer.class);
                     for(Integer dpId : dataPointIds) {
@@ -97,7 +94,7 @@ public class Upgrade4 extends DBUpgrade implements PermissionMigration {
                             }
                         });
 
-                        dataPointPermission.getRoles().stream().forEach(minterm -> builder.minterm(minterm.stream()));
+                        dataPointPermission.getRoles().stream().forEach(minterm -> allRequired.addAll(minterm));
                     }
 
                     List<Integer> dataSourceIds = queryForList(SELECT_DATA_SOURCE_IDS, new Object[] {k}, Integer.class);
@@ -118,12 +115,9 @@ public class Upgrade4 extends DBUpgrade implements PermissionMigration {
                             }
                         });
 
-                        dataSourcePermission.getRoles().stream().forEach(minterm -> builder.minterm(minterm.stream()));
+                        dataSourcePermission.getRoles().stream().forEach(minterm -> allRequired.addAll(minterm));
                     }
-
-
-                    //TODO return the new permission id
-                    return getOrCreatePermission(builder.build()).getId();
+                    return getOrCreatePermission(MangoPermission.requireAllRoles(allRequired)).getId();
                 });
                 ejt.update("UPDATE events SET readPermissionId=? WHERE id=?", permissionId, eventId);
             });
