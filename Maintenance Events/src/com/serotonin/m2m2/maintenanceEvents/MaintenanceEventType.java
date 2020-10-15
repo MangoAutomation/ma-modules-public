@@ -160,7 +160,11 @@ public class MaintenanceEventType extends EventType {
             }catch(NotFoundException e) {
                 //Ignore all of it
             }
-            return MangoPermission.requireAllRoles(allRequired);
+            if(allRequired.size() == 0) {
+                return MangoPermission.superadminOnly();
+            }else {
+                return MangoPermission.requireAllRoles(allRequired);
+            }
         });
 
     }

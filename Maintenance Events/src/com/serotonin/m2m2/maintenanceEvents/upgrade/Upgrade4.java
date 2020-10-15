@@ -117,7 +117,13 @@ public class Upgrade4 extends DBUpgrade implements PermissionMigration {
 
                         dataSourcePermission.getRoles().stream().forEach(minterm -> allRequired.addAll(minterm));
                     }
-                    return getOrCreatePermission(MangoPermission.requireAllRoles(allRequired)).getId();
+                    MangoPermission permission;
+                    if(allRequired.size() == 0) {
+                        permission = MangoPermission.superadminOnly();
+                    }else {
+                        permission = MangoPermission.requireAllRoles(allRequired);
+                    }
+                    return getOrCreatePermission(permission).getId();
                 });
                 ejt.update("UPDATE events SET readPermissionId=? WHERE id=?", permissionId, eventId);
             });
