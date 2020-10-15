@@ -220,6 +220,7 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
                 }
 
                 rt = Common.runtimeManager.getDataPoint(vo.getId()); //Set us up
+                vo = rt.getVO();
 
                 if (this.eventTypes.contains(PointValueEventType.INITIALIZE)) {
                     sendNotification(PointValueEventType.INITIALIZE, null);

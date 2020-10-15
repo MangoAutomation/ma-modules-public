@@ -14,7 +14,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
@@ -60,6 +59,7 @@ import com.serotonin.m2m2.rt.event.UserEventLevelSummary;
 import com.serotonin.m2m2.rt.event.type.EventType.EventTypeNames;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.EventInstanceVO;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -148,7 +148,7 @@ public class EventsRestController {
 
     @ApiOperation(
             value = "Get event by ID"
-    )
+            )
     @RequestMapping(method = RequestMethod.GET, value = "/{id}")
     public EventInstanceModel getById(
             @ApiParam(value = "Valid Event ID", required = true)
@@ -171,7 +171,7 @@ public class EventsRestController {
 
     @ApiOperation(
             value = "Acknowledge an existing event"
-    )
+            )
     @RequestMapping(method = RequestMethod.PUT, value = "/acknowledge/{id}")
     public ResponseEntity<EventInstanceModel> acknowledgeEvent(
             @PathVariable Integer id,
@@ -191,7 +191,7 @@ public class EventsRestController {
 
     @ApiOperation(
             value = "Acknowledge many existing events"
-    )
+            )
     @RequestMapping(method = RequestMethod.POST, value = "/acknowledge")
     public int acknowledgeManyEvents(
             @RequestBody(required=false) TranslatableMessageModel message,
@@ -302,8 +302,7 @@ public class EventsRestController {
     }
 
     private StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
-        Predicate<EventInstanceVO> filter = service.getPermissionService().hasAdminRole(user) ? null : item -> service.hasReadPermission(user, item);
-        return new StreamedVORqlQueryWithTotal<>(service, rql, null, fieldMap, valueConverters, filter, vo -> map.apply(vo, user));
+        return new StreamedVORqlQueryWithTotal<>(service, rql, null, fieldMap, valueConverters, null, vo -> map.apply(vo, user));
     }
 
     /**

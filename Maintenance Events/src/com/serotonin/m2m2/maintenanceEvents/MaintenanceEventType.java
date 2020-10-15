@@ -5,7 +5,11 @@
 package com.serotonin.m2m2.maintenanceEvents;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
+import com.infiniteautomation.mango.permission.MangoPermission;
 import com.infiniteautomation.mango.spring.service.DataPointService;
 import com.infiniteautomation.mango.spring.service.DataSourceService;
 import com.infiniteautomation.mango.spring.service.PermissionService;
@@ -20,6 +24,7 @@ import com.serotonin.m2m2.rt.event.type.DuplicateHandling;
 import com.serotonin.m2m2.rt.event.type.EventType;
 import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
+import com.serotonin.m2m2.vo.role.Role;
 
 public class MaintenanceEventType extends EventType {
     public static final String TYPE_NAME = "MAINTENANCE";
@@ -111,21 +116,56 @@ public class MaintenanceEventType extends EventType {
 
     @Override
     public boolean hasPermission(PermissionHolder user, PermissionService service) {
-        DataSourceService dataSourceService = Common.getBean(DataSourceService.class);
-        DataPointService dataPointService = Common.getBean(DataPointService.class);
         MaintenanceEventsService maintenanceEventService = Common.getBean(MaintenanceEventsService.class);
-
         try {
             MaintenanceEventVO vo = maintenanceEventService.get(maintenanceId);
             for(int dsId : vo.getDataSources()) {
-                dataSourceService.get(dsId);
+                service.ensureDataSourceReadPermission(user, dsId);
             }
             for(int dpId : vo.getDataPoints()) {
-                dataPointService.get(dpId);
+                service.ensureDataPointReadPermission(user, dpId);
             }
         }catch(NotFoundException | PermissionException e) {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public MangoPermission getEventPermission(Map<String, Object> context, PermissionService service) {
+        DataSourceService dataSourceService = Common.getBean(DataSourceService.class);
+        DataPointService dataPointService = Common.getBean(DataPointService.class);
+        MaintenanceEventsService maintenanceEventService = Common.getBean(MaintenanceEventsService.class);
+
+        return maintenanceEventService.getPermissionService().runAsSystemAdmin(() -> {
+            Set<Role> allRequired = new HashSet<>();
+            try {
+                MaintenanceEventVO vo = maintenanceEventService.get(maintenanceId);
+                try {
+                    for(int dsId : vo.getDataSources()) {
+                        MangoPermission read = dataSourceService.getReadPermission(dsId);
+                        read.getRoles().stream().forEach(minterm -> allRequired.addAll(minterm));
+                    }
+                }catch(NotFoundException e) {
+                    //Ignore this item
+                }
+                try {
+                    for(int dpId : vo.getDataPoints()) {
+                        MangoPermission read = dataPointService.getReadPermission(dpId);
+                        read.getRoles().stream().forEach(minterm -> allRequired.addAll(minterm));
+                    }
+                }catch(NotFoundException e) {
+                    //Ignore this item
+                }
+            }catch(NotFoundException e) {
+                //Ignore all of it
+            }
+            if(allRequired.size() == 0) {
+                return MangoPermission.superadminOnly();
+            }else {
+                return MangoPermission.requireAllRoles(allRequired);
+            }
+        });
+
     }
 }

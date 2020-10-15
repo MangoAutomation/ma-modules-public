@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.infiniteautomation.mango.permission.MangoPermission;
 import com.infiniteautomation.mango.rest.latest.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.latest.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.latest.model.StreamedVORqlQueryWithTotal;
@@ -356,6 +357,12 @@ public class EventHandlersRestController {
         @Override
         public boolean hasPermission(PermissionHolder user, PermissionService service) {
             return true;
+        }
+
+        @Override
+        public MangoPermission getEventPermission(Map<String, Object> context,
+                PermissionService service) {
+            return MangoPermission.superadminOnly();
         }
 
     }
