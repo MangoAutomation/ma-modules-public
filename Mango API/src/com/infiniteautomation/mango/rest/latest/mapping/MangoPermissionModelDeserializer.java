@@ -20,22 +20,19 @@ import com.infiniteautomation.mango.permission.MangoPermission;
 import com.infiniteautomation.mango.rest.latest.model.permissions.MangoPermissionModel;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.db.dao.RoleDao;
 import com.serotonin.m2m2.vo.role.Role;
-import com.serotonin.m2m2.vo.role.RoleVO;
 
 /**
- * TODO AutoWire in RoleDao
  * @author Terry Packer
  */
 public class MangoPermissionModelDeserializer extends StdDeserializer<MangoPermissionModel>{
 
     private static final long serialVersionUID = 1L;
-    private final RoleDao dao;
+    private final PermissionService permissionService;
 
     public MangoPermissionModelDeserializer() {
         super(MangoPermissionModel.class);
-        this.dao = Common.getBean(RoleDao.class);
+        this.permissionService = Common.getBean(PermissionService.class);
     }
 
 
@@ -57,9 +54,9 @@ public class MangoPermissionModelDeserializer extends StdDeserializer<MangoPermi
                 roles.add(innerRoles);
                 if(o instanceof Iterable) {
                     for(String xid : (Iterable<String>)o) {
-                        RoleVO role = dao.getByXid(xid);
+                        Role role = permissionService.getRole(xid);
                         if(role != null) {
-                            innerRoles.add(role.getRole());
+                            innerRoles.add(role);
                         }else {
                             //Let validation pick this up
                             innerRoles.add(new Role(Common.NEW_ID, xid));
@@ -67,9 +64,9 @@ public class MangoPermissionModelDeserializer extends StdDeserializer<MangoPermi
                     }
                 }else {
                     String xid = (String)o;
-                    RoleVO role = dao.getByXid(xid);
+                    Role role = permissionService.getRole(xid);
                     if(role != null) {
-                        innerRoles.add(role.getRole());
+                        innerRoles.add(role);
                     }else {
                         //Let validation pick this up
                         innerRoles.add(new Role(Common.NEW_ID, xid));
@@ -79,9 +76,9 @@ public class MangoPermissionModelDeserializer extends StdDeserializer<MangoPermi
         }else if(tree instanceof TextNode) {
             Set<String> xids = PermissionService.explodeLegacyPermissionGroups(tree.asText());
             for(String xid : xids) {
-                RoleVO role = dao.getByXid(xid);
+                Role role = permissionService.getRole(xid);
                 if(role != null) {
-                    roles.add(Collections.singleton(role.getRole()));
+                    roles.add(Collections.singleton(role));
                 }else {
                     //Let validation pick this up
                     roles.add(Collections.singleton(new Role(Common.NEW_ID, xid)));
