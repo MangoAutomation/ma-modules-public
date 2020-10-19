@@ -34,7 +34,6 @@ import com.infiniteautomation.mango.rest.latest.model.publisher.AbstractPublishe
 import com.infiniteautomation.mango.spring.service.DataPointService;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
-import com.serotonin.m2m2.db.dao.DataPointTagsDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.db.dao.EventDetectorDao;
 import com.serotonin.m2m2.db.dao.PublisherDao;
@@ -300,7 +299,6 @@ public class EventTypesRestController {
                 for(DataPointVO vo : uniquePointsMap.values()) {
                     //Shortcut to check permissions via event type
                     if(permissionService.hasPermission(user, vo.getReadPermission())) {
-                        vo.setTags(DataPointTagsDao.getInstance().getTagsForDataPointId(vo.getId()));
                         DataPointEventTypeModel model = new DataPointEventTypeModel(new DataPointEventType(vo.getDataSourceId(), vo.getId(), 0, null), modelMapper.map(vo, DataPointModel.class, user));
                         types.add(new EventTypeVOModel<DataPointEventType, DataPointModel,AbstractPointEventDetectorModel<?>>(model, new TranslatableMessage("event.eventsFor", vo.getName()), false, true, true));
                     }
