@@ -91,7 +91,7 @@ public class MaintenanceEventRT implements ModelTimeoutClient<Boolean> {
     // Lifecycle interface
     //
     public void initialize() {
-        eventType = new MaintenanceEventType(vo.getId());
+        eventType = new MaintenanceEventType(vo);
 
         if (vo.getScheduleType() != MaintenanceEventVO.TYPE_MANUAL) {
             // Schedule the active event.

@@ -37,6 +37,16 @@ public class MaintenanceEventType extends EventType {
 
     public MaintenanceEventType(int maintenanceId) {
         this.maintenanceId = maintenanceId;
+        supplyReference1(() -> {
+            return Common.getBean(MaintenanceEventDao.class).get(maintenanceId);
+        });
+    }
+
+    public MaintenanceEventType(MaintenanceEventVO me) {
+        this.maintenanceId = me.getId();
+        supplyReference1(() -> {
+            return me;
+        });
     }
 
     @Override
