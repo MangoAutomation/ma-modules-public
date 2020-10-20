@@ -98,7 +98,7 @@ describe('Cache control verification', function() {
             assert.exists(response.headers['last-modified']);
             const lastModified = response.headers['last-modified'];
             return client.restRequest({
-                path: '/images/logo.gif',
+                path: '/images/logo.png',
                 dataType: 'buffer',
                 headers: {
                     'Accept': '*/*',
@@ -123,7 +123,7 @@ describe('Cache control verification', function() {
             const lastModified = response.headers['last-modified'];
             const beforeLastModified = new Date(new Date(lastModified).getTime() - 2000);
             return client.restRequest({
-                path: '/images/logo.gif',
+                path: '/images/logo.png',
                 dataType: 'buffer',
                 headers: {
                     'Accept': '*/*',
