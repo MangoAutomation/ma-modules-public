@@ -73,8 +73,8 @@ public class WatchListService extends AbstractVOService<WatchListVO, WatchListTa
     public ProcessResult validate(WatchListVO vo, PermissionHolder user) {
         ProcessResult response = commonValidation(vo, user);
 
-        permissionService.validateVoRoles(response, "readPermission", user, false, null, vo.getReadPermission());
-        permissionService.validateVoRoles(response, "editPermission", user, false, null, vo.getEditPermission());
+        permissionService.validatePermission(response, "readPermission", user, null, vo.getReadPermission());
+        permissionService.validatePermission(response, "editPermission", user, null, vo.getEditPermission());
         return response;
 
     }
@@ -83,8 +83,8 @@ public class WatchListService extends AbstractVOService<WatchListVO, WatchListTa
     public ProcessResult validate(WatchListVO existing, WatchListVO vo, PermissionHolder savingUser) {
         ProcessResult response = commonValidation(vo, savingUser);
 
-        permissionService.validateVoRoles(response, "readPermission", savingUser, false, existing.getReadPermission(), vo.getReadPermission());
-        permissionService.validateVoRoles(response, "editPermission", savingUser, false, existing.getEditPermission(), vo.getEditPermission());
+        permissionService.validatePermission(response, "readPermission", savingUser, existing.getReadPermission(), vo.getReadPermission());
+        permissionService.validatePermission(response, "editPermission", savingUser, existing.getEditPermission(), vo.getEditPermission());
 
         return response;
     }
