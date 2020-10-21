@@ -4,6 +4,7 @@
 * Add WatchList create permission, default to all users allowed to create lists
 * Drop v1 REST support
 * Don't allow adding static points to Tag or Query type lists (previously was possible via REST api)
+* Remove user from watchlist and rely on read permission
 
 *Version 3.7.0*
 * Upgraded to work with core version 3.7.x

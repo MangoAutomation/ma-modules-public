@@ -4,20 +4,8 @@
  */
 package com.serotonin.m2m2.watchlist;
 
-import com.infiniteautomation.mango.permission.MangoPermission;
-import com.infiniteautomation.mango.spring.dao.WatchListDao;
-import com.infiniteautomation.mango.spring.db.UserTableDefinition;
-import com.infiniteautomation.mango.spring.service.PermissionService;
-import com.infiniteautomation.mango.spring.service.WatchListService;
-import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.MangoTestBase;
-import com.serotonin.m2m2.vo.User;
-import com.serotonin.m2m2.vo.permission.PermissionHolder;
-import net.jazdw.rql.parser.ASTNode;
-import net.jazdw.rql.parser.RQLParser;
-import org.jooq.Field;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -26,7 +14,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import com.infiniteautomation.mango.permission.MangoPermission;
+import com.infiniteautomation.mango.spring.dao.WatchListDao;
+import com.infiniteautomation.mango.spring.service.PermissionService;
+import com.infiniteautomation.mango.spring.service.WatchListService;
+import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.MangoTestBase;
+import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
+
+import net.jazdw.rql.parser.ASTNode;
+import net.jazdw.rql.parser.RQLParser;
 
 /**
  *
@@ -61,26 +62,28 @@ public class WatchlistSqlVisitorTest extends MangoTestBase {
         for(int i=0; i<5; i++) {
             WatchListVO wl = new WatchListVO();
             wl.setXid(WatchListDao.getInstance().generateUniqueXid());
-            wl.setName("Watchilst " + i);
-            wl.setUserId(users.get(0).getId());
+            wl.setName("Watchlist " + i);
             wl.setReadPermission(MangoPermission.requireAnyRole(users.get(0).getRoles()));
             WatchListDao.getInstance().insert(wl);
         }
 
+        //Insert a 6th odd one
+        WatchListVO odd = new WatchListVO();
+        odd.setXid(WatchListDao.getInstance().generateUniqueXid());
+        odd.setName("Not a Watchlist ");
+        odd.setReadPermission(MangoPermission.requireAnyRole(users.get(0).getRoles()));
+        WatchListDao.getInstance().insert(odd);
 
-        String rql = "eq(username," + users.get(0).getUsername() + ")&limit(3)";
+        String rql = "like(name,Watchlist *)&limit(3)";
         RQLParser parser = new RQLParser();
         ASTNode query = parser.parse(rql);
 
         final AtomicLong selectCounter = new AtomicLong();
 
-        Map<String, Field<?>> fieldMap = new HashMap<>();
-        fieldMap.put("username", Common.getBean(UserTableDefinition.class).getXidAlias());
-
         Common.getBean(PermissionService.class).runAsSystemAdmin(() -> {
-            service.customizedQuery(query, (wl,index) -> {
+            service.customizedQuery(query, (wl ,index) -> {
                 selectCounter.incrementAndGet();
-                assertEquals(users.get(0).getId(), wl.getUserId());
+                assertTrue(wl.getName().startsWith("Watchlist "));
                 assertEquals(2, wl.getReadPermission().getRoles().stream().mapToLong(Collection::size).sum());
             });
             assertEquals(5, service.customizedCount(query));

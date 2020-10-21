@@ -39,7 +39,6 @@ import com.infiniteautomation.mango.db.query.ConditionSortLimit;
 import com.infiniteautomation.mango.permission.MangoPermission;
 import com.infiniteautomation.mango.spring.MangoRuntimeContextConfiguration;
 import com.infiniteautomation.mango.spring.db.RoleTableDefinition;
-import com.infiniteautomation.mango.spring.db.UserTableDefinition;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.LazyInitializer;
 import com.serotonin.ShouldNeverHappenException;
@@ -50,7 +49,6 @@ import com.serotonin.m2m2.db.dao.tables.MintermMappingTable;
 import com.serotonin.m2m2.db.dao.tables.PermissionMappingTable;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.DataPointVO;
-import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.watchlist.AuditEvent;
 import com.serotonin.m2m2.watchlist.WatchListParameter;
@@ -66,12 +64,10 @@ public class WatchListDao extends AbstractVoDao<WatchListVO, WatchListTableDefin
     private static final LazyInitializer<WatchListDao> springInstance = new LazyInitializer<>();
 
     private final DataPointDao dataPointDao;
-    private final UserTableDefinition userTable;
     private final PermissionService permissionService;
 
     @Autowired
     private WatchListDao(WatchListTableDefinition table, DataPointDao dataPointDao,
-            UserTableDefinition userTable,
             @Qualifier(MangoRuntimeContextConfiguration.DAO_OBJECT_MAPPER_NAME)ObjectMapper mapper,
             ApplicationEventPublisher publisher,
             PermissionService permissionService) {
@@ -79,7 +75,6 @@ public class WatchListDao extends AbstractVoDao<WatchListVO, WatchListTableDefin
                 new TranslatableMessage("internal.monitor.WATCHLIST_COUNT"),
                 mapper, publisher);
         this.dataPointDao = dataPointDao;
-        this.userTable = userTable;
         this.permissionService = permissionService;
     }
 
@@ -196,8 +191,7 @@ public class WatchListDao extends AbstractVoDao<WatchListVO, WatchListTableDefin
 
             select = select.join(permissionsGranted).on(
                     permissionsGranted.field(PermissionMappingTable.PERMISSIONS_MAPPING.permissionId).in(
-                            WatchListTableDefinition.READ_PERMISSION_ALIAS)
-                    .or(this.table.getAlias("userId").eq(((User)user).getId())));
+                            WatchListTableDefinition.READ_PERMISSION_ALIAS));
         }
         return select;
     }
@@ -243,18 +237,11 @@ public class WatchListDao extends AbstractVoDao<WatchListVO, WatchListTableDefin
         return new Object[]{
                 vo.getXid(),
                 vo.getName(),
-                vo.getUserId(),
                 vo.getType(),
                 jsonData,
                 vo.getReadPermission().getId(),
                 vo.getEditPermission().getId()
         };
-    }
-
-    @Override
-    public <R extends Record> SelectJoinStep<R> joinTables(SelectJoinStep<R> select,
-            ConditionSortLimit conditions) {
-        return select = select.leftJoin(userTable.getTableAsAlias()).on(userTable.getAlias("id").eq(table.getAlias("userId")));
     }
 
     @Override
@@ -272,7 +259,6 @@ public class WatchListDao extends AbstractVoDao<WatchListVO, WatchListTableDefin
             wl.setId(rs.getInt(++i));
             wl.setXid(rs.getString(++i));
             wl.setName(rs.getString(++i));
-            wl.setUserId(rs.getInt(++i));
             wl.setType(rs.getString(++i));
             //Read the data
             try{

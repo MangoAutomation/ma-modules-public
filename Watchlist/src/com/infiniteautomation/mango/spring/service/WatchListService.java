@@ -16,9 +16,7 @@ import com.infiniteautomation.mango.rest.latest.exception.ServerErrorException;
 import com.infiniteautomation.mango.spring.dao.WatchListDao;
 import com.infiniteautomation.mango.spring.dao.WatchListTableDefinition;
 import com.infiniteautomation.mango.util.RQLUtils;
-import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.PermissionDefinition;
@@ -27,10 +25,10 @@ import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.IDataPoint;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.EventInstanceVO;
-import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.watchlist.WatchListCreatePermission;
 import com.serotonin.m2m2.watchlist.WatchListVO;
+
 import net.jazdw.rql.parser.ASTNode;
 
 /**
@@ -40,7 +38,6 @@ import net.jazdw.rql.parser.ASTNode;
 @Service
 public class WatchListService extends AbstractVOService<WatchListVO, WatchListTableDefinition, WatchListDao> {
 
-    private final UserDao userDao;
     private final DataPointService dataPointService;
     private final EventInstanceService eventService;
     private final WatchListCreatePermission createPermission;
@@ -48,57 +45,23 @@ public class WatchListService extends AbstractVOService<WatchListVO, WatchListTa
     @Autowired
     public WatchListService(WatchListDao dao,
             PermissionService permissionService,
-            UserDao userDao,
             DataPointService dataPointService,
             EventInstanceService eventService,
             WatchListCreatePermission createPermission) {
         super(dao, permissionService);
-        this.userDao = userDao;
         this.dataPointService = dataPointService;
         this.eventService = eventService;
         this.createPermission = createPermission;
     }
 
     @Override
-    public WatchListVO insert(WatchListVO vo) throws PermissionException, ValidationException {
-        PermissionHolder user = Common.getUser();
-
-        //If user not set then set it
-        if(vo.getUserId() <= 0 && user instanceof User) {
-            vo.setUserId(((User)user).getId());
-        }
-
-        return super.insert(vo);
-    }
-
-    @Override
-    public WatchListVO update(WatchListVO existing, WatchListVO vo)
-            throws PermissionException, ValidationException {
-        PermissionHolder user = Common.getUser();
-
-        //If user not set then set it
-        if(vo.getUserId() <= 0 && user instanceof User) {
-            vo.setUserId(((User)user).getId());
-        }
-
-        return super.update(existing, vo);
-    }
-    @Override
     public boolean hasEditPermission(PermissionHolder user, WatchListVO vo) {
-        if(user instanceof User && ((User)user).getId() == vo.getUserId()) {
-            return true;
-        }else {
-            return permissionService.hasPermission(user, vo.getEditPermission());
-        }
+        return permissionService.hasPermission(user, vo.getEditPermission());
     }
 
     @Override
     public boolean hasReadPermission(PermissionHolder user, WatchListVO vo) {
-        if(user instanceof User && ((User)user).getId() == vo.getUserId()) {
-            return true;
-        }else {
-            return permissionService.hasPermission(user, vo.getReadPermission());
-        }
+        return permissionService.hasPermission(user, vo.getReadPermission());
     }
 
     @Override
@@ -110,24 +73,8 @@ public class WatchListService extends AbstractVOService<WatchListVO, WatchListTa
     public ProcessResult validate(WatchListVO vo, PermissionHolder user) {
         ProcessResult response = commonValidation(vo, user);
 
-        //Only admin can create with different owner
-        if(!permissionService.hasAdminRole(user)) {
-            if(user instanceof User) {
-                if(((User)user).getId() !=  vo.getUserId()) {
-                    vo.setUserId(((User)user).getId());
-                }
-            }else {
-                response.addContextualMessage("userId","validate.onlyUserCanCreate");
-            }
-        }
-
-        boolean savedByOwner = false;
-        if(user instanceof User && ((User)user).getId() == vo.getUserId()) {
-            savedByOwner = true;
-        }
-
-        permissionService.validateVoRoles(response, "readPermission", user, savedByOwner, null, vo.getReadPermission());
-        permissionService.validateVoRoles(response, "editPermission", user, savedByOwner, null, vo.getEditPermission());
+        permissionService.validateVoRoles(response, "readPermission", user, false, null, vo.getReadPermission());
+        permissionService.validateVoRoles(response, "editPermission", user, false, null, vo.getEditPermission());
         return response;
 
     }
@@ -135,18 +82,9 @@ public class WatchListService extends AbstractVOService<WatchListVO, WatchListTa
     @Override
     public ProcessResult validate(WatchListVO existing, WatchListVO vo, PermissionHolder savingUser) {
         ProcessResult response = commonValidation(vo, savingUser);
-        boolean savedByOwner = false;
-        if(savingUser instanceof User && ((User)savingUser).getId() == existing.getUserId()) {
-            savedByOwner = true;
-        }
 
-        //only admin can change userId
-        if(!permissionService.hasAdminRole(savingUser) && existing.getUserId() != vo.getUserId()) {
-            response.addContextualMessage("userId","validate.cannotChangeOwner");
-        }
-
-        permissionService.validateVoRoles(response, "readPermission", savingUser, savedByOwner, existing.getReadPermission(), vo.getReadPermission());
-        permissionService.validateVoRoles(response, "editPermission", savingUser, savedByOwner, existing.getEditPermission(), vo.getEditPermission());
+        permissionService.validateVoRoles(response, "readPermission", savingUser, false, existing.getReadPermission(), vo.getReadPermission());
+        permissionService.validateVoRoles(response, "editPermission", savingUser, false, existing.getEditPermission(), vo.getEditPermission());
 
         return response;
     }
@@ -160,11 +98,6 @@ public class WatchListService extends AbstractVOService<WatchListVO, WatchListTa
                 break;
             default:
                 response.addContextualMessage("type", "validate.invalidValueWithAcceptable", vo.getType(), WatchListVO.STATIC_TYPE + "," + WatchListVO.QUERY_TYPE + "," + WatchListVO.TAGS_TYPE);
-        }
-
-        //Validate the owner
-        if(userDao.getXidById(vo.getUserId()) == null){
-            response.addContextualMessage("userId", "watchlists.validate.userDNE");
         }
 
         //Validate Points

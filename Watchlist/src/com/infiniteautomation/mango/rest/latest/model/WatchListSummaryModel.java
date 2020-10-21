@@ -18,7 +18,6 @@ import com.serotonin.m2m2.watchlist.WatchListVO;
  */
 public class WatchListSummaryModel extends AbstractVoModel<WatchListVO>  {
 
-    private String username;
     private MangoPermissionModel readPermission;
     private MangoPermissionModel editPermission;
     private String type;
@@ -53,12 +52,6 @@ public class WatchListSummaryModel extends AbstractVoModel<WatchListVO>  {
     @Override
     protected WatchListVO newVO() {
         return new WatchListVO();
-    }
-    public String getUsername() {
-        return username;
-    }
-    public void setUsername(String username) {
-        this.username = username;
     }
     public MangoPermissionModel getReadPermission() {
         return readPermission;

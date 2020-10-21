@@ -5,7 +5,6 @@
 CREATE TABLE watchLists (
   id int NOT NULL auto_increment,
   xid varchar(100) NOT NULL,
-  userId int NOT NULL,
   name varchar(255),
   type varchar(20),
   data longtext,
@@ -14,7 +13,6 @@ CREATE TABLE watchLists (
   PRIMARY KEY (id)
 ) ;
 ALTER TABLE watchLists add constraint watchListsUn1 unique (xid);
-ALTER TABLE watchLists add constraint watchListsFk1 foreign key (userId) references users(id) on delete cascade;
 ALTER TABLE watchLists ADD CONSTRAINT watchListsFk2 FOREIGN KEY (readPermissionId) REFERENCES permissions(id) ON DELETE RESTRICT;
 ALTER TABLE watchLists ADD CONSTRAINT watchListsFk3 FOREIGN KEY (editPermissionId) REFERENCES permissions(id) ON DELETE RESTRICT;
 
