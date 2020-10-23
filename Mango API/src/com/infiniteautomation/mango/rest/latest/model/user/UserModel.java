@@ -18,7 +18,6 @@ import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.role.Role;
-
 import io.swagger.annotations.ApiModelProperty;
 
 /**
@@ -53,7 +52,7 @@ public class UserModel extends AbstractVoModel<User> {
     private JsonNode data;
 
     @ApiModelProperty("List of system settings permission definitions this user has access to")
-    private Set<String> grantedPermissions;
+    private Set<String> systemPermissions;
 
     public UserModel() {
         super();
@@ -169,12 +168,12 @@ public class UserModel extends AbstractVoModel<User> {
         this.sessionExpirationPeriod = sessionExpirationPeriod;
     }
 
-    public Set<String> getGrantedPermissions() {
-        return grantedPermissions;
+    public Set<String> getSystemPermissions() {
+        return systemPermissions;
     }
 
-    public void setGrantedPermissions(Set<String> grants) {
-        this.grantedPermissions = grants;
+    public void setSystemPermissions(Set<String> grants) {
+        this.systemPermissions = grants;
     }
 
     public String getOrganization() {
@@ -249,19 +248,22 @@ public class UserModel extends AbstractVoModel<User> {
         for(Role role : vo.getRoles()) {
             roles.add(role.getXid());
         }
+
         //TODO Mango 4.0 move this into the model mapper and use map/unmap anywhere
         // a user model is needed
+        PermissionService permissionService = Common.getBean(PermissionService.class);
         this.inheritedRoles = new HashSet<>();
-        Set<Role> getAllInheritedRoles = Common.getBean(PermissionService.class).getAllInheritedRoles(vo);
+        Set<Role> getAllInheritedRoles = permissionService.getAllInheritedRoles(vo);
         for(Role role : getAllInheritedRoles) {
             this.inheritedRoles.add(role.getXid());
         }
+        this.systemPermissions = permissionService.getSystemPermissions(vo);
+
         this.locale = StringUtils.isBlank(vo.getLocale()) ? null : vo.getLocale();
         this.passwordLocked = vo.isPasswordLocked();
         this.sessionExpirationOverride = vo.isSessionExpirationOverride();
         if(sessionExpirationOverride)
             this.sessionExpirationPeriod = new TimePeriod(vo.getSessionExpirationPeriods(), TimePeriodType.valueOf(vo.getSessionExpirationPeriodType()));
-        this.grantedPermissions = vo.getGrantedPermissions();
         this.organization = vo.getOrganization();
         this.organizationalRole = vo.getOrganizationalRole();
         this.created = vo.getCreated();
