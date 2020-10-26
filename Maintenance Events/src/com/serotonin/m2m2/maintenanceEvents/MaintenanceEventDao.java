@@ -98,7 +98,7 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
 
     @Override
     public void savePreRelationalData(MaintenanceEventVO existing, MaintenanceEventVO vo) {
-        MangoPermission togglePermission = permissionService.findOrCreate(vo.getTogglePermission().getRoles());
+        MangoPermission togglePermission = permissionService.findOrCreate(vo.getTogglePermission());
         vo.setTogglePermission(togglePermission);
     }
 

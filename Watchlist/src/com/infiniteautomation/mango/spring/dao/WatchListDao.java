@@ -130,10 +130,10 @@ public class WatchListDao extends AbstractVoDao<WatchListVO, WatchListTableDefin
 
     @Override
     public void savePreRelationalData(WatchListVO existing, WatchListVO vo) {
-        MangoPermission readPermission = permissionService.findOrCreate(vo.getReadPermission().getRoles());
+        MangoPermission readPermission = permissionService.findOrCreate(vo.getReadPermission());
         vo.setReadPermission(readPermission);
 
-        MangoPermission editPermission = permissionService.findOrCreate(vo.getEditPermission().getRoles());
+        MangoPermission editPermission = permissionService.findOrCreate(vo.getEditPermission());
         vo.setEditPermission(editPermission);
     }
 
