@@ -908,7 +908,7 @@ public class PointValueRestController extends AbstractMangoRestController {
 
         // If we are a multistate point and our value is in string format then we should try
         // to convert it
-        if ((model.getDataType() == DataTypeEnum.MULTISTATE)
+        if ((model.getDataType() == DataTypeEnum.MULTISTATE || model.getDataType() == DataTypeEnum.NUMERIC)
                 && (model.getValue() instanceof String)) {
             try {
                 DataValue value =
@@ -919,7 +919,7 @@ public class PointValueRestController extends AbstractMangoRestController {
                 // Lots can go wrong here so let the user know
                 throw new GenericRestException(HttpStatus.NOT_ACCEPTABLE,
                         new TranslatableMessage("common.default", "[" + xid
-                                + "]Unable to convert Multistate String representation to any known value."));
+                                + "]Unable to convert String representation to any known value."));
             }
         }
 
