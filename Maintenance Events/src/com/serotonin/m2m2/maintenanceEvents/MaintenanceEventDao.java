@@ -114,7 +114,7 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
             ejt.update(DELETE_DATA_POINT_IDS, new Object[] {vo.getId()});
             ejt.batchUpdate(INSERT_DATA_POINT_IDS, new InsertDataPoints(vo));
             if(!existing.getTogglePermission().equals(vo.getTogglePermission())) {
-                permissionService.permissionDeleted(existing.getTogglePermission());
+                permissionService.deletePermissions(existing.getTogglePermission());
             }
         }
     }
@@ -130,7 +130,7 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
     @Override
     public void deletePostRelationalData(MaintenanceEventVO vo) {
         //Clean permissions
-        permissionService.permissionDeleted(vo.getTogglePermission());
+        permissionService.deletePermissions(vo.getTogglePermission());
     }
 
     /**
