@@ -45,4 +45,13 @@
 		<module>graaljs</module>
 		<module>groovy</module>
 	</modules>
+	<repositories>
+		<repository>
+			<releases><enabled>true</enabled></releases>
+			<snapshots><enabled>true</enabled></snapshots>
+			<id>github</id>
+			<name>Github</name>
+			<url>https://maven.pkg.github.com/infiniteautomation/ma-core-public</url>
+		</repository>
+	</repositories>
 </project>
