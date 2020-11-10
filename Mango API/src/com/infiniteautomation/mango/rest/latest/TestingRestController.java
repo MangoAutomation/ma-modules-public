@@ -51,7 +51,7 @@ import com.infiniteautomation.mango.rest.latest.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.latest.model.event.RaiseEventModel;
 import com.infiniteautomation.mango.rest.latest.model.session.MangoSessionDataModel;
 import com.infiniteautomation.mango.spring.ConditionalOnProperty;
-import com.infiniteautomation.mango.spring.session.MangoSessionDataStore;
+import com.infiniteautomation.mango.webapp.session.MangoSessionDataStore;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.LicenseViolatedException;
