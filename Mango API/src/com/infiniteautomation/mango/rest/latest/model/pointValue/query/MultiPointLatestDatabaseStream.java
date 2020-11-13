@@ -110,11 +110,11 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
 
             //Don't limit bookends and don't virtually limit non-cached requests
             if(info.useCache != PointValueTimeCacheControl.NONE && (!firstBookend && !lastBookend))
-                if(limiters.get(value.getId()).limited())
+                if(limiters.get(value.getSeriesId()).limited())
                     return;
 
             //Write it out/process it
-            writeValue(new DataPointVOPointValueTimeBookend(this.voMap.get(value.getId()), value, firstBookend, lastBookend, cached));
+            writeValue(new DataPointVOPointValueTimeBookend(this.voMap.get(value.getSeriesId()), value, firstBookend, lastBookend, cached));
         }catch(IOException e) {
             throw new QueryCancelledException(e);
         }
@@ -166,7 +166,7 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
      * @throws IOException
      */
     protected boolean processValueThroughCache(IdPointValueTime value, int index, boolean firstBookend, boolean lastBookend) throws QueryCancelledException {
-        List<IdPointValueTime> pointCache = this.cache.get(value.getId());
+        List<IdPointValueTime> pointCache = this.cache.get(value.getSeriesId());
         if(pointCache != null) {
             ListIterator<IdPointValueTime> it = pointCache.listIterator();
             while(it.hasNext()) {
@@ -180,13 +180,13 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
                     processRow(pvt, index, firstBookend, lastBookend, true);
                     it.remove();
                     if(pointCache.size() == 0)
-                        this.cache.remove(value.getId());
+                        this.cache.remove(value.getSeriesId());
                     return false;
                 }else
                     break; //No more since we are in time order of the query
             }
             if(pointCache.size() == 0)
-                this.cache.remove(value.getId());
+                this.cache.remove(value.getSeriesId());
         }
         return true;
     }

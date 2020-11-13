@@ -84,14 +84,14 @@ public abstract class AbstractMultiDataPointStatisticsQuantizerStream <T, INFO e
         if(!info.isSingleArray()) {
             //In this query the values are returned in data point ID and time order
             //Advance the previous quantizer
-            if(currentDataPointId != -1 && currentDataPointId != value.getId()) {
+            if(currentDataPointId != -1 && currentDataPointId != value.getSeriesId()) {
                 DataPointStatisticsQuantizer<?> quant = this.quantizerMap.get(currentDataPointId);
                 if(!quant.isDone())
                     quant.done();
             }
         }
         currentTime = time;
-        currentDataPointId = value.getId();
+        currentDataPointId = value.getSeriesId();
     }
 
     protected void createQuantizerMap() {
