@@ -4,9 +4,69 @@
  */
 package com.infiniteautomation.mango.rest.latest;
 
-import com.infiniteautomation.mango.rest.latest.exception.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Writer;
+import java.net.SocketTimeoutException;
+import java.net.URI;
+import java.net.UnknownHostException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.json.MappingJacksonValue;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import com.infiniteautomation.mango.rest.latest.exception.BadRequestException;
+import com.infiniteautomation.mango.rest.latest.exception.GenericRestException;
+import com.infiniteautomation.mango.rest.latest.exception.ModuleRestException;
+import com.infiniteautomation.mango.rest.latest.exception.ServerErrorException;
+import com.infiniteautomation.mango.rest.latest.exception.ValidationFailedRestException;
 import com.infiniteautomation.mango.rest.latest.model.CredentialsModel;
-import com.infiniteautomation.mango.rest.latest.model.modules.*;
+import com.infiniteautomation.mango.rest.latest.model.modules.AngularJSModuleDefinitionGroupModel;
+import com.infiniteautomation.mango.rest.latest.model.modules.CoreModuleModel;
+import com.infiniteautomation.mango.rest.latest.model.modules.ModuleModel;
+import com.infiniteautomation.mango.rest.latest.model.modules.ModuleUpgradeModel;
+import com.infiniteautomation.mango.rest.latest.model.modules.ModuleUpgradesModel;
+import com.infiniteautomation.mango.rest.latest.model.modules.UpdateLicensePayloadModel;
+import com.infiniteautomation.mango.rest.latest.model.modules.UpgradeStatusModel;
+import com.infiniteautomation.mango.rest.latest.model.modules.UpgradeUploadResult;
 import com.infiniteautomation.mango.rest.latest.model.modules.UpgradeUploadResult.InvalidModule;
 import com.infiniteautomation.mango.rest.latest.util.MangoStoreClient;
 import com.infiniteautomation.mango.spring.service.ModulesService;
@@ -18,7 +78,11 @@ import com.serotonin.json.type.JsonArray;
 import com.serotonin.json.type.JsonObject;
 import com.serotonin.json.type.JsonString;
 import com.serotonin.json.type.JsonValue;
-import com.serotonin.m2m2.*;
+import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.Constants;
+import com.serotonin.m2m2.ICoreLicense;
+import com.serotonin.m2m2.IMangoLifecycle;
+import com.serotonin.m2m2.UpgradeVersionState;
 import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -35,38 +99,6 @@ import com.serotonin.provider.Providers;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.env.Environment;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.json.MappingJacksonValue;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
-import org.springframework.web.util.UriComponentsBuilder;
-
-import javax.servlet.http.HttpServletRequest;
-import java.io.*;
-import java.net.SocketTimeoutException;
-import java.net.URI;
-import java.net.UnknownHostException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 /**
  *
@@ -83,13 +115,11 @@ public class ModulesRestController {
     private final Environment env;
     private final ModulesService service;
     private final PermissionService permissionService;
-    private final boolean developmentMode;
 
     @Autowired
-    public ModulesRestController(Environment env, ModulesService service, @Value("${development.enabled:false}") boolean developmentMode, PermissionService permissionService) {
+    public ModulesRestController(Environment env, ModulesService service, PermissionService permissionService) {
         this.env = env;
         this.service = service;
-        this.developmentMode = developmentMode;
         this.permissionService = permissionService;
     }
 
@@ -525,6 +555,7 @@ public class ModulesRestController {
                 List<String> upgraded = new ArrayList<>();
                 List<String> unsigned = new ArrayList<>();
 
+                boolean developmentMode = env.getProperty("development.enabled", Boolean.class, false);
                 for(Path file : potentialUpgrades) {
                     boolean core = false;
                     boolean hasWebModules = false;
@@ -538,7 +569,7 @@ public class ModulesRestController {
                             do {
                                 String entryName = entry.getName();
                                 if("release.signed".equals(entryName) || "release.properties".equals(entryName)) {
-                                    if(!this.developmentMode && "release.properties".equals(entryName)) {
+                                    if(!developmentMode && "release.properties".equals(entryName)) {
                                         throw new BadRequestException(new TranslatableMessage("modules.unsigned.core.development"));
                                     }
                                     core = true;
@@ -626,12 +657,13 @@ public class ModulesRestController {
     }
 
     private boolean isModule(Path file, List<String> unsigned) throws FileNotFoundException, IOException {
+        boolean developmentMode = env.getProperty("development.enabled", Boolean.class, false);
         try (ZipInputStream is = new ZipInputStream(Files.newInputStream(file))) {
             ZipEntry entry;
             while((entry  = is.getNextEntry()) != null) {
                 String entryName = entry.getName();
                 if (ModuleUtils.Constants.MODULE_SIGNED.equals(entryName) || ModuleUtils.Constants.MODULE_PROPERTIES.equals(entryName)) {
-                    if(!this.developmentMode && ModuleUtils.Constants.MODULE_PROPERTIES.equals(entryName)) {
+                    if(!developmentMode && ModuleUtils.Constants.MODULE_PROPERTIES.equals(entryName)) {
                         unsigned.add(file.getFileName().toString());
                         return false;
                     }
