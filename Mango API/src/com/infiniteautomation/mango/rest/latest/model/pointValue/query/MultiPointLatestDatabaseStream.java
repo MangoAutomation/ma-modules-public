@@ -244,7 +244,7 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
                         if(pvt instanceof IAnnotated)
                             idPvtCache.add(new AnnotatedIdPointValueTime(id, pvt.getValue(), pvt.getTime(), ((IAnnotated)pvt).getSourceMessage()));
                         else
-                            idPvtCache.add(new IdPointValueTime(id, pvt.getValue(), pvt.getTime()));
+                            idPvtCache.add(new IdPointValueTime(rt.getVO().getSeriesId(), pvt.getValue(), pvt.getTime()));
                     }
                 }
 

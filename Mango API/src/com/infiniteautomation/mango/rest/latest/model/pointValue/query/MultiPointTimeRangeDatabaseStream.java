@@ -104,11 +104,12 @@ public class MultiPointTimeRangeDatabaseStream<T, INFO extends ZonedDateTimeRang
         int index = 0;
         while(it.hasNext()) {
             Integer id = it.next();
+            DataPointVO vo = voMap.get(id);
             List<IdPointValueTime> values = cache.get(id);
             if(values == null || values.size() == 0) {
                 if(info.isBookend()) {
-                    processRow(new IdPointValueTime(id, null, info.getFromMillis()), index++, true, false, true);
-                    processRow(new IdPointValueTime(id, null, info.getToMillis()), index++, false, true, true);
+                    processRow(new IdPointValueTime(vo.getSeriesId(), null, info.getFromMillis()), index++, true, false, true);
+                    processRow(new IdPointValueTime(vo.getSeriesId(), null, info.getToMillis()), index++, false, true, true);
                 }
             }else {
                 boolean first = true;

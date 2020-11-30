@@ -61,7 +61,6 @@ import com.serotonin.m2m2.module.Module;
 import com.serotonin.m2m2.rt.dataImage.AnnotatedPointValueTime;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT.FireEvents;
-import com.serotonin.m2m2.rt.dataImage.IdPointValueTime;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.rt.dataImage.types.ImageValue;
@@ -165,7 +164,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
         timer.setStartTime(time.toInstant().toEpochMilli());
 
         while(time.toInstant().isBefore(to.toInstant())) {
-            point.updatePointValue(new IdPointValueTime(point.vo.getId(), point.getNextValue(), time.toInstant().toEpochMilli()));
+            point.updatePointValue(new PointValueTime(point.getNextValue(), time.toInstant().toEpochMilli()));
             time = (ZonedDateTime) adjuster.adjustInto(time);
             timer.fastForwardTo(time.toInstant().toEpochMilli());
         }
@@ -240,7 +239,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
         timer.setStartTime(time.toInstant().toEpochMilli());
 
         while(time.toInstant().isBefore(to.toInstant())) {
-            point.updatePointValue(new IdPointValueTime(point.vo.getId(), point.getNextValue(), time.toInstant().toEpochMilli()));
+            point.updatePointValue(new PointValueTime(point.getNextValue(), time.toInstant().toEpochMilli()));
             time = (ZonedDateTime) adjuster.adjustInto(time);
             timer.fastForwardTo(time.toInstant().toEpochMilli());
         }
@@ -293,7 +292,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
         timer.setStartTime(time.toInstant().toEpochMilli());
 
         while(time.toInstant().isBefore(to.toInstant())) {
-            point.updatePointValue(new IdPointValueTime(point.vo.getId(), point.getNextValue(), time.toInstant().toEpochMilli()));
+            point.updatePointValue(new PointValueTime(point.getNextValue(), time.toInstant().toEpochMilli()));
             time = (ZonedDateTime) adjuster.adjustInto(time);
             timer.fastForwardTo(time.toInstant().toEpochMilli());
         }
@@ -340,7 +339,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
         timer.setStartTime(time.toInstant().toEpochMilli());
 
         while(time.toInstant().isBefore(to.toInstant())) {
-            point.updatePointValue(new IdPointValueTime(point.vo.getId(), point.getNextValue(), time.toInstant().toEpochMilli()));
+            point.updatePointValue(new PointValueTime(point.getNextValue(), time.toInstant().toEpochMilli()));
             time = (ZonedDateTime) adjuster.adjustInto(time);
             timer.fastForwardTo(time.toInstant().toEpochMilli());
         }
@@ -383,7 +382,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
         timer.setStartTime(time.toInstant().toEpochMilli());
 
         while(time.toInstant().isBefore(to.toInstant())) {
-            point.updatePointValue(new IdPointValueTime(point.vo.getId(), point.getNextValue(), time.toInstant().toEpochMilli()));
+            point.updatePointValue(new PointValueTime(point.getNextValue(), time.toInstant().toEpochMilli()));
             time = (ZonedDateTime) adjuster.adjustInto(time);
             timer.fastForwardTo(time.toInstant().toEpochMilli());
         }
@@ -424,7 +423,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
         timer.setStartTime(time.toInstant().toEpochMilli());
 
         while(time.toInstant().isBefore(to.toInstant())) {
-            point.updatePointValue(new IdPointValueTime(point.vo.getId(), point.getNextValue(), time.toInstant().toEpochMilli()));
+            point.updatePointValue(new PointValueTime(point.getNextValue(), time.toInstant().toEpochMilli()));
             time = (ZonedDateTime) adjuster.adjustInto(time);
             timer.fastForwardTo(time.toInstant().toEpochMilli());
         }
@@ -543,7 +542,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
         timer.setStartTime(time.toInstant().toEpochMilli());
 
         while(time.toInstant().isBefore(to.toInstant())) {
-            point.updatePointValue(new IdPointValueTime(point.vo.getId(), point.getNextValue(), time.toInstant().toEpochMilli()));
+            point.updatePointValue(new PointValueTime(point.getNextValue(), time.toInstant().toEpochMilli()));
             time = (ZonedDateTime) adjuster.adjustInto(time);
             timer.fastForwardTo(time.toInstant().toEpochMilli());
         }
@@ -597,7 +596,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
         timer.setStartTime(time.toInstant().toEpochMilli());
 
         while(time.toInstant().isBefore(to.toInstant())) {
-            point.updatePointValue(new IdPointValueTime(point.vo.getId(), point.getNextValue(), time.toInstant().toEpochMilli()));
+            point.updatePointValue(new PointValueTime(point.getNextValue(), time.toInstant().toEpochMilli()));
             time = (ZonedDateTime) adjuster.adjustInto(time);
             timer.fastForwardTo(time.toInstant().toEpochMilli());
         }
@@ -729,7 +728,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
         timer.setStartTime(time.toInstant().toEpochMilli());
 
         while(time.toInstant().isBefore(to.toInstant())) {
-            point.updatePointValue(new IdPointValueTime(point.vo.getId(), point.getNextValue(), time.toInstant().toEpochMilli()));
+            point.updatePointValue(new PointValueTime(point.getNextValue(), time.toInstant().toEpochMilli()));
             time = (ZonedDateTime) adjuster.adjustInto(time);
             timer.fastForwardTo(time.toInstant().toEpochMilli());
         }
@@ -794,8 +793,8 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
         timer.setStartTime(time.toInstant().toEpochMilli());
 
         while(time.toInstant().isBefore(to.toInstant())) {
-            numericPoint.updatePointValue(new IdPointValueTime(numericPoint.vo.getId(), numericPoint.getNextValue(), time.toInstant().toEpochMilli()));
-            multistatePoint.updatePointValue(new IdPointValueTime(multistatePoint.vo.getId(), multistatePoint.getNextValue(), time.toInstant().toEpochMilli()));
+            numericPoint.updatePointValue(new PointValueTime(numericPoint.getNextValue(), time.toInstant().toEpochMilli()));
+            multistatePoint.updatePointValue(new PointValueTime(multistatePoint.getNextValue(), time.toInstant().toEpochMilli()));
             time = (ZonedDateTime) adjuster.adjustInto(time);
             timer.fastForwardTo(time.toInstant().toEpochMilli());
         }
@@ -969,8 +968,8 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
         timer.setStartTime(time.toInstant().toEpochMilli());
 
         while(time.toInstant().isBefore(to.toInstant())) {
-            numericPoint.updatePointValue(new IdPointValueTime(numericPoint.vo.getId(), numericPoint.getNextValue(), time.toInstant().toEpochMilli()));
-            multistatePoint.updatePointValue(new IdPointValueTime(multistatePoint.vo.getId(), multistatePoint.getNextValue(), time.toInstant().toEpochMilli()));
+            numericPoint.updatePointValue(new PointValueTime(numericPoint.getNextValue(), time.toInstant().toEpochMilli()));
+            multistatePoint.updatePointValue(new PointValueTime(multistatePoint.getNextValue(), time.toInstant().toEpochMilli()));
             time = (ZonedDateTime) adjuster.adjustInto(time);
             timer.fastForwardTo(time.toInstant().toEpochMilli());
         }
