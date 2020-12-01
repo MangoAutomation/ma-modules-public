@@ -1006,7 +1006,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
     private void test(ZonedDateTimeStatisticsQueryInfo info, DataPointWrapper<?>...points) throws IOException, QueryCancelledException {
         Map<Integer, DataPointVO> voMap = new HashMap<>();
         for(DataPointWrapper<?> wrapper : points)
-            voMap.put(wrapper.vo.getId(), wrapper.vo);
+            voMap.put(wrapper.vo.getSeriesId(), wrapper.vo);
         JsonNode root = generateOutput(info, voMap);
         for(DataPointWrapper<?> wrapper : points)
             wrapper.verify(info, root);
