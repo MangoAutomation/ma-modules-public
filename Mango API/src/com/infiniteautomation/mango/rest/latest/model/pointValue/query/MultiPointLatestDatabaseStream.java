@@ -39,7 +39,7 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
 
     protected long currentTime; //For writing multiple points single array NoSQL
     protected final List<DataPointValueTime> currentValues;
-    protected int currentDataPointId;
+    protected int currentDataPointSeriesId;
     //List of cached values per data point series id, sorted in descending time order
     protected final Map<Integer, List<IdPointValueTime>> cache;
     protected final Map<Integer, LimitCounter> limiters;  //For use with cache so we don't return too many values, assuming that caches sizes are small this should have minimal effects
@@ -50,7 +50,7 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
         super(info, voMap, dao);
 
         this.currentValues = new ArrayList<>(voMap.size());
-        this.currentDataPointId = Common.NEW_ID;
+        this.currentDataPointSeriesId = Common.NEW_ID;
         if(info.isUseCache() != PointValueTimeCacheControl.NONE)
             cache = buildCache();
         else
@@ -88,7 +88,7 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
         }else {
             if(!info.isSingleArray()) {
                 if(contentType == StreamContentType.JSON) {
-                    if(this.currentDataPointId != Common.NEW_ID)
+                    if(this.currentDataPointSeriesId != Common.NEW_ID)
                         writer.writeEndArray();
                 }
             }
@@ -146,11 +146,11 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
         }else {
             if(!info.isSingleArray()) {
                 //Writing multi-array, could be a multi-array of 1 though
-                if(currentDataPointId != value.getId()) {
-                    if(currentDataPointId != Common.NEW_ID)
+                if(currentDataPointSeriesId != value.getSeriesId()) {
+                    if(currentDataPointSeriesId != Common.NEW_ID)
                         writer.writeEndArray();
-                    writer.writeStartArray(this.voMap.get(value.getId()).getXid());
-                    currentDataPointId = value.getId();
+                    writer.writeStartArray(this.voMap.get(value.getSeriesId()).getXid());
+                    currentDataPointSeriesId = value.getSeriesId();
                 }
             }
             writer.writeDataPointValue(value);

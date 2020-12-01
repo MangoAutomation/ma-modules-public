@@ -25,7 +25,7 @@ public abstract class PointValueTimeQueryStream<T, INFO extends LatestQueryInfo>
 
     protected StreamContentType contentType;
     protected final INFO info;
-    protected final Map<Integer, DataPointVO> voMap; //Point id to Vo
+    protected final Map<Integer, DataPointVO> voMap; //SeriesId to Vo
     protected IOException error;
 
     public PointValueTimeQueryStream(INFO info, Map<Integer, DataPointVO> voMap) {
