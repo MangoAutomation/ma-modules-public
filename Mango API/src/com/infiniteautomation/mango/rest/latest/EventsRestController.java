@@ -11,13 +11,19 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.infiniteautomation.mango.util.exception.TranslatableRuntimeException;
+import com.serotonin.m2m2.i18n.TranslatableException;
 import org.jooq.Field;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -189,15 +195,11 @@ public class EventsRestController {
         return new ResponseEntity<>(map.apply(vo, user), headers, HttpStatus.OK);
     }
 
-    @ApiOperation(
-            value = "Acknowledge many existing events"
-            )
+    @ApiOperation(value = "Acknowledge many existing events")
     @RequestMapping(method = RequestMethod.POST, value = "/acknowledge")
-    public int acknowledgeManyEvents(
+    public CompletableFuture<Integer> acknowledgeManyEvents(
             @RequestBody(required=false) TranslatableMessageModel message,
-            @AuthenticationPrincipal User user,
-            HttpServletRequest request) {
-        ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
+            ASTNode rql) {
 
         TranslatableMessage tlm;
         if(message != null) {
@@ -206,21 +208,9 @@ public class EventsRestController {
             tlm = null;
         }
 
-        AtomicInteger total = new AtomicInteger();
-        long ackTimestamp = Common.timer.currentTimeMillis();
-
         //Ensure we supply the mappings when converting the RQL
         ConditionSortLimit conditions = service.rqlToCondition(rql, null, fieldMap, valueConverters);
-
-        service.customizedQuery(conditions, (EventInstanceVO vo, int index) -> {
-            if(service.hasEditPermission(user, vo)) {
-                EventInstance event = Common.eventManager.acknowledgeEventById(vo.getId(), ackTimestamp, user, tlm);
-                if (event != null && event.isAcknowledged()) {
-                    total.incrementAndGet();
-                }
-            }
-        });
-        return total.get();
+        return service.acknowledgeMany(conditions, tlm);
     }
 
     @ApiOperation(
