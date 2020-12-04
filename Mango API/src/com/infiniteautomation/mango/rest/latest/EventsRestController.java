@@ -29,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -197,6 +198,7 @@ public class EventsRestController {
 
     @ApiOperation(value = "Acknowledge many existing events")
     @RequestMapping(method = RequestMethod.POST, value = "/acknowledge")
+    @Async
     public CompletableFuture<Integer> acknowledgeManyEvents(
             @RequestBody(required=false) TranslatableMessageModel message,
             ASTNode rql) {
@@ -210,7 +212,8 @@ public class EventsRestController {
 
         //Ensure we supply the mappings when converting the RQL
         ConditionSortLimit conditions = service.rqlToCondition(rql, null, fieldMap, valueConverters);
-        return service.acknowledgeMany(conditions, tlm);
+        int count = service.acknowledgeMany(conditions, tlm);
+        return CompletableFuture.completedFuture(count);
     }
 
     @ApiOperation(
