@@ -6,6 +6,7 @@ package com.serotonin.m2m2.maintenanceEvents;
 
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.EventManagerListenerDefinition;
+import com.serotonin.m2m2.rt.event.EventInstance;
 import com.serotonin.m2m2.rt.event.type.DataPointEventType;
 import com.serotonin.m2m2.rt.event.type.DataSourceEventType;
 import com.serotonin.m2m2.rt.event.type.EventType;
@@ -19,7 +20,9 @@ public class EMListener extends EventManagerListenerDefinition {
      *   3. data point events on a listed data point in the event configuration
      */
     @Override
-    public TranslatableMessage autoAckEventWithMessage(EventType eventType) {
+    public TranslatableMessage autoAckEventWithMessage(EventInstance event) {
+        EventType eventType = event.getEventType();
+
         // Data source events can be suppressed by maintenance events.
         if (eventType instanceof DataSourceEventType
                 && RTMDefinition.instance.isActiveMaintenanceEventForDataSource(eventType.getDataSourceId()))
