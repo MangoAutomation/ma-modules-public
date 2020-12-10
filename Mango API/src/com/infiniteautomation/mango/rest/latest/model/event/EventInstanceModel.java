@@ -3,25 +3,25 @@
  */
 package com.infiniteautomation.mango.rest.latest.model.event;
 
-import java.util.List;
-
 import com.infiniteautomation.mango.rest.latest.model.comment.UserCommentModel;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.rt.event.ReturnCause;
 
+import java.util.List;
+
 /**
  * @author Terry Packer
- *
  */
 public class EventInstanceModel {
 
     private int id;
-    private AbstractEventTypeModel<?,?,?> eventType;
+    private AbstractEventTypeModel<?, ?, ?> eventType;
     private long activeTimestamp;
     private Integer acknowledgedByUserId;
     private String acknowledgedByUsername;
     private Long acknowledgedTimestamp;
+    private TranslatableMessage alternateAckSource;
     private boolean rtnApplicable;
     private Long rtnTimestamp;
     private ReturnCause rtnCause;
@@ -32,7 +32,8 @@ public class EventInstanceModel {
 
     //TODO We also have access to comments and handlers if necessary/desired
 
-    public EventInstanceModel() { }
+    public EventInstanceModel() {
+    }
 
     /**
      * @param id
@@ -48,9 +49,9 @@ public class EventInstanceModel {
      * @param message
      */
     public EventInstanceModel(int id, AbstractEventTypeModel<?, ?, ?> eventType,
-            long activeTimestamp, Integer acknowledgedByUserId, String acknowledgedByUsername,
-            Long acknowledgedTimestamp, boolean rtnApplicable, Long rtnTimestamp,
-            ReturnCause rtnCause, AlarmLevels alarmLevel, TranslatableMessage message, TranslatableMessage rtnMessage, List<UserCommentModel> comments) {
+                              long activeTimestamp, Integer acknowledgedByUserId, String acknowledgedByUsername,
+                              Long acknowledgedTimestamp, TranslatableMessage alternateAckSource, boolean rtnApplicable, Long rtnTimestamp,
+                              ReturnCause rtnCause, AlarmLevels alarmLevel, TranslatableMessage message, TranslatableMessage rtnMessage, List<UserCommentModel> comments) {
         super();
         this.id = id;
         this.eventType = eventType;
@@ -58,6 +59,7 @@ public class EventInstanceModel {
         this.acknowledgedByUserId = acknowledgedByUserId;
         this.acknowledgedByUsername = acknowledgedByUsername;
         this.acknowledgedTimestamp = acknowledgedTimestamp;
+        this.alternateAckSource = alternateAckSource;
         this.rtnApplicable = rtnApplicable;
         this.rtnTimestamp = rtnTimestamp;
         this.rtnCause = rtnCause;
@@ -113,6 +115,14 @@ public class EventInstanceModel {
 
     public void setAcknowledgedTimestamp(Long acknowledgedTimestamp) {
         this.acknowledgedTimestamp = acknowledgedTimestamp;
+    }
+
+    public TranslatableMessage getAlternateAckSource() {
+        return alternateAckSource;
+    }
+
+    public void setAlternateAckSource(TranslatableMessage alternateAckSource) {
+        this.alternateAckSource = alternateAckSource;
     }
 
     public boolean isRtnApplicable() {
