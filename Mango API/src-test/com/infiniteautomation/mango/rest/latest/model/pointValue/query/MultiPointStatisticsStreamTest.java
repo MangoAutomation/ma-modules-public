@@ -95,9 +95,8 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
         super.after();
         runtimeManager.points.clear();
 
-        Path filedataPath = Paths.get(Common.envProps.getString("paths.filedata"));
         try {
-            FileUtils.cleanDirectory(filedataPath.toFile());
+            FileUtils.cleanDirectory(Common.getFiledataPath().toFile());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
