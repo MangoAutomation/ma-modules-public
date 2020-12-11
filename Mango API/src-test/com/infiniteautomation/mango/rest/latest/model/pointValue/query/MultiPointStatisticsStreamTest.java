@@ -1377,18 +1377,16 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
 
     @Override
     protected MockMangoLifecycle getLifecycle() {
-        return new TestLifecycle(modules, enableH2Web, h2WebPort, runtimeManager);
+        return new TestLifecycle(modules, runtimeManager);
     }
 
     class TestLifecycle extends MockMangoLifecycle {
 
         /**
          * @param modules
-         * @param enableWebConsole
-         * @param webPort
          */
-        public TestLifecycle(List<Module> modules, boolean enableWebConsole, int webPort, TestRuntimeManager runtimeManager) {
-            super(modules, enableWebConsole, webPort);
+        public TestLifecycle(List<Module> modules, TestRuntimeManager runtimeManager) {
+            super(modules);
             this.runtimeManager = runtimeManager;
         }
 
