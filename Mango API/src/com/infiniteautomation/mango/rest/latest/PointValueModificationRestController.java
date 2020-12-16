@@ -167,22 +167,22 @@ public class PointValueModificationRestController {
                 try {
                     switch(dataTypeId) {
                         case DataTypes.ALPHANUMERIC:
-                            value = new AlphanumericValue(value.toString());
+                            dataValue = new AlphanumericValue(value.toString());
                             break;
                         case DataTypes.BINARY:
                             if(value instanceof String) {
-                                value = new BinaryValue(Boolean.valueOf((String)value));
+                                dataValue = new BinaryValue(Boolean.valueOf((String)value));
                             }else {
-                                value = new BinaryValue((Boolean)value);
+                                dataValue = new BinaryValue((Boolean)value);
                             }
                             break;
                         case DataTypes.MULTISTATE:
                             if(value instanceof String) {
                                 try {
-                                    value = new MultistateValue(Integer.parseInt((String)value));
+                                    dataValue = new MultistateValue(Integer.parseInt((String)value));
                                 }catch(NumberFormatException ex) {
                                     try {
-                                        value = vo.getTextRenderer().parseText((String) value, dataTypeId);
+                                        dataValue = vo.getTextRenderer().parseText((String) value, dataTypeId);
                                     } catch (Exception e) {
                                         // Lots can go wrong here so let the user know
                                         result.addContextualMessage("value", "event.valueParse.textParse", e.getMessage());
@@ -191,14 +191,14 @@ public class PointValueModificationRestController {
                                     }
                                 }
                             }else {
-                                value = new MultistateValue(((Number)value).intValue());
+                                dataValue = new MultistateValue(((Number)value).intValue());
                             }
                             break;
                         case DataTypes.NUMERIC:
                             if(value instanceof String) {
-                                value =  new NumericValue(Double.valueOf((String)value));
+                                dataValue =  new NumericValue(Double.valueOf((String)value));
                             }else {
-                                value = new NumericValue(((Number)value).doubleValue());
+                                dataValue = new NumericValue(((Number)value).doubleValue());
                             }
                             break;
                         case DataTypes.IMAGE:
