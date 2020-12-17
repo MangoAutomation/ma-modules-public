@@ -3,9 +3,9 @@
  */
 package com.serotonin.m2m2.maintenanceEvents.upgrade;
 
-import static com.serotonin.m2m2.db.dao.tables.MintermMappingTable.MINTERMS_MAPPING;
-import static com.serotonin.m2m2.db.dao.tables.PermissionMappingTable.PERMISSIONS_MAPPING;
-import static com.serotonin.m2m2.db.dao.tables.PermissionTable.PERMISSIONS;
+import static com.infiniteautomation.mango.db.tables.MintermsRoles.MINTERMSROLES;
+import static com.infiniteautomation.mango.db.tables.PermissionsMinterms.PERMISSIONSMINTERMS;
+import static com.infiniteautomation.mango.db.tables.Permissions.PERMISSIONS;
 
 import java.io.OutputStream;
 import java.sql.ResultSet;
@@ -166,13 +166,13 @@ public class Upgrade4 extends DBUpgrade implements PermissionMigration {
         List<Field<?>> fields = new ArrayList<>();
         fields.add(roleTableIdAlias);
         fields.add(roleTableXidAlias);
-        fields.add(PERMISSIONS_MAPPING.mintermId);
+        fields.add(PERMISSIONSMINTERMS.mintermId);
 
-        SelectSeekStep2<Record, Integer, Integer> select = create.select(fields).from(PERMISSIONS_MAPPING)
-                .join(MINTERMS_MAPPING).on(PERMISSIONS_MAPPING.mintermId.eq(MINTERMS_MAPPING.mintermId))
-                .join(roleTableAsAlias).on(roleTableIdAlias.eq(MINTERMS_MAPPING.roleId))
-                .where(PERMISSIONS_MAPPING.permissionId.eq(id))
-                .orderBy(PERMISSIONS_MAPPING.permissionId.asc(), PERMISSIONS_MAPPING.mintermId.asc());
+        SelectSeekStep2<Record, Integer, Integer> select = create.select(fields).from(PERMISSIONSMINTERMS)
+                .join(MINTERMSROLES).on(PERMISSIONSMINTERMS.mintermId.eq(MINTERMSROLES.mintermId))
+                .join(roleTableAsAlias).on(roleTableIdAlias.eq(MINTERMSROLES.roleId))
+                .where(PERMISSIONSMINTERMS.permissionId.eq(id))
+                .orderBy(PERMISSIONSMINTERMS.permissionId.asc(), PERMISSIONSMINTERMS.mintermId.asc());
 
         String sql = select.getSQL();
         List<Object> arguments = select.getBindValues();
