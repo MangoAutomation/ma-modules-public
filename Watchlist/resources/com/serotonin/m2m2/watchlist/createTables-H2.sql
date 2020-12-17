@@ -4,40 +4,46 @@
 --
 CREATE TABLE "watchLists"
 (
-    "id"               int          NOT NULL auto_increment,
-    "xid"              varchar(100) NOT NULL,
-    "name"             varchar(255),
-    "type"             varchar(20),
-    "data"             longtext,
+    "id"               INT          NOT NULL AUTO_INCREMENT,
+    "xid"              VARCHAR(100) NOT NULL,
+    "name"             VARCHAR(255),
+    "type"             VARCHAR(20),
+    "data"             LONGTEXT,
     "readPermissionId" INT          NOT NULL,
     "editPermissionId" INT          NOT NULL,
     PRIMARY KEY ("id")
 );
 ALTER TABLE "watchLists"
-    add constraint "watchListsUn1" unique ("xid");
+    ADD CONSTRAINT "watchListsUn1" UNIQUE ("xid");
+-- [jooq ignore start]
 ALTER TABLE "watchLists"
     ADD CONSTRAINT "watchListsFk2" FOREIGN KEY ("readPermissionId") REFERENCES "permissions" ("id") ON DELETE RESTRICT;
 ALTER TABLE "watchLists"
     ADD CONSTRAINT "watchListsFk3" FOREIGN KEY ("editPermissionId") REFERENCES "permissions" ("id") ON DELETE RESTRICT;
+-- [jooq ignore stop]
 
 CREATE TABLE "watchListPoints"
 (
-    "watchListId" int NOT NULL,
-    "dataPointId" int NOT NULL,
-    "sortOrder"   int NOT NULL
+    "watchListId" INT NOT NULL,
+    "dataPointId" INT NOT NULL,
+    "sortOrder"   INT NOT NULL
 );
 ALTER TABLE "watchListPoints"
-    add constraint "watchListPointsFk1" foreign key ("watchListId") references "watchLists" ("id") on delete cascade;
+    ADD CONSTRAINT "watchListPointsFk1" FOREIGN KEY ("watchListId") REFERENCES "watchLists" ("id") ON DELETE CASCADE;
+-- [jooq ignore start]
 ALTER TABLE "watchListPoints"
-    add constraint "watchListPointsFk2" foreign key ("dataPointId") references "dataPoints" ("id") on delete cascade;
+    ADD CONSTRAINT "watchListPointsFk2" FOREIGN KEY ("dataPointId") REFERENCES "dataPoints" ("id") ON DELETE CASCADE;
+-- [jooq ignore stop]
 
 CREATE TABLE "selectedWatchList"
 (
-    "userId"      int NOT NULL,
-    "watchListId" int NOT NULL,
+    "userId"      INT NOT NULL,
+    "watchListId" INT NOT NULL,
     PRIMARY KEY ("userId")
 );
+-- [jooq ignore start]
 ALTER TABLE "selectedWatchList"
-    add constraint "selectedWatchListFk1" foreign key ("userId") references "users" ("id") on delete cascade;
+    ADD CONSTRAINT "selectedWatchListFk1" FOREIGN KEY ("userId") REFERENCES "users" ("id") ON DELETE CASCADE;
+-- [jooq ignore stop]
 ALTER TABLE "selectedWatchList"
-    add constraint "selectedWatchListFk2" foreign key ("watchListId") references "watchLists" ("id") on delete cascade;
+    ADD CONSTRAINT "selectedWatchListFk2" FOREIGN KEY ("watchListId") REFERENCES "watchLists" ("id") ON DELETE CASCADE;
