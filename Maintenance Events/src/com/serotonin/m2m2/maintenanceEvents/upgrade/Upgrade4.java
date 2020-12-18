@@ -3,8 +3,8 @@
  */
 package com.serotonin.m2m2.maintenanceEvents.upgrade;
 
-import static com.infiniteautomation.mango.db.tables.MintermsRoles.MINTERMSROLES;
-import static com.infiniteautomation.mango.db.tables.PermissionsMinterms.PERMISSIONSMINTERMS;
+import static com.infiniteautomation.mango.db.tables.MintermsRoles.MINTERMS_ROLES;
+import static com.infiniteautomation.mango.db.tables.PermissionsMinterms.PERMISSIONS_MINTERMS;
 import static com.infiniteautomation.mango.db.tables.Permissions.PERMISSIONS;
 
 import java.io.OutputStream;
@@ -166,13 +166,13 @@ public class Upgrade4 extends DBUpgrade implements PermissionMigration {
         List<Field<?>> fields = new ArrayList<>();
         fields.add(roleTableIdAlias);
         fields.add(roleTableXidAlias);
-        fields.add(PERMISSIONSMINTERMS.mintermId);
+        fields.add(PERMISSIONS_MINTERMS.mintermId);
 
-        SelectSeekStep2<Record, Integer, Integer> select = create.select(fields).from(PERMISSIONSMINTERMS)
-                .join(MINTERMSROLES).on(PERMISSIONSMINTERMS.mintermId.eq(MINTERMSROLES.mintermId))
-                .join(roleTableAsAlias).on(roleTableIdAlias.eq(MINTERMSROLES.roleId))
-                .where(PERMISSIONSMINTERMS.permissionId.eq(id))
-                .orderBy(PERMISSIONSMINTERMS.permissionId.asc(), PERMISSIONSMINTERMS.mintermId.asc());
+        SelectSeekStep2<Record, Integer, Integer> select = create.select(fields).from(PERMISSIONS_MINTERMS)
+                .join(MINTERMS_ROLES).on(PERMISSIONS_MINTERMS.mintermId.eq(MINTERMS_ROLES.mintermId))
+                .join(roleTableAsAlias).on(roleTableIdAlias.eq(MINTERMS_ROLES.roleId))
+                .where(PERMISSIONS_MINTERMS.permissionId.eq(id))
+                .orderBy(PERMISSIONS_MINTERMS.permissionId.asc(), PERMISSIONS_MINTERMS.mintermId.asc());
 
         String sql = select.getSQL();
         List<Object> arguments = select.getBindValues();
