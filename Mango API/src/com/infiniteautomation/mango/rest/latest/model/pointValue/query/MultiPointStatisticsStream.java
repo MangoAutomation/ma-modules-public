@@ -49,11 +49,11 @@ public class MultiPointStatisticsStream extends MultiPointTimeRangeDatabaseStrea
             boolean lastBookend, boolean cached) throws QueryCancelledException {
 
         try {
-            final DataPointVO vo = voMap.get(value.getId());
+            final DataPointVO vo = voMap.get(value.getSeriesId());
             if(info.isUseCache() != PointValueTimeCacheControl.NONE && !cached)
                 if(!processValueThroughCache(value, index, firstBookend, lastBookend))
                     return;
-            StatisticsGenerator generator = statsMap.compute(value.getId(), (k, v) -> {
+            StatisticsGenerator generator = statsMap.compute(value.getSeriesId(), (k, v) -> {
                 if(v == null) {
                     switch(vo.getPointLocator().getDataTypeId()){
                         case DataTypes.BINARY:
@@ -68,7 +68,7 @@ public class MultiPointStatisticsStream extends MultiPointTimeRangeDatabaseStrea
                             v = new AnalogStatistics(info.getFromMillis(), info.getToMillis(), value);
                             break;
                         default:
-                            throw new ShouldNeverHappenException("Invalid Data Type: "+ voMap.get(value.getId()).getPointLocator().getDataTypeId());
+                            throw new ShouldNeverHappenException("Invalid Data Type: "+ voMap.get(value.getSeriesId()).getPointLocator().getDataTypeId());
                     }
                 }
                 if(!lastBookend && !firstBookend) {

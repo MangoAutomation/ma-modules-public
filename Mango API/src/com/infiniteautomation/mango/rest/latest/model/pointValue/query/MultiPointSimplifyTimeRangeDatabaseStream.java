@@ -27,7 +27,9 @@ import com.serotonin.m2m2.vo.DataPointVO;
  */
 public class MultiPointSimplifyTimeRangeDatabaseStream<T, INFO extends ZonedDateTimeRangeQueryInfo> extends MultiPointTimeRangeDatabaseStream<T, INFO> {
 
+    //Map key is seriesId
     protected final Map<Integer, BookendPair> bookendMap;
+    //Map key is seriesId
     protected final Map<Integer, List<DataPointVOPointValueTimeBookend>> valuesMap;
 
     /**
@@ -45,18 +47,18 @@ public class MultiPointSimplifyTimeRangeDatabaseStream<T, INFO extends ZonedDate
     @Override
     protected void writeValue(DataPointVOPointValueTimeBookend value) throws IOException {
         if(value.isBookend()) {
-            BookendPair pair = bookendMap.get(value.getId());
+            BookendPair pair = bookendMap.get(value.getSeriesId());
             if(pair == null) {
                 pair = new BookendPair();
-                bookendMap.put(value.getId(), pair);
+                bookendMap.put(value.getSeriesId(), pair);
             }
             pair.addBookend(value);
         }else {
             //Store it for now
-            List<DataPointVOPointValueTimeBookend> values = valuesMap.get(value.getId());
+            List<DataPointVOPointValueTimeBookend> values = valuesMap.get(value.getSeriesId());
             if(values == null) {
                 values = new ArrayList<>();
-                valuesMap.put(value.getId(), values);
+                valuesMap.put(value.getSeriesId(), values);
             }
             values.add(value);
         }
@@ -69,11 +71,11 @@ public class MultiPointSimplifyTimeRangeDatabaseStream<T, INFO extends ZonedDate
         if(info.isSingleArray() && voMap.size() > 1) {
             List<DataPointVOPointValueTimeBookend> sorted = new ArrayList<>();
             while(it.hasNext()) {
-                Integer id = it.next();
-                BookendPair pair = bookendMap.get(id);
+                Integer seriesId = it.next();
+                BookendPair pair = bookendMap.get(seriesId);
                 if(pair != null && pair.startBookend != null)
                     sorted.add(pair.startBookend);
-                List<DataPointVOPointValueTimeBookend> values = valuesMap.get(id);
+                List<DataPointVOPointValueTimeBookend> values = valuesMap.get(seriesId);
                 if(values != null) {
                     sorted.addAll(SimplifyUtility.simplify(info.simplifyTolerance, info.simplifyTarget, info.simplifyHighQuality, info.simplifyPrePostProcess, values));
                 }
@@ -93,15 +95,15 @@ public class MultiPointSimplifyTimeRangeDatabaseStream<T, INFO extends ZonedDate
                 super.writeValue(value);
         }else {
             while(it.hasNext()) {
-                Integer id = it.next();
+                Integer seriesId = it.next();
                 List<DataPointVOPointValueTimeBookend> simplified;
-                List<DataPointVOPointValueTimeBookend> values = valuesMap.get(id);
+                List<DataPointVOPointValueTimeBookend> values = valuesMap.get(seriesId);
                 if(values == null) {
                     simplified = Collections.emptyList();
                 }else {
                     simplified = SimplifyUtility.simplify(info.simplifyTolerance, info.simplifyTarget, info.simplifyHighQuality, info.simplifyPrePostProcess, values);
                 }
-                BookendPair pair = bookendMap.get(id);
+                BookendPair pair = bookendMap.get(seriesId);
                 if(pair != null && pair.startBookend != null)
                     super.writeValue(pair.startBookend);
                 for(DataPointVOPointValueTimeBookend value : simplified)

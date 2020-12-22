@@ -168,7 +168,7 @@ public class MultiDataPointDefaultRollupStatisticsQuantizerStream <T, INFO exten
                 super.firstValue(value, index, bookend);
                 return;
             }
-            DataPointStatisticsQuantizer<?> quantizer = this.quantizerMap.get(value.getId());
+            DataPointStatisticsQuantizer<?> quantizer = this.quantizerMap.get(value.getSeriesId());
             updateQuantizers(value);
             quantizer.firstValue(value, index, bookend);
         }catch(IOException e) {
@@ -184,7 +184,7 @@ public class MultiDataPointDefaultRollupStatisticsQuantizerStream <T, INFO exten
                 return;
             }
             updateQuantizers(value);
-            DataPointStatisticsQuantizer<?> quantizer = this.quantizerMap.get(value.getId());
+            DataPointStatisticsQuantizer<?> quantizer = this.quantizerMap.get(value.getSeriesId());
             quantizer.row(value, index);
         }catch(IOException e) {
             throw new QueryCancelledException(e);
@@ -197,7 +197,7 @@ public class MultiDataPointDefaultRollupStatisticsQuantizerStream <T, INFO exten
             super.lastValue(value, index, bookend);
             return;
         }
-        DataPointStatisticsQuantizer<?> quantizer = this.quantizerMap.get(value.getId());
+        DataPointStatisticsQuantizer<?> quantizer = this.quantizerMap.get(value.getSeriesId());
         quantizer.lastValue(value, index, bookend);
     }
 

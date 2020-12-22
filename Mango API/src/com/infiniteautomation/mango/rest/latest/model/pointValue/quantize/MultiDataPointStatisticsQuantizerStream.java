@@ -53,7 +53,7 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
     @Override
     public void firstValue(IdPointValueTime value, int index, boolean bookend) throws QueryCancelledException {
         try {
-            DataPointStatisticsQuantizer<?> quantizer = this.quantizerMap.get(value.getId());
+            DataPointStatisticsQuantizer<?> quantizer = this.quantizerMap.get(value.getSeriesId());
             if(!info.isSingleArray())
                 writer.writeStartArray(quantizer.vo.getXid());
             updateQuantizers(value);
@@ -86,15 +86,15 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
                             q.row(row.value, row.index);
                         }
                     }
-                    currentValueTimeMap.put(value.getId(), new IdPointValueTimeRow(value, index));
+                    currentValueTimeMap.put(value.getSeriesId(), new IdPointValueTimeRow(value, index));
                 }else {
                     //cache the value so as not to trigger quantization until all values are ready
-                    currentValueTimeMap.put(value.getId(), new IdPointValueTimeRow(value, index));
+                    currentValueTimeMap.put(value.getSeriesId(), new IdPointValueTimeRow(value, index));
                 }
 
                 lastTime = value.getTime();
             }else {
-                DataPointStatisticsQuantizer<?> quantizer = this.quantizerMap.get(value.getId());
+                DataPointStatisticsQuantizer<?> quantizer = this.quantizerMap.get(value.getSeriesId());
                 quantizer.row(value, index);
             }
         }catch(IOException e) {
@@ -105,8 +105,8 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
     @Override
     public void lastValue(IdPointValueTime value, int index, boolean bookend) throws QueryCancelledException {
         try {
-            DataPointStatisticsQuantizer<?> quantizer = this.quantizerMap.get(value.getId());
-            IdPointValueTimeRow row = this.currentValueTimeMap.remove(value.getId());
+            DataPointStatisticsQuantizer<?> quantizer = this.quantizerMap.get(value.getSeriesId());
+            IdPointValueTimeRow row = this.currentValueTimeMap.remove(value.getSeriesId());
             if(row != null) {
                 quantizer.row(row.value, row.index);
             }

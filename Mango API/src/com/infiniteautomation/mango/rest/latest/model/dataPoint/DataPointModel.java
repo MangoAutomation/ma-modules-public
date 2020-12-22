@@ -78,6 +78,7 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
 
     //For display purposes
     String extendedName;
+    int seriesId;
 
     public DataPointModel() {
     }
@@ -137,6 +138,7 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
             this.setExtremeHighLimit = point.getSetExtremeHighLimit();
         }
         this.extendedName = point.getExtendedName();
+        this.seriesId = point.getSeriesId();
         this.data = point.getData();
     }
 
@@ -582,6 +584,10 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
 
     public void setData(JsonNode data) {
         this.data = data;
+    }
+
+    public int getSeriesId() {
+        return this.seriesId;
     }
 
     @Override

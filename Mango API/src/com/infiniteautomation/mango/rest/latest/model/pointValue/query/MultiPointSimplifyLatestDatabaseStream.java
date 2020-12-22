@@ -26,6 +26,7 @@ import com.serotonin.m2m2.vo.DataPointVO;
  */
 public class MultiPointSimplifyLatestDatabaseStream<T, INFO extends LatestQueryInfo> extends MultiPointLatestDatabaseStream<T, INFO>{
 
+    //Map of seriesId to list
     protected final Map<Integer, List<DataPointVOPointValueTimeBookend>> valuesMap;
 
     /**
@@ -42,10 +43,10 @@ public class MultiPointSimplifyLatestDatabaseStream<T, INFO extends LatestQueryI
     @Override
     protected void writeValue(DataPointVOPointValueTimeBookend value) throws IOException {
         //Store it for now
-        List<DataPointVOPointValueTimeBookend> values = valuesMap.get(value.getId());
+        List<DataPointVOPointValueTimeBookend> values = valuesMap.get(value.getSeriesId());
         if(values == null) {
             values = new ArrayList<>();
-            valuesMap.put(value.getId(), values);
+            valuesMap.put(value.getSeriesId(), values);
         }
         values.add(value);
     }

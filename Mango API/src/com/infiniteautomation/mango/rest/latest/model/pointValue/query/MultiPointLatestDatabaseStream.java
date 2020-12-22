@@ -13,6 +13,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import com.infiniteautomation.mango.db.query.QueryCancelledException;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.DataPointVOPointValueTimeBookend;
@@ -38,8 +39,8 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
 
     protected long currentTime; //For writing multiple points single array NoSQL
     protected final List<DataPointValueTime> currentValues;
-    protected int currentDataPointId;
-    //List of cached values per data point id, sorted in descending time order
+    protected int currentDataPointSeriesId;
+    //List of cached values per data point series id, sorted in descending time order
     protected final Map<Integer, List<IdPointValueTime>> cache;
     protected final Map<Integer, LimitCounter> limiters;  //For use with cache so we don't return too many values, assuming that caches sizes are small this should have minimal effects
     protected final List<DataPointValueTime> bookends;
@@ -49,7 +50,7 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
         super(info, voMap, dao);
 
         this.currentValues = new ArrayList<>(voMap.size());
-        this.currentDataPointId = Common.NEW_ID;
+        this.currentDataPointSeriesId = Common.NEW_ID;
         if(info.isUseCache() != PointValueTimeCacheControl.NONE)
             cache = buildCache();
         else
@@ -87,7 +88,7 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
         }else {
             if(!info.isSingleArray()) {
                 if(contentType == StreamContentType.JSON) {
-                    if(this.currentDataPointId != Common.NEW_ID)
+                    if(this.currentDataPointSeriesId != Common.NEW_ID)
                         writer.writeEndArray();
                 }
             }
@@ -110,11 +111,11 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
 
             //Don't limit bookends and don't virtually limit non-cached requests
             if(info.useCache != PointValueTimeCacheControl.NONE && (!firstBookend && !lastBookend))
-                if(limiters.get(value.getId()).limited())
+                if(limiters.get(value.getSeriesId()).limited())
                     return;
 
             //Write it out/process it
-            writeValue(new DataPointVOPointValueTimeBookend(this.voMap.get(value.getId()), value, firstBookend, lastBookend, cached));
+            writeValue(new DataPointVOPointValueTimeBookend(this.voMap.get(value.getSeriesId()), value, firstBookend, lastBookend, cached));
         }catch(IOException e) {
             throw new QueryCancelledException(e);
         }
@@ -145,11 +146,11 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
         }else {
             if(!info.isSingleArray()) {
                 //Writing multi-array, could be a multi-array of 1 though
-                if(currentDataPointId != value.getId()) {
-                    if(currentDataPointId != Common.NEW_ID)
+                if(currentDataPointSeriesId != value.getSeriesId()) {
+                    if(currentDataPointSeriesId != Common.NEW_ID)
                         writer.writeEndArray();
-                    writer.writeStartArray(this.voMap.get(value.getId()).getXid());
-                    currentDataPointId = value.getId();
+                    writer.writeStartArray(this.voMap.get(value.getSeriesId()).getXid());
+                    currentDataPointSeriesId = value.getSeriesId();
                 }
             }
             writer.writeDataPointValue(value);
@@ -166,7 +167,7 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
      * @throws IOException
      */
     protected boolean processValueThroughCache(IdPointValueTime value, int index, boolean firstBookend, boolean lastBookend) throws QueryCancelledException {
-        List<IdPointValueTime> pointCache = this.cache.get(value.getId());
+        List<IdPointValueTime> pointCache = this.cache.get(value.getSeriesId());
         if(pointCache != null) {
             ListIterator<IdPointValueTime> it = pointCache.listIterator();
             while(it.hasNext()) {
@@ -180,13 +181,13 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
                     processRow(pvt, index, firstBookend, lastBookend, true);
                     it.remove();
                     if(pointCache.size() == 0)
-                        this.cache.remove(value.getId());
+                        this.cache.remove(value.getSeriesId());
                     return false;
                 }else
                     break; //No more since we are in time order of the query
             }
             if(pointCache.size() == 0)
-                this.cache.remove(value.getId());
+                this.cache.remove(value.getSeriesId());
         }
         return true;
     }
@@ -230,8 +231,9 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
      */
     protected Map<Integer, List<IdPointValueTime>> buildCache() {
         Map<Integer, List<IdPointValueTime>> map = new HashMap<>();
-        for(Integer id : voMap.keySet()) {
-            DataPointRT rt = Common.runtimeManager.getDataPoint(id);
+        for(Entry<Integer, DataPointVO> entry : voMap.entrySet()) {
+            DataPointVO vo = entry.getValue();
+            DataPointRT rt = Common.runtimeManager.getDataPoint(vo.getId());
             if(rt != null) {
                 List<PointValueTime> cache;
                 if(info.getLimit() != null)
@@ -242,15 +244,15 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
                 for(PointValueTime pvt : cache) {
                     if(includeCachedPoint(pvt)) {
                         if(pvt instanceof IAnnotated)
-                            idPvtCache.add(new AnnotatedIdPointValueTime(id, pvt.getValue(), pvt.getTime(), ((IAnnotated)pvt).getSourceMessage()));
+                            idPvtCache.add(new AnnotatedIdPointValueTime(vo.getSeriesId(), pvt.getValue(), pvt.getTime(), ((IAnnotated)pvt).getSourceMessage()));
                         else
-                            idPvtCache.add(new IdPointValueTime(id, pvt.getValue(), pvt.getTime()));
+                            idPvtCache.add(new IdPointValueTime(vo.getSeriesId(), pvt.getValue(), pvt.getTime()));
                     }
                 }
 
                 if(!idPvtCache.isEmpty()) {
                     sortCache(idPvtCache);
-                    map.put(id, idPvtCache);
+                    map.put(vo.getSeriesId(), idPvtCache);
                 }
             }
         }

@@ -1341,7 +1341,7 @@ public class PointValueRestController extends AbstractMangoRestController {
      * Build and validate the map of Requested Data Points
      * @param user
      * @param xids
-     * @return
+     * @return Map of series ids to data points
      */
     protected Map<Integer, DataPointVO> buildMap(User user, String[] xids, RollupEnum rollup){
         if(xids == null)
@@ -1363,7 +1363,7 @@ public class PointValueRestController extends AbstractMangoRestController {
                 case DataTypes.NUMERIC:
                     break;
             }
-            voMap.put(vo.getId(), vo);
+            voMap.put(vo.getSeriesId(), vo);
         }
 
         //Do we have any points
