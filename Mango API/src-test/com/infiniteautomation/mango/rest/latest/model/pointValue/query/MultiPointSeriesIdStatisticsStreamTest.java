@@ -20,9 +20,9 @@ public class MultiPointSeriesIdStatisticsStreamTest extends MultiPointStatistics
         DataPointVO vo = super.createDataPoint(dataSourceId, dataType, defaultCacheSize);
 
         //Change series id
-        int seriesId = DataPointDao.getInstance().getNextSeriesId();
+        int seriesId = DataPointDao.getInstance().insertNewTimeSeries();
         while(vo.getId() == seriesId) {
-            seriesId = DataPointDao.getInstance().getNextSeriesId();
+            seriesId = DataPointDao.getInstance().insertNewTimeSeries();
         }
         vo.setSeriesId(seriesId);
 
