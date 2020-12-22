@@ -3,6 +3,7 @@
  */
 package com.infiniteautomation.mango.rest.latest;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -12,18 +13,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
-import com.infiniteautomation.mango.util.exception.TranslatableRuntimeException;
-import com.serotonin.m2m2.i18n.TranslatableException;
 import org.jooq.Field;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -40,6 +35,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.db.query.ConditionSortLimit;
+import com.infiniteautomation.mango.rest.latest.exception.ServerErrorException;
+import com.infiniteautomation.mango.rest.latest.model.JSONStreamedArray;
 import com.infiniteautomation.mango.rest.latest.model.ListWithTotal;
 import com.infiniteautomation.mango.rest.latest.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.latest.model.StreamedArray;
@@ -54,10 +51,10 @@ import com.infiniteautomation.mango.spring.db.EventInstanceTableDefinition;
 import com.infiniteautomation.mango.spring.service.DataPointService;
 import com.infiniteautomation.mango.spring.service.DataSourceService;
 import com.infiniteautomation.mango.spring.service.EventInstanceService;
+import com.infiniteautomation.mango.spring.service.EventInstanceService.AlarmPointTagCount;
 import com.infiniteautomation.mango.spring.service.EventInstanceService.PeriodCounts;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.infiniteautomation.mango.util.exception.ValidationException;
-import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.event.DataPointEventLevelSummary;
@@ -167,7 +164,8 @@ public class EventsRestController {
     @ApiOperation(
             value = "Query Events",
             notes = "Use RQL formatted query",
-            response = EventQueryResult.class
+            response = EventQueryResult.class,
+            responseContainer="List"
             )
     @RequestMapping(method = RequestMethod.GET)
     public StreamedArrayWithTotal queryRQL(
@@ -292,6 +290,50 @@ public class EventsRestController {
 
         ConditionSortLimit conditions = service.rqlToCondition(rql, Collections.emptyMap(), fieldMap, valueConverters);
         return service.countQuery(conditions, sorted);
+    }
+
+    @ApiOperation(value="Query for event counts using RQL",
+            response = AlarmPointTagCount.class,
+            responseContainer="List")
+    @RequestMapping(method = RequestMethod.POST, path = "/data-point-tag-counts")
+    public JSONStreamedArray countDataPointEventsByTag(
+            @AuthenticationPrincipal User user,
+            @RequestBody AlarmPointTagCountQuery model) {
+
+        return (jgen) ->  {
+            service.countDataPointEventsByTag(model.tags, model.after, model.limit, (item, rowNum) -> {
+                try {
+                    jgen.writeObject(item);
+                } catch (IOException e) {
+                    throw new ServerErrorException(e);
+                }
+            });
+        };
+
+    }
+
+    public static class AlarmPointTagCountQuery {
+        private List<String> tags;
+        private Date after;
+        private Integer limit;
+        public List<String> getTags() {
+            return tags;
+        }
+        public void setTags(List<String> tags) {
+            this.tags = tags;
+        }
+        public Date getAfter() {
+            return after;
+        }
+        public void setAfter(Date after) {
+            this.after = after;
+        }
+        public Integer getLimit() {
+            return limit;
+        }
+        public void setLimit(Integer limit) {
+            this.limit = limit;
+        }
     }
 
     private StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
