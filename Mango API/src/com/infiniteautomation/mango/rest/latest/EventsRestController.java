@@ -34,6 +34,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.infiniteautomation.mango.db.query.ConditionSortLimit;
 import com.infiniteautomation.mango.rest.latest.exception.ServerErrorException;
 import com.infiniteautomation.mango.rest.latest.model.JSONStreamedArray;
@@ -294,32 +295,47 @@ public class EventsRestController {
 
     @ApiOperation(value="Query for event counts using RQL",
             response = AlarmPointTagCount.class,
-            responseContainer="List")
+            responseContainer="Map")
     @RequestMapping(method = RequestMethod.POST, path = "/data-point-tag-counts")
-    public JSONStreamedArray countDataPointEventsByTag(
+    public StreamedArrayWithTotal countDataPointEventsByTag(
             @AuthenticationPrincipal User user,
             @RequestBody AlarmPointTagCountQuery model) {
 
-        return (jgen) ->  {
-            service.countDataPointEventsByTag(model.tags, model.after, model.limit, (item, rowNum) -> {
-                try {
-                    jgen.writeObject(item);
-                } catch (IOException e) {
-                    throw new ServerErrorException(e);
-                }
-            });
-        };
+        return new StreamedArrayWithTotal() {
+            int count = 0;
+            @Override
+            public StreamedArray getItems() {
+                return new JSONStreamedArray() {
+                    @Override
+                    public void writeArrayValues(JsonGenerator jgen) throws IOException {
+                        service.countDataPointEventsByTag(model.tags, model.after, model.limit, (item, rowNum) -> {
+                            try {
+                                jgen.writeObject(item);
+                                count++;
+                            } catch (IOException e) {
+                                throw new ServerErrorException(e);
+                            }
+                        });
+                    }
+                };
+            }
 
+            @Override
+            public int getTotal() {
+                return count;
+            }
+
+        };
     }
 
     public static class AlarmPointTagCountQuery {
-        private List<String> tags;
+        private Map<String,String> tags;
         private Date after;
         private Integer limit;
-        public List<String> getTags() {
+        public Map<String,String> getTags() {
             return tags;
         }
-        public void setTags(List<String> tags) {
+        public void setTags(Map<String,String> tags) {
             this.tags = tags;
         }
         public Date getAfter() {
