@@ -11,10 +11,6 @@
     <name>maintenanceEvents</name>
     <description>Page for creating and editing maintenance schedules that raise events at appropriate times.</description>
     <version>4.0.0-SNAPSHOT</version>
-    <properties>
-        <jooq.codegen.packageName>com.serotonin.m2m2.maintenanceEvents.db</jooq.codegen.packageName>
-        <jooq.codegen.importScript>resources/com/serotonin/m2m2/maintenanceEvents/createTables-H2.sql</jooq.codegen.importScript>
-    </properties>
     <build>
         <plugins>
             <plugin>
@@ -26,6 +22,19 @@
             </plugin>
             <plugin>
                 <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>unpack-sql</id>
+                        <phase>generate-sources</phase>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.infiniteautomation</groupId>
+                <artifactId>mango-jooq-maven-plugin</artifactId>
+                <configuration>
+                    <packageName>com.serotonin.m2m2.maintenanceEvents.db</packageName>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>com.github.eirslett</groupId>
