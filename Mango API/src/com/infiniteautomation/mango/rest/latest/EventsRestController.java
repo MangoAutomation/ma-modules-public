@@ -294,10 +294,11 @@ public class EventsRestController {
     }
 
     @ApiOperation(value="Query for event counts using RQL",
+            notes="Body restricts query event active timestamps >= from and < to (both optional)",
             response = AlarmPointTagCount.class,
             responseContainer="Map")
-    @RequestMapping(method = RequestMethod.POST, path = "/data-point-tag-counts")
-    public StreamedArrayWithTotal countDataPointEventsByTag(
+    @RequestMapping(method = RequestMethod.POST, path = "/data-point-event-counts")
+    public StreamedArrayWithTotal countDataPointEvents(
             @RequestBody
             CountDataPointEventsQuery body,
             HttpServletRequest request,
