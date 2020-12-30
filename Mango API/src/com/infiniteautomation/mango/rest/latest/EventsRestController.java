@@ -298,17 +298,22 @@ public class EventsRestController {
             responseContainer="Map")
     @RequestMapping(method = RequestMethod.POST, path = "/data-point-tag-counts")
     public StreamedArrayWithTotal countDataPointEventsByTag(
-            @AuthenticationPrincipal User user,
-            @RequestBody AlarmPointTagCountQuery model) {
+            @RequestBody
+            CountDataPointEventsQuery body,
+            HttpServletRequest request,
+            @AuthenticationPrincipal User user) {
+
+        ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
 
         return new StreamedArrayWithTotal() {
             int count = 0;
+
             @Override
             public StreamedArray getItems() {
                 return new JSONStreamedArray() {
                     @Override
                     public void writeArrayValues(JsonGenerator jgen) throws IOException {
-                        service.countDataPointEventsByTag(model.tags, model.after, model.limit, (item, rowNum) -> {
+                        service.queryDataPointEventCountsByRQL(rql, body.getFrom() != null ? body.getFrom().getTime() : null, body.getTo() != null ? body.getTo().getTime() : null, (item, rowNum) -> {
                             try {
                                 jgen.writeObject(item);
                                 count++;
@@ -322,34 +327,10 @@ public class EventsRestController {
 
             @Override
             public int getTotal() {
-                return count;
+                return service.countDataPointEventCountsByRQL(rql, body.getFrom() != null ? body.getFrom().getTime() : null, body.getTo() != null ? body.getTo().getTime() : null);
             }
 
         };
-    }
-
-    public static class AlarmPointTagCountQuery {
-        private Map<String,String> tags;
-        private Date after;
-        private Integer limit;
-        public Map<String,String> getTags() {
-            return tags;
-        }
-        public void setTags(Map<String,String> tags) {
-            this.tags = tags;
-        }
-        public Date getAfter() {
-            return after;
-        }
-        public void setAfter(Date after) {
-            this.after = after;
-        }
-        public Integer getLimit() {
-            return limit;
-        }
-        public void setLimit(Integer limit) {
-            this.limit = limit;
-        }
     }
 
     private StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
@@ -384,5 +365,26 @@ public class EventsRestController {
      * @author Jared Wiltshire
      */
     private interface EventQueryResult extends ListWithTotal<EventInstanceModel> {
+    }
+
+    public static final class CountDataPointEventsQuery {
+        private Date from;
+        private Date to;
+
+        public Date getFrom() {
+            return from;
+        }
+
+        public void setFrom(Date from) {
+            this.from = from;
+        }
+
+        public void setTo(Date to) {
+            this.to = to;
+        }
+
+        public Date getTo() {
+            return to;
+        }
     }
 }
