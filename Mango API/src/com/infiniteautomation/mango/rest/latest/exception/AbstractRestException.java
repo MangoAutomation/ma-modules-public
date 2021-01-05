@@ -1,6 +1,5 @@
-/**
- * Copyright (C) 2017 Infinite Automation Software. All rights reserved.
- *
+/*
+ * Copyright (C) 2021 Radix IoT LLC. All rights reserved.
  */
 package com.infiniteautomation.mango.rest.latest.exception;
 
@@ -35,7 +34,7 @@ public abstract class AbstractRestException extends RuntimeException implements 
     }
 
     public AbstractRestException(HttpStatus httpCode, Throwable cause) {
-        this(httpCode, null, new TranslatableMessage("rest.httpStatusMessage." + httpCode.value(), cause != null ? cause.toString() : ""), cause);
+        this(httpCode, null, new TranslatableMessage("rest.httpStatus." + httpCode.value()), cause);
     }
 
     public AbstractRestException(HttpStatus httpCode, IMangoRestErrorCode mangoCode) {
@@ -43,7 +42,7 @@ public abstract class AbstractRestException extends RuntimeException implements 
     }
 
     public AbstractRestException(HttpStatus httpCode, IMangoRestErrorCode mangoCode, Throwable cause) {
-        this(httpCode, mangoCode, new TranslatableMessage("rest.httpStatusMessage." + httpCode.value(), cause != null ? cause.toString() : ""), cause);
+        this(httpCode, mangoCode, new TranslatableMessage("rest.httpStatus." + httpCode.value()), cause);
     }
 
     public AbstractRestException(HttpStatus httpCode, IMangoRestErrorCode mangoCode, TranslatableMessage message) {
@@ -60,21 +59,21 @@ public abstract class AbstractRestException extends RuntimeException implements 
     }
 
     @JsonIgnore
-    public HttpStatus getStatus(){
+    public HttpStatus getStatus() {
         return this.httpCode;
     }
 
     @JsonProperty
-    public int getMangoStatusCode(){
-        if(mangoCode != null)
+    public int getMangoStatusCode() {
+        if (mangoCode != null)
             return mangoCode.getCode();
         else
             return -1;
     }
 
     @JsonProperty
-    public String getMangoStatusName(){
-        if(mangoCode != null)
+    public String getMangoStatusName() {
+        if (mangoCode != null)
             return mangoCode.name();
         else
             return null;
@@ -86,7 +85,7 @@ public abstract class AbstractRestException extends RuntimeException implements 
         Throwable cause = this.getCause();
         if (cause != null) {
             String causeInfo = cause.getClass().getSimpleName();
-            if(!StringUtils.isEmpty(cause.getMessage()))
+            if (!StringUtils.isEmpty(cause.getMessage()))
                 return causeInfo + ": " + cause.getMessage();
             else
                 return causeInfo;

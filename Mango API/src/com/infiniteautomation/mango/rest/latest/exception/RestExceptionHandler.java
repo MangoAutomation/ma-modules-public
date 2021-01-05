@@ -1,6 +1,5 @@
-/**
- * Copyright (C) 2017 Infinite Automation Software. All rights reserved.
- *
+/*
+ * Copyright (C) 2021 Radix IoT LLC. All rights reserved.
  */
 package com.infiniteautomation.mango.rest.latest.exception;
 
@@ -56,13 +55,12 @@ import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.web.mvc.spring.security.authentication.MangoPasswordAuthenticationProvider.AuthenticationRateException;
 
 /**
- *
  * @author Terry Packer
  */
-@ControllerAdvice(basePackages= {"com.infiniteautomation.mango.rest.latest"})
+@ControllerAdvice(basePackages = {"com.infiniteautomation.mango.rest.latest"})
 public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
-    private final Log LOG = LogFactory.getLog(RestExceptionHandler.class);
+    private final Log log = LogFactory.getLog(RestExceptionHandler.class);
 
     final RequestMatcher browserHtmlRequestMatcher;
     final RestModelMapper mapper;
@@ -71,7 +69,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     @Autowired
     public RestExceptionHandler(
             @Qualifier("browserHtmlRequestMatcher")
-            RequestMatcher browserHtmlRequestMatcher,
+                    RequestMatcher browserHtmlRequestMatcher,
             RestModelMapper mapper,
             PermissionService service) {
         this.browserHtmlRequestMatcher = browserHtmlRequestMatcher;
@@ -81,11 +79,6 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
     /**
      * Handle End of file exceptions specifically those from the client's connection being closed
-     * @param request
-     * @param response
-     * @param ex
-     * @param req
-     * @return
      */
     @ExceptionHandler(EofException.class)
     public Object exceptionHandler(HttpServletRequest request, HttpServletResponse response, IOException ex, WebRequest req) {
@@ -102,10 +95,10 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler({
-        org.springframework.security.access.AccessDeniedException.class,
-        PermissionException.class
+            org.springframework.security.access.AccessDeniedException.class,
+            PermissionException.class
     })
-    public ResponseEntity<Object> handleAccessDenied(HttpServletRequest request, HttpServletResponse response, Exception ex, WebRequest req){
+    public ResponseEntity<Object> handleAccessDenied(HttpServletRequest request, HttpServletResponse response, Exception ex, WebRequest req) {
         Object model;
 
         if (ex instanceof PermissionException) {
@@ -119,7 +112,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler({
-        ValidationException.class
+            ValidationException.class
     })
     public ResponseEntity<Object> handleValidationException(HttpServletRequest request, HttpServletResponse response, Exception ex, WebRequest req) {
         ValidationException validationException = (ValidationException) ex;
@@ -128,7 +121,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
         //Do any potential mapping of VO property names to model property names
         Class<?> modelClass = (Class<?>) req.getAttribute(MangoRequestBodyAdvice.MODEL_CLASS, RequestAttributes.SCOPE_REQUEST);
-        if(validationException.getValidatedClass() != null && modelClass != null) {
+        if (validationException.getValidatedClass() != null && modelClass != null) {
             result = mapper.mapValidationErrors(modelClass, validationException.getValidatedClass(), result);
         }
 
@@ -136,49 +129,49 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler({
-        MessageSendException.class
+            MessageSendException.class
     })
     public ResponseEntity<Object> handleEmailFailedException(HttpServletRequest request, HttpServletResponse response, Exception ex, WebRequest req) {
-        if(ex instanceof EmailFailedException) {
-            EmailFailedException e = (EmailFailedException)ex;
+        if (ex instanceof EmailFailedException) {
+            EmailFailedException e = (EmailFailedException) ex;
             return handleExceptionInternal(ex, new SendEmailFailedRestException(e, e.getSession()), new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, req);
-        }else {
-            return handleExceptionInternal(ex, new SendMessageFailedRestException((MessageSendException)ex), new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, req);
+        } else {
+            return handleExceptionInternal(ex, new SendMessageFailedRestException((MessageSendException) ex), new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, req);
         }
     }
 
     @ExceptionHandler({
-        NotFoundException.class,
-        ResourceNotFoundException.class
+            NotFoundException.class,
+            ResourceNotFoundException.class
     })
     public ResponseEntity<Object> handleNotFoundException(HttpServletRequest request, HttpServletResponse response, Exception ex, WebRequest req) {
         return handleExceptionInternal(ex, new NotFoundRestException(ex), new HttpHeaders(), HttpStatus.NOT_FOUND, req);
     }
 
     @ExceptionHandler({
-        InvalidRQLException.class
+            InvalidRQLException.class
     })
     public ResponseEntity<Object> handleInvalidRQLException(HttpServletRequest request, HttpServletResponse response, InvalidRQLException ex, WebRequest req) {
         return handleExceptionInternal(ex, new InvalidRQLRestException(ex), new HttpHeaders(), HttpStatus.BAD_REQUEST, req);
     }
 
     @ExceptionHandler({
-        RQLVisitException.class
+            RQLVisitException.class
     })
     public ResponseEntity<Object> handleRQLVisitException(HttpServletRequest request, HttpServletResponse response, RQLVisitException ex, WebRequest req) {
         return handleExceptionInternal(ex, new RQLVisitRestException(ex), new HttpHeaders(), HttpStatus.BAD_REQUEST, req);
     }
 
     @ExceptionHandler({
-        TranslatableIllegalStateException.class
+            TranslatableIllegalStateException.class
     })
     public ResponseEntity<Object> handleTranslatableIllegalStateException(HttpServletRequest request, HttpServletResponse response, TranslatableIllegalStateException ex, WebRequest req) {
         return handleExceptionInternal(ex, new IllegalStateRestException(ex.getTranslatableMessage(), ex), new HttpHeaders(), HttpStatus.BAD_REQUEST, req);
     }
 
     @ExceptionHandler({
-        EmailAddressInUseException.class,
-        FeatureDisabledException.class
+            EmailAddressInUseException.class,
+            FeatureDisabledException.class
     })
     public ResponseEntity<Object> handleConflictExceptions(HttpServletRequest request, HttpServletResponse response, Exception ex, WebRequest req) {
         ConfictRestException body;
@@ -193,7 +186,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler({
-        TranslatableRuntimeException.class
+            TranslatableRuntimeException.class
     })
     public ResponseEntity<Object> handleTranslatableRuntimeException(HttpServletRequest request, HttpServletResponse response, TranslatableRuntimeException ex, WebRequest req) {
 
@@ -202,7 +195,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler({
-        TranslatableException.class
+            TranslatableException.class
     })
     public ResponseEntity<Object> handleTranslatableException(HttpServletRequest request, HttpServletResponse response, TranslatableException ex, WebRequest req) {
 
@@ -229,28 +222,35 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler({
-        Exception.class
+            Exception.class
     })
-    public ResponseEntity<Object> handleAllOtherErrors(HttpServletRequest request, HttpServletResponse response, Exception ex, WebRequest req){
+    public ResponseEntity<Object> handleAllOtherErrors(HttpServletRequest request, HttpServletResponse response, Exception ex, WebRequest req) {
         return handleExceptionInternal(ex, new ServerErrorException(ex), new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, req);
     }
 
     @Override
     protected ResponseEntity<Object> handleExceptionInternal(Exception ex,
-            Object body, HttpHeaders headers, HttpStatus status, WebRequest request) {
+                                                             Object body, HttpHeaders headers, HttpStatus status, WebRequest request) {
 
         if (status == HttpStatus.UNAUTHORIZED || status == HttpStatus.FORBIDDEN || status == HttpStatus.TOO_MANY_REQUESTS) {
-            if (LOG.isWarnEnabled()) {
-                LOG.warn(String.format("REST request status %s: %s", status, request.getDescription(true)), ex);
+            if (log.isWarnEnabled()) {
+                log.warn(String.format("REST request status %s: %s", status, request.getDescription(true)), ex);
             }
         } else if (status.value() >= 500) {
-            if (LOG.isErrorEnabled()) {
-                LOG.error(String.format("REST request status %s: %s", status, request.getDescription(true)), ex);
+            if (log.isErrorEnabled()) {
+                log.error(String.format("REST request status %s: %s", status, request.getDescription(true)), ex);
             }
         } else if (status.value() >= 400) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(String.format("REST request status %s: %s", status, request.getDescription(true)), ex);
+            if (log.isDebugEnabled()) {
+                log.debug(String.format("REST request status %s: %s", status, request.getDescription(true)), ex);
             }
+        }
+
+        PermissionHolder user;
+        try {
+            user = Common.getUser();
+        } catch (PermissionException e) {
+            user = null;
         }
 
         HttpServletRequest servletRequest = ((ServletWebRequest) request).getRequest();
@@ -262,26 +262,14 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
             String uri;
             if (status == HttpStatus.FORBIDDEN) {
                 // browser HTML request
-                PermissionHolder holder;
-                User user;
-                try {
-                    holder = Common.getUser();
-                }catch(PermissionException e) {
-                    holder = null;
-                }
-                if(!(holder instanceof User)) {
-                    user = null;
-                }else {
-                    user = (User)holder;
-                }
-                uri = DefaultPagesDefinition.getUnauthorizedUri(servletRequest, servletResponse, user);
+                uri = DefaultPagesDefinition.getUnauthorizedUri(servletRequest, servletResponse, user instanceof User ? (User) user : null);
 
                 // Put exception into request scope (perhaps of use to a view)
                 servletRequest.setAttribute(WebAttributes.ACCESS_DENIED_403, ex);
 
                 // Set the 403 status code.
                 servletResponse.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            } else if(status == HttpStatus.NOT_FOUND) {
+            } else if (status == HttpStatus.NOT_FOUND) {
                 uri = DefaultPagesDefinition.getNotFoundUri(servletRequest, servletResponse);
             } else {
                 uri = DefaultPagesDefinition.getErrorUri(servletRequest, servletResponse);
@@ -289,7 +277,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
             try {
                 servletResponse.sendRedirect(uri);
             } catch (IOException e) {
-                LOG.error(e.getMessage(), e);
+                log.error(e.getMessage(), e);
             }
             return null;
         } else {
@@ -302,33 +290,21 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
                 body = new GenericRestException(status, ex);
 
             //Add admin view if necessary
-            PermissionHolder user;
-            try{
-                user = Common.getUser();
-            }catch(PermissionException e) {
-                user = null;
-            }
             MappingJacksonValue value = new MappingJacksonValue(body);
-            if(user != null && service.hasAdminRole(user))
-                value.setSerializationView(AdminView.class);
-            else
-                value.setSerializationView(Object.class);
+            value.setSerializationView(user != null && service.hasAdminRole(user) ? AdminView.class : Object.class);
             body = value;
-            return new ResponseEntity<Object>(body, headers, status);
+            return new ResponseEntity<>(body, headers, status);
         }
     }
 
     /**
      * Store the exception into the session if one exists
-     *
-     * @param request
-     * @param ex
      */
-    protected void storeException(HttpServletRequest request, Exception ex, HttpStatus status){
+    protected void storeException(HttpServletRequest request, Exception ex, HttpStatus status) {
         // Set Exception into Context
-        HttpSession sesh = request.getSession(false);
-        if (sesh != null)
-            sesh.setAttribute(Common.SESSION_USER_EXCEPTION, ex);
+        HttpSession session = request.getSession(false);
+        if (session != null)
+            session.setAttribute(Common.SESSION_USER_EXCEPTION, ex);
     }
 
 }
