@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.CacheControl;
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -52,6 +53,7 @@ import com.infiniteautomation.mango.rest.latest.resolver.RemainingPath;
 import com.infiniteautomation.mango.spring.service.FileStoreService;
 import com.infiniteautomation.mango.spring.service.FileStoreService.FileStorePath;
 import com.serotonin.m2m2.vo.User;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -240,7 +242,10 @@ public class FileStoreRestController extends AbstractMangoRestController {
         }
 
         HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.set(HttpHeaders.CONTENT_DISPOSITION, download ? "attachment" : "inline");
+        responseHeaders.set(HttpHeaders.CONTENT_DISPOSITION,
+                ContentDisposition.builder(download ? "attachment" : "inline")
+                        .filename(file.getFileName().toString()).build().toString());
+
 
         Set<MediaType> mediaTypes = Sets.newHashSet(MediaType.APPLICATION_OCTET_STREAM);
         request.setAttribute(HandlerMapping.PRODUCIBLE_MEDIA_TYPES_ATTRIBUTE, mediaTypes);
@@ -267,8 +272,7 @@ public class FileStoreRestController extends AbstractMangoRestController {
     /**
      * Convert a file to a model
      *
-     * @param file
-     * @param root
+     * @param fileStorePath
      * @param context
      * @return
      */

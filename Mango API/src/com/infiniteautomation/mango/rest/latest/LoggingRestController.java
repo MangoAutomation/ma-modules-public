@@ -17,6 +17,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -34,6 +35,7 @@ import com.infiniteautomation.mango.rest.latest.model.StreamWithTotal;
 import com.infiniteautomation.mango.rest.latest.model.filestore.FileModel;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.Translations;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -101,7 +103,11 @@ public class LoggingRestController {
 
         //TODO There is a known bug here where if the file rolls over during download/transmission the request will fail
         HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.set(HttpHeaders.CONTENT_DISPOSITION, download ? "attachment" : "inline");
+
+        responseHeaders.set(HttpHeaders.CONTENT_DISPOSITION,
+                ContentDisposition.builder(download ? "attachment" : "inline")
+                        .filename(filename).build().toString());
+
         if (file.getFileName().toString().endsWith(".gz")) {
             responseHeaders.set(HttpHeaders.CONTENT_ENCODING, "gzip");
         }
