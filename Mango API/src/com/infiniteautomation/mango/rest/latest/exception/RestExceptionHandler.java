@@ -7,7 +7,6 @@ import java.io.IOException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -83,7 +82,6 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(EofException.class)
     public Object exceptionHandler(HttpServletRequest request, HttpServletResponse response, IOException ex, WebRequest req) {
         response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
-        this.storeException(request, ex, HttpStatus.SERVICE_UNAVAILABLE);
         //There is nothing we can send back
         return null;
     }
@@ -256,8 +254,6 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         HttpServletRequest servletRequest = ((ServletWebRequest) request).getRequest();
         HttpServletResponse servletResponse = ((ServletWebRequest) request).getResponse();
 
-        this.storeException(servletRequest, ex, status);
-
         if (this.browserHtmlRequestMatcher.matches(servletRequest) && !Common.envProps.getBoolean("rest.disableErrorRedirects", false)) {
             String uri;
             if (status == HttpStatus.FORBIDDEN) {
@@ -296,15 +292,4 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
             return new ResponseEntity<>(body, headers, status);
         }
     }
-
-    /**
-     * Store the exception into the session if one exists
-     */
-    protected void storeException(HttpServletRequest request, Exception ex, HttpStatus status) {
-        // Set Exception into Context
-        HttpSession session = request.getSession(false);
-        if (session != null)
-            session.setAttribute(Common.SESSION_USER_EXCEPTION, ex);
-    }
-
 }
