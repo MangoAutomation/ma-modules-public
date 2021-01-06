@@ -104,13 +104,18 @@ public class LoggingRestController {
         //TODO There is a known bug here where if the file rolls over during download/transmission the request will fail
         HttpHeaders responseHeaders = new HttpHeaders();
 
-        responseHeaders.set(HttpHeaders.CONTENT_DISPOSITION,
-                ContentDisposition.builder(download ? "attachment" : "inline")
-                        .filename(filename).build().toString());
-
-        if (file.getFileName().toString().endsWith(".gz")) {
+        String fileNameFromFile = file.getFileName().toString();
+        if (fileNameFromFile.endsWith(".gz")) {
             responseHeaders.set(HttpHeaders.CONTENT_ENCODING, "gzip");
+            fileNameFromFile = fileNameFromFile.substring(0, fileNameFromFile.length() - ".gz".length());
         }
+
+        String contentDisposition = ContentDisposition.builder(download ? "attachment" : "inline")
+                .filename(fileNameFromFile)
+                .build()
+                .toString();
+        responseHeaders.set(HttpHeaders.CONTENT_DISPOSITION, contentDisposition);
+
         return new ResponseEntity<>(new FileSystemResource(file), responseHeaders, HttpStatus.OK);
     }
 
