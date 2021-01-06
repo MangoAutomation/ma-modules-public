@@ -19,7 +19,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
 
-import javax.annotation.security.RolesAllowed;
 import javax.management.MBeanServer;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -32,7 +31,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.session.SessionInformation;
@@ -51,8 +49,8 @@ import com.infiniteautomation.mango.rest.latest.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.latest.model.event.RaiseEventModel;
 import com.infiniteautomation.mango.rest.latest.model.session.MangoSessionDataModel;
 import com.infiniteautomation.mango.spring.ConditionalOnProperty;
-import com.infiniteautomation.mango.webapp.session.MangoSessionDataStore;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
+import com.infiniteautomation.mango.webapp.session.MangoSessionDataStore;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.LicenseViolatedException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -365,15 +363,6 @@ public class TestingRestController {
     @RequestMapping(method = RequestMethod.GET, value = {"/upload-limit"})
     public long getUploadLimit() {
         return Common.envProps.getLong("web.fileUpload.maxSize", 50000000);
-    }
-
-    @PreAuthorize("hasRole('ROLE_TEST SPACE')")
-    @RolesAllowed("ROLE_TEST SPACE")
-    @Secured("ROLE_TEST SPACE")
-    @ApiOperation(value = "User must have a permission named 'TEST SPACE'")
-    @RequestMapping(method = RequestMethod.GET, value = {"/role-with-space"})
-    public String canGetWithSpaceInPermission() {
-        return "OK";
     }
 
     @Async
