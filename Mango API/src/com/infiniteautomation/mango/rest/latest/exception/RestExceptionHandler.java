@@ -14,12 +14,12 @@ import org.eclipse.jetty.io.EofException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.NestedRuntimeException;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.web.WebAttributes;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -48,9 +48,10 @@ import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableException;
 import com.serotonin.m2m2.module.DefaultPagesDefinition;
-import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
+import com.serotonin.m2m2.web.mvc.spring.security.MangoAccessDeniedHandler;
+import com.serotonin.m2m2.web.mvc.spring.security.MangoAuthenticationEntryPoint;
 import com.serotonin.m2m2.web.mvc.spring.security.authentication.MangoPasswordAuthenticationProvider.AuthenticationRateException;
 
 /**
@@ -64,16 +65,18 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     final RequestMatcher browserHtmlRequestMatcher;
     final RestModelMapper mapper;
     final PermissionService service;
+    final Environment env;
 
     @Autowired
     public RestExceptionHandler(
             @Qualifier("browserHtmlRequestMatcher")
                     RequestMatcher browserHtmlRequestMatcher,
             RestModelMapper mapper,
-            PermissionService service) {
+            PermissionService service, Environment env) {
         this.browserHtmlRequestMatcher = browserHtmlRequestMatcher;
         this.mapper = mapper;
         this.service = service;
+        this.env = env;
     }
 
     /**
@@ -92,21 +95,22 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(ex, ex, new HttpHeaders(), ex.getStatus(), req);
     }
 
+    /**
+     * Handle permission and access denied exceptions here so they are not processed by {@link #handleAllOtherErrors}.
+     * We rethrow these exceptions as a Spring {@link org.springframework.security.access.AccessDeniedException AccessDeniedException} so that they
+     * are processed by {@link MangoAccessDeniedHandler} and {@link MangoAuthenticationEntryPoint}.
+     */
     @ExceptionHandler({
             org.springframework.security.access.AccessDeniedException.class,
+            AccessDeniedException.class,
             PermissionException.class
     })
     public ResponseEntity<Object> handleAccessDenied(HttpServletRequest request, HttpServletResponse response, Exception ex, WebRequest req) {
-        Object model;
-
-        if (ex instanceof PermissionException) {
-            PermissionException permissionException = (PermissionException) ex;
-            model = new AccessDeniedException(permissionException.getTranslatableMessage(), ex);
+        if (ex instanceof org.springframework.security.access.AccessDeniedException) {
+            throw (org.springframework.security.access.AccessDeniedException) ex;
         } else {
-            model = new AccessDeniedException(ex);
+            throw new org.springframework.security.access.AccessDeniedException("Mango permission exception", ex);
         }
-
-        return handleExceptionInternal(ex, model, new HttpHeaders(), HttpStatus.FORBIDDEN, req);
     }
 
     @ExceptionHandler({
@@ -244,52 +248,40 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
             }
         }
 
-        PermissionHolder user;
-        try {
-            user = Common.getUser();
-        } catch (PermissionException e) {
-            user = null;
-        }
-
+        PermissionHolder user = Common.getUser();
         HttpServletRequest servletRequest = ((ServletWebRequest) request).getRequest();
         HttpServletResponse servletResponse = ((ServletWebRequest) request).getResponse();
 
-        if (this.browserHtmlRequestMatcher.matches(servletRequest) && !Common.envProps.getBoolean("rest.disableErrorRedirects", false)) {
+        // redirect user to not found or error page
+        if (!env.getProperty("rest.disableErrorRedirects", Boolean.class, false) && this.browserHtmlRequestMatcher.matches(servletRequest)) {
             String uri;
-            if (status == HttpStatus.FORBIDDEN) {
-                // browser HTML request
-                uri = DefaultPagesDefinition.getUnauthorizedUri(servletRequest, servletResponse, user instanceof User ? (User) user : null);
-
-                // Put exception into request scope (perhaps of use to a view)
-                servletRequest.setAttribute(WebAttributes.ACCESS_DENIED_403, ex);
-
-                // Set the 403 status code.
-                servletResponse.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            } else if (status == HttpStatus.NOT_FOUND) {
+            if (status == HttpStatus.NOT_FOUND) {
                 uri = DefaultPagesDefinition.getNotFoundUri(servletRequest, servletResponse);
             } else {
                 uri = DefaultPagesDefinition.getErrorUri(servletRequest, servletResponse);
             }
-            try {
-                servletResponse.sendRedirect(uri);
-            } catch (IOException e) {
-                log.error(e.getMessage(), e);
+
+            if (uri != null) {
+                try {
+                    servletResponse.sendRedirect(uri);
+                    return null;
+                } catch (IOException e) {
+                    log.error(e.getMessage(), e);
+                }
             }
-            return null;
-        } else {
-            // To strip off the double messages generated by this...
-            if (ex instanceof NestedRuntimeException)
-                ex = (Exception) ((NestedRuntimeException) ex).getMostSpecificCause();
-
-            // If no body provided we will create one
-            if (body == null)
-                body = new GenericRestException(status, ex);
-
-            //Add admin view if necessary
-            MappingJacksonValue value = new MappingJacksonValue(body);
-            value.setSerializationView(user != null && service.hasAdminRole(user) ? AdminView.class : Object.class);
-            body = value;
-            return new ResponseEntity<>(body, headers, status);
         }
+
+        // To strip off the double messages generated by this...
+        if (ex instanceof NestedRuntimeException)
+            ex = (Exception) ((NestedRuntimeException) ex).getMostSpecificCause();
+
+        // If no body provided we will create one
+        if (body == null)
+            body = new GenericRestException(status, ex);
+
+        //Add admin view if necessary
+        MappingJacksonValue value = new MappingJacksonValue(body);
+        value.setSerializationView(service.hasAdminRole(user) ? AdminView.class : Object.class);
+        return new ResponseEntity<>(value, headers, status);
     }
 }
