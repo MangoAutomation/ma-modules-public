@@ -26,6 +26,11 @@ describe('Test File Store endpoints', function() {
     before('Login', function() { return login.call(this, client); });
     this.timeout(5000);
 
+    const checkContentDisposition = (response) => {
+        const contentDisposition = response.headers['content-disposition'].split(/\s*;\s*/);
+        assert.include(contentDisposition, type);
+    };
+
     it('Uploads a random binary file to default store', () => {
         const uploadFile = tmp.fileSync();
         const fileBaseName = path.basename(uploadFile.name);
@@ -51,7 +56,7 @@ describe('Test File Store endpoints', function() {
                 }
             }).then(response => {
                 assert.strictEqual(response.headers['content-type'], 'application/octet-stream;charset=utf-8');
-                assert.strictEqual(response.headers['content-disposition'], 'attachment');
+                checkContentDisposition(response, 'attachment');
                 assert.strictEqual(response.headers['cache-control'], 'max-age=0');
                 assert.strictEqual(Buffer.compare(randomBytes, response.data), 0,
                     'downloaded file does not match the uploaded file');
@@ -87,7 +92,7 @@ describe('Test File Store endpoints', function() {
                 }
             }).then(response => {
                 assert.strictEqual(response.headers['content-type'], 'image/png;charset=utf-8');
-                assert.strictEqual(response.headers['content-disposition'], 'inline');
+                checkContentDisposition(response, 'inline');
                 assert.strictEqual(Buffer.compare(randomBytes, response.data), 0,
                     'downloaded file does not match the uploaded file');
             });
@@ -119,7 +124,7 @@ describe('Test File Store endpoints', function() {
                 }
             }).then(response => {
                 assert.strictEqual(response.headers['content-type'], 'application/octet-stream;charset=utf-8');
-                assert.strictEqual(response.headers['content-disposition'], 'attachment');
+                checkContentDisposition(response, 'attachment');
                 assert.strictEqual(Buffer.compare(randomBytes, response.data), 0,
                     'downloaded file does not match the uploaded file');
             });
@@ -151,7 +156,7 @@ describe('Test File Store endpoints', function() {
                 }
             }).then(response => {
                 assert.strictEqual(response.headers['content-type'], 'application/octet-stream;charset=utf-8');
-                assert.strictEqual(response.headers['content-disposition'], 'attachment');
+                checkContentDisposition(response, 'attachment');
                 assert.strictEqual(Buffer.compare(randomBytes, response.data), 0,
                     'downloaded file does not match the uploaded file');
             });
@@ -183,7 +188,7 @@ describe('Test File Store endpoints', function() {
                 }
             }).then(response => {
                 assert.strictEqual(response.headers['content-type'], 'application/javascript;charset=utf-8');
-                assert.strictEqual(response.headers['content-disposition'], 'attachment');
+                checkContentDisposition(response, 'attachment');
                 assert.strictEqual(Buffer.compare(randomBytes, response.data), 0,
                     'downloaded file does not match the uploaded file');
             });
@@ -215,7 +220,7 @@ describe('Test File Store endpoints', function() {
                 }
             }).then(response => {
                 assert.strictEqual(response.headers['content-type'], 'text/css;charset=utf-8');
-                assert.strictEqual(response.headers['content-disposition'], 'attachment');
+                checkContentDisposition(response, 'attachment');
                 assert.strictEqual(Buffer.compare(randomBytes, response.data), 0,
                     'downloaded file does not match the uploaded file');
             });
@@ -293,7 +298,7 @@ describe('Test File Store endpoints', function() {
                 }
             }).then(response => {
                 assert.strictEqual(response.headers['content-type'], 'text/plain;charset=utf-8');
-                assert.strictEqual(response.headers['content-disposition'], 'attachment');
+                checkContentDisposition(response, 'attachment');
                 assert.strictEqual(Buffer.compare(randomBytes, response.data), 0,
                     'downloaded file does not match the uploaded file');
             });
@@ -325,7 +330,7 @@ describe('Test File Store endpoints', function() {
                 }
             }).then(response => {
                 assert.strictEqual(response.headers['content-type'], 'text/plain;charset=utf-8');
-                assert.strictEqual(response.headers['content-disposition'], 'attachment');
+                checkContentDisposition(response, 'attachment');
                 assert.strictEqual(Buffer.compare(randomBytes, response.data), 0,
                     'downloaded file does not match the uploaded file');
             });
@@ -394,7 +399,7 @@ describe('Test File Store endpoints', function() {
                 }
             }).then(response => {
                 assert.strictEqual(response.headers['content-type'], 'application/json;charset=utf-8');
-                assert.strictEqual(response.headers['content-disposition'], 'attachment');
+                checkContentDisposition(response, 'attachment');
                 assert.strictEqual(Buffer.compare(randomBytes, response.data), 0,
                     'downloaded file does not match the uploaded file');
             });
@@ -474,7 +479,7 @@ describe('Test File Store endpoints', function() {
                     'Accept': '*/*'
                 }
             }).then(response => {
-                assert.strictEqual(response.headers['content-disposition'], 'attachment');
+                checkContentDisposition(response, 'attachment');
                 assert.strictEqual(Buffer.compare(randomBytes, response.data), 0,
                     'downloaded file does not match the uploaded file');
             });
@@ -994,7 +999,7 @@ describe('Test File Store endpoints', function() {
             }).then(response => {
                 assert.strictEqual(response.status, 206); // partial
                 assert.strictEqual(response.headers['content-type'], 'audio/mpeg;charset=utf-8');
-                assert.strictEqual(response.headers['content-disposition'], 'attachment');
+                checkContentDisposition(response, 'attachment');
                 assert.strictEqual(response.headers['content-range'], 'bytes 0-1023/1024');
                 assert.strictEqual(response.headers['content-length'], '1024');
                 assert.strictEqual(Buffer.compare(this.randomBytes, response.data), 0,
@@ -1014,7 +1019,7 @@ describe('Test File Store endpoints', function() {
             }).then(response => {
                 assert.strictEqual(response.status, 206); // partial
                 assert.strictEqual(response.headers['content-type'], 'audio/mpeg;charset=utf-8');
-                assert.strictEqual(response.headers['content-disposition'], 'attachment');
+                checkContentDisposition(response, 'attachment');
                 assert.strictEqual(response.headers['content-range'], 'bytes 0-99/1024');
                 assert.strictEqual(response.headers['content-length'], '100');
                 assert.strictEqual(Buffer.compare(this.randomBytes.slice(0, 100), response.data), 0,

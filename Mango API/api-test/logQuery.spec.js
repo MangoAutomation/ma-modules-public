@@ -19,7 +19,6 @@ const {createClient, login} = require('@infinite-automation/mango-module-tools/t
 const client = createClient();
 
 describe('Log file query tests', function(){
-    
     // create a context object to replace global which was previously used throughout this suite
     const testContext = {};
     
@@ -40,7 +39,9 @@ describe('Log file query tests', function(){
       }).then(response => {
           assert.match(response.headers['content-type'], /text\/plain.*/);
           assert.strictEqual(response.headers['cache-control'], 'no-store');
-          assert.strictEqual(response.headers['content-disposition'], 'attachment');
+          const contentDisposition = response.headers['content-disposition'].split(/\s*;\s*/);
+          assert.include(contentDisposition, 'attachment');
+          assert.include(contentDisposition, 'filename="ma.log"');
           assert.isAbove(response.data.length, 0);
       });
     });
@@ -59,7 +60,9 @@ describe('Log file query tests', function(){
       }).then(response => {
           assert.match(response.headers['content-type'], /text\/plain.*/);
           assert.strictEqual(response.headers['cache-control'], 'no-store');
-          assert.strictEqual(response.headers['content-disposition'], 'inline');
+          const contentDisposition = response.headers['content-disposition'].split(/\s*;\s*/);
+          assert.include(contentDisposition, 'inline');
+          assert.include(contentDisposition, 'filename="ma.log"');
           assert.isAbove(response.data.length, 0);
       });
     });
