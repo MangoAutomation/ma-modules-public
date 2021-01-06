@@ -26,7 +26,7 @@ describe('Test File Store endpoints', function() {
     before('Login', function() { return login.call(this, client); });
     this.timeout(5000);
 
-    const checkContentDisposition = (response) => {
+    const checkContentDisposition = (response, type) => {
         const contentDisposition = response.headers['content-disposition'].split(/\s*;\s*/);
         assert.include(contentDisposition, type);
     };
