@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2018  Infinite Automation Software. All rights reserved.
+/*
+ * Copyright (C) 2021 Radix IoT LLC. All rights reserved.
  */
 package com.infiniteautomation.mango.rest.latest;
 
@@ -27,9 +27,11 @@ import org.springframework.http.converter.ResourceRegionHttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
+import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.config.annotation.AsyncSupportConfigurer;
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.util.UrlPathHelper;
@@ -82,6 +84,7 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
     final ObjectMapper mapper;
     final List<HandlerMethodArgumentResolver> handlerMethodArgumentResolvers;
     final List<HttpMessageConverter<?>> converters;
+    final List<HandlerInterceptor> interceptors;
     final Environment env;
 
     /**
@@ -95,10 +98,11 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
             @Qualifier(MangoRuntimeContextConfiguration.REST_OBJECT_MAPPER_NAME) ObjectMapper mapper,
             RestModelMapper modelMapper,
             List<HandlerMethodArgumentResolver> handlerMethodArgumentResolvers,
-            AsyncTaskExecutor asyncTaskExecutor,
+            List<HandlerInterceptor> interceptors, AsyncTaskExecutor asyncTaskExecutor,
             Environment env) {
         this.mapper = mapper;
         this.handlerMethodArgumentResolvers = handlerMethodArgumentResolvers;
+        this.interceptors = interceptors;
         this.converters = new ArrayList<>();
         this.asyncTaskExecutor = asyncTaskExecutor;
         this.env = env;
@@ -218,5 +222,12 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
     public void configureAsyncSupport(AsyncSupportConfigurer configurer) {
         configurer.setTaskExecutor(asyncTaskExecutor);
         configurer.setDefaultTimeout(env.getProperty("web.async.timeout", Long.TYPE, 120000L));
+    }
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        for (HandlerInterceptor interceptor : interceptors) {
+            registry.addInterceptor(interceptor);
+        }
     }
 }
