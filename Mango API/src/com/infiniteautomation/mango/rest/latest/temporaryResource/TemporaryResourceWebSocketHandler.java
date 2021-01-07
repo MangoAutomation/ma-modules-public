@@ -23,6 +23,7 @@ import com.infiniteautomation.mango.rest.latest.websocket.WebSocketNotification;
 import com.infiniteautomation.mango.rest.latest.websocket.WebSocketRequest;
 import com.infiniteautomation.mango.rest.latest.websocket.WebSocketResponse;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 /**
  * @author Jared Wiltshire
@@ -78,11 +79,14 @@ public class TemporaryResourceWebSocketHandler extends MultiSessionWebSocketHand
     }
 
     private void notifySession(WebSocketSession session, CrudNotificationType type, TemporaryResource<?, ?> resource) throws JsonProcessingException, IOException {
-        User user = (User) this.getUser(session);
+        PermissionHolder user = this.getUser(session);
 
         TemporaryResourceSubscription subscription = (TemporaryResourceSubscription) session.getAttributes().get(SUBSCRIPTION_ATTRIBUTE);
 
-        if (resource.getUserId() == user.getId() || (permissionService.hasAdminRole(user) && !subscription.isOwnResourcesOnly())) {
+        boolean hasAccess = permissionService.hasAccessToResource(user, resource);
+        boolean isOwner = user instanceof User && ((User) user).getId() == resource.getUserId();
+
+        if (hasAccess && (!subscription.isOwnResourcesOnly() || isOwner)) {
             Set<TemporaryResourceStatus> statuses = subscription.getStatuses();
             Set<String> resourceTypes = subscription.getResourceTypes();
 

@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.rest.latest.exception.AbstractRestException;
-import com.infiniteautomation.mango.rest.latest.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.latest.temporaryResource.MangoTaskTemporaryResourceManager;
 import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResource;
 import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResourceManager;
@@ -89,36 +88,22 @@ public class SystemActionTemporaryResourceManager {
     /**
      * Get the status for a result
      * @param id
-     * @param user
      * @return
      */
-    public TemporaryResource<SystemActionResult, AbstractRestException> getStatus(String id, User user) {
-        TemporaryResource<SystemActionResult, AbstractRestException> resource = resourceManager.get(id);
-
-        if (!service.hasAdminRole(user) && user.getId() != resource.getUserId()) {
-            throw new AccessDeniedException();
-        }
-
-        return resource;
+    public TemporaryResource<SystemActionResult, AbstractRestException> getStatus(String id) {
+        return resourceManager.get(id);
     }
 
     /**
      * Cancel/Delete a temporary resource for a system action
      * @param id
-     * @param user
      * @return
      */
-    public TemporaryResource<SystemActionResult, AbstractRestException> cancel(String id, User user) {
+    public TemporaryResource<SystemActionResult, AbstractRestException> cancel(String id) {
         TemporaryResource<SystemActionResult, AbstractRestException> resource = resourceManager.get(id);
-
-        if (!service.hasAdminRole(user) && user.getId() != resource.getUserId()) {
-            throw new AccessDeniedException();
-        }
-
         if(!resource.isComplete())
             resource.cancel();
         resource.remove();
-
         return resource;
     }
 }

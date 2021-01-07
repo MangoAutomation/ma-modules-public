@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.infiniteautomation.mango.rest.latest.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.latest.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.latest.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.latest.model.jwt.HeaderClaimsModel;
@@ -29,6 +28,7 @@ import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.web.mvc.spring.security.MangoSessionRegistry;
 import com.serotonin.m2m2.web.mvc.spring.security.permissions.AnonymousAccess;
 
@@ -79,7 +79,7 @@ public class AuthenticationTokenRestController {
         User user = currentUser;
         if (username != null && !username.equals(currentUser.getUsername())) {
             if (!service.hasAdminRole(currentUser)) {
-                throw new AccessDeniedException(new TranslatableMessage("rest.error.onlyAdminsCanCreateTokens"));
+                throw new PermissionException(new TranslatableMessage("rest.error.onlyAdminsCanCreateTokens"), user);
             }
 
             user = UserDao.getInstance().getByXid(username);

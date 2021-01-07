@@ -11,13 +11,22 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResourceManager.ResourceTask;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.OwnedResource;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 /**
  * @author Jared Wiltshire
  * @param <T> result type
  * @param <E> error type
  */
-public final class TemporaryResource<T, E> {
+public final class TemporaryResource<T, E> implements OwnedResource {
+
+    @Override
+    public boolean isOwnedBy(PermissionHolder user) {
+        return user instanceof User && ((User) user).getId() == getUserId();
+    }
+
     public static enum TemporaryResourceStatus {
         VIRGIN, SCHEDULED, RUNNING, TIMED_OUT, CANCELLED, SUCCESS, ERROR;
     }

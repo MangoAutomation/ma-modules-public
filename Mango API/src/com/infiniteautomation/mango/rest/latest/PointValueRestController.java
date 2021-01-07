@@ -37,7 +37,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.rest.latest.exception.AbstractRestException;
-import com.infiniteautomation.mango.rest.latest.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.latest.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.latest.exception.GenericRestException;
 import com.infiniteautomation.mango.rest.latest.exception.NotFoundRestException;
@@ -1226,16 +1225,9 @@ public class PointValueRestController extends AbstractMangoRestController {
             @PathVariable String id,
 
             @RequestBody
-            TemporaryResourceStatusUpdate body,
-
-            @AuthenticationPrincipal
-            User user) {
+            TemporaryResourceStatusUpdate body) {
 
         TemporaryResource<PurgePointValuesResponseModel, AbstractRestException> resource = resourceManager.get(id);
-
-        if (!permissionService.hasAdminRole(user) && user.getId() != resource.getUserId()) {
-            throw new AccessDeniedException();
-        }
 
         if (body.getStatus() == TemporaryResourceStatus.CANCELLED) {
             resource.cancel();
@@ -1251,18 +1243,9 @@ public class PointValueRestController extends AbstractMangoRestController {
     @RequestMapping(method = RequestMethod.GET, value="/purge/{id}")
     public TemporaryResource<PurgePointValuesResponseModel, AbstractRestException> getDataPointPurgeStatus(
             @ApiParam(value = "Temporary resource id", required = true, allowMultiple = false)
-            @PathVariable String id,
+            @PathVariable String id) {
 
-            @AuthenticationPrincipal
-            User user) {
-
-        TemporaryResource<PurgePointValuesResponseModel, AbstractRestException> resource = resourceManager.get(id);
-
-        if (!permissionService.hasAdminRole(user) && user.getId() != resource.getUserId()) {
-            throw new AccessDeniedException();
-        }
-
-        return resource;
+        return resourceManager.get(id);
     }
 
     @ApiOperation(value = "Remove a purge task using its id",
@@ -1271,17 +1254,9 @@ public class PointValueRestController extends AbstractMangoRestController {
     @RequestMapping(method = RequestMethod.DELETE, value="/purge/data-points/{id}")
     public void removeDataPointPurgeTask(
             @ApiParam(value = "Temporary resource id", required = true, allowMultiple = false)
-            @PathVariable String id,
-
-            @AuthenticationPrincipal
-            User user) {
+            @PathVariable String id) {
 
         TemporaryResource<PurgePointValuesResponseModel, AbstractRestException> resource = resourceManager.get(id);
-
-        if (!permissionService.hasAdminRole(user) && user.getId() != resource.getUserId()) {
-            throw new AccessDeniedException();
-        }
-
         resource.remove();
     }
 

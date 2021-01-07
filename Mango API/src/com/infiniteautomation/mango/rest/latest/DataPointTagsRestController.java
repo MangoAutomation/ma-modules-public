@@ -32,7 +32,6 @@ import com.infiniteautomation.mango.rest.latest.bulk.BulkResponse;
 import com.infiniteautomation.mango.rest.latest.bulk.IndividualRequest;
 import com.infiniteautomation.mango.rest.latest.bulk.RestExceptionIndividualResponse;
 import com.infiniteautomation.mango.rest.latest.exception.AbstractRestException;
-import com.infiniteautomation.mango.rest.latest.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.latest.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.latest.model.FilteredStreamWithTotal;
 import com.infiniteautomation.mango.rest.latest.model.StreamedArrayWithTotal;
@@ -480,14 +479,10 @@ public class DataPointTagsRestController {
     @ApiOperation(value = "Get a list of current bulk tag operations", notes = "User can only get their own bulk tag operations unless they are an admin")
     @RequestMapping(method = RequestMethod.GET, value="/bulk")
     public MappingJacksonValue getBulkDataPointTagOperations(
-            @AuthenticationPrincipal
-            User user,
             ASTNode query,
             Translations translations) {
 
-        List<TemporaryResource<TagBulkResponse, AbstractRestException>> preFiltered = this.bulkResourceManager.list().stream()
-                .filter((tr) -> permissionService.hasAdminRole(user) || user.getId() == tr.getUserId())
-                .collect(Collectors.toList());
+        List<TemporaryResource<TagBulkResponse, AbstractRestException>> preFiltered = this.bulkResourceManager.list();
 
         // hide result property by setting a view
         MappingJacksonValue resultWithView = new MappingJacksonValue(new FilteredStreamWithTotal<>(preFiltered, query, translations));
@@ -503,16 +498,9 @@ public class DataPointTagsRestController {
             @PathVariable String id,
 
             @RequestBody
-            TemporaryResourceStatusUpdate body,
-
-            @AuthenticationPrincipal
-            User user) {
+            TemporaryResourceStatusUpdate body) {
 
         TemporaryResource<TagBulkResponse, AbstractRestException> resource = bulkResourceManager.get(id);
-
-        if (!permissionService.hasAdminRole(user) && user.getId() != resource.getUserId()) {
-            throw new AccessDeniedException();
-        }
 
         if (body.getStatus() == TemporaryResourceStatus.CANCELLED) {
             resource.cancel();
@@ -527,18 +515,9 @@ public class DataPointTagsRestController {
     @RequestMapping(method = RequestMethod.GET, value="/bulk/{id}")
     public TemporaryResource<TagBulkResponse, AbstractRestException> getBulkDataPointTagOperation(
             @ApiParam(value = "Temporary resource id", required = true, allowMultiple = false)
-            @PathVariable String id,
+            @PathVariable String id) {
 
-            @AuthenticationPrincipal
-            User user) {
-
-        TemporaryResource<TagBulkResponse, AbstractRestException> resource = bulkResourceManager.get(id);
-
-        if (!permissionService.hasAdminRole(user) && user.getId() != resource.getUserId()) {
-            throw new AccessDeniedException();
-        }
-
-        return resource;
+        return bulkResourceManager.get(id);
     }
 
     @ApiOperation(value = "Remove a bulk tag operation using its id",
@@ -547,17 +526,9 @@ public class DataPointTagsRestController {
     @RequestMapping(method = RequestMethod.DELETE, value="/bulk/{id}")
     public void removeBulkDataPointTagOperation(
             @ApiParam(value = "Temporary resource id", required = true, allowMultiple = false)
-            @PathVariable String id,
-
-            @AuthenticationPrincipal
-            User user) {
+            @PathVariable String id) {
 
         TemporaryResource<TagBulkResponse, AbstractRestException> resource = bulkResourceManager.get(id);
-
-        if (!permissionService.hasAdminRole(user) && user.getId() != resource.getUserId()) {
-            throw new AccessDeniedException();
-        }
-
         resource.remove();
     }
 

@@ -25,7 +25,6 @@ import com.infiniteautomation.asciifile.rt.AsciiFileDataSourceRT;
 import com.infiniteautomation.asciifile.vo.AsciiFileDataSourceVO;
 import com.infiniteautomation.asciifile.vo.AsciiFilePointLocatorVO;
 import com.infiniteautomation.mango.regex.MatchCallback;
-import com.infiniteautomation.mango.rest.latest.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.latest.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.latest.model.AsciiFileTestResultModel;
 import com.infiniteautomation.mango.spring.service.DataSourceService;
@@ -36,6 +35,7 @@ import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
+import com.serotonin.m2m2.vo.permission.PermissionException;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -75,11 +75,11 @@ public class AsciiFileDataSourceRestController {
         if(!StringUtils.isEmpty(restrictedPaths))
             for(String p : restrictedPaths.split(";"))
                 if(path.startsWith(p)) {
-                    throw new AccessDeniedException(new TranslatableMessage("dsEdit.file.pathRestrictedBy", path));
+                    throw new PermissionException(new TranslatableMessage("dsEdit.file.pathRestrictedBy", path), user);
                 }
 
         if (!verify.exists() || !verify.canRead())
-            throw new AccessDeniedException(new TranslatableMessage("dsEdit.file.cannotRead"));
+            throw new PermissionException(new TranslatableMessage("dsEdit.file.cannotRead"), user);
     }
 
     @ApiOperation(value = "Validate ASCII", notes = "")

@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -25,7 +24,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.rest.latest.exception.AbstractRestException;
-import com.infiniteautomation.mango.rest.latest.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.latest.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.latest.exception.ServerErrorException;
 import com.infiniteautomation.mango.rest.latest.model.MBusAddressScanRequest;
@@ -199,28 +197,18 @@ public class MBusDataSourceRestController {
 
     @ApiOperation(value = "Get a list of current MBus scans", notes = "User can only get their own operations unless they are an admin")
     @RequestMapping(method = RequestMethod.GET, value="/scan")
-    public List<TemporaryResource<MBusScanResult, AbstractRestException>> getOperations(
-            @AuthenticationPrincipal User user) {
+    public List<TemporaryResource<MBusScanResult, AbstractRestException>> getOperations() {
 
-        return this.temporaryResourceManager.list().stream()
-                .filter((tr) -> service.getPermissionService().hasAdminRole(user) || user.getId() == tr.getUserId())
-                .collect(Collectors.toList());
+        return this.temporaryResourceManager.list();
     }
 
     @ApiOperation(value = "Get the status of an MBus scan using its id", notes = "User can only get their own operations unless they are an admin")
     @RequestMapping(method = RequestMethod.GET, value="/scan/{id}")
     public TemporaryResource<MBusScanResult, AbstractRestException> getOperation(
             @ApiParam(value = "Temporary resource id", required = true, allowMultiple = false)
-            @PathVariable String id,
-            @AuthenticationPrincipal User user) {
+            @PathVariable String id) {
 
-        TemporaryResource<MBusScanResult, AbstractRestException> resource = temporaryResourceManager.get(id);
-
-        if (!service.getPermissionService().hasAdminRole(user) && user.getId() != resource.getUserId()) {
-            throw new AccessDeniedException();
-        }
-
-        return resource;
+        return temporaryResourceManager.get(id);
     }
 
     @ApiOperation(value = "Cancel an MBus scan using its id",
@@ -233,16 +221,9 @@ public class MBusDataSourceRestController {
             @PathVariable String id,
 
             @ApiParam(value = "Remove the temporary resource", required = false, defaultValue = "false", allowMultiple = false)
-            @RequestParam(required=false, defaultValue = "false") boolean remove,
-
-            @AuthenticationPrincipal User user) {
+            @RequestParam(required=false, defaultValue = "false") boolean remove) {
 
         TemporaryResource<MBusScanResult, AbstractRestException> resource = temporaryResourceManager.get(id);
-
-        if (!service.getPermissionService().hasAdminRole(user) && user.getId() != resource.getUserId()) {
-            throw new AccessDeniedException();
-        }
-
         resource.cancel();
         if (remove) {
             resource.remove();
@@ -257,17 +238,9 @@ public class MBusDataSourceRestController {
     @RequestMapping(method = RequestMethod.DELETE, value="/scan/{id}")
     public TemporaryResource<MBusScanResult, AbstractRestException> removeOperation(
             @ApiParam(value = "Temporary resource id", required = true, allowMultiple = false)
-            @PathVariable String id,
-
-            @AuthenticationPrincipal
-            User user) {
+            @PathVariable String id) {
 
         TemporaryResource<MBusScanResult, AbstractRestException> resource = temporaryResourceManager.get(id);
-
-        if (!service.getPermissionService().hasAdminRole(user) && user.getId() != resource.getUserId()) {
-            throw new AccessDeniedException();
-        }
-
         resource.remove();
 
         return resource;

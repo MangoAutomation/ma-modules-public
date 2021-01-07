@@ -36,7 +36,6 @@ import com.infiniteautomation.mango.rest.latest.bulk.VoAction;
 import com.infiniteautomation.mango.rest.latest.bulk.VoIndividualRequest;
 import com.infiniteautomation.mango.rest.latest.bulk.VoIndividualResponse;
 import com.infiniteautomation.mango.rest.latest.exception.AbstractRestException;
-import com.infiniteautomation.mango.rest.latest.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.latest.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.latest.model.ActionAndModel;
 import com.infiniteautomation.mango.rest.latest.model.FilteredStreamWithTotal;
@@ -350,16 +349,12 @@ public class DataPointRestController {
             notes = "User can only get their own bulk data point operations unless they are an admin")
     @RequestMapping(method = RequestMethod.GET, value="/bulk")
     public MappingJacksonValue getBulkDataPointOperations(
-            @AuthenticationPrincipal
-            User user,
-
             ASTNode query,
             Translations translations) {
 
         // hide result property by setting a view
         MappingJacksonValue resultWithView = new MappingJacksonValue(new FilteredStreamWithTotal<>(() -> {
-            return bulkResourceManager.list().stream()
-                    .filter((tr) -> service.getPermissionService().hasAdminRole(user) || user.getId() == tr.getUserId());
+            return bulkResourceManager.list().stream();
         }, query, translations));
 
         resultWithView.setSerializationView(Object.class);
@@ -374,17 +369,9 @@ public class DataPointRestController {
             @PathVariable String id,
 
             @RequestBody
-            TemporaryResourceStatusUpdate body,
-
-            @AuthenticationPrincipal
-            User user) {
+            TemporaryResourceStatusUpdate body) {
 
         TemporaryResource<DataPointBulkResponse, AbstractRestException> resource = bulkResourceManager.get(id);
-
-        if (!service.getPermissionService().hasAdminRole(user) && user.getId() != resource.getUserId()) {
-            throw new AccessDeniedException();
-        }
-
         if (body.getStatus() == TemporaryResourceStatus.CANCELLED) {
             resource.cancel();
         } else {
@@ -398,17 +385,9 @@ public class DataPointRestController {
     @RequestMapping(method = RequestMethod.GET, value="/bulk/{id}")
     public TemporaryResource<DataPointBulkResponse, AbstractRestException> getBulkDataPointTagOperation(
             @ApiParam(value = "Temporary resource id", required = true, allowMultiple = false)
-            @PathVariable String id,
-
-            @AuthenticationPrincipal
-            User user) {
+            @PathVariable String id) {
 
         TemporaryResource<DataPointBulkResponse, AbstractRestException> resource = bulkResourceManager.get(id);
-
-        if (!service.getPermissionService().hasAdminRole(user) && user.getId() != resource.getUserId()) {
-            throw new AccessDeniedException();
-        }
-
         return resource;
     }
 
@@ -418,17 +397,9 @@ public class DataPointRestController {
     @RequestMapping(method = RequestMethod.DELETE, value="/bulk/{id}")
     public void removeBulkDataPointTagOperation(
             @ApiParam(value = "Temporary resource id", required = true, allowMultiple = false)
-            @PathVariable String id,
-
-            @AuthenticationPrincipal
-            User user) {
+            @PathVariable String id) {
 
         TemporaryResource<DataPointBulkResponse, AbstractRestException> resource = bulkResourceManager.get(id);
-
-        if (!service.getPermissionService().hasAdminRole(user) && user.getId() != resource.getUserId()) {
-            throw new AccessDeniedException();
-        }
-
         resource.remove();
     }
 

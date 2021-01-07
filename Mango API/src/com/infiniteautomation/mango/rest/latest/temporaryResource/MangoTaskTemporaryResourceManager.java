@@ -42,6 +42,7 @@ public final class MangoTaskTemporaryResourceManager<T> extends TemporaryResourc
     }
 
     public MangoTaskTemporaryResourceManager(PermissionService permissionService, TemporaryResourceWebSocketHandler websocketHandler) {
+        super(permissionService);
         this.websocketHandler = websocketHandler;
         this.permissionService = permissionService;
     }

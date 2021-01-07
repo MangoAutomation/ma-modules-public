@@ -3,36 +3,17 @@
  */
 package com.infiniteautomation.mango.rest.latest;
 
-import com.infiniteautomation.mango.rest.latest.bulk.BulkRequest;
-import com.infiniteautomation.mango.rest.latest.bulk.BulkResponse;
-import com.infiniteautomation.mango.rest.latest.bulk.VoAction;
-import com.infiniteautomation.mango.rest.latest.exception.AbstractRestException;
-import com.infiniteautomation.mango.rest.latest.exception.AccessDeniedException;
-import com.infiniteautomation.mango.rest.latest.exception.BadRequestException;
-import com.infiniteautomation.mango.rest.latest.model.FilteredStreamWithTotal;
-import com.infiniteautomation.mango.rest.latest.model.StreamedArrayWithTotal;
-import com.infiniteautomation.mango.rest.latest.model.StreamedSeroJsonVORqlQuery;
-import com.infiniteautomation.mango.rest.latest.model.StreamedVORqlQueryWithTotal;
-import com.infiniteautomation.mango.rest.latest.model.datasource.RuntimeStatusModel;
-import com.infiniteautomation.mango.rest.latest.model.user.*;
-import com.infiniteautomation.mango.rest.latest.patch.PatchVORequestBody;
-import com.infiniteautomation.mango.rest.latest.patch.PatchVORequestBody.PatchIdField;
-import com.infiniteautomation.mango.rest.latest.temporaryResource.*;
-import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResource.TemporaryResourceStatus;
-import com.infiniteautomation.mango.spring.service.UsersService;
-import com.infiniteautomation.mango.util.RQLUtils;
-import com.infiniteautomation.mango.util.exception.TranslatableExceptionI;
-import com.serotonin.json.type.JsonStreamedArray;
-import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.i18n.Translations;
-import com.serotonin.m2m2.vo.User;
-import com.serotonin.m2m2.web.MediaTypes;
-import com.serotonin.m2m2.web.mvc.spring.security.MangoSessionRegistry;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import net.jazdw.rql.parser.ASTNode;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -42,18 +23,54 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import javax.servlet.http.HttpServletRequest;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import com.infiniteautomation.mango.rest.latest.bulk.BulkRequest;
+import com.infiniteautomation.mango.rest.latest.bulk.BulkResponse;
+import com.infiniteautomation.mango.rest.latest.bulk.VoAction;
+import com.infiniteautomation.mango.rest.latest.exception.AbstractRestException;
+import com.infiniteautomation.mango.rest.latest.exception.BadRequestException;
+import com.infiniteautomation.mango.rest.latest.model.FilteredStreamWithTotal;
+import com.infiniteautomation.mango.rest.latest.model.StreamedArrayWithTotal;
+import com.infiniteautomation.mango.rest.latest.model.StreamedSeroJsonVORqlQuery;
+import com.infiniteautomation.mango.rest.latest.model.StreamedVORqlQueryWithTotal;
+import com.infiniteautomation.mango.rest.latest.model.datasource.RuntimeStatusModel;
+import com.infiniteautomation.mango.rest.latest.model.user.ApproveUsersModel;
+import com.infiniteautomation.mango.rest.latest.model.user.ApprovedUsersModel;
+import com.infiniteautomation.mango.rest.latest.model.user.UserActionAndModel;
+import com.infiniteautomation.mango.rest.latest.model.user.UserIndividualRequest;
+import com.infiniteautomation.mango.rest.latest.model.user.UserIndividualResponse;
+import com.infiniteautomation.mango.rest.latest.model.user.UserModel;
+import com.infiniteautomation.mango.rest.latest.patch.PatchVORequestBody;
+import com.infiniteautomation.mango.rest.latest.patch.PatchVORequestBody.PatchIdField;
+import com.infiniteautomation.mango.rest.latest.temporaryResource.MangoTaskTemporaryResourceManager;
+import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResource;
+import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResource.TemporaryResourceStatus;
+import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResourceManager;
+import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResourceStatusUpdate;
+import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResourceWebSocketHandler;
+import com.infiniteautomation.mango.spring.service.UsersService;
+import com.infiniteautomation.mango.util.RQLUtils;
+import com.infiniteautomation.mango.util.exception.TranslatableExceptionI;
+import com.serotonin.json.type.JsonStreamedArray;
+import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.i18n.TranslatableMessage;
+import com.serotonin.m2m2.i18n.Translations;
+import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionException;
+import com.serotonin.m2m2.web.MediaTypes;
+import com.serotonin.m2m2.web.mvc.spring.security.MangoSessionRegistry;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import net.jazdw.rql.parser.ASTNode;
 
 /**
  * @author Terry Packer
@@ -148,7 +165,7 @@ public class UserRestController {
 
         User existing = service.get(username);
         if (existing.getId() == user.getId() && !(authentication instanceof UsernamePasswordAuthenticationToken))
-            throw new AccessDeniedException(new TranslatableMessage("rest.error.usernamePasswordOnly"));
+            throw new PermissionException(new TranslatableMessage("rest.error.usernamePasswordOnly"), user);
 
         User update = service.update(existing, model.toVO());
 
@@ -181,7 +198,7 @@ public class UserRestController {
 
         User existing = service.get(username);
         if (existing.getId() == user.getId() && !(authentication instanceof UsernamePasswordAuthenticationToken))
-            throw new AccessDeniedException(new TranslatableMessage("rest.error.usernamePasswordOnly"));
+            throw new PermissionException(new TranslatableMessage("rest.error.usernamePasswordOnly"), user);
 
         User update = service.update(existing, model.toVO());
 
@@ -217,7 +234,7 @@ public class UserRestController {
 
         User update = service.get(username);
         if (update.getId() == user.getId() && !(authentication instanceof UsernamePasswordAuthenticationToken))
-            throw new AccessDeniedException(new TranslatableMessage("rest.error.usernamePasswordOnly"));
+            throw new PermissionException(new TranslatableMessage("rest.error.usernamePasswordOnly"), user);
 
         update.setHomeUrl(url);
         update = service.update(username, update);
@@ -247,7 +264,7 @@ public class UserRestController {
 
         User update = service.get(username);
         if (update.getId() == user.getId() && !(authentication instanceof UsernamePasswordAuthenticationToken))
-            throw new AccessDeniedException(new TranslatableMessage("rest.error.usernamePasswordOnly"));
+            throw new PermissionException(new TranslatableMessage("rest.error.usernamePasswordOnly"), user);
 
         if (mute == null) {
             update.setMuted(!update.isMuted());
@@ -449,15 +466,12 @@ public class UserRestController {
             notes = "User can only get their own bulk operations unless they are an admin")
     @RequestMapping(method = RequestMethod.GET, value = "/bulk")
     public MappingJacksonValue getBulkUserOperations(
-            @AuthenticationPrincipal
-            User user,
             ASTNode query,
             Translations translations) {
 
         // hide result property by setting a view
         MappingJacksonValue resultWithView = new MappingJacksonValue(new FilteredStreamWithTotal<>(() -> {
-            return bulkResourceManager.list().stream()
-                    .filter((tr) -> service.getPermissionService().hasAdminRole(user) || user.getId() == tr.getUserId());
+            return bulkResourceManager.list().stream();
         }, query, translations));
 
         resultWithView.setSerializationView(Object.class);
@@ -472,17 +486,9 @@ public class UserRestController {
             @PathVariable String id,
 
             @RequestBody
-            TemporaryResourceStatusUpdate body,
-
-            @AuthenticationPrincipal
-            User user) {
+            TemporaryResourceStatusUpdate body) {
 
         TemporaryResource<UserBulkResponse, AbstractRestException> resource = bulkResourceManager.get(id);
-
-        if (!service.getPermissionService().hasAdminRole(user) && user.getId() != resource.getUserId()) {
-            throw new AccessDeniedException();
-        }
-
         if (body.getStatus() == TemporaryResourceStatus.CANCELLED) {
             resource.cancel();
         } else {
@@ -496,17 +502,9 @@ public class UserRestController {
     @RequestMapping(method = RequestMethod.GET, value = "/bulk/{id}")
     public TemporaryResource<UserBulkResponse, AbstractRestException> getBulkUserOperation(
             @ApiParam(value = "Temporary resource id", required = true)
-            @PathVariable String id,
-
-            @AuthenticationPrincipal
-            User user) {
+            @PathVariable String id) {
 
         TemporaryResource<UserBulkResponse, AbstractRestException> resource = bulkResourceManager.get(id);
-
-        if (!service.getPermissionService().hasAdminRole(user) && user.getId() != resource.getUserId()) {
-            throw new AccessDeniedException();
-        }
-
         return resource;
     }
 
@@ -516,17 +514,9 @@ public class UserRestController {
     @RequestMapping(method = RequestMethod.DELETE, value = "/bulk/{id}")
     public void removeBulkUserOperation(
             @ApiParam(value = "Temporary resource id", required = true)
-            @PathVariable String id,
-
-            @AuthenticationPrincipal
-            User user) {
+            @PathVariable String id) {
 
         TemporaryResource<UserBulkResponse, AbstractRestException> resource = bulkResourceManager.get(id);
-
-        if (!service.getPermissionService().hasAdminRole(user) && user.getId() != resource.getUserId()) {
-            throw new AccessDeniedException();
-        }
-
         resource.remove();
     }
 

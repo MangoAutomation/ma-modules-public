@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.RequestContextUtils;
 
-import com.infiniteautomation.mango.rest.latest.exception.AccessDeniedException;
+import com.infiniteautomation.mango.rest.latest.exception.BadRequestException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.vo.User;
@@ -126,7 +126,7 @@ public class TranslationsController {
         //Confirm the requested namespace is indeed public
         for(String namespace : namespaces){
             if(!this.publicNamespaces.contains(namespace)){
-                throw new AccessDeniedException();
+                throw new BadRequestException();
             }
         }
         TranslationsModel resultMap = new TranslationsModel();

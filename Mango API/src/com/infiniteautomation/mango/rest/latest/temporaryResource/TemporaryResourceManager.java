@@ -8,12 +8,16 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.infiniteautomation.mango.rest.latest.util.ExceptionMapper;
+import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
+import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 /**
  * @author Jared Wiltshire
@@ -40,8 +44,10 @@ public abstract class TemporaryResourceManager<T, E> implements ExceptionMapper<
     }
 
     private final ConcurrentMap<String, TemporaryResource<T, E>> resources;
+    private final PermissionService permissionService;
 
-    public TemporaryResourceManager() {
+    public TemporaryResourceManager(PermissionService permissionService) {
+        this.permissionService = permissionService;
         this.resources = new ConcurrentHashMap<>();
     }
 
@@ -81,7 +87,10 @@ public abstract class TemporaryResourceManager<T, E> implements ExceptionMapper<
      * @return list of all resources in the resources map
      */
     public final List<TemporaryResource<T, E>> list() {
-        return new ArrayList<>(this.resources.values());
+        PermissionHolder user = Common.getUser();
+        return this.resources.values().stream()
+                .filter(r -> permissionService.hasAccessToResource(user, r))
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     /**
@@ -94,6 +103,7 @@ public abstract class TemporaryResourceManager<T, E> implements ExceptionMapper<
         if (resource == null) {
             throw new NotFoundException();
         }
+        permissionService.ensureAccessToResource(Common.getUser(), resource);
         return resource;
     }
 
