@@ -6,7 +6,6 @@ package com.infiniteautomation.mango.rest.latest.temporaryResource;
 import java.util.Date;
 
 import com.infiniteautomation.mango.rest.latest.exception.AbstractRestException;
-import com.infiniteautomation.mango.rest.latest.exception.AccessDeniedException;
 import com.infiniteautomation.mango.rest.latest.exception.ServerErrorException;
 import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResource.StatusUpdateException;
 import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResource.TemporaryResourceStatus;
@@ -14,12 +13,10 @@ import com.infiniteautomation.mango.rest.latest.util.CrudNotificationType;
 import com.infiniteautomation.mango.rest.latest.util.RestExceptionMapper;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.util.timeout.HighPriorityTask;
 import com.serotonin.m2m2.util.timeout.TimeoutClient;
 import com.serotonin.m2m2.util.timeout.TimeoutTask;
-import com.serotonin.m2m2.vo.User;
 import com.serotonin.timer.RejectedTaskReason;
 import com.serotonin.timer.TimerTask;
 
@@ -99,18 +96,10 @@ public final class MangoTaskTemporaryResourceManager<T> extends TemporaryResourc
     private void scheduleTask(TemporaryResource<T, AbstractRestException> resource) {
         TaskData tasks = (TaskData) resource.getData();
 
-        User user = UserDao.getInstance().get(resource.getUserId());
-        // user might have been deleted since task was scheduled
-        if (user == null) {
-            AccessDeniedException error = new AccessDeniedException();
-            resource.safeError(error);
-            return;
-        }
-
         tasks.mainTask = new HighPriorityTask("Temporary resource " + resource.getResourceType() + " " + resource.getId()) {
             @Override
             public void run(long runtime) {
-                permissionService.runAs(user, ()-> {
+                permissionService.runAs(resource.getUser(), ()-> {
                     try {
                         resource.runTask();
                     } catch (Exception e) {

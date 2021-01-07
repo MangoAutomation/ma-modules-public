@@ -61,13 +61,12 @@ public abstract class TemporaryResourceManager<T, E> implements ExceptionMapper<
      *
      * @param resourceType unique type string assigned to each resource type e.g. BULK_DATA_POINT
      * @param id if null will be assigned a UUID
-     * @param userId the user that started the temporary resource
      * @param expiration time after the resource completes that it will be removed (milliseconds). If null or less than zero, it will be set to the default DEFAULT_EXPIRATION_MILLISECONDS
      * @param timeout time after the resource starts that it will be timeout if not complete (milliseconds). If null or less than zero, it will be set to the default DEFAULT_TIMEOUT_MILLISECONDS
      * @param task the task to be run
      * @return
      */
-    public final TemporaryResource<T, E> newTemporaryResource(String resourceType, String id, int userId, Long expiration, Long timeout, ResourceTask<T, E> task) {
+    public final TemporaryResource<T, E> newTemporaryResource(String resourceType, String id, Long expiration, Long timeout, ResourceTask<T, E> task) {
         if (expiration == null || expiration < 0) {
             expiration = DEFAULT_EXPIRATION_MILLISECONDS;
         }
@@ -75,7 +74,8 @@ public abstract class TemporaryResourceManager<T, E> implements ExceptionMapper<
             timeout = DEFAULT_TIMEOUT_MILLISECONDS;
         }
 
-        TemporaryResource<T, E> resource = new TemporaryResource<T, E>(resourceType, id, userId, expiration, timeout, task, this);
+        PermissionHolder user = Common.getUser();
+        TemporaryResource<T, E> resource = new TemporaryResource<T, E>(resourceType, id, user, expiration, timeout, task, this);
         synchronized (resource) {
             this.add(resource);
             resource.schedule();

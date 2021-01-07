@@ -24,7 +24,9 @@ public final class TemporaryResource<T, E> implements OwnedResource {
 
     @Override
     public boolean isOwnedBy(PermissionHolder user) {
-        return user instanceof User && ((User) user).getId() == getUserId();
+        return user == this.user ||
+                user instanceof User && this.user instanceof User
+                        && ((User) user).getId() == ((User) this.user).getId();
     }
 
     public static enum TemporaryResourceStatus {
@@ -37,7 +39,7 @@ public final class TemporaryResource<T, E> implements OwnedResource {
 
     private final String resourceType;
     private final String id;
-    private final int userId;
+    private final PermissionHolder user;
     private final long expiration;
     private final long timeout;
     private final ResourceTask<T, E> task;
@@ -65,18 +67,18 @@ public final class TemporaryResource<T, E> implements OwnedResource {
     /**
      * @param resourceType unique type string assigned to each resource type e.g. BULK_DATA_POINT
      * @param id if null will be assigned a UUID
-     * @param userId user id of the user that started the temporary resource
+     * @param user user that started the temporary resource
      * @param expiration time after the resource completes that it will be removed (milliseconds)
      * @param timeout time after the resource starts that it will be timeout if not complete (milliseconds)
      * @param task the task to run
      * @param manager the resource manager to which this resource belongs
      */
-    protected TemporaryResource(String resourceType, String id, int userId, long expiration, long timeout, ResourceTask<T, E> task, TemporaryResourceManager<T, E> manager) {
+    protected TemporaryResource(String resourceType, String id, PermissionHolder user, long expiration, long timeout, ResourceTask<T, E> task, TemporaryResourceManager<T, E> manager) {
         this.task = task;
         this.manager = manager;
         this.resourceType = resourceType;
         this.id = id == null ? UUID.randomUUID().toString() : id;
-        this.userId = userId;
+        this.user = user;
         this.expiration = expiration;
         this.timeout = timeout;
 
@@ -231,8 +233,8 @@ public final class TemporaryResource<T, E> implements OwnedResource {
         return null;
     }
 
-    public final int getUserId() {
-        return userId;
+    public final PermissionHolder getUser() {
+        return user;
     }
 
     public final int getResourceVersion() {
@@ -261,8 +263,8 @@ public final class TemporaryResource<T, E> implements OwnedResource {
 
     @Override
     public String toString() {
-        return "TemporaryResource [resourceType=" + resourceType + ", id=" + id + ", userId="
-                + userId + ", expiration=" + expiration + ", timeout=" + timeout + ", status="
+        return "TemporaryResource [resourceType=" + resourceType + ", id=" + id + ", user="
+                + user + ", expiration=" + expiration + ", timeout=" + timeout + ", status="
                 + status + ", resourceVersion=" + resourceVersion + ", result=" + result
                 + ", error=" + error + ", startTime=" + startTime + ", completionTime="
                 + completionTime + ", position=" + position + ", maximum=" + maximum + "]";

@@ -22,7 +22,6 @@ import com.infiniteautomation.mango.rest.latest.websocket.WebSocketMapping;
 import com.infiniteautomation.mango.rest.latest.websocket.WebSocketNotification;
 import com.infiniteautomation.mango.rest.latest.websocket.WebSocketRequest;
 import com.infiniteautomation.mango.rest.latest.websocket.WebSocketResponse;
-import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 /**
@@ -84,7 +83,7 @@ public class TemporaryResourceWebSocketHandler extends MultiSessionWebSocketHand
         TemporaryResourceSubscription subscription = (TemporaryResourceSubscription) session.getAttributes().get(SUBSCRIPTION_ATTRIBUTE);
 
         boolean hasAccess = permissionService.hasAccessToResource(user, resource);
-        boolean isOwner = user instanceof User && ((User) user).getId() == resource.getUserId();
+        boolean isOwner = resource.isOwnedBy(user);
 
         if (hasAccess && (!subscription.isOwnResourcesOnly() || isOwner)) {
             Set<TemporaryResourceStatus> statuses = subscription.getStatuses();

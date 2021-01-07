@@ -282,9 +282,6 @@ public class EventDetectorsRestController {
             @ApiParam(value = "Restart the source to load in the changes", required = false, defaultValue="true", allowMultiple = false)
             @RequestParam(required=false, defaultValue="true") boolean restart,
 
-            @AuthenticationPrincipal
-            User user,
-
             UriComponentsBuilder builder) {
 
         EventDetectorBulkRequest bulkRequest = new EventDetectorBulkRequest();
@@ -304,7 +301,7 @@ public class EventDetectorsRestController {
             return request;
         }).collect(Collectors.toList()));
 
-        return this.bulkEventDetectorOperation(bulkRequest, restart, user, builder);
+        return this.bulkEventDetectorOperation(bulkRequest, restart, builder);
     }
 
     @ApiOperation(value = "Bulk get/create/update/delete event detectors",
@@ -316,9 +313,6 @@ public class EventDetectorsRestController {
 
             @ApiParam(value = "Restart the source to load in the changes", required = false, defaultValue="true", allowMultiple = false)
             @RequestParam(required=false, defaultValue="true") boolean restart,
-
-            @AuthenticationPrincipal
-            User user,
 
             UriComponentsBuilder builder) {
 
@@ -337,7 +331,7 @@ public class EventDetectorsRestController {
         Long timeout = requestBody.getTimeout();
 
         TemporaryResource<EventDetectorBulkResponse, AbstractRestException> responseBody = bulkResourceManager.newTemporaryResource(
-                RESOURCE_TYPE_BULK_EVENT_DETECTOR, resourceId, user.getId(), expiration, timeout, (resource) -> {
+                RESOURCE_TYPE_BULK_EVENT_DETECTOR, resourceId, expiration, timeout, (resource) -> {
 
                     EventDetectorBulkResponse bulkResponse = new EventDetectorBulkResponse();
                     int i = 0;

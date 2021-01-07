@@ -384,8 +384,6 @@ public class UserRestController {
             @RequestBody
             List<UserActionAndModel> users,
 
-            @AuthenticationPrincipal
-            User user,
             HttpServletRequest servletRequest,
             UriComponentsBuilder builder,
             Authentication authentication) {
@@ -407,7 +405,7 @@ public class UserRestController {
             return request;
         }).collect(Collectors.toList()));
 
-        return this.bulkUserOperation(bulkRequest, user, servletRequest, authentication, builder);
+        return this.bulkUserOperation(bulkRequest, servletRequest, authentication, builder);
     }
 
     @ApiOperation(value = "Bulk get/create/update/delete users", notes = "User must have read/edit permission for the user")
@@ -416,8 +414,6 @@ public class UserRestController {
             @RequestBody
             UserBulkRequest requestBody,
 
-            @AuthenticationPrincipal
-            User user,
             HttpServletRequest servletRequest,
             Authentication authentication,
             UriComponentsBuilder builder) {
@@ -437,7 +433,7 @@ public class UserRestController {
         Long timeout = requestBody.getTimeout();
 
         TemporaryResource<UserBulkResponse, AbstractRestException> responseBody = bulkResourceManager.newTemporaryResource(
-                RESOURCE_TYPE_BULK_USER, resourceId, user.getId(), expiration, timeout, (resource) -> {
+                RESOURCE_TYPE_BULK_USER, resourceId, expiration, timeout, (resource) -> {
 
                     UserBulkResponse bulkResponse = new UserBulkResponse();
                     int i = 0;

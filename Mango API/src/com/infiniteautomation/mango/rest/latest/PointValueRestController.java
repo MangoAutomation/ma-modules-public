@@ -841,12 +841,6 @@ public class PointValueRestController extends AbstractMangoRestController {
 
     /**
      * Update a point value in the system
-     *
-     * @param pvt
-     * @param xid
-     * @param builder
-     * @return
-     * @throws RestValidationFailedException
      */
     @ApiOperation(value = "Update an existing data point's value",
             notes = "Data point must exist and be enabled")
@@ -1134,10 +1128,10 @@ public class PointValueRestController extends AbstractMangoRestController {
 
 
     private ResponseEntity<TemporaryResource<PurgePointValuesResponseModel, AbstractRestException>>  purgePointValues(
-            User user,  PurgeDataPointValuesModel model, UriComponentsBuilder builder) throws ValidationException {
+            User user, PurgeDataPointValuesModel model, UriComponentsBuilder builder) throws ValidationException {
         model.ensureValid();
         TemporaryResource<PurgePointValuesResponseModel, AbstractRestException> response = resourceManager.newTemporaryResource(
-                "DATA_POINT_PURGE", null, user.getId(), model.getExpiry(), model.getTimeout(),
+                "DATA_POINT_PURGE", null, model.getExpiry(), model.getTimeout(),
                 (resource) -> {
                     PurgePointValuesResponseModel result = new PurgePointValuesResponseModel();
 

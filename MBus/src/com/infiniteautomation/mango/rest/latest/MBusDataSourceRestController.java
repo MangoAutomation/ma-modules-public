@@ -100,7 +100,7 @@ public class MBusDataSourceRestController {
             ensureNotRunning(requestBody.getDataSourceXid(), user);
 
         TemporaryResource<MBusScanResult, AbstractRestException> responseBody = temporaryResourceManager.newTemporaryResource(
-                RESOURCE_TYPE_MBUS, null, user.getId(), expiry, timeout, (resource)-> {
+                RESOURCE_TYPE_MBUS, null, expiry, timeout, (resource)-> {
 
                     //Start the discovery
                     MBusScan scan = new MBusScan(requestBody, Common.getUser(), resource);

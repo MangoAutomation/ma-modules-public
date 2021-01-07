@@ -408,10 +408,6 @@ public class DataPointTagsRestController {
     public ResponseEntity<TemporaryResource<TagBulkResponse, AbstractRestException>> bulkDataPointTagOperationCSV(
             @RequestBody
             List<ActionAndTags> requestBody,
-
-            @AuthenticationPrincipal
-            User user,
-
             UriComponentsBuilder builder) {
 
         TagBulkRequest bulkRequest = new TagBulkRequest();
@@ -428,7 +424,7 @@ public class DataPointTagsRestController {
             return request;
         }).collect(Collectors.toList()));
 
-        return this.bulkDataPointTagOperation(bulkRequest, user, builder);
+        return this.bulkDataPointTagOperation(bulkRequest, builder);
     }
 
     @ApiOperation(value = "Bulk get/set/add data point tags for a list of XIDs", notes = "User must have read/edit permission for the data point")
@@ -436,10 +432,6 @@ public class DataPointTagsRestController {
     public ResponseEntity<TemporaryResource<TagBulkResponse, AbstractRestException>> bulkDataPointTagOperation(
             @RequestBody
             TagBulkRequest requestBody,
-
-            @AuthenticationPrincipal
-            User user,
-
             UriComponentsBuilder builder) {
 
         BulkTagAction defaultAction = requestBody.getAction();
@@ -455,7 +447,7 @@ public class DataPointTagsRestController {
         Long timeout = requestBody.getTimeout();
 
         TemporaryResource<TagBulkResponse, AbstractRestException> responseBody =
-                bulkResourceManager.newTemporaryResource(RESOURCE_TYPE_BULK_DATA_POINT_TAGS, resourceId, user.getId(), expiration, timeout, (resource) -> {
+                bulkResourceManager.newTemporaryResource(RESOURCE_TYPE_BULK_DATA_POINT_TAGS, resourceId, expiration, timeout, (resource) -> {
                     TagBulkResponse bulkResponse = new TagBulkResponse();
 
                     int i = 0;

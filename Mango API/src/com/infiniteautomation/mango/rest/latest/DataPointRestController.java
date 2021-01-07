@@ -268,10 +268,6 @@ public class DataPointRestController {
     public ResponseEntity<TemporaryResource<DataPointBulkResponse, AbstractRestException>> bulkDataPointOperationCSV(
             @RequestBody
             List<ActionAndModel<DataPointModel>> points,
-
-            @AuthenticationPrincipal
-            User user,
-
             UriComponentsBuilder builder) {
 
         DataPointBulkRequest bulkRequest = new DataPointBulkRequest();
@@ -291,7 +287,7 @@ public class DataPointRestController {
             return request;
         }).collect(Collectors.toList()));
 
-        return this.bulkDataPointOperation(bulkRequest, user, builder);
+        return this.bulkDataPointOperation(bulkRequest, builder);
     }
 
     @ApiOperation(value = "Bulk get/create/update/delete data points", notes = "User must have read/edit permission for the data point")
@@ -299,10 +295,6 @@ public class DataPointRestController {
     public ResponseEntity<TemporaryResource<DataPointBulkResponse, AbstractRestException>> bulkDataPointOperation(
             @RequestBody
             DataPointBulkRequest requestBody,
-
-            @AuthenticationPrincipal
-            User user,
-
             UriComponentsBuilder builder) {
 
         VoAction defaultAction = requestBody.getAction();
@@ -320,7 +312,7 @@ public class DataPointRestController {
         Long timeout = requestBody.getTimeout();
 
         TemporaryResource<DataPointBulkResponse, AbstractRestException> responseBody = bulkResourceManager.newTemporaryResource(
-                RESOURCE_TYPE_BULK_DATA_POINT, resourceId, user.getId(), expiration, timeout, (resource) -> {
+                RESOURCE_TYPE_BULK_DATA_POINT, resourceId, expiration, timeout, (resource) -> {
 
                     DataPointBulkResponse bulkResponse = new DataPointBulkResponse();
                     int i = 0;

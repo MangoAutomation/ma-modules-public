@@ -78,7 +78,7 @@ public class SystemActionTemporaryResourceManager {
 
         @SuppressWarnings("unchecked")
         TemporaryResource<T, AbstractRestException> responseBody = (TemporaryResource<T, AbstractRestException>) resourceManager.newTemporaryResource(
-                resourceType, null, user.getId(), expiration, timeout, task);
+                resourceType, null, expiration, timeout, task);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(builder.path("/system-actions/status/{id}").buildAndExpand(responseBody.getId()).toUri());
