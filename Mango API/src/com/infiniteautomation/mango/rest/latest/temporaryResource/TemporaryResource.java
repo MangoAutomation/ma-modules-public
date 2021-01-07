@@ -233,6 +233,7 @@ public final class TemporaryResource<T, E> implements OwnedResource {
         return null;
     }
 
+    @JsonIgnore
     public final PermissionHolder getUser() {
         return user;
     }
