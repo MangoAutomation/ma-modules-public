@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
-import com.serotonin.m2m2.i18n.Translations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,8 +20,9 @@ import com.infiniteautomation.mango.rest.latest.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.latest.model.StreamWithTotal;
 import com.infiniteautomation.mango.rest.latest.model.event.EventInstanceModel;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.rt.event.EventInstance;
-import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -43,7 +43,7 @@ import net.jazdw.rql.parser.ASTNode;
 @RequestMapping("/user-events")
 public class UserEventsController extends AbstractMangoRestController {
 
-    private final BiFunction<EventInstance, User, EventInstanceModel> map;
+    private final BiFunction<EventInstance, PermissionHolder, EventInstanceModel> map;
 
     @Autowired
     public UserEventsController(RestModelMapper modelMapper) {
@@ -60,7 +60,7 @@ public class UserEventsController extends AbstractMangoRestController {
             )
     @RequestMapping(method = RequestMethod.GET, value = "")
     public StreamWithTotal<EventInstanceModel> query(
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             Translations translations,
             ASTNode query) {
 

@@ -20,7 +20,7 @@ import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.module.PermissionDefinition;
-import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 /**
  * Class to manage system action results/feedback
@@ -55,7 +55,7 @@ public class SystemActionTemporaryResourceManager {
      */
     public <T extends SystemActionResult> ResponseEntity<TemporaryResource<T, AbstractRestException>> create(
             SystemActionModel requestBody,
-            User user,
+            PermissionHolder user,
             UriComponentsBuilder builder,
             String permissionTypeName,
             String resourceType,

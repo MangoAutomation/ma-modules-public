@@ -73,13 +73,12 @@ import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResou
 import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResourceStatusUpdate;
 import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResourceWebSocketHandler;
 import com.infiniteautomation.mango.spring.service.DataPointService;
+import com.infiniteautomation.mango.spring.service.DataSourceService;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
-import com.serotonin.m2m2.db.dao.DataPointDao;
-import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -99,6 +98,7 @@ import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.permission.PermissionException;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -119,10 +119,12 @@ public class PointValueRestController extends AbstractMangoRestController {
     private final MangoTaskTemporaryResourceManager<PurgePointValuesResponseModel> resourceManager;
     private final PermissionService permissionService;
     private final DataPointService dataPointService;
+    private final DataSourceService dataSourceService;
 
     @Autowired
     public PointValueRestController(TemporaryResourceWebSocketHandler websocket,
-            PermissionService permissionService, DataPointService dataPointService) {
+                                    PermissionService permissionService, DataPointService dataPointService, DataSourceService dataSourceService) {
+        this.dataSourceService = dataSourceService;
         this.resourceManager = new MangoTaskTemporaryResourceManager<>(permissionService, websocket);
         this.permissionService = permissionService;
         this.dataPointService = dataPointService;
@@ -174,13 +176,13 @@ public class PointValueRestController extends AbstractMangoRestController {
             @RequestParam(required = false)
             PointValueField[] fields,
 
-            @AuthenticationPrincipal User user
+            @AuthenticationPrincipal PermissionHolder user
             ) {
 
         LatestQueryInfo info = new LatestQueryInfo(before, dateTimeFormat, timezone, limit,
                 false, true, useCache, simplifyTolerance, simplifyTarget, fields);
 
-        return generateLatestStream(user, info, new String[] {xid});
+        return generateLatestStream(info, new String[] {xid});
     }
 
     @ApiOperation(
@@ -229,13 +231,13 @@ public class PointValueRestController extends AbstractMangoRestController {
             @RequestParam(required = false)
             PointValueField[] fields,
 
-            @AuthenticationPrincipal User user
+            @AuthenticationPrincipal PermissionHolder user
             ) {
 
         LatestQueryInfo info = new LatestQueryInfo(before, dateTimeFormat, timezone, limit,
                 true, true, useCache, simplifyTolerance, simplifyTarget, fields);
 
-        return generateLatestStream(user, info, xids);
+        return generateLatestStream(info, xids);
     }
 
     @ApiOperation(
@@ -252,10 +254,10 @@ public class PointValueRestController extends AbstractMangoRestController {
             @RequestBody
             XidLatestQueryInfoModel info,
 
-            @AuthenticationPrincipal User user
+            @AuthenticationPrincipal PermissionHolder user
             ) {
 
-        return generateLatestStream(user, info.createLatestQueryInfo(true, true), info.getXids());
+        return generateLatestStream(info.createLatestQueryInfo(true, true), info.getXids());
     }
 
     @ApiOperation(
@@ -304,13 +306,13 @@ public class PointValueRestController extends AbstractMangoRestController {
             @RequestParam(required = false)
             PointValueField[] fields,
 
-            @AuthenticationPrincipal User user
+            @AuthenticationPrincipal PermissionHolder user
             ) {
 
         LatestQueryInfo info = new LatestQueryInfo(before, dateTimeFormat, timezone, limit,
                 false, false, useCache, simplifyTolerance, simplifyTarget, fields);
 
-        return generateLatestStream(user, info, xids);
+        return generateLatestStream(info, xids);
     }
 
     @ApiOperation(
@@ -327,9 +329,9 @@ public class PointValueRestController extends AbstractMangoRestController {
             @RequestBody
             XidLatestQueryInfoModel info,
 
-            @AuthenticationPrincipal User user
+            @AuthenticationPrincipal PermissionHolder user
             ) {
-        return generateLatestStream(user, info.createLatestQueryInfo(false, false), info.getXids());
+        return generateLatestStream(info.createLatestQueryInfo(false, false), info.getXids());
     }
 
     @ApiOperation(
@@ -387,14 +389,14 @@ public class PointValueRestController extends AbstractMangoRestController {
             @RequestParam(required = false)
             PointValueField[] fields,
 
-            @AuthenticationPrincipal User user
+            @AuthenticationPrincipal PermissionHolder user
             ) {
 
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(
                 from, to, dateTimeFormat, timezone, RollupEnum.NONE, null, limit,
                 bookend, false, true, useCache, simplifyTolerance, simplifyTarget, false, fields);
 
-        return generateStream(user, info, new String[] {xid});
+        return generateStream(info, new String[] {xid});
     }
 
     @ApiOperation(
@@ -451,7 +453,7 @@ public class PointValueRestController extends AbstractMangoRestController {
             @RequestParam(required = false)
             PointValueField[] fields,
 
-            @AuthenticationPrincipal User user
+            @AuthenticationPrincipal PermissionHolder user
             ) {
 
         TimePeriod timePeriod = null;
@@ -463,7 +465,7 @@ public class PointValueRestController extends AbstractMangoRestController {
                 from, to, dateTimeFormat, timezone, rollup, timePeriod, limit,
                 true, false, true, PointValueTimeCacheControl.NONE, null, null, truncate, fields);
 
-        return generateStream(user, info, new String[] {xid});
+        return generateStream(info, new String[] {xid});
     }
 
     @ApiOperation(value = "Query Time Range for multiple data points, return in time ascending order",
@@ -519,13 +521,13 @@ public class PointValueRestController extends AbstractMangoRestController {
             @RequestParam(required = false)
             PointValueField[] fields,
 
-            @AuthenticationPrincipal User user
+            @AuthenticationPrincipal PermissionHolder user
             ) {
 
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(
                 from, to, dateTimeFormat, timezone, RollupEnum.NONE, null, limit,
                 bookend, true, true, useCache, simplifyTolerance, simplifyTarget, false, fields);
-        return generateStream(user, info, xids);
+        return generateStream(info, xids);
     }
 
     @ApiOperation(value = "POST to query a time range for multiple data points, return in time ascending order",
@@ -539,10 +541,10 @@ public class PointValueRestController extends AbstractMangoRestController {
             @RequestBody
             XidTimeRangeQueryModel model,
 
-            @AuthenticationPrincipal User user
+            @AuthenticationPrincipal PermissionHolder user
             ) {
 
-        return generateStream(user, model.createZonedDateTimeRangeQueryInfo(true, true), model.getXids());
+        return generateStream(model.createZonedDateTimeRangeQueryInfo(true, true), model.getXids());
     }
 
     @ApiOperation(value = "Rollup values for multiple data points, return in time ascending order",
@@ -599,7 +601,7 @@ public class PointValueRestController extends AbstractMangoRestController {
             @RequestParam(required = false)
             PointValueField[] fields,
 
-            @AuthenticationPrincipal User user
+            @AuthenticationPrincipal PermissionHolder user
             ) {
 
         TimePeriod timePeriod = null;
@@ -610,7 +612,7 @@ public class PointValueRestController extends AbstractMangoRestController {
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(
                 from, to, dateTimeFormat, timezone, rollup, timePeriod, limit, true,
                 true, true, PointValueTimeCacheControl.NONE, null, null, truncate, fields);
-        return generateStream(user, info, xids);
+        return generateStream(info, xids);
     }
 
     @ApiOperation(value = "POST to get rollup values for multiple data points, return in time ascending order",
@@ -628,9 +630,9 @@ public class PointValueRestController extends AbstractMangoRestController {
             @RequestBody
             XidRollupTimeRangeQueryModel model,
 
-            @AuthenticationPrincipal User user
+            @AuthenticationPrincipal PermissionHolder user
             ) {
-        return generateStream(user, model.createZonedDateTimeRangeQueryInfo(true, true, rollup), model.getXids());
+        return generateStream(model.createZonedDateTimeRangeQueryInfo(true, true, rollup), model.getXids());
     }
 
     @ApiOperation(value = "Query time range for multiple data points, return in time ascending order",
@@ -680,14 +682,14 @@ public class PointValueRestController extends AbstractMangoRestController {
             @RequestParam(required = false)
             PointValueField[] fields,
 
-            @AuthenticationPrincipal User user
+            @AuthenticationPrincipal PermissionHolder user
             ) {
 
         ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(
                 from, to, dateTimeFormat, timezone, RollupEnum.NONE, null, limit,
                 bookend, false, false, useCache, simplifyTolerance, simplifyTarget, false, fields);
 
-        return generateStream(user, info, xids);
+        return generateStream(info, xids);
     }
 
     @ApiOperation(value = "POST to query time range for multiple data points, return in time ascending order",
@@ -701,10 +703,9 @@ public class PointValueRestController extends AbstractMangoRestController {
             @RequestBody
             XidTimeRangeQueryModel model,
 
-            @AuthenticationPrincipal User user
+            @AuthenticationPrincipal PermissionHolder user
             ) {
-        return generateStream(user,
-                model.createZonedDateTimeRangeQueryInfo(false, false),
+        return generateStream(model.createZonedDateTimeRangeQueryInfo(false, false),
                 model.getXids());
     }
 
@@ -756,7 +757,7 @@ public class PointValueRestController extends AbstractMangoRestController {
             @RequestParam(required = false)
             PointValueField[] fields,
 
-            @AuthenticationPrincipal User user
+            @AuthenticationPrincipal PermissionHolder user
             ) {
 
         TimePeriod timePeriod = null;
@@ -768,7 +769,7 @@ public class PointValueRestController extends AbstractMangoRestController {
                 from, to, dateTimeFormat, timezone, rollup, timePeriod, limit,
                 true, false, false, PointValueTimeCacheControl.NONE, null, null, truncate, fields);
 
-        return generateStream(user, info, xids);
+        return generateStream(info, xids);
     }
 
     @ApiOperation(value = "POST to rollup values for multiple data points, return in time ascending order",
@@ -786,9 +787,9 @@ public class PointValueRestController extends AbstractMangoRestController {
             @RequestBody
             XidRollupTimeRangeQueryModel model,
 
-            @AuthenticationPrincipal User user
+            @AuthenticationPrincipal PermissionHolder user
             ) {
-        return generateStream(user,
+        return generateStream(
                 model.createZonedDateTimeRangeQueryInfo(false, false, rollup),
                 model.getXids());
     }
@@ -831,11 +832,11 @@ public class PointValueRestController extends AbstractMangoRestController {
             @RequestParam(required = false)
             PointValueField[] fields,
 
-            @AuthenticationPrincipal User user
+            @AuthenticationPrincipal PermissionHolder user
             ) {
 
         ZonedDateTimeStatisticsQueryInfo info = new ZonedDateTimeStatisticsQueryInfo(from, to, dateTimeFormat, timezone, useCache, fields);
-        Map<Integer, DataPointVO> voMap = buildMap(user, xids, info.getRollup());
+        Map<Integer, DataPointVO> voMap = buildMap(xids, info.getRollup());
         return ResponseEntity.ok(new MultiPointStatisticsStream(info, voMap, this.dao));
     }
 
@@ -851,7 +852,7 @@ public class PointValueRestController extends AbstractMangoRestController {
             @ApiParam(value = "Return converted value using displayed unit", required = false,
             defaultValue = "false", allowMultiple = false) @RequestParam(required = false,
             defaultValue = "false") boolean unitConversion,
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
 
 
@@ -1054,7 +1055,7 @@ public class PointValueRestController extends AbstractMangoRestController {
             @RequestParam(value = "timezone", required = false)
             String timezone,
 
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder,
             HttpServletRequest request) {
 
@@ -1097,7 +1098,7 @@ public class PointValueRestController extends AbstractMangoRestController {
             @ApiParam(value = "Point xids", required = true)
             @PathVariable String xid,
             @RequestBody(required = true) Map<String, Object> attributes,
-            @AuthenticationPrincipal User user
+            @AuthenticationPrincipal PermissionHolder user
             ) {
         DataPointVO vo = dataPointService.get(xid);
         dataPointService.ensureSetPermission(user, vo);
@@ -1117,18 +1118,17 @@ public class PointValueRestController extends AbstractMangoRestController {
     @RequestMapping(method = RequestMethod.POST, value="/purge")
     public ResponseEntity<TemporaryResource<PurgePointValuesResponseModel, AbstractRestException>> purgePointValues(HttpServletRequest request,
             @RequestBody(required = true) PurgeDataPointValuesModel model,
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
 
         return purgePointValues(
-                user,
                 model,
                 builder);
     }
 
 
     private ResponseEntity<TemporaryResource<PurgePointValuesResponseModel, AbstractRestException>>  purgePointValues(
-            User user, PurgeDataPointValuesModel model, UriComponentsBuilder builder) throws ValidationException {
+            PurgeDataPointValuesModel model, UriComponentsBuilder builder) throws ValidationException {
         model.ensureValid();
         TemporaryResource<PurgePointValuesResponseModel, AbstractRestException> response = resourceManager.newTemporaryResource(
                 "DATA_POINT_PURGE", null, model.getExpiry(), model.getTimeout(),
@@ -1142,20 +1142,20 @@ public class PointValueRestController extends AbstractMangoRestController {
                     List<String> xids = model.getXids();
                     if (xids != null && !xids.isEmpty()) {
                         for(String xid : xids) {
-                            DataPointVO vo = DataPointDao.getInstance().getByXid(xid);
+                            DataPointVO vo = dataPointService.get(xid);
                             dataPointsMap.put(xid, vo);
                             if(vo != null) {
                                 dataSourceMap.computeIfAbsent(vo.getDataSourceId(), (key) ->{
-                                    return DataSourceDao.getInstance().get(vo.getDataSourceId());
+                                    return dataSourceService.get(vo.getDataSourceId());
                                 });
                             }
                         }
                     }else {
-                        DataSourceVO ds = DataSourceDao.getInstance().getByXid(model.getDataSourceXid());
+                        DataSourceVO ds = dataSourceService.get(model.getDataSourceXid());
                         xids = new ArrayList<>();
                         if(ds != null) {
                             dataSourceMap.put(ds.getId(), ds);
-                            List<DataPointVO> points = DataPointDao.getInstance().getDataPoints(ds.getId());
+                            List<DataPointVO> points = dataPointService.getDataPoints(ds.getId());
                             for(DataPointVO point : points) {
                                 xids.add(point.getXid());
                                 dataPointsMap.put(point.getXid(), point);
@@ -1179,9 +1179,6 @@ public class PointValueRestController extends AbstractMangoRestController {
                             DataSourceVO ds = dataSourceMap.get(dp.getDataSourceId());
                             if(ds == null)
                                 throw new NotFoundException();
-
-                            //Ensure edit permission
-                            permissionService.ensurePermission(user, dp.getEditPermission());
 
                             //Do purge based on settings
                             if(model.isPurgeAll())
@@ -1257,14 +1254,13 @@ public class PointValueRestController extends AbstractMangoRestController {
     /**
      * The Hard Working Value Generation Logic for Latest Value Queries
      *
-     * @param user
      * @param info
      * @param xids
      * @return
      */
-    protected <T, INFO extends LatestQueryInfo> ResponseEntity<PointValueTimeStream<T, INFO>> generateLatestStream(User user, INFO info, String[] xids){
+    protected <T, INFO extends LatestQueryInfo> ResponseEntity<PointValueTimeStream<T, INFO>> generateLatestStream(INFO info, String[] xids){
         //Build the map, check permissions
-        Map<Integer, DataPointVO> voMap = buildMap(user, xids, info.getRollup());
+        Map<Integer, DataPointVO> voMap = buildMap(xids, info.getRollup());
         if(info.isUseSimplify()) {
             //Ensure no Simplify support
             for(DataPointVO vo : voMap.values())
@@ -1277,15 +1273,14 @@ public class PointValueRestController extends AbstractMangoRestController {
 
     /**
      * The Hard Working Value Generation Logic for Time Range Queries
-     * @param user
      * @param info
      * @param xids
      * @return
      */
-    protected <T, INFO extends ZonedDateTimeRangeQueryInfo> ResponseEntity<PointValueTimeStream<T, INFO>> generateStream(User user, INFO info, String[] xids){
+    protected <T, INFO extends ZonedDateTimeRangeQueryInfo> ResponseEntity<PointValueTimeStream<T, INFO>> generateStream(INFO info, String[] xids){
 
         //Build the map, check permissions
-        Map<Integer, DataPointVO> voMap = buildMap(user, xids, info.getRollup());
+        Map<Integer, DataPointVO> voMap = buildMap(xids, info.getRollup());
 
         // Are we using rollup
         if (info.getRollup() != RollupEnum.NONE) {
@@ -1308,11 +1303,10 @@ public class PointValueRestController extends AbstractMangoRestController {
 
     /**
      * Build and validate the map of Requested Data Points
-     * @param user
      * @param xids
      * @return Map of series ids to data points
      */
-    protected Map<Integer, DataPointVO> buildMap(User user, String[] xids, RollupEnum rollup){
+    protected Map<Integer, DataPointVO> buildMap(String[] xids, RollupEnum rollup){
         if(xids == null)
             throw new BadRequestException(new TranslatableMessage("validate.invalidValueForField", "xids"));
         //Build the map, check permissions, we want this map ordered so our results are in order for csv output

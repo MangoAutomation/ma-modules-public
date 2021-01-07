@@ -32,7 +32,7 @@ import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.view.quantize2.FftGenerator;
 import com.serotonin.m2m2.vo.DataPointVO;
-import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -94,7 +94,7 @@ public class PointValueSignalAnalysisRestController {
             @RequestParam(value = "limit", required = false)
             Integer limit,
 
-            @AuthenticationPrincipal User user
+            @AuthenticationPrincipal PermissionHolder user
             ) {
 
 
@@ -156,7 +156,7 @@ public class PointValueSignalAnalysisRestController {
             @RequestParam(value = "limit", required = false)
             Integer limit,
 
-            @AuthenticationPrincipal User user
+            @AuthenticationPrincipal PermissionHolder user
             ) {
 
         DataPointVO vo = dataPointService.get(xid);

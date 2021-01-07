@@ -50,11 +50,11 @@ import com.serotonin.m2m2.rt.event.type.EventType.EventTypeNames;
 import com.serotonin.m2m2.rt.event.type.PublisherEventType;
 import com.serotonin.m2m2.rt.event.type.SystemEventType;
 import com.serotonin.m2m2.vo.DataPointVO;
-import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.event.EventTypeVO;
 import com.serotonin.m2m2.vo.event.detector.AbstractPointEventDetectorVO;
 import com.serotonin.m2m2.vo.permission.PermissionException;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.vo.publish.PublisherVO;
 
 import io.swagger.annotations.Api;
@@ -102,7 +102,7 @@ public class EventTypesRestController {
             responseContainer="List")
     @RequestMapping(method = RequestMethod.GET)
     public StreamWithTotal<EventTypeVOModel<?,?,?>> queryAllEventTypes(
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             Translations translations,
             ASTNode query) {
 
@@ -168,7 +168,7 @@ public class EventTypesRestController {
     @RequestMapping(method = RequestMethod.GET, value="/{type}")
     public StreamWithTotal<EventTypeVOModel<?,?,?>> queryEventTypesForType(
             @PathVariable(value="type") @ApiParam(value = "Event type to query over", required = true) String type,
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             Translations translations,
             ASTNode query) {
 
@@ -185,7 +185,7 @@ public class EventTypesRestController {
     public StreamWithTotal<EventTypeVOModel<?,?,?>> queryEventTypesForTypeAndSubType(
             @PathVariable(value="type") @ApiParam(value = "Event type to query over", required = true) String type,
             @PathVariable(value="subtype") @ApiParam(value = "Event subtype to query over", required = true)  String subtype,
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             Translations translations,
             ASTNode query) {
 
@@ -203,7 +203,7 @@ public class EventTypesRestController {
             @PathVariable(value="type") @ApiParam(value = "Event type to query over", required = true) String type,
             @PathVariable(value="subtype") @ApiParam(value = "Event subtype to query over", required = true) String subtype,
             @PathVariable(value="referenceId1") @ApiParam(value = "Reference ID 1 locator", required = true)  Integer referenceId1,
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             Translations translations,
             ASTNode query) {
 
@@ -218,7 +218,7 @@ public class EventTypesRestController {
      * @return
      * @throws NotFoundException
      */
-    private List<EventTypeVOModel<?,?,?>> getEventTypes(String typeName, User user) throws NotFoundException {
+    private List<EventTypeVOModel<?,?,?>> getEventTypes(String typeName, PermissionHolder user) throws NotFoundException {
         //track if the type was a default type
         List<EventTypeVOModel<?,?,?>> types = new ArrayList<>();
         boolean found = false;
@@ -278,7 +278,7 @@ public class EventTypesRestController {
      * @return
      * @throws NotFoundException
      */
-    private List<EventTypeVOModel<?,?,?>> getEventTypesForSubtype(String typeName, String subtype, User user) throws NotFoundException {
+    private List<EventTypeVOModel<?,?,?>> getEventTypesForSubtype(String typeName, String subtype, PermissionHolder user) throws NotFoundException {
         //track if the type was a default type
         List<EventTypeVOModel<?,?,?>> types = new ArrayList<>();
         boolean found = false;
@@ -384,7 +384,7 @@ public class EventTypesRestController {
      * @return
      * @throws NotFoundException
      */
-    private List<EventTypeVOModel<?,?,?>> getEventTypesForSubtypeAndReferenceId1(String typeName, String subtype, Integer referenceId1, User user) throws NotFoundException {
+    private List<EventTypeVOModel<?,?,?>> getEventTypesForSubtypeAndReferenceId1(String typeName, String subtype, Integer referenceId1, PermissionHolder user) throws NotFoundException {
         //track if the type was a default type
         List<EventTypeVOModel<?,?,?>> types = new ArrayList<>();
         boolean found = false;

@@ -41,7 +41,6 @@ import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.mbus.MangoMBusSerialConnection;
-import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
@@ -90,14 +89,14 @@ public class MBusDataSourceRestController {
 
             @RequestBody MBusScanRequest requestBody,
 
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
 
             UriComponentsBuilder builder) {
 
         requestBody.ensureValid();
 
         if(requestBody.getDataSourceXid() != null)
-            ensureNotRunning(requestBody.getDataSourceXid(), user);
+            ensureNotRunning(requestBody.getDataSourceXid());
 
         TemporaryResource<MBusScanResult, AbstractRestException> responseBody = temporaryResourceManager.newTemporaryResource(
                 RESOURCE_TYPE_MBUS, null, expiry, timeout, (resource)-> {
@@ -251,7 +250,7 @@ public class MBusDataSourceRestController {
      *
      * @param dataSourceXid
      */
-    private void ensureNotRunning(String dataSourceXid, User user) throws PermissionException {
+    private void ensureNotRunning(String dataSourceXid) throws PermissionException {
         try {
             DataSourceVO ds = service.get(dataSourceXid);
             if (Common.runtimeManager.isDataSourceRunning(ds.getId()))

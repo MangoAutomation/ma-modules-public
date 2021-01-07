@@ -124,7 +124,7 @@ public class DataPointTagsRestController {
     @RequestMapping(method = RequestMethod.GET, value="/points")
     public StreamedArrayWithTotal queryTagsForDataPoint(
             HttpServletRequest request,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
 
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
         ConditionSortLimitWithTagKeys conditions = (ConditionSortLimitWithTagKeys) dataPointDao.rqlToCondition(rql, null, null, null);
@@ -148,7 +148,7 @@ public class DataPointTagsRestController {
     @RequestMapping(method = RequestMethod.GET, value="/points", produces=MediaTypes.CSV_VALUE)
     public StreamedArrayWithTotal queryTagsForDataPointCSV(
             HttpServletRequest request,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
 
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
         ConditionSortLimitWithTagKeys conditions = (ConditionSortLimitWithTagKeys) dataPointDao.rqlToCondition(rql, null, null, null);
@@ -526,7 +526,7 @@ public class DataPointTagsRestController {
 
     @ApiOperation(value = "Gets all available tags keys", notes = "Only returns tag keys which are present on data points the user has access to")
     @RequestMapping(method = RequestMethod.GET, value="/keys")
-    public Set<String> getTagKeys(@AuthenticationPrincipal User user) {
+    public Set<String> getTagKeys(@AuthenticationPrincipal PermissionHolder user) {
         return dataPointTagsDao.getTagKeys(user);
     }
 
@@ -541,7 +541,7 @@ public class DataPointTagsRestController {
             @ApiParam(value = "Tag key", required = true, allowMultiple = false)
             @PathVariable String tagKey,
 
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
 
             HttpServletRequest request) {
 

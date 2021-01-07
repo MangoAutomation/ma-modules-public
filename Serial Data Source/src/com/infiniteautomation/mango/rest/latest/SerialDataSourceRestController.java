@@ -10,7 +10,6 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,7 +28,6 @@ import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.vo.DataPointVO;
-import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 
 import io.swagger.annotations.Api;
@@ -60,8 +58,7 @@ public class SerialDataSourceRestController {
     @RequestMapping(method = RequestMethod.GET, value="/log-file-path/{xid}")
     public String getLogFilePath(
             @ApiParam(value = "XID of Data Source", required = true, allowMultiple = false)
-            @PathVariable String xid,
-            @AuthenticationPrincipal User user) {
+            @PathVariable String xid) {
 
         DataSourceVO vo = service.get(xid);
         return SerialDataSourceRT.getIOLogFileName(vo.getId());
@@ -72,8 +69,7 @@ public class SerialDataSourceRestController {
     public List<SerialTestResultModel> validateSerialData(
             @RequestBody SerialValidationModel model,
             @ApiParam(value = "Valid Serial data source XID", required = true, allowMultiple = false)
-            @PathVariable String xid,
-            @AuthenticationPrincipal User user) {
+            @PathVariable String xid) {
 
         List<SerialTestResultModel> results = new ArrayList<>();
 

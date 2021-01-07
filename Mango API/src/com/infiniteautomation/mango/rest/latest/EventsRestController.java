@@ -64,6 +64,7 @@ import com.serotonin.m2m2.rt.event.UserEventLevelSummary;
 import com.serotonin.m2m2.rt.event.type.EventType.EventTypeNames;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.EventInstanceVO;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -81,7 +82,7 @@ public class EventsRestController {
 
     private final RestModelMapper modelMapper;
     private final EventInstanceService service;
-    private final BiFunction<EventInstanceVO, User, EventInstanceModel> map;
+    private final BiFunction<EventInstanceVO, PermissionHolder, EventInstanceModel> map;
 
     private final Map<String, Function<Object, Object>> valueConverters;
     private final Map<String, Field<?>> fieldMap;
@@ -107,7 +108,7 @@ public class EventsRestController {
             value = "Get the active events for a user",
             notes = "List of all active events for a user")
     @RequestMapping(method = RequestMethod.GET, value = "/active")
-    public List<EventInstanceModel> getActive(@AuthenticationPrincipal User user) {
+    public List<EventInstanceModel> getActive(@AuthenticationPrincipal PermissionHolder user) {
         List<EventInstance> events = service.getAllActiveUserEvents();
         return events.stream().map(e -> modelMapper.map(e, EventInstanceModel.class, user)).collect(Collectors.toList());
     }
@@ -117,7 +118,7 @@ public class EventsRestController {
             notes = "List of counts for all active events by type and the most recent active alarm for each."
             )
     @RequestMapping(method = RequestMethod.GET, value = "/active-summary")
-    public List<EventLevelSummaryModel> getActiveSummary(@AuthenticationPrincipal User user) {
+    public List<EventLevelSummaryModel> getActiveSummary(@AuthenticationPrincipal PermissionHolder user) {
         List<UserEventLevelSummary> summaries = service.getActiveSummary();
         return summaries.stream().map(s -> {
             EventInstanceModel instanceModel = s.getLatest() != null ? modelMapper.map(s.getLatest(), EventInstanceModel.class, user) : null;
@@ -130,7 +131,7 @@ public class EventsRestController {
             notes = "List of counts for all unacknowledged events by type and the most recent unacknowledged alarm for each."
             )
     @RequestMapping(method = RequestMethod.GET, value = "/unacknowledged-summary")
-    public List<EventLevelSummaryModel> getUnacknowledgedSummary(@AuthenticationPrincipal User user) {
+    public List<EventLevelSummaryModel> getUnacknowledgedSummary(@AuthenticationPrincipal PermissionHolder user) {
         List<UserEventLevelSummary> summaries = service.getUnacknowledgedSummary();
         return summaries.stream().map(s -> {
             EventInstanceModel instanceModel = s.getLatest() != null ? modelMapper.map(s.getLatest(), EventInstanceModel.class, user) : null;
@@ -146,7 +147,7 @@ public class EventsRestController {
     public List<DataPointEventSummaryModel> getDataPointSummaries(
             @RequestBody
             String[] xids,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
         Collection<DataPointEventLevelSummary> summaries = service.getDataPointEventSummaries(xids);
         return summaries.stream().map(s -> new DataPointEventSummaryModel(s.getXid(), s.getCounts())).collect(Collectors.toList());
     }
@@ -158,7 +159,7 @@ public class EventsRestController {
     public EventInstanceModel getById(
             @ApiParam(value = "Valid Event ID", required = true)
             @PathVariable Integer id,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
         return map.apply(service.get(id), user);
     }
 
@@ -170,7 +171,7 @@ public class EventsRestController {
             )
     @RequestMapping(method = RequestMethod.GET)
     public StreamedArrayWithTotal queryRQL(
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             ASTNode rql) {
         return doQuery(rql, user);
     }
@@ -222,7 +223,7 @@ public class EventsRestController {
     @RequestMapping(method = RequestMethod.POST, value="/query/events-by-source-type")
     public StreamedArrayWithTotal queryForEventsBySourceType(@RequestBody
             EventQueryBySourceType body,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
 
         ASTNode rql = RQLUtils.parseRQLtoAST(body.getSourceRql());
         ASTNode query = null;
@@ -275,7 +276,7 @@ public class EventsRestController {
     @ApiOperation("Query for event counts using RQL")
     @RequestMapping(method = RequestMethod.POST, path = "/counts")
     public List<PeriodCounts> eventCounts(
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             @RequestBody List<Date> periodBoundaries,
             ASTNode rql) {
 
@@ -302,7 +303,7 @@ public class EventsRestController {
             @RequestBody
             CountDataPointEventsQuery body,
             HttpServletRequest request,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
 
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
 
@@ -334,7 +335,7 @@ public class EventsRestController {
         };
     }
 
-    private StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
+    private StreamedArrayWithTotal doQuery(ASTNode rql, PermissionHolder user) {
         return new StreamedVORqlQueryWithTotal<>(service, rql, null, fieldMap, valueConverters, null, vo -> map.apply(vo, user));
     }
 

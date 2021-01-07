@@ -29,7 +29,7 @@ import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
-import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -63,7 +63,7 @@ public class SystemSettingsRestController {
             @PathVariable String key,
             @ApiParam(value = "Return Type", required = false, defaultValue="STRING", allowMultiple = false)
             @RequestParam(required=false, defaultValue="STRING") SystemSettingTypeEnum type,
-            @AuthenticationPrincipal User user) throws IOException {
+            @AuthenticationPrincipal PermissionHolder user) throws IOException {
         permissionService.ensureAdminRole(user);
         Object value = null;
         switch(type){
@@ -103,7 +103,7 @@ public class SystemSettingsRestController {
             notes = "Admin Permission Required, All settings returned as string types"
             )
     @RequestMapping(method = RequestMethod.GET)
-    public Map<String, Object> getAll(@AuthenticationPrincipal User user) {
+    public Map<String, Object> getAll(@AuthenticationPrincipal PermissionHolder user) {
         permissionService.ensureAdminRole(user);
         return dao.getAllSystemSettingsAsCodes();
     }
@@ -117,7 +117,7 @@ public class SystemSettingsRestController {
             @PathVariable String key,
             @ApiParam(value = "Updated model", required = true)
             @RequestBody(required=true) JsonNode model,
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder, HttpServletRequest request) {
         permissionService.ensureAdminRole(user);
         ProcessResult response = new ProcessResult();
@@ -162,7 +162,7 @@ public class SystemSettingsRestController {
     public Map<String,Object> updateMany(
             @ApiParam(value = "Updated settings", required = true)
             @RequestBody(required=true) Map<String, JsonNode> body,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
         permissionService.ensureAdminRole(user);
         ProcessResult response = new ProcessResult();
         Map<String, Object> settings = convertValues(body);

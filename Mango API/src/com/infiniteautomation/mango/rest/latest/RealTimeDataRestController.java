@@ -100,7 +100,7 @@ public class RealTimeDataRestController {
             notes = "Check the status member to ensure the point is OK not DISABLED or UNRELIABLE")
     @RequestMapping(method = RequestMethod.GET)
     public StreamWithTotal<RealTimeDataPointValueModel> query(
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             ASTNode query,
             Translations translations) {
         //First build all the models

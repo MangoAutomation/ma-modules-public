@@ -47,8 +47,8 @@ import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.rt.dataSource.DataSourceRT;
 import com.serotonin.m2m2.rt.dataSource.PollingDataSource;
-import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.web.MediaTypes;
 
 import io.swagger.annotations.Api;
@@ -67,7 +67,7 @@ import net.jazdw.rql.parser.ASTNode;
 public class DataSourcesRestController {
 
     private final DataSourceService service;
-    private final BiFunction<DataSourceVO, User, AbstractDataSourceModel<?>> map;
+    private final BiFunction<DataSourceVO, PermissionHolder, AbstractDataSourceModel<?>> map;
     private final DataPointService dataPointService;
     private final DataPointDao dataPointDao;
 
@@ -94,7 +94,7 @@ public class DataSourcesRestController {
     public StreamedArrayWithTotal query(
             HttpServletRequest request,
             @ApiParam(value="User", required=true)
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
         return doQuery(rql, user);
@@ -108,7 +108,7 @@ public class DataSourcesRestController {
     public AbstractDataSourceModel<?> get(
             @ApiParam(value = "XID of Data Source", required = true, allowMultiple = false)
             @PathVariable String xid,
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
         return map.apply(service.get(xid), user);
     }
@@ -121,7 +121,7 @@ public class DataSourcesRestController {
     public AbstractDataSourceModel<?> getById(
             @ApiParam(value = "ID of Data Source", required = true, allowMultiple = false)
             @PathVariable int id,
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
         return map.apply(service.get(id), user);
     }
@@ -130,7 +130,7 @@ public class DataSourcesRestController {
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<AbstractDataSourceModel<?>> save(
             @RequestBody(required=true) AbstractDataSourceModel<? extends DataSourceVO> model,
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder,
             HttpServletRequest request) {
 
@@ -146,7 +146,7 @@ public class DataSourcesRestController {
     public ResponseEntity<AbstractDataSourceModel<?>> update(
             @PathVariable String xid,
             @RequestBody(required=true) AbstractDataSourceModel<? extends DataSourceVO> model,
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder,
             HttpServletRequest request) {
 
@@ -170,7 +170,7 @@ public class DataSourcesRestController {
                     service=DataSourceService.class,
                     modelClass=AbstractDataSourceModel.class)
             AbstractDataSourceModel<? extends DataSourceVO> model,
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
 
         DataSourceVO vo = service.update(xid, model.toVO());
@@ -191,7 +191,7 @@ public class DataSourcesRestController {
     public AbstractDataSourceModel<?> delete(
             @ApiParam(value = "XID of data source to delete", required = true, allowMultiple = false)
             @PathVariable String xid,
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
         return map.apply(service.delete(xid), user);
     }
@@ -207,7 +207,7 @@ public class DataSourcesRestController {
             @ApiParam(value = "Restart the data source, enabled must equal true", required = false, defaultValue="false", allowMultiple = false)
             @RequestParam(required=false, defaultValue="false") boolean restart,
 
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
         service.restart(xid, enabled, restart);
     }
 
@@ -220,7 +220,7 @@ public class DataSourcesRestController {
     public RuntimeStatusModel getRuntimeStatus(
             @ApiParam(value = "Valid Data Source XID", required = true, allowMultiple = false)
             @PathVariable String xid,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
         DataSourceVO vo = service.get(xid);
         RuntimeStatusModel model = new RuntimeStatusModel();
         DataSourceRT<?> ds = Common.runtimeManager.getRunningDataSource(vo.getId());
@@ -253,7 +253,7 @@ public class DataSourcesRestController {
             @ApiParam(value = "Include data points")
             @RequestParam(value = "includePoints", required = false, defaultValue="false")
             Boolean includePoints,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
 
         DataSourceVO vo = service.get(xid);
         Map<String,Object> export = new LinkedHashMap<>();
@@ -280,7 +280,7 @@ public class DataSourcesRestController {
             @ApiParam(value = "Copy data points", required = false, defaultValue="false", allowMultiple = false)
             @RequestParam(required=false, defaultValue="false") boolean copyPoints,
 
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
 
         DataSourceVO copy = service.copy(xid, copyXid, copyName, copyDeviceName, enabled, copyPoints);
@@ -297,7 +297,7 @@ public class DataSourcesRestController {
             value = "Export formatted for Configuration Import by supplying an RQL query",
             notes = "User must have read permission")
     @RequestMapping(method = RequestMethod.GET, value = "/export", produces = MediaTypes.SEROTONIN_JSON_VALUE)
-    public Map<String, JsonStreamedArray> exportQuery(HttpServletRequest request, @AuthenticationPrincipal User user) {
+    public Map<String, JsonStreamedArray> exportQuery(HttpServletRequest request, @AuthenticationPrincipal PermissionHolder user) {
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
 
         Map<String, JsonStreamedArray> export = new HashMap<>();
@@ -309,7 +309,7 @@ public class DataSourcesRestController {
             value = "Export formatted for Configuration Import by supplying an RQL query",
             notes = "User must have read permission")
     @RequestMapping(method = RequestMethod.GET, value = "/export-with-points", produces = MediaTypes.SEROTONIN_JSON_VALUE)
-    public DataSourceWithPointsExport exportQueryWithPoints(HttpServletRequest request, @AuthenticationPrincipal User user) {
+    public DataSourceWithPointsExport exportQueryWithPoints(HttpServletRequest request, @AuthenticationPrincipal PermissionHolder user) {
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
         return new DataSourceWithPointsExport(service, rql, dataPointService, dataPointDao);
     }
@@ -328,7 +328,7 @@ public class DataSourcesRestController {
      * @param user
      * @return
      */
-    private StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
+    private StreamedArrayWithTotal doQuery(ASTNode rql, PermissionHolder user) {
         return new StreamedVORqlQueryWithTotal<>(service, rql, null, null, null, vo -> map.apply(vo, user));
     }
 

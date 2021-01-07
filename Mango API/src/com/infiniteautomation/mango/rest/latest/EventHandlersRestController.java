@@ -59,7 +59,6 @@ import com.serotonin.m2m2.rt.event.handlers.EmailHandlerRT;
 import com.serotonin.m2m2.rt.event.type.DuplicateHandling;
 import com.serotonin.m2m2.rt.event.type.EventType;
 import com.serotonin.m2m2.rt.script.EventInstanceWrapper;
-import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.AbstractEventHandlerVO;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
@@ -78,7 +77,7 @@ import net.jazdw.rql.parser.ASTNode;
 public class EventHandlersRestController {
 
     private final EventHandlerService service;
-    private final BiFunction<AbstractEventHandlerVO, User, AbstractEventHandlerModel<? extends AbstractEventHandlerVO>> map;
+    private final BiFunction<AbstractEventHandlerVO, PermissionHolder, AbstractEventHandlerModel<? extends AbstractEventHandlerVO>> map;
     private final MangoJavaScriptService javaScriptService;
 
     private final Map<String, Function<Object, Object>> valueConverters;
@@ -122,7 +121,7 @@ public class EventHandlersRestController {
     public StreamedArrayWithTotal query(
             HttpServletRequest request,
             @ApiParam(value="User", required=true)
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
         return new StreamedVORqlQueryWithTotal<>(service, rql, null, this.fieldMap, this.valueConverters, item -> true, vo -> map.apply(vo, user));
@@ -138,7 +137,7 @@ public class EventHandlersRestController {
             @ApiParam(value = "XID to get", required = true, allowMultiple = false)
             @PathVariable String xid,
             @ApiParam(value="User", required=true)
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
         return map.apply(service.get(xid), user);
     }
@@ -152,7 +151,7 @@ public class EventHandlersRestController {
     public ResponseEntity<AbstractEventHandlerModel<?>> create(
             @RequestBody AbstractEventHandlerModel<? extends AbstractEventHandlerVO> model,
             @ApiParam(value="User", required=true)
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
         AbstractEventHandlerVO vo = service.insert(model.toVO());
         URI location = builder.path("/event-handlers/{xid}").buildAndExpand(vo.getXid()).toUri();
@@ -173,7 +172,7 @@ public class EventHandlersRestController {
             @ApiParam(value = "Event Handler of update", required = true, allowMultiple = false)
             @RequestBody AbstractEventHandlerModel<? extends AbstractEventHandlerVO> model,
             @ApiParam(value="User", required=true)
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
         AbstractEventHandlerVO vo = service.update(xid, model.toVO());
         URI location = builder.path("/event-handlers/{xid}").buildAndExpand(vo.getXid()).toUri();
@@ -197,7 +196,7 @@ public class EventHandlersRestController {
                     modelClass=AbstractEventHandlerModel.class)
             AbstractEventHandlerModel<? extends AbstractEventHandlerVO> model,
 
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
 
         AbstractEventHandlerVO vo = service.update(xid, model.toVO());
@@ -219,7 +218,7 @@ public class EventHandlersRestController {
             @ApiParam(value = "XID of EventHandler to delete", required = true, allowMultiple = false)
             @PathVariable String xid,
             @ApiParam(value="User", required=true)
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
         return ResponseEntity.ok(map.apply(service.delete(xid), user));
     }
@@ -234,7 +233,7 @@ public class EventHandlersRestController {
     public void validate(
             @RequestBody AbstractEventHandlerModel<? extends AbstractEventHandlerVO> model,
             @ApiParam(value="User", required=true)
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
 
         service.ensureValid(model.toVO(), user);
@@ -248,7 +247,7 @@ public class EventHandlersRestController {
     public MangoJavaScriptResultModel validateSetPointHandlerScript(
             @RequestBody MangoJavaScriptModel model,
             @ApiParam(value="User", required=true)
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) throws IOException, EncryptedDocumentException, InvalidFormatException {
 
         //Add in the additional validation context
@@ -266,7 +265,7 @@ public class EventHandlersRestController {
             return MangoJavaScriptService.UNCHANGED;
         });
 
-        return validateScript(model, user, "eventHandlers.setPoint.successNoValueSet");
+        return validateScript(model, "eventHandlers.setPoint.successNoValueSet");
     }
 
     @ApiOperation(
@@ -277,7 +276,7 @@ public class EventHandlersRestController {
     public MangoJavaScriptResultModel validateEmailHandlerScript(
             @RequestBody MangoJavaScriptModel model,
             @ApiParam(value="User", required=true)
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) throws IOException, EncryptedDocumentException, InvalidFormatException {
 
         //Add in the additional validation context
@@ -310,10 +309,10 @@ public class EventHandlersRestController {
         model.getAdditionalContext().computeIfAbsent("model", (k) -> {
             return emailModel;
         });
-        return validateScript(model, user, "eventHandlers.script.successNoEmail");
+        return validateScript(model, "eventHandlers.script.successNoEmail");
     }
 
-    private MangoJavaScriptResultModel validateScript(MangoJavaScriptModel model, User user, String noChangeTranslationKey) {
+    private MangoJavaScriptResultModel validateScript(MangoJavaScriptModel model, String noChangeTranslationKey) {
         //Set to potentially return a String
         model.setResultDataType(DataTypeEnum.NUMERIC.name());
         MangoJavaScript jsVo = model.toVO();

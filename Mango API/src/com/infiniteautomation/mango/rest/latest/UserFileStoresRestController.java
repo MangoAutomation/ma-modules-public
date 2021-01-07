@@ -29,7 +29,8 @@ import com.infiniteautomation.mango.rest.latest.model.filestore.FileStoreModel;
 import com.infiniteautomation.mango.spring.service.FileStoreService;
 import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.vo.FileStore;
-import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -68,7 +69,7 @@ public class UserFileStoresRestController {
     @RequestMapping(method = RequestMethod.GET, value="/{xid}")
     public MappingJacksonValue getUserFileStoreModel(
             @PathVariable("xid") String xid,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
 
         FileStore fs = this.fileStoreService.get(xid);
 

@@ -29,7 +29,7 @@ import com.infiniteautomation.mango.util.WorkItemInfo;
 import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.ProcessResult;
-import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -55,7 +55,7 @@ public class WorkItemRestController {
     @RequestMapping(method = RequestMethod.GET)
     public List<WorkItemInfo> getAll(
             @RequestParam(value = "classname", required = false, defaultValue="") String classname,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
         permissionService.ensureAdminRole(user);
 
         List<WorkItemInfo> modelList = new ArrayList<>();
@@ -81,7 +81,7 @@ public class WorkItemRestController {
             @ApiParam(value = "priority", required = true, allowMultiple = false)
             @PathVariable String priority,
             @RequestParam(value = "classname", required = false, defaultValue="") String classname,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
         permissionService.ensureAdminRole(user);
 
         List<WorkItemInfo> list;

@@ -22,7 +22,7 @@ import com.infiniteautomation.mango.rest.latest.model.system.actions.SystemActio
 import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResource;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.log4jreset.Log4JResetActionPermissionDefinition;
-import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -48,7 +48,7 @@ public class Log4JResetSystemActionController {
     @RequestMapping(method = RequestMethod.POST, value="/system-actions/log4JUtil")
     public ResponseEntity<TemporaryResource<Log4JUtilResult, AbstractRestException>> reset(
             @RequestBody Log4JUtilModel requestBody,
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
 
         return manager.create(requestBody, user, builder, Log4JResetActionPermissionDefinition.PERMISSION, RESOURCE_TYPE, (resource) -> {

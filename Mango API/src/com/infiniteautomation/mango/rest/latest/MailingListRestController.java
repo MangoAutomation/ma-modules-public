@@ -75,7 +75,7 @@ public class MailingListRestController {
     public StreamedArrayWithTotal query(
             HttpServletRequest request,
             @ApiParam(value="User", required=true)
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
         return doQuery(rql, user);
@@ -91,7 +91,7 @@ public class MailingListRestController {
             @ApiParam(value = "XID of Mailing List to get", required = true, allowMultiple = false)
             @PathVariable String xid,
             @ApiParam(value="User", required=true)
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
         return ResponseEntity.ok(mapping.map(service.get(xid), user, mapper));
     }
@@ -105,7 +105,7 @@ public class MailingListRestController {
     public ResponseEntity<MailingListModel> create(
             @RequestBody MailingListWithRecipientsModel model,
             @ApiParam(value="User", required=true)
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
         MailingList vo = service.insert(mapping.unmap(model, user, mapper));
         URI location = builder.path("/mailing-lists/{xid}").buildAndExpand(vo.getXid()).toUri();
@@ -126,7 +126,7 @@ public class MailingListRestController {
             @ApiParam(value = "Mailing List of update", required = true, allowMultiple = false)
             @RequestBody MailingListWithRecipientsModel model,
             @ApiParam(value="User", required=true)
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
         MailingList vo = service.update(xid, mapping.unmap(model, user, mapper));
         URI location = builder.path("/mailing-lists/{xid}").buildAndExpand(vo.getXid()).toUri();
@@ -150,7 +150,7 @@ public class MailingListRestController {
                     modelClass=MailingListWithRecipientsModel.class)
             MailingListWithRecipientsModel model,
 
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
 
 
@@ -173,7 +173,7 @@ public class MailingListRestController {
             @ApiParam(value = "XID of Mailing List to delete", required = true, allowMultiple = false)
             @PathVariable String xid,
             @ApiParam(value="User", required=true)
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
         return ResponseEntity.ok(mapping.map(service.delete(xid), user, mapper));
     }
@@ -188,7 +188,7 @@ public class MailingListRestController {
     public void validate(
             @RequestBody MailingListWithRecipientsModel model,
             @ApiParam(value="User", required=true)
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
         service.ensureValid(mapping.unmap(model, user, mapper), user);
     }
@@ -197,7 +197,7 @@ public class MailingListRestController {
             value = "Export formatted for Configuration Import by supplying an RQL query",
             notes = "User must have read permission")
     @RequestMapping(method = RequestMethod.GET, value = "/export", produces = MediaTypes.SEROTONIN_JSON_VALUE)
-    public Map<String, JsonStreamedArray> exportQuery(HttpServletRequest request, @AuthenticationPrincipal User user) {
+    public Map<String, JsonStreamedArray> exportQuery(HttpServletRequest request, @AuthenticationPrincipal PermissionHolder user) {
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
 
         Map<String, JsonStreamedArray> export = new HashMap<>();

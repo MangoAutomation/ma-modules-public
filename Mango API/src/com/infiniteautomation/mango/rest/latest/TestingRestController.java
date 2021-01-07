@@ -205,7 +205,7 @@ public class TestingRestController {
             @ApiResponse(code = 401, message = "Unauthorized user access", response = ResponseEntity.class),
     })
     @RequestMapping(method = {RequestMethod.GET}, value = {"/admin-get/{resourceId}"})
-    public ResponseEntity<Object> exampleGet(@AuthenticationPrincipal User user,
+    public ResponseEntity<Object> exampleGet(@AuthenticationPrincipal PermissionHolder user,
                                              @ApiParam(value = "Resource id", required = true, allowMultiple = false) @PathVariable String resourceId) {
         return new ResponseEntity<Object>(HttpStatus.OK);
     }
@@ -216,7 +216,7 @@ public class TestingRestController {
             @ApiResponse(code = 401, message = "Unauthorized user access", response = ResponseEntity.class),
     })
     @RequestMapping(method = {RequestMethod.GET}, value = {"/user-get/{resourceId}"})
-    public ResponseEntity<Object> userGet(@AuthenticationPrincipal User user,
+    public ResponseEntity<Object> userGet(@AuthenticationPrincipal PermissionHolder user,
                                           @ApiParam(value = "Resource id", required = true, allowMultiple = false) @PathVariable String resourceId) {
         return new ResponseEntity<Object>(HttpStatus.OK);
     }
@@ -226,7 +226,7 @@ public class TestingRestController {
             @ApiResponse(code = 401, message = "Unauthorized user access", response = ResponseEntity.class),
     })
     @RequestMapping(method = {RequestMethod.GET}, value = {"/permissions-exception"})
-    public ResponseEntity<Object> alwaysFails(@AuthenticationPrincipal User user) {
+    public ResponseEntity<Object> alwaysFails(@AuthenticationPrincipal PermissionHolder user) {
         throw new PermissionException(new TranslatableMessage("common.default", "I always fail."), user);
     }
 
@@ -235,7 +235,7 @@ public class TestingRestController {
             @ApiResponse(code = 401, message = "Unauthorized user access", response = ResponseEntity.class),
     })
     @RequestMapping(method = {RequestMethod.GET}, value = {"/access-denied-exception"})
-    public ResponseEntity<Object> accessDenied(@AuthenticationPrincipal User user) {
+    public ResponseEntity<Object> accessDenied(@AuthenticationPrincipal PermissionHolder user) {
         throw new AccessDeniedException("I don't have access.");
     }
 
@@ -244,7 +244,7 @@ public class TestingRestController {
             @ApiResponse(code = 401, message = "Unauthorized user access", response = ResponseEntity.class),
     })
     @RequestMapping(method = {RequestMethod.GET}, value = {"/generic-exception"})
-    public ResponseEntity<Object> genericFailure(@AuthenticationPrincipal User user) {
+    public ResponseEntity<Object> genericFailure(@AuthenticationPrincipal PermissionHolder user) {
         throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
@@ -253,7 +253,7 @@ public class TestingRestController {
             @ApiResponse(code = 401, message = "Unauthorized user access", response = ResponseEntity.class),
     })
     @RequestMapping(method = {RequestMethod.GET}, value = {"/runtime-exception"})
-    public ResponseEntity<Object> runtimeFailure(@AuthenticationPrincipal User user) {
+    public ResponseEntity<Object> runtimeFailure(@AuthenticationPrincipal PermissionHolder user) {
         throw new RuntimeException("I'm a runtime Exception");
     }
 
@@ -262,7 +262,7 @@ public class TestingRestController {
             @ApiResponse(code = 401, message = "Unauthorized user access", response = ResponseEntity.class),
     })
     @RequestMapping(method = {RequestMethod.GET}, value = {"/io-exception"})
-    public ResponseEntity<Object> ioFailure(@AuthenticationPrincipal User user) throws IOException {
+    public ResponseEntity<Object> ioFailure(@AuthenticationPrincipal PermissionHolder user) throws IOException {
         throw new IOException("I'm an Exception");
     }
 
@@ -271,7 +271,7 @@ public class TestingRestController {
             @ApiResponse(code = 401, message = "Unauthorized user access", response = ResponseEntity.class),
     })
     @RequestMapping(method = {RequestMethod.GET}, value = {"/license-violation"})
-    public ResponseEntity<Object> licenseViolation(@AuthenticationPrincipal User user) throws IOException {
+    public ResponseEntity<Object> licenseViolation(@AuthenticationPrincipal PermissionHolder user) throws IOException {
         throw new LicenseViolatedException(new TranslatableMessage("common.default", "Test Violiation"));
     }
 
@@ -281,7 +281,7 @@ public class TestingRestController {
             @ApiResponse(code = 401, message = "Unauthorized user access", response = ResponseEntity.class),
     })
     @RequestMapping(method = {RequestMethod.GET}, value = {"/expire-session"})
-    public ResponseEntity<Object> expireSessions(@AuthenticationPrincipal User user) {
+    public ResponseEntity<Object> expireSessions(@AuthenticationPrincipal PermissionHolder user) {
         List<SessionInformation> infos = sessionRegistry.getAllSessions(user, false);
         for (SessionInformation info : infos)
             info.expireNow();
@@ -294,7 +294,7 @@ public class TestingRestController {
             @ApiResponse(code = 401, message = "Unauthorized user access", response = ResponseEntity.class),
     })
     @RequestMapping(method = {RequestMethod.GET}, value = {"/{resourceId}/**"})
-    public ResponseEntity<String> matchPath(@AuthenticationPrincipal User user,
+    public ResponseEntity<String> matchPath(@AuthenticationPrincipal PermissionHolder user,
                                             @ApiParam(value = "Resource id", required = true, allowMultiple = false) @PathVariable String resourceId,
                                             HttpServletRequest request) {
 
@@ -314,7 +314,7 @@ public class TestingRestController {
             @ApiResponse(code = 401, message = "Unauthorized user access", response = ResponseEntity.class),
     })
     @RequestMapping(method = {RequestMethod.POST}, value = {"/raise-event"})
-    public ResponseEntity<Object> raiseExampleEvent(@AuthenticationPrincipal User user,
+    public ResponseEntity<Object> raiseExampleEvent(@AuthenticationPrincipal PermissionHolder user,
                                                     @RequestBody(required = true) RaiseEventModel model) {
         if (model == null)
             throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR);

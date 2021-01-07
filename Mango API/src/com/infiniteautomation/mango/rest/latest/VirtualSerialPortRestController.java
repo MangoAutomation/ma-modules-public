@@ -9,7 +9,6 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
-import com.serotonin.m2m2.i18n.Translations;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +27,8 @@ import com.infiniteautomation.mango.rest.latest.exception.AlreadyExistsRestExcep
 import com.infiniteautomation.mango.rest.latest.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.latest.model.FilteredStreamWithTotal;
 import com.infiniteautomation.mango.rest.latest.model.StreamWithTotal;
-import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.i18n.Translations;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -53,7 +53,7 @@ public class VirtualSerialPortRestController extends AbstractMangoRestController
     public StreamWithTotal<VirtualSerialPortConfig> query(
             ASTNode query,
             Translations translations,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
 
         List<VirtualSerialPortConfig> all = VirtualSerialPortConfigDao.getInstance().getAll();
         return new FilteredStreamWithTotal<>(all, query, translations);
@@ -86,7 +86,7 @@ public class VirtualSerialPortRestController extends AbstractMangoRestController
     public ResponseEntity<VirtualSerialPortConfig> save(
             @ApiParam(value = "Serial Port", required = true)
             @RequestBody(required=true)  VirtualSerialPortConfig model,
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder, HttpServletRequest request) {
 
         //Check to see if it already exists
@@ -119,7 +119,7 @@ public class VirtualSerialPortRestController extends AbstractMangoRestController
             @PathVariable String xid,
             @ApiParam(value = "Virtual Serial Port", required = true)
             @RequestBody(required=true)  VirtualSerialPortConfig model,
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder, HttpServletRequest request) {
 
         //Check to see if it already exists
@@ -148,7 +148,7 @@ public class VirtualSerialPortRestController extends AbstractMangoRestController
     public ResponseEntity<VirtualSerialPortConfig> delete(
             @ApiParam(value = "Valid Virtual serial port XID", required = true, allowMultiple = false)
             @PathVariable String xid,
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder, HttpServletRequest request) {
 
         //Check to see if it already exists

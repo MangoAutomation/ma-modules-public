@@ -95,8 +95,10 @@ import com.serotonin.m2m2.rt.maint.work.BackupWorkItem;
 import com.serotonin.m2m2.rt.maint.work.DatabaseBackupWorkItem;
 import com.serotonin.m2m2.shared.ModuleUtils;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.web.mvc.spring.security.permissions.AnonymousAccess;
 import com.serotonin.provider.Providers;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -171,7 +173,7 @@ public class ModulesRestController {
 
     @ApiOperation(value = "Get Core Module", notes = "For checking current licensing and version", response = ModuleModel.class)
     @RequestMapping(method = RequestMethod.GET, value = "/core")
-    public MappingJacksonValue getCore(@AuthenticationPrincipal User user) {
+    public MappingJacksonValue getCore(@AuthenticationPrincipal PermissionHolder user) {
 
         CoreModuleModel coreModel = new CoreModuleModel(ModuleRegistry.getModule(ModuleRegistry.CORE_MODULE_NAME));
         coreModel.setGuid(Providers.get(ICoreLicense.class).getGuid());
@@ -190,7 +192,7 @@ public class ModulesRestController {
 
     @ApiOperation(value = "List Current Installed Modules", notes = "List all installed")
     @RequestMapping(method = RequestMethod.GET, value = "/list")
-    public List<ModuleModel> listModules(@AuthenticationPrincipal User user) {
+    public List<ModuleModel> listModules(@AuthenticationPrincipal PermissionHolder user) {
         permissionService.ensureAdminRole(user);
 
         List<ModuleModel> models = new ArrayList<ModuleModel>();
@@ -220,14 +222,14 @@ public class ModulesRestController {
 
     @ApiOperation(value = "List Current Missing Module Dependencies", notes = "List all installed")
     @RequestMapping(method = RequestMethod.GET, value = "/list-missing-dependencies")
-    public Map<String, String> listMissingModuleDependencies(@AuthenticationPrincipal User user) {
+    public Map<String, String> listMissingModuleDependencies(@AuthenticationPrincipal PermissionHolder user) {
         permissionService.ensureAdminRole(user);
         return ModuleRegistry.getMissingDependencies();
     }
 
     @ApiOperation(value = "Get Available Upgrades", notes = "Check the store for Upgrades")
     @RequestMapping(method = RequestMethod.GET, value = "/upgrades-available")
-    public ModuleUpgradesModel getUpgrades(@AuthenticationPrincipal User user) {
+    public ModuleUpgradesModel getUpgrades(@AuthenticationPrincipal PermissionHolder user) {
         permissionService.ensureAdminRole(user);
         // Do the check
         try {
@@ -296,7 +298,7 @@ public class ModulesRestController {
             @ApiParam(value = "Restart when completed", required = false, defaultValue = "false", allowMultiple = false) @RequestParam(required = false, defaultValue = "false") boolean restart,
 
             @ApiParam(value = "Desired Upgrades", required = true) @RequestBody(required = true) ModuleUpgradesModel model,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
         permissionService.ensureAdminRole(user);
         // Start Downloads
         String status = service.startDownloads(model.fullModulesList(), backup, restart);
@@ -330,7 +332,7 @@ public class ModulesRestController {
 
     @ApiOperation(value = "Get Current Upgrade Task Status", notes = "")
     @RequestMapping(method = RequestMethod.GET, value = "/upgrade-status")
-    public UpgradeStatusModel getUpgradeStatus(@AuthenticationPrincipal User user) {
+    public UpgradeStatusModel getUpgradeStatus(@AuthenticationPrincipal PermissionHolder user) {
         permissionService.ensureAdminRole(user);
         UpgradeStatus status = service.monitorDownloads();
         UpgradeStatusModel model = new UpgradeStatusModel();
@@ -359,7 +361,7 @@ public class ModulesRestController {
             @RequestParam(name="delete", required = true) boolean delete,
             @ApiParam(value = "Module model")
             @RequestBody() ModuleModel model,
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             HttpServletRequest request) {
         permissionService.ensureAdminRole(user);
         Module module = ModuleRegistry.getModule(model.getName());
@@ -379,7 +381,7 @@ public class ModulesRestController {
 
             @ApiParam(value = "Deletion State", required = true, defaultValue = "false", allowMultiple = false)
             @RequestParam(name="delete", required = true) boolean delete,
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             HttpServletRequest request) {
 
         Module module = ModuleRegistry.getModule(moduleName);

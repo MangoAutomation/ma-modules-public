@@ -61,6 +61,7 @@ import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.vo.role.Role;
 import com.serotonin.m2m2.web.MediaTypes;
 
@@ -93,7 +94,7 @@ public class DataPointRestController {
 
     private TemporaryResourceManager<DataPointBulkResponse, AbstractRestException> bulkResourceManager;
 
-    private final BiFunction<DataPointVO, User, DataPointModel> map;
+    private final BiFunction<DataPointVO, PermissionHolder, DataPointModel> map;
     private final Map<String, Function<Object, Object>> valueConverters;
     private final Map<String, Field<?>> fieldMap;
     private final DataPointService service;
@@ -122,7 +123,7 @@ public class DataPointRestController {
     public DataPointModel getDataPoint(
             @ApiParam(value = "Valid Data Point XID", required = true, allowMultiple = false)
             @PathVariable String xid,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
         return map.apply(service.get(xid), user);
     }
 
@@ -134,14 +135,14 @@ public class DataPointRestController {
     public DataPointModel getDataPointById(
             @ApiParam(value = "Valid Data Point ID", required = true, allowMultiple = false)
             @PathVariable int id,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
         return map.apply(service.get(id), user);
     }
 
     @ApiOperation(value = "Enable/disable/restart a data point")
     @RequestMapping(method = RequestMethod.PUT, value = "/enable-disable/{xid}")
     public ResponseEntity<Void> enableDisable(
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
 
             @PathVariable String xid,
 
@@ -165,7 +166,7 @@ public class DataPointRestController {
     public StreamedArrayWithTotal query(
             @ApiParam(value="Query", required = true)
             @RequestBody(required=true) ASTNode rql,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
 
         return doQuery(rql, user);
     }
@@ -179,7 +180,7 @@ public class DataPointRestController {
     @RequestMapping(method = RequestMethod.GET)
     public StreamedArrayWithTotal queryRQL(
             HttpServletRequest request,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
 
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
         return doQuery(rql, user);
@@ -189,7 +190,7 @@ public class DataPointRestController {
     @RequestMapping(method = RequestMethod.GET, produces=MediaTypes.CSV_VALUE)
     public StreamedArrayWithTotal queryCsv(
             HttpServletRequest request,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
 
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
         return this.queryCsvPost(rql, user);
@@ -201,7 +202,7 @@ public class DataPointRestController {
             @ApiParam(value="RQL query AST", required = true)
             @RequestBody ASTNode rql,
 
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
 
         return doQuery(rql, user, dataPointModel -> {
             ActionAndModel<DataPointModel> actionAndModel = new ActionAndModel<>();
@@ -220,7 +221,7 @@ public class DataPointRestController {
             @ApiParam(value = "Updated data point model", required = true)
             @RequestBody(required=true) DataPointModel model,
 
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
 
         DataPointVO vo = service.update(xid, model.toVO());
@@ -238,7 +239,7 @@ public class DataPointRestController {
             @ApiParam(value = "Data point model", required = true)
             @RequestBody(required=true) DataPointModel model,
 
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
 
         DataPointVO vo = service.insert(model.toVO());
@@ -255,7 +256,7 @@ public class DataPointRestController {
     public DataPointModel deleteDataPoint(
             @ApiParam(value = "Valid Data Point XID", required = true, allowMultiple = false)
             @PathVariable String xid,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
 
         DataPointVO vo = service.delete(xid);
         return map.apply(vo, user);
@@ -456,7 +457,7 @@ public class DataPointRestController {
     public Map<String, Object> exportDataPoints(
             @ApiParam(value="Data point xids to export.")
             @PathVariable String[] xids,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
 
         Map<String,Object> export = new HashMap<>();
         List<DataPointVO> points = new ArrayList<>();
@@ -472,7 +473,7 @@ public class DataPointRestController {
             value = "Export formatted for Configuration Import by supplying an RQL query",
             notes = "User must have read permission")
     @RequestMapping(method = RequestMethod.GET, value = "/export", produces = MediaTypes.SEROTONIN_JSON_VALUE)
-    public Map<String, JsonStreamedArray> exportQuery(HttpServletRequest request, @AuthenticationPrincipal User user) {
+    public Map<String, JsonStreamedArray> exportQuery(HttpServletRequest request, @AuthenticationPrincipal PermissionHolder user) {
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
 
         Map<String, JsonStreamedArray> export = new HashMap<>();
@@ -480,11 +481,11 @@ public class DataPointRestController {
         return export;
     }
 
-    private StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
+    private StreamedArrayWithTotal doQuery(ASTNode rql, PermissionHolder user) {
         return doQuery(rql, user, null);
     }
 
-    private StreamedArrayWithTotal doQuery(ASTNode rql, User user, Function<DataPointModel, ?> toModel) {
+    private StreamedArrayWithTotal doQuery(ASTNode rql, PermissionHolder user, Function<DataPointModel, ?> toModel) {
 
         final Function<DataPointVO, Object> transformPoint = item -> {
             DataPointModel pointModel = map.apply(item, user);

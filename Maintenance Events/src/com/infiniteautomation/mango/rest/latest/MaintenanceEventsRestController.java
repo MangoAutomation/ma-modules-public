@@ -51,7 +51,6 @@ import com.serotonin.json.type.JsonStreamedArray;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventDao;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventType;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventVO;
-import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.EventInstanceVO;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.web.MediaTypes;
@@ -73,7 +72,7 @@ public class MaintenanceEventsRestController {
     private final EventInstanceService eventService;
     private final Map<String, Function<Object, Object>> eventTableValueConverters;
     private final Map<String, Field<?>> eventTableFieldMap;
-    private final BiFunction<EventInstanceVO, User, EventInstanceModel> eventMap;
+    private final BiFunction<EventInstanceVO, PermissionHolder, EventInstanceModel> eventMap;
 
     private final MaintenanceEventDao dao;
     private final MaintenanceEventsService service;
@@ -102,7 +101,7 @@ public class MaintenanceEventsRestController {
     public MaintenanceEventModel get(
             @ApiParam(value = "Valid XID", required = true, allowMultiple = false)
             @PathVariable String xid,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
         return new MaintenanceEventModel(service.get(xid));
     }
 
@@ -117,7 +116,7 @@ public class MaintenanceEventsRestController {
                     modelClass=MaintenanceEventModel.class)
             MaintenanceEventModel model,
 
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
 
         MaintenanceEventVO vo = service.update(xid, model.toVO());
@@ -137,7 +136,7 @@ public class MaintenanceEventsRestController {
             @ApiParam(value = "Updated maintenance event", required = true)
             @RequestBody(required=true) MaintenanceEventModel model,
 
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
         MaintenanceEventVO vo = service.update(xid, model.toVO());
         URI location = builder.path("/maintenance-events/{xid}").buildAndExpand(vo.getXid()).toUri();
@@ -151,7 +150,7 @@ public class MaintenanceEventsRestController {
     public ResponseEntity<MaintenanceEventModel> create(
             @ApiParam(value = "Updated maintenance event", required = true)
             @RequestBody(required=true) MaintenanceEventModel model,
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
 
         MaintenanceEventVO vo = service.insert(model.toVO());
@@ -168,7 +167,7 @@ public class MaintenanceEventsRestController {
     public MaintenanceEventModel delete(
             @ApiParam(value = "Valid maintenance event XID", required = true, allowMultiple = false)
             @PathVariable String xid,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
         return new MaintenanceEventModel(service.delete(xid));
     }
 
@@ -176,7 +175,7 @@ public class MaintenanceEventsRestController {
     @RequestMapping(method = RequestMethod.PUT, value = "/toggle/{xid}")
     public ResponseEntity<Boolean> toggle(
             @PathVariable String xid,
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
         boolean activated = service.toggle(xid);
         URI location = builder.path("/maintenance-events/{xid}").buildAndExpand(xid).toUri();
@@ -187,7 +186,7 @@ public class MaintenanceEventsRestController {
 
     @ApiOperation(value = "Get the current active state of a maintenance event", notes="must have toggle permission, returns new boolean state of event")
     @RequestMapping(method = RequestMethod.GET, value = "/active/{xid}")
-    public ResponseEntity<Boolean> getState(@PathVariable String xid, @AuthenticationPrincipal User user) {
+    public ResponseEntity<Boolean> getState(@PathVariable String xid, @AuthenticationPrincipal PermissionHolder user) {
         return new ResponseEntity<>(service.isEventActive(xid), HttpStatus.OK);
     }
 
@@ -197,7 +196,7 @@ public class MaintenanceEventsRestController {
             @PathVariable String xid,
             @ApiParam(value = "State to set event to", required=true)
             @RequestParam(value="active", required=true, defaultValue="false") boolean active,
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
 
         boolean activated = service.setState(xid, active);
@@ -217,7 +216,7 @@ public class MaintenanceEventsRestController {
     @RequestMapping(method = RequestMethod.GET)
     public StreamedArrayWithTotal queryRQL(
             HttpServletRequest request,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
 
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
         return doQuery(rql, user, transformVisit);
@@ -251,7 +250,7 @@ public class MaintenanceEventsRestController {
             value = "Export formatted for Configuration Import by supplying an RQL query",
             notes = "User must have read permission")
     @RequestMapping(method = RequestMethod.GET, value = "/export", produces = MediaTypes.SEROTONIN_JSON_VALUE)
-    public Map<String, JsonStreamedArray> exportQuery(HttpServletRequest request, @AuthenticationPrincipal User user) {
+    public Map<String, JsonStreamedArray> exportQuery(HttpServletRequest request, @AuthenticationPrincipal PermissionHolder user) {
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
 
         Map<String, JsonStreamedArray> export = new HashMap<>();
@@ -287,7 +286,7 @@ public class MaintenanceEventsRestController {
     public Map<Integer, List<MaintenanceEventModel>> getForPointsByIds(
             @PathVariable(required = true) List<Integer> pointIds,
             HttpServletRequest request,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
 
         Map<Integer, List<MaintenanceEventModel>> map = new HashMap<>();
         for(Integer id: pointIds) {
@@ -318,7 +317,7 @@ public class MaintenanceEventsRestController {
     public Map<String, List<MaintenanceEventModel>> getForPointsByXid(
             @PathVariable(required = true) List<String> pointXids,
             HttpServletRequest request,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
 
         Map<String, List<MaintenanceEventModel>> map = new HashMap<>();
         for(String xid: pointXids) {
@@ -349,7 +348,7 @@ public class MaintenanceEventsRestController {
     public Map<Integer, List<MaintenanceEventModel>> getForSourcesByIds(
             @PathVariable(required = true) List<Integer> sourceIds,
             HttpServletRequest request,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
 
         Map<Integer, List<MaintenanceEventModel>> map = new HashMap<>();
         for(Integer id: sourceIds) {
@@ -380,7 +379,7 @@ public class MaintenanceEventsRestController {
     public Map<String, List<MaintenanceEventModel>> getForSourcesByXid(
             @PathVariable(required = true) List<String> sourceXids,
             HttpServletRequest request,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
 
         Map<String, List<MaintenanceEventModel>> map = new HashMap<>();
         for(String xid: sourceXids) {
@@ -413,7 +412,7 @@ public class MaintenanceEventsRestController {
     public StreamedArrayWithTotal getEvents(
             @RequestBody
             EventQueryByMaintenanceEventRql body,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
         ASTNode rql = RQLUtils.parseRQLtoAST(body.getMaintenanceEventsRql());
 
         //First do the RQL on maintenance events
@@ -468,7 +467,7 @@ public class MaintenanceEventsRestController {
     public StreamedArrayWithTotal getEventsByCriteria(
             @RequestBody
             EventQueryByMaintenanceCriteria body,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
 
         List<String> dataSourceXids = new ArrayList<>();
         if(body.getDataSourceXids() != null) {
@@ -537,7 +536,7 @@ public class MaintenanceEventsRestController {
     }
 
     //Helpers for Queries
-    private StreamedArrayWithTotal doEventQuery(ASTNode rql, User user) {
+    private StreamedArrayWithTotal doEventQuery(ASTNode rql, PermissionHolder user) {
         if (eventService.getPermissionService().hasAdminRole(user)) {
             return new StreamedVORqlQueryWithTotal<>(eventService, rql, null, eventTableFieldMap, eventTableValueConverters, item -> true, vo -> eventMap.apply(vo, user));
         } else {

@@ -31,7 +31,7 @@ import com.infiniteautomation.mango.rest.latest.util.MangoRestTemporaryResourceC
 import com.infiniteautomation.mango.rest.latest.util.SystemActionTemporaryResource;
 import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.module.SystemActionDefinition;
-import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -89,7 +89,7 @@ public class SystemActionRestController extends AbstractMangoRestController {
             JsonNode input,
             @RequestParam(required=false, defaultValue="12000000")
             Long timeout,
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
         //Kick off action
         SystemActionDefinition def = ModuleRegistry.getSystemActionDefinition(action);
@@ -118,7 +118,7 @@ public class SystemActionRestController extends AbstractMangoRestController {
     @RequestMapping( method = {RequestMethod.GET}, value = {"/status/{resourceId}"})
     public ResponseEntity<SystemActionTemporaryResource> getStatus(HttpServletRequest request,
             @ApiParam(value="Resource id", required=true, allowMultiple=false) @PathVariable String resourceId,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
 
         SystemActionTemporaryResource resource = resources.get(resourceId);
         return new ResponseEntity<>(resource, HttpStatus.OK);
@@ -133,7 +133,7 @@ public class SystemActionRestController extends AbstractMangoRestController {
     @RequestMapping( method = {RequestMethod.PUT}, value = {"/cancel/{resourceId}"})
     public ResponseEntity<SystemActionTemporaryResource> cancel(HttpServletRequest request,
             @ApiParam(value="Resource id", required=true, allowMultiple=false) @PathVariable String resourceId,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
 
         SystemActionTemporaryResource resource = resources.get(resourceId);
         resource.cancel();

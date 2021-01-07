@@ -27,6 +27,7 @@ import com.infiniteautomation.mango.rest.latest.exception.BadRequestException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.web.mvc.spring.security.permissions.AnonymousAccess;
 
 import io.swagger.annotations.Api;
@@ -83,7 +84,7 @@ public class TranslationsController {
             @RequestParam(value = "language", required = false) String language,
             @RequestParam(value = "server", required = false, defaultValue = "false") boolean server,
             @RequestParam(value = "browser", required = false, defaultValue = "false") boolean browser,
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             HttpServletRequest request) {
         return namespacedTranslations(null, language, server, browser, user, request);
     }
@@ -98,7 +99,7 @@ public class TranslationsController {
             @ApiParam(value = "Use server language for translation", allowMultiple = false)
             @RequestParam(value = "server", required = false, defaultValue = "false") boolean server,
             @RequestParam(value = "browser", required = false, defaultValue = "false") boolean browser,
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             HttpServletRequest request) {
         TranslationsModel resultMap = new TranslationsModel();
         Locale locale = this.getLocale(language, server, browser, request, user);
@@ -120,7 +121,7 @@ public class TranslationsController {
             @ApiParam(value = "Use server language for translation", allowMultiple = false)
             @RequestParam(value = "server", required = false, defaultValue = "false") boolean server,
             @RequestParam(value = "browser", required = false, defaultValue = "false") boolean browser,
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             HttpServletRequest request) {
 
         //Confirm the requested namespace is indeed public
@@ -151,7 +152,7 @@ public class TranslationsController {
      * @param request
      * @return
      */
-    private Locale getLocale(String language, boolean server, boolean browser, HttpServletRequest request, User user) {
+    private Locale getLocale(String language, boolean server, boolean browser, HttpServletRequest request, PermissionHolder user) {
         if (!StringUtils.isBlank(language)) {
             return Locale.forLanguageTag(language.replace('_', '-'));
         }
@@ -163,8 +164,8 @@ public class TranslationsController {
         }
 
         String userLocale = null;
-        if (user != null) {
-            userLocale = user.getLocale();
+        if (user instanceof User) {
+            userLocale = ((User) user).getLocale();
         }
 
         if (user == null || StringUtils.isBlank(userLocale)) {

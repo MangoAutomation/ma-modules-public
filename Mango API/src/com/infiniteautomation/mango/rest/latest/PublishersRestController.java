@@ -34,7 +34,7 @@ import com.infiniteautomation.mango.rest.latest.patch.PatchVORequestBody;
 import com.infiniteautomation.mango.spring.service.PublisherService;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.json.type.JsonStreamedArray;
-import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.vo.publish.PublisherVO;
 import com.serotonin.m2m2.web.MediaTypes;
 
@@ -53,7 +53,7 @@ import net.jazdw.rql.parser.ASTNode;
 public class PublishersRestController {
 
     private final PublisherService service;
-    private final BiFunction<PublisherVO<?>, User, AbstractPublisherModel<?,?>> map;
+    private final BiFunction<PublisherVO<?>, PermissionHolder, AbstractPublisherModel<?,?>> map;
 
     @Autowired
     public PublishersRestController(final PublisherService service, final RestModelMapper modelMapper) {
@@ -73,7 +73,7 @@ public class PublishersRestController {
     public StreamedArrayWithTotal query(
             HttpServletRequest request,
             @ApiParam(value="User", required=true)
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
         return doQuery(rql, user);
@@ -87,7 +87,7 @@ public class PublishersRestController {
     public AbstractPublisherModel<?,?> get(
             @ApiParam(value = "XID of publisher", required = true, allowMultiple = false)
             @PathVariable String xid,
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
         return map.apply(service.get(xid), user);
     }
@@ -100,7 +100,7 @@ public class PublishersRestController {
     public AbstractPublisherModel<?,?> getById(
             @ApiParam(value = "ID of publisher", required = true, allowMultiple = false)
             @PathVariable int id,
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
         return map.apply(service.get(id), user);
     }
@@ -109,7 +109,7 @@ public class PublishersRestController {
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<AbstractPublisherModel<?,?>> save(
             @RequestBody(required=true) AbstractPublisherModel<?, ?> model,
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder,
             HttpServletRequest request) {
 
@@ -125,7 +125,7 @@ public class PublishersRestController {
     public ResponseEntity<AbstractPublisherModel<?,?>> update(
             @PathVariable String xid,
             @RequestBody(required=true) AbstractPublisherModel<?, ?> model,
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder,
             HttpServletRequest request) {
 
@@ -149,7 +149,7 @@ public class PublishersRestController {
                     service=PublisherService.class,
                     modelClass=AbstractPublisherModel.class)
             AbstractPublisherModel<?, ?> model,
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
 
         PublisherVO<?> vo = service.update(xid, model.toVO());
@@ -170,7 +170,7 @@ public class PublishersRestController {
     public AbstractPublisherModel<?,?> delete(
             @ApiParam(value = "XID of publisher to delete", required = true, allowMultiple = false)
             @PathVariable String xid,
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
         return map.apply(service.delete(xid), user);
     }
@@ -186,7 +186,7 @@ public class PublishersRestController {
             @ApiParam(value = "Restart the publisher, enabled must equal true", required = false, defaultValue="false", allowMultiple = false)
             @RequestParam(required=false, defaultValue="false") boolean restart,
 
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
         service.restart(xid, enabled, restart);
     }
 
@@ -198,7 +198,7 @@ public class PublishersRestController {
     public Map<String, Object> exportDataSource(
             @ApiParam(value = "Valid publisher XID", required = true, allowMultiple = false)
             @PathVariable String xid,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
 
         PublisherVO<?> vo = service.get(xid);
         Map<String,Object> export = new LinkedHashMap<>();
@@ -210,7 +210,7 @@ public class PublishersRestController {
             value = "Export formatted for Configuration Import by supplying an RQL query",
             notes = "User must have read permission")
     @RequestMapping(method = RequestMethod.GET, value = "/export", produces = MediaTypes.SEROTONIN_JSON_VALUE)
-    public Map<String, JsonStreamedArray> exportQuery(HttpServletRequest request, @AuthenticationPrincipal User user) {
+    public Map<String, JsonStreamedArray> exportQuery(HttpServletRequest request, @AuthenticationPrincipal PermissionHolder user) {
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
 
         Map<String, JsonStreamedArray> export = new HashMap<>();
@@ -228,7 +228,7 @@ public class PublishersRestController {
      * @param user
      * @return
      */
-    private StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
+    private StreamedArrayWithTotal doQuery(ASTNode rql, PermissionHolder user) {
         if (service.getPermissionService().hasAdminRole(user)) {
             return new StreamedVORqlQueryWithTotal<>(service, rql, null, null, null, vo -> map.apply(vo, user));
         } else {

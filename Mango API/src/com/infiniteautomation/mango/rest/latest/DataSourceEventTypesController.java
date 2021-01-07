@@ -18,9 +18,9 @@ import com.infiniteautomation.mango.spring.service.DataSourceService;
 import com.serotonin.m2m2.module.DataSourceDefinition;
 import com.serotonin.m2m2.util.ExportCodes;
 import com.serotonin.m2m2.util.ExportCodes.Element;
-import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.event.EventTypeVO;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -50,7 +50,7 @@ public class DataSourceEventTypesController {
     @RequestMapping(method = RequestMethod.GET, value="/{dataSourceType}")
     public List<DataSourceDefaultEventTypeModel> getAlarmLevelsForType(
             @PathVariable String dataSourceType,
-            @AuthenticationPrincipal User user){
+            @AuthenticationPrincipal PermissionHolder user){
 
         DataSourceDefinition<?> def = service.getDefinition(dataSourceType, user);
         DataSourceVO vo = def.baseCreateDataSourceVO();

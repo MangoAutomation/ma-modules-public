@@ -26,7 +26,6 @@ import com.infiniteautomation.mango.rest.latest.model.role.RoleModel;
 import com.infiniteautomation.mango.rest.latest.model.role.RoleModelMapping;
 import com.infiniteautomation.mango.rest.latest.patch.PatchVORequestBody;
 import com.infiniteautomation.mango.spring.service.RoleService;
-import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.vo.role.RoleVO;
 
@@ -75,20 +74,20 @@ public class RoleRestController {
     })
     @ApiOperation(value = "Query Roles", response = RoleQueryResult.class)
     @RequestMapping(method = RequestMethod.GET)
-    public StreamedArrayWithTotal query(@AuthenticationPrincipal User user, @ApiIgnore ASTNode rql) {
+    public StreamedArrayWithTotal query(@AuthenticationPrincipal PermissionHolder user, @ApiIgnore ASTNode rql) {
         return doQuery(rql, user);
     }
 
     @ApiOperation(value = "Get a Role")
     @RequestMapping(method = RequestMethod.GET, value = "/{xid}")
     public RoleModel get(@ApiParam(value = "XID of Role to get", required = true, allowMultiple = false) @PathVariable String xid,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
         return mapping.map(service.get(xid), user, mapper);
     }
 
     @ApiOperation(value = "Create a Role", notes = "Admin only")
     @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<RoleModel> create(@RequestBody RoleModel model, @AuthenticationPrincipal User user, UriComponentsBuilder builder) {
+    public ResponseEntity<RoleModel> create(@RequestBody RoleModel model, @AuthenticationPrincipal PermissionHolder user, UriComponentsBuilder builder) {
         RoleVO vo = service.insert(mapping.unmap(model, user, mapper));
         URI location = builder.path("/roles/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
@@ -99,7 +98,7 @@ public class RoleRestController {
     @ApiOperation(value = "Update a Role List", notes = "Admin only")
     @RequestMapping(method = RequestMethod.PUT, value = "/{xid}")
     public ResponseEntity<RoleModel> update(@ApiParam(value = "XID of Role to update", required = true, allowMultiple = false) @PathVariable String xid,
-            @ApiParam(value = "Role List of update", required = true, allowMultiple = false) @RequestBody RoleModel model, @AuthenticationPrincipal User user,
+            @ApiParam(value = "Role List of update", required = true, allowMultiple = false) @RequestBody RoleModel model, @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
 
         RoleVO vo = service.update(xid, mapping.unmap(model, user, mapper));
@@ -113,7 +112,7 @@ public class RoleRestController {
     @RequestMapping(method = RequestMethod.PATCH, value = "/{xid}")
     public ResponseEntity<RoleModel> partialUpdate(@PathVariable String xid,
             @ApiParam(value = "Updated role", required = true) @PatchVORequestBody(service = RoleService.class, modelClass = RoleModel.class) RoleModel model,
-            @AuthenticationPrincipal User user, UriComponentsBuilder builder) {
+            @AuthenticationPrincipal PermissionHolder user, UriComponentsBuilder builder) {
         RoleVO vo = service.update(xid, mapping.unmap(model, user, mapper));
         URI location = builder.path("/roles/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
@@ -124,7 +123,7 @@ public class RoleRestController {
     @ApiOperation(value = "Delete a Role")
     @RequestMapping(method = RequestMethod.DELETE, value = "/{xid}")
     public ResponseEntity<RoleModel> delete(@ApiParam(value = "XID of Role to delete", required = true, allowMultiple = false) @PathVariable String xid,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
         return ResponseEntity.ok(mapping.map(service.delete(xid), user, mapper));
     }
 

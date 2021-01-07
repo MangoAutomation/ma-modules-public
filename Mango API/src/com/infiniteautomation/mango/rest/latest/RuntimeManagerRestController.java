@@ -20,7 +20,7 @@ import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataSource.DataSourceRT;
 import com.serotonin.m2m2.vo.DataPointVO;
-import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -51,7 +51,7 @@ public class RuntimeManagerRestController {
     public void forceRefreshDataPoint(
             @ApiParam(value = "Valid Data Point XID", required = true, allowMultiple = false)
             @PathVariable String xid,
-            @AuthenticationPrincipal User user){
+            @AuthenticationPrincipal PermissionHolder user){
         DataPointVO vo = service.get(xid);
         service.ensureReadPermission(user, vo);
         DataPointRT rt = Common.runtimeManager.getDataPoint(vo.getId());
@@ -70,7 +70,7 @@ public class RuntimeManagerRestController {
     public void relinquish(
             @ApiParam(value = "Valid Data Point XID", required = true, allowMultiple = false)
             @PathVariable String xid,
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             HttpServletRequest request){
 
         DataPointVO dataPoint = service.get(xid);

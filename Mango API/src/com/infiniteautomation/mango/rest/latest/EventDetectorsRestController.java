@@ -64,6 +64,7 @@ import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.event.detectors.PointEventDetectorRT;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.detector.AbstractEventDetectorVO;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.web.MediaTypes;
 
 import io.swagger.annotations.Api;
@@ -81,7 +82,7 @@ import net.jazdw.rql.parser.ASTNode;
 public class EventDetectorsRestController {
 
     private final EventDetectorsService service;
-    private final BiFunction<AbstractEventDetectorVO, User, AbstractEventDetectorModel<?>> map;
+    private final BiFunction<AbstractEventDetectorVO, PermissionHolder, AbstractEventDetectorModel<?>> map;
     private final RestModelMapper modelMapper;
     private final Map<String, Field<?>> fieldMap;
 
@@ -112,7 +113,7 @@ public class EventDetectorsRestController {
             )
     @RequestMapping(method = RequestMethod.GET)
     public StreamedArrayWithTotal queryRQL(
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             HttpServletRequest request) {
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
         return doQuery(rql, user, vo -> map.apply(vo, user));
@@ -127,7 +128,7 @@ public class EventDetectorsRestController {
     public AbstractEventDetectorModel<?> getByXid(
             @ApiParam(value = "XID of Event detector", required = true, allowMultiple = false)
             @PathVariable String xid,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
         return map.apply(service.get(xid), user);
     }
 
@@ -140,7 +141,7 @@ public class EventDetectorsRestController {
     public AbstractEventDetectorModel<?> getById(
             @ApiParam(value = "ID of Event detector", required = true, allowMultiple = false)
             @PathVariable int id,
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
         return map.apply(service.get(id), user);
     }
@@ -155,7 +156,7 @@ public class EventDetectorsRestController {
             @ApiParam(value = "Restart the source to load in the changes", required = false, defaultValue="true", allowMultiple = false)
             @RequestParam(required=false, defaultValue="true") boolean restart,
             @RequestBody AbstractEventDetectorModel<? extends AbstractEventDetectorVO> model,
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
         AbstractEventDetectorVO vo = service.insertAndReload(model.toVO(), restart);
         URI location = builder.path("/event-detectors/{xid}").buildAndExpand(vo.getXid()).toUri();
@@ -177,7 +178,7 @@ public class EventDetectorsRestController {
             @RequestBody AbstractEventDetectorModel<? extends AbstractEventDetectorVO> model,
             @ApiParam(value = "Restart the source to load in the changes", required = false, defaultValue="true", allowMultiple = false)
             @RequestParam(required=false, defaultValue="true") boolean restart,
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
         AbstractEventDetectorVO vo = service.updateAndReload(xid, model.toVO(), restart);
         URI location = builder.path("/event-detectors/{xid}").buildAndExpand(vo.getXid()).toUri();
@@ -201,7 +202,7 @@ public class EventDetectorsRestController {
             AbstractEventDetectorModel<? extends AbstractEventDetectorVO> model,
             @ApiParam(value = "Restart the source to load in the changes", required = false, defaultValue="true", allowMultiple = false)
             @RequestParam(required=false, defaultValue="true") boolean restart,
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
 
         AbstractEventDetectorVO vo = service.updateAndReload(xid, model.toVO(), restart);
@@ -223,7 +224,7 @@ public class EventDetectorsRestController {
             @ApiParam(value = "XID to delete", required = true, allowMultiple = false)
             @PathVariable String xid,
             @ApiParam(value="User", required=true)
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
         return ResponseEntity.ok(map.apply(service.delete(xid), user));
     }
@@ -232,7 +233,7 @@ public class EventDetectorsRestController {
     @RequestMapping(method = RequestMethod.GET, produces=MediaTypes.CSV_VALUE)
     public StreamedArrayWithTotal queryCsv(
             HttpServletRequest request,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
 
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
         return this.queryCsvPost(rql, user);
@@ -244,7 +245,7 @@ public class EventDetectorsRestController {
             @ApiParam(value="RQL query AST", required = true)
             @RequestBody ASTNode rql,
 
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
 
         return doQuery(rql, user, eventDetectorVO -> {
             ActionAndModel<AbstractEventDetectorModel<?>> actionAndModel = new ActionAndModel<>();
@@ -422,7 +423,7 @@ public class EventDetectorsRestController {
     public AbstractEventDetectorRTModel<?> getState(
             @ApiParam(value = "ID of Event detector", required = true, allowMultiple = false)
             @PathVariable String xid,
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
         AbstractEventDetectorVO vo = service.get(xid);
         //For now all detectors are data point type
@@ -498,7 +499,7 @@ public class EventDetectorsRestController {
             value = "Export formatted for Configuration Import by supplying an RQL query",
             notes = "User must have read permission")
     @RequestMapping(method = RequestMethod.GET, value = "/export", produces = MediaTypes.SEROTONIN_JSON_VALUE)
-    public Map<String, JsonStreamedArray> exportQuery(HttpServletRequest request, @AuthenticationPrincipal User user) {
+    public Map<String, JsonStreamedArray> exportQuery(HttpServletRequest request, @AuthenticationPrincipal PermissionHolder user) {
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
 
         Map<String, JsonStreamedArray> export = new HashMap<>();
@@ -510,7 +511,7 @@ public class EventDetectorsRestController {
         return export;
     }
 
-    private StreamedArrayWithTotal doQuery(ASTNode rql, User user, Function<AbstractEventDetectorVO, ?> toModel) {
+    private StreamedArrayWithTotal doQuery(ASTNode rql, PermissionHolder user, Function<AbstractEventDetectorVO, ?> toModel) {
         //If we are admin or have overall data source permission we can view all
         if (service.getPermissionService().hasAdminRole(user)) {
             return new StreamedVORqlQueryWithTotal<>(service, rql, null, fieldMap, null, toModel);

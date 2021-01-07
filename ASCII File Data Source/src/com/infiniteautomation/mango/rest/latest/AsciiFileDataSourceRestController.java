@@ -33,9 +33,9 @@ import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.vo.DataPointVO;
-import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.permission.PermissionException;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -63,7 +63,7 @@ public class AsciiFileDataSourceRestController {
     public void validateFileExists(
             @RequestBody
             String path,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
         File verify = new File(path);
         try {
             verify.getCanonicalPath();
@@ -89,7 +89,7 @@ public class AsciiFileDataSourceRestController {
             String ascii,
             @ApiParam(value = "Valid ASCII data source XID", required = true, allowMultiple = false)
             @PathVariable String xid,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
 
         DataSourceVO ds = service.get(xid);
         if(!(ds instanceof AsciiFileDataSourceVO))

@@ -43,7 +43,7 @@ import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.rt.dataImage.types.MultistateValue;
 import com.serotonin.m2m2.rt.dataImage.types.NumericValue;
 import com.serotonin.m2m2.vo.DataPointVO;
-import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -80,7 +80,7 @@ public class PointValueModificationRestController {
             @ApiParam(value = "Shall data point listeners be notifified, default is NEVER", required = false, allowMultiple = false)
             @RequestParam(defaultValue="NEVER") FireEvents fireEvents,
             @RequestBody Stream<XidPointValueTimeModel> stream,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 PointValueDao pointValueDao = Common.databaseProxy.newPointValueDao();
@@ -121,7 +121,7 @@ public class PointValueModificationRestController {
         protected final DataPointVO vo;
         protected final int dataTypeId;
 
-        public PointValueTimeImport(String xid, PointValueDao dao, DataPointDao dataPointDao, FireEvents fireEvents, User user) {
+        public PointValueTimeImport(String xid, PointValueDao dao, DataPointDao dataPointDao, FireEvents fireEvents, PermissionHolder user) {
             this.xid = xid;
             this.result = new ProcessResult();
             this.dao = dao;
@@ -139,7 +139,7 @@ public class PointValueModificationRestController {
                 }else {
                     valid = false;
                     dataTypeId = DataTypes.UNKNOWN;
-                    result.addContextualMessage("xid", "permission.exception.setDataPoint", user.getUsername());
+                    result.addContextualMessage("xid", "permission.exception.setDataPoint", user.getPermissionHolderName());
                 }
             }
         }
@@ -240,7 +240,7 @@ public class PointValueModificationRestController {
     @Async
     public CompletableFuture<List<PointValueTimeDeleteResult>> deletePointValues(
             @RequestBody  Stream<XidPointValueTimeModel> stream,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 PointValueDao pointValueDao = Common.databaseProxy.newPointValueDao();
@@ -270,7 +270,7 @@ public class PointValueModificationRestController {
 
     class PointValueTimeDelete extends PointValueTimeImport {
 
-        public PointValueTimeDelete(String xid, PointValueDao dao, DataPointDao dataPointDao, User user) {
+        public PointValueTimeDelete(String xid, PointValueDao dao, DataPointDao dataPointDao, PermissionHolder user) {
             super(xid, dao, dataPointDao, null, user);
         }
 

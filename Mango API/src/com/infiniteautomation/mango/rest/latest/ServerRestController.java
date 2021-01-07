@@ -78,6 +78,7 @@ import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.bean.PointHistoryCount;
 import com.serotonin.m2m2.vo.mailingList.MailingList;
 import com.serotonin.m2m2.vo.mailingList.RecipientListEntryType;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.web.mvc.spring.security.MangoSessionRegistry;
 import com.serotonin.provider.Providers;
 import com.serotonin.web.mail.EmailContent;
@@ -164,7 +165,7 @@ public class ServerRestController extends AbstractMangoRestController {
     public CompletableFuture<TranslatableMessage> sendEmail(
             @RequestBody EmailContentModel contentModel,
             @RequestParam(value = "username", required = true) String username,
-            @AuthenticationPrincipal User user) throws TemplateException, IOException, AddressException {
+            @AuthenticationPrincipal PermissionHolder user) throws TemplateException, IOException, AddressException {
 
         contentModel.ensureValid();
 
@@ -184,7 +185,7 @@ public class ServerRestController extends AbstractMangoRestController {
     public CompletableFuture<TranslatableMessage> sendEmailToMailingList(
             @PathVariable String xid,
             @RequestBody EmailContentModel contentModel,
-            @AuthenticationPrincipal User user) throws TemplateException, IOException, AddressException {
+            @AuthenticationPrincipal PermissionHolder user) throws TemplateException, IOException, AddressException {
 
         contentModel.ensureValid();
 
@@ -232,7 +233,7 @@ public class ServerRestController extends AbstractMangoRestController {
     public ResponseEntity<Void> restart(
             @RequestParam(value = "delay", required = false) Long delay,
 
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
 
             UriComponentsBuilder builder,
             HttpServletRequest request) {
@@ -251,7 +252,7 @@ public class ServerRestController extends AbstractMangoRestController {
     public String executeCommand(
             @RequestBody
             ServerCommandModel command,
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder,
             HttpServletRequest request) throws IOException {
 
@@ -271,7 +272,7 @@ public class ServerRestController extends AbstractMangoRestController {
     @PreAuthorize("isAdmin()")
     @ApiOperation(value = "List session information for all sessions", notes = "Admin only")
     @RequestMapping(method = RequestMethod.GET, value = "/http-sessions")
-    public ResponseEntity<List<SessionInformation>> listSessions(@AuthenticationPrincipal User user,
+    public ResponseEntity<List<SessionInformation>> listSessions(@AuthenticationPrincipal PermissionHolder user,
             HttpServletRequest request, HttpServletResponse response) throws IOException {
 
         List<SessionInformation> sessions = new ArrayList<SessionInformation>();
@@ -294,7 +295,7 @@ public class ServerRestController extends AbstractMangoRestController {
     @ApiResponses({
         @ApiResponse(code = 500, message = "Internal error", response = ResponseEntity.class),})
     @RequestMapping(method = {RequestMethod.GET}, value = "system-info")
-    public ResponseEntity<Map<String, Object>> getSystemInfo(@AuthenticationPrincipal User user) {
+    public ResponseEntity<Map<String, Object>> getSystemInfo(@AuthenticationPrincipal PermissionHolder user) {
         Map<String, Object> map = new HashMap<String, Object>();
         for (SystemInfoDefinition<?> def : ModuleRegistry.getSystemInfoDefinitions().values())
             map.put(def.getKey(), def.getValue());
@@ -307,7 +308,7 @@ public class ServerRestController extends AbstractMangoRestController {
         @ApiResponse(code = 500, message = "Internal error", response = ResponseEntity.class),
         @ApiResponse(code = 404, message = "Not Found", response = ResponseEntity.class),})
     @RequestMapping(method = {RequestMethod.GET}, value = "/system-info/{key}")
-    public ResponseEntity<Object> getOne(@AuthenticationPrincipal User user,
+    public ResponseEntity<Object> getOne(@AuthenticationPrincipal PermissionHolder user,
             @ApiParam(value = "Valid System Info Key", required = true,
             allowMultiple = false) @PathVariable String key) {
 
@@ -332,7 +333,7 @@ public class ServerRestController extends AbstractMangoRestController {
     @ApiResponses({
         @ApiResponse(code = 500, message = "Internal error", response = ResponseEntity.class)})
     @RequestMapping(method = {RequestMethod.GET}, value = "/mango-info")
-    public ResponseEntity<Map<String, String>> getMangoInfo(@AuthenticationPrincipal User user){
+    public ResponseEntity<Map<String, String>> getMangoInfo(@AuthenticationPrincipal PermissionHolder user){
         Map<String, String> mangoInfo = new HashMap<>();
 
         mangoInfo.put(SystemSettingsDao.INSTANCE_DESCRIPTION, SystemSettingsDao.instance.getValue(SystemSettingsDao.INSTANCE_DESCRIPTION));
@@ -355,7 +356,7 @@ public class ServerRestController extends AbstractMangoRestController {
     public void acceptLicenseAgreement(
             @ApiParam(value = "Agree or not", required = true, allowMultiple = false)
             @RequestParam Boolean agree,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
 
         //Check to see if the versions match, if so this request is invalid as it has already been confirmed
 
@@ -374,13 +375,13 @@ public class ServerRestController extends AbstractMangoRestController {
     @ApiOperation(value = "Get the current license agreement version.")
     @RequestMapping(method = {RequestMethod.GET}, value = "/license-agreement-version")
     public Integer getLicenseAgreement(
-            @AuthenticationPrincipal User user){
+            @AuthenticationPrincipal PermissionHolder user){
         return SystemSettingsDao.instance.getIntValue(SystemSettingsDao.LICENSE_AGREEMENT_VERSION);
     }
 
     @ApiOperation(value = "Send a client error / stack trace to the backend for logging")
     @RequestMapping(method = {RequestMethod.POST}, value = "/client-error")
-    public void postClientError(@AuthenticationPrincipal User user, @RequestBody ClientError body) {
+    public void postClientError(@AuthenticationPrincipal PermissionHolder user, @RequestBody ClientError body) {
         log.warn("Client error\n" + body.formatString(user));
     }
 
@@ -443,7 +444,7 @@ public class ServerRestController extends AbstractMangoRestController {
     public List<NetworkInterfaceModel> getNetworkInterfaces(
             @RequestParam(value = "includeLoopback", required = false, defaultValue = "false") boolean includeLoopback,
             @RequestParam(value = "includeDefault", required = false, defaultValue = "false") boolean includeDefault,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
 
         List<NetworkInterfaceModel> models = new ArrayList<>();
         if(includeDefault) {
@@ -556,12 +557,12 @@ public class ServerRestController extends AbstractMangoRestController {
             this.date = date;
         }
 
-        public String formatString(User user) {
+        public String formatString(PermissionHolder user) {
             String stackTrace = this.stackTrace.stream()
                     .map(sf -> sf.toString())
                     .collect(Collectors.joining("\n"));
 
-            return "[user=" + user.getUsername() + ", cause=" + cause + ", location=" + location + ", userAgent=" + userAgent
+            return "[user=" + user.getPermissionHolderName() + ", cause=" + cause + ", location=" + location + ", userAgent=" + userAgent
                     + ", language=" + language + ", date=" + date + ", timezone=" + timezone + "]" + "\n" +
                     message + "\n" + stackTrace;
         }

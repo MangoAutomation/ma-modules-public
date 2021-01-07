@@ -33,6 +33,7 @@ import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.Validatable;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.web.mvc.spring.security.permissions.AnonymousAccess;
 
 import freemarker.template.TemplateException;
@@ -84,7 +85,7 @@ public class EmailVerificationController {
     public ResponseEntity<Void> sendEmail(
             @RequestBody EmailVerificationRequest body,
 
-            @AuthenticationPrincipal User user) throws AddressException, TemplateException, IOException {
+            @AuthenticationPrincipal PermissionHolder user) throws AddressException, TemplateException, IOException {
 
         body.ensureValid();
 
@@ -104,7 +105,7 @@ public class EmailVerificationController {
     public ResponseEntity<CreateTokenResponse> createToken(
             @RequestBody CreateTokenRequest body,
 
-            @AuthenticationPrincipal User user) throws AddressException, TemplateException, IOException {
+            @AuthenticationPrincipal PermissionHolder user) throws AddressException, TemplateException, IOException {
 
         body.ensureValid();
 

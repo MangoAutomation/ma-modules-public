@@ -4,6 +4,7 @@
  */
 package com.infiniteautomation.mango.rest.latest;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,6 +24,7 @@ import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.module.definitions.permissions.SystemMetricsReadPermissionDefinition;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -60,8 +62,8 @@ public class SystemMetricsRestController {
         service.ensurePermission(user, permission);
         return Common.MONITORED_VALUES.getMonitors()
                 .stream()
-                .sorted((a,b) -> a.getName().translate(user.getTranslations()).compareTo(b.getName().translate(user.getTranslations())))
-                .map(m -> new ValueMonitorModel(m)).collect(Collectors.toList());
+                .sorted(Comparator.comparing(a -> a.getName().translate(user.getTranslations())))
+                .map(ValueMonitorModel::new).collect(Collectors.toList());
     }
 
     @ApiOperation(
@@ -72,7 +74,7 @@ public class SystemMetricsRestController {
     public ValueMonitorModel get(
             @ApiParam(value = "Valid Monitor id", required = true, allowMultiple = false)
             @PathVariable String id,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
 
         MangoPermission permission = definition.getPermission();
         service.ensurePermission(user, permission);

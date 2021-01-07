@@ -78,8 +78,8 @@ public class WatchListRestController {
     private final WatchListService service;
     private final WatchListModelMapping mapping;
     private final WatchListSummaryModelMapping summaryMapping;
-    private final BiFunction<DataPointVO, User, DataPointModel> mapDataPoint;
-    private final BiFunction<EventInstanceVO, User, EventInstanceModel> mapEventInstance;
+    private final BiFunction<DataPointVO, PermissionHolder, DataPointModel> mapDataPoint;
+    private final BiFunction<EventInstanceVO, PermissionHolder, EventInstanceModel> mapEventInstance;
     private final RestModelMapper mapper;
 
     private final Map<String, Function<Object, Object>> valueConverters;
@@ -132,7 +132,7 @@ public class WatchListRestController {
             value = "Export formatted for Configuration Import by supplying an RQL query",
             notes = "User must have read permission")
     @RequestMapping(method = RequestMethod.GET, value = "/export", produces = MediaTypes.SEROTONIN_JSON_VALUE)
-    public Map<String, JsonStreamedArray> exportQuery(HttpServletRequest request, @AuthenticationPrincipal User user) {
+    public Map<String, JsonStreamedArray> exportQuery(HttpServletRequest request, @AuthenticationPrincipal PermissionHolder user) {
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
 
         Map<String, JsonStreamedArray> export = new HashMap<>();
@@ -145,7 +145,7 @@ public class WatchListRestController {
     public StreamedArrayWithTotal query(
             HttpServletRequest request,
             @ApiParam(value="User", required=true)
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
         return doQuery(rql, user);
@@ -158,7 +158,7 @@ public class WatchListRestController {
     public WatchListModel get(
             @ApiParam(value = "XID of Watch List to get", required = true, allowMultiple = false)
             @PathVariable String xid,
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
         return mapping.map(service.get(xid), user, mapper);
     }
@@ -168,7 +168,7 @@ public class WatchListRestController {
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<WatchListModel> create(
             @RequestBody WatchListModel model,
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
         WatchListVO vo = service.insert(mapping.unmap(model, user, mapper));
         URI location = builder.path("/watch-lists/{xid}").buildAndExpand(vo.getXid()).toUri();
@@ -187,7 +187,7 @@ public class WatchListRestController {
             @PathVariable String xid,
             @ApiParam(value = "WatchList of update", required = true, allowMultiple = false)
             @RequestBody WatchListModel model,
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
         WatchListVO vo = service.update(xid, mapping.unmap(model, user, mapper));
         URI location = builder.path("/watch-lists/{xid}").buildAndExpand(vo.getXid()).toUri();
@@ -210,7 +210,7 @@ public class WatchListRestController {
                     modelClass=WatchListModel.class)
             WatchListModel model,
 
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
 
 
@@ -230,7 +230,7 @@ public class WatchListRestController {
     public ResponseEntity<WatchListModel> delete(
             @ApiParam(value = "XID of WatchList to delete", required = true, allowMultiple = false)
             @PathVariable String xid,
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
         return ResponseEntity.ok(mapping.map(service.delete(xid), user, mapper));
     }
@@ -242,7 +242,7 @@ public class WatchListRestController {
     @RequestMapping(method = RequestMethod.GET, value = "/{xid}/data-points")
     public WatchListPointsQueryDataPageStream getDataPoints(
             @PathVariable String xid,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
         return new WatchListPointsQueryDataPageStream(xid, dp -> mapDataPoint.apply(dp, user));
     }
 
@@ -254,7 +254,7 @@ public class WatchListRestController {
     @RequestMapping(method = RequestMethod.GET, value = "/{xid}/data-points", produces="text/csv")
     public WatchListPointsQueryDataPageStream getDataPointsWithAction(
             @PathVariable String xid,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
         return new WatchListPointsQueryDataPageStream(xid, dp -> {
             ActionAndModel<DataPointModel> actionAndModel = new ActionAndModel<>();
             actionAndModel.setAction(VoAction.UPDATE);
@@ -273,7 +273,7 @@ public class WatchListRestController {
             @PathVariable String xid,
             @RequestParam(value = "limit", required = false)  Integer limit,
             @RequestParam(value = "offset", required = false) Integer offset,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
         return new WatchListEventQueryArrayWithTotal(xid, limit, offset, event -> mapEventInstance.apply(event, user));
     }
 

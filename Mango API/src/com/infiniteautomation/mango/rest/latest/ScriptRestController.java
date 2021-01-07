@@ -41,7 +41,7 @@ import com.infiniteautomation.mango.spring.service.FileStoreService;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.spring.service.RoleService;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
-import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.vo.role.Role;
 
 import io.swagger.annotations.ApiOperation;
@@ -94,7 +94,7 @@ public class ScriptRestController {
 
             @ApiIgnore @RemainingPath String path,
 
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
 
             HttpServletRequest request,
             HttpServletResponse response) throws IOException {
