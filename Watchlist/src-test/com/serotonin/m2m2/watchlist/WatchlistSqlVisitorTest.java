@@ -53,13 +53,13 @@ public class WatchlistSqlVisitorTest extends MangoTestBase {
     }
 
     @Test
-    public void testRQL() throws IOException{
+    public void testRQL() throws IOException {
 
         //Create a User
         List<User> users = createUsers(1, PermissionHolder.SUPERADMIN_ROLE, PermissionHolder.USER_ROLE);
 
         //Insert some watchlists
-        for(int i=0; i<5; i++) {
+        for (int i = 0; i < 5; i++) {
             WatchListVO wl = new WatchListVO();
             wl.setXid(WatchListDao.getInstance().generateUniqueXid());
             wl.setName("Watchlist " + i);
@@ -80,14 +80,12 @@ public class WatchlistSqlVisitorTest extends MangoTestBase {
 
         final AtomicLong selectCounter = new AtomicLong();
 
-        Common.getBean(PermissionService.class).runAsSystemAdmin(() -> {
-            service.customizedQuery(query, (wl ,index) -> {
-                selectCounter.incrementAndGet();
-                assertTrue(wl.getName().startsWith("Watchlist "));
-                assertEquals(2, wl.getReadPermission().getRoles().stream().mapToLong(Collection::size).sum());
-            });
-            assertEquals(5, service.customizedCount(query));
+        service.customizedQuery(query, (wl, index) -> {
+            selectCounter.incrementAndGet();
+            assertTrue(wl.getName().startsWith("Watchlist "));
+            assertEquals(2, wl.getReadPermission().getRoles().stream().mapToLong(Collection::size).sum());
         });
+        assertEquals(5, service.customizedCount(query));
         assertEquals(3, selectCounter.get());
     }
 

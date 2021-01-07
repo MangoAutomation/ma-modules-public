@@ -4,24 +4,27 @@
 
 package com.infiniteautomation.mango.spring.service;
 
+import static org.junit.Assert.assertEquals;
+
+import java.util.Collections;
+
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import com.infiniteautomation.mango.permission.MangoPermission;
 import com.infiniteautomation.mango.spring.service.maintenanceEvents.MaintenanceEventsService;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
-import com.serotonin.m2m2.maintenanceEvents.*;
+import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventDao;
+import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventVO;
+import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventsTableDefinition;
 import com.serotonin.m2m2.module.definitions.permissions.DataSourcePermissionDefinition;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.IDataPoint;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.role.Role;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import java.util.Collections;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  *
@@ -43,14 +46,12 @@ public class MaintenanceEventsServiceTest extends AbstractVOServiceWithPermissio
     void setReadPermission(MangoPermission permission, MaintenanceEventVO vo) {
         //A user with read permission for all data points (and sources) in this event has read permission
         if(permission != null) {
-            getService().permissionService.runAsSystemAdmin(() -> {
-                //Get the data points and add our roles to the read roles
-                for(int dpId : vo.getDataPoints()) {
-                    DataPointVO dp = DataPointDao.getInstance().get(dpId);
-                    dp.setReadPermission(permission);
-                    DataPointDao.getInstance().update(dp.getId(), dp);
-                }
-            });
+            //Get the data points and add our roles to the read roles
+            for (int dpId : vo.getDataPoints()) {
+                DataPointVO dp = DataPointDao.getInstance().get(dpId);
+                dp.setReadPermission(permission);
+                DataPointDao.getInstance().update(dp.getId(), dp);
+            }
         }
         vo.setTogglePermission(permission);
     }
@@ -64,18 +65,16 @@ public class MaintenanceEventsServiceTest extends AbstractVOServiceWithPermissio
     void setEditPermission(MangoPermission permission, MaintenanceEventVO vo) {
         //A user with edit permission for the sources of all points (and all data sources sources) in this event has edit permission
         if(permission != null) {
-            getService().permissionService.runAsSystemAdmin(() -> {
-                //Get the data points and add our roles to the read roles
-                for(int dpId : vo.getDataPoints()) {
-                    DataPointVO dp = DataPointDao.getInstance().get(dpId);
-                    dp.setEditPermission(permission);
-                    DataPointDao.getInstance().update(dp.getId(), dp);
+            //Get the data points and add our roles to the read roles
+            for (int dpId : vo.getDataPoints()) {
+                DataPointVO dp = DataPointDao.getInstance().get(dpId);
+                dp.setEditPermission(permission);
+                DataPointDao.getInstance().update(dp.getId(), dp);
 
-                    DataSourceVO ds = DataSourceDao.getInstance().get(dp.getDataSourceId());
-                    ds.setEditPermission(permission);
-                    DataSourceDao.getInstance().update(ds.getId(), ds);
-                }
-            });
+                DataSourceVO ds = DataSourceDao.getInstance().get(dp.getDataSourceId());
+                ds.setEditPermission(permission);
+                DataSourceDao.getInstance().update(ds.getId(), ds);
+            }
         }
         vo.setTogglePermission(permission);
     }
@@ -174,9 +173,7 @@ public class MaintenanceEventsServiceTest extends AbstractVOServiceWithPermissio
             MaintenanceEventVO vo = newVO(readUser);
             setReadPermission(MangoPermission.requireAnyRole(roleService.getUserRole()), vo);
             setEditPermission(MangoPermission.requireAnyRole(roleService.getUserRole()), vo);
-            getService().permissionService.runAsSystemAdmin(() -> {
-                service.insert(vo);
-            });
+            service.insert(vo);
             getService().permissionService.runAs(readUser, () -> {
                 MaintenanceEventVO fromDb = service.get(vo.getId());
                 assertVoEqual(vo, fromDb);
@@ -199,9 +196,7 @@ public class MaintenanceEventsServiceTest extends AbstractVOServiceWithPermissio
             MaintenanceEventVO vo = newVO(editUser);
             setReadPermission(MangoPermission.requireAnyRole(roleService.getUserRole()), vo);
             setEditPermission(MangoPermission.requireAnyRole(roleService.getUserRole()), vo);
-            getService().permissionService.runAsSystemAdmin(() -> {
-                service.insert(vo);
-            });
+            service.insert(vo);
             getService().permissionService.runAs(readUser, () -> {
                 MaintenanceEventVO fromDb = service.get(vo.getId());
                 assertVoEqual(vo, fromDb);

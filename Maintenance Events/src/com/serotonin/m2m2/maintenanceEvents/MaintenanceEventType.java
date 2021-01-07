@@ -147,35 +147,33 @@ public class MaintenanceEventType extends EventType {
         DataPointService dataPointService = Common.getBean(DataPointService.class);
         MaintenanceEventsService maintenanceEventService = Common.getBean(MaintenanceEventsService.class);
 
-        return maintenanceEventService.getPermissionService().runAsSystemAdmin(() -> {
-            Set<Role> allRequired = new HashSet<>();
+        Set<Role> allRequired = new HashSet<>();
+        try {
+            MaintenanceEventVO vo = maintenanceEventService.get(maintenanceId);
             try {
-                MaintenanceEventVO vo = maintenanceEventService.get(maintenanceId);
-                try {
-                    for(int dsId : vo.getDataSources()) {
-                        MangoPermission read = dataSourceService.getReadPermission(dsId);
-                        read.getRoles().stream().forEach(minterm -> allRequired.addAll(minterm));
-                    }
-                }catch(NotFoundException e) {
-                    //Ignore this item
+                for (int dsId : vo.getDataSources()) {
+                    MangoPermission read = dataSourceService.getReadPermission(dsId);
+                    read.getRoles().forEach(allRequired::addAll);
                 }
-                try {
-                    for(int dpId : vo.getDataPoints()) {
-                        MangoPermission read = dataPointService.getReadPermission(dpId);
-                        read.getRoles().stream().forEach(minterm -> allRequired.addAll(minterm));
-                    }
-                }catch(NotFoundException e) {
-                    //Ignore this item
+            } catch (NotFoundException e) {
+                //Ignore this item
+            }
+            try {
+                for (int dpId : vo.getDataPoints()) {
+                    MangoPermission read = dataPointService.getReadPermission(dpId);
+                    read.getRoles().forEach(allRequired::addAll);
                 }
-            }catch(NotFoundException e) {
-                //Ignore all of it
+            } catch (NotFoundException e) {
+                //Ignore this item
             }
-            if(allRequired.size() == 0) {
-                return MangoPermission.superadminOnly();
-            }else {
-                return MangoPermission.requireAllRoles(allRequired);
-            }
-        });
+        } catch (NotFoundException e) {
+            //Ignore all of it
+        }
+        if (allRequired.size() == 0) {
+            return MangoPermission.superadminOnly();
+        } else {
+            return MangoPermission.requireAllRoles(allRequired);
+        }
 
     }
 }

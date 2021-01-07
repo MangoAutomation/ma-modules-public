@@ -191,13 +191,11 @@ public class ServerRestController extends AbstractMangoRestController {
 
         //Ensure permissions and existence
         MailingList sendTo = mailingListService.get(xid);
-        Set<String> emailUsers = permissionService.runAsSystemAdmin(()->{
-            return mailingListService.getActiveRecipients(sendTo.getEntries(),
-                    Common.timer.currentTimeMillis(),
-                    RecipientListEntryType.MAILING_LIST,
-                    RecipientListEntryType.ADDRESS,
-                    RecipientListEntryType.USER);
-        });
+        Set<String> emailUsers = mailingListService.getActiveRecipients(sendTo.getEntries(),
+                Common.timer.currentTimeMillis(),
+                RecipientListEntryType.MAILING_LIST,
+                RecipientListEntryType.ADDRESS,
+                RecipientListEntryType.USER);
 
 
         return sendTestEmail(emailUsers, null, contentModel.getSubject(), contentModel.toEmailContent(), (sent) -> {

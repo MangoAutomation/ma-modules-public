@@ -9,7 +9,6 @@ import org.apache.commons.lang3.mutable.MutableInt;
 import org.junit.Test;
 
 import com.infiniteautomation.mango.spring.service.EventInstanceService;
-import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.rt.event.type.SystemEventType;
@@ -32,7 +31,7 @@ public class EventInstanceDaoTest extends MangoTestBase {
 
         SystemEventType type = new SystemEventType(SystemEventType.TYPE_SYSTEM_STARTUP);
         long timestamp = Common.timer.currentTimeMillis();
-        for(int i=0; i<100; i++) {
+        for (int i = 0; i < 100; i++) {
             Common.eventManager.raiseEvent(type, timestamp, false, AlarmLevels.CRITICAL, new TranslatableMessage("common.default", "testing"), null);
             timestamp++;
         }
@@ -40,13 +39,11 @@ public class EventInstanceDaoTest extends MangoTestBase {
 
         ASTNode rql = new RQLParser().parse("lt(activeTs, " + timestamp + ")&limit(100");
         MutableInt count = new MutableInt();
-        Common.getBean(PermissionService.class).runAsSystemAdmin(() -> {
-            Common.getBean(EventInstanceService.class).customizedQuery(rql, (EventInstanceVO item, int index) -> {
-                count.increment();
-            });
+        Common.getBean(EventInstanceService.class).customizedQuery(rql, (EventInstanceVO item, int index) -> {
+            count.increment();
         });
 
-        assertEquals(100, (int)count.getValue());
+        assertEquals(100, (int) count.getValue());
 
     }
 
