@@ -19,7 +19,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJacksonValue;
+import org.springframework.security.authentication.AuthenticationTrustResolver;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -48,10 +51,9 @@ import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableException;
 import com.serotonin.m2m2.module.DefaultPagesDefinition;
+import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
-import com.serotonin.m2m2.web.mvc.spring.security.MangoAccessDeniedHandler;
-import com.serotonin.m2m2.web.mvc.spring.security.MangoAuthenticationEntryPoint;
 import com.serotonin.m2m2.web.mvc.spring.security.authentication.MangoPasswordAuthenticationProvider.AuthenticationRateException;
 
 /**
@@ -66,17 +68,19 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     final RestModelMapper mapper;
     final PermissionService service;
     final Environment env;
+    final AuthenticationTrustResolver authenticationTrustResolver;
 
     @Autowired
     public RestExceptionHandler(
             @Qualifier("browserHtmlRequestMatcher")
                     RequestMatcher browserHtmlRequestMatcher,
             RestModelMapper mapper,
-            PermissionService service, Environment env) {
+            PermissionService service, Environment env, AuthenticationTrustResolver authenticationTrustResolver) {
         this.browserHtmlRequestMatcher = browserHtmlRequestMatcher;
         this.mapper = mapper;
         this.service = service;
         this.env = env;
+        this.authenticationTrustResolver = authenticationTrustResolver;
     }
 
     /**
@@ -95,22 +99,24 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(ex, ex, new HttpHeaders(), ex.getStatus(), req);
     }
 
-    /**
-     * Handle permission and access denied exceptions here so they are not processed by {@link #handleAllOtherErrors}.
-     * We rethrow these exceptions as a Spring {@link org.springframework.security.access.AccessDeniedException AccessDeniedException} so that they
-     * are processed by {@link MangoAccessDeniedHandler} and {@link MangoAuthenticationEntryPoint}.
-     */
     @ExceptionHandler({
             org.springframework.security.access.AccessDeniedException.class,
-            AccessDeniedException.class,
-            PermissionException.class
+            PermissionException.class,
+            AccessDeniedException.class
     })
     public ResponseEntity<Object> handleAccessDenied(HttpServletRequest request, HttpServletResponse response, Exception ex, WebRequest req) {
+        Object model;
         if (ex instanceof org.springframework.security.access.AccessDeniedException) {
-            throw (org.springframework.security.access.AccessDeniedException) ex;
+            model = new AccessDeniedException(ex);
+        } else if (ex instanceof PermissionException) {
+            PermissionException permissionException = (PermissionException) ex;
+            model = new AccessDeniedException(permissionException.getTranslatableMessage(), ex);
         } else {
-            throw new org.springframework.security.access.AccessDeniedException("Mango permission exception", ex);
+            model = ex;
         }
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        HttpStatus status = authenticationTrustResolver.isAnonymous(auth) ? HttpStatus.UNAUTHORIZED : HttpStatus.FORBIDDEN;
+        return handleExceptionInternal(ex, model, new HttpHeaders(), status, req);
     }
 
     @ExceptionHandler({
@@ -234,18 +240,8 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     protected ResponseEntity<Object> handleExceptionInternal(Exception ex,
                                                              Object body, HttpHeaders headers, HttpStatus status, WebRequest request) {
 
-        if (status == HttpStatus.UNAUTHORIZED || status == HttpStatus.FORBIDDEN || status == HttpStatus.TOO_MANY_REQUESTS) {
-            if (log.isWarnEnabled()) {
-                log.warn(String.format("REST request status %s: %s", status, request.getDescription(true)), ex);
-            }
-        } else if (status.value() >= 500) {
-            if (log.isErrorEnabled()) {
-                log.error(String.format("REST request status %s: %s", status, request.getDescription(true)), ex);
-            }
-        } else if (status.value() >= 400) {
-            if (log.isDebugEnabled()) {
-                log.debug(String.format("REST request status %s: %s", status, request.getDescription(true)), ex);
-            }
+        if (log.isDebugEnabled()) {
+            log.debug(String.format("Exception handled, returning status %s for request %s", status, request.getDescription(true)), ex);
         }
 
         PermissionHolder user = Common.getUser();
@@ -257,6 +253,10 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
             String uri;
             if (status == HttpStatus.NOT_FOUND) {
                 uri = DefaultPagesDefinition.getNotFoundUri(servletRequest, servletResponse);
+            } else if (status == HttpStatus.UNAUTHORIZED) {
+                uri = DefaultPagesDefinition.getLoginUri(servletRequest, servletResponse);
+            } else if (status == HttpStatus.FORBIDDEN) {
+                uri = DefaultPagesDefinition.getUnauthorizedUri(servletRequest, servletResponse, user instanceof User ? (User) user : null);
             } else {
                 uri = DefaultPagesDefinition.getErrorUri(servletRequest, servletResponse);
             }
