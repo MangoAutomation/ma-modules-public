@@ -30,6 +30,7 @@ import com.infiniteautomation.mango.spring.components.PasswordResetService;
 import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.web.mvc.spring.security.permissions.AnonymousAccess;
 
 import freemarker.template.TemplateException;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -44,8 +45,6 @@ import io.swagger.annotations.ApiParam;
 
 /**
  * Password reset REST endpoints
- *
- * WARNING! This REST controller is PUBLIC by default. Add @PreAuthorize annotations to restrict individual end-points.
  *
  * @author Jared Wiltshire
  */
@@ -63,6 +62,7 @@ public class PasswordResetController {
 
     @ApiOperation(value = "Sends the user an email containing a password reset link")
     @RequestMapping(method = RequestMethod.POST, value = "/send-email")
+    @AnonymousAccess
     public ResponseEntity<Void> sendEmail(
             @RequestBody
             SendEmailRequestBody body
@@ -94,6 +94,7 @@ public class PasswordResetController {
 
     @ApiOperation(value = "Resets the user's password if the token is correct")
     @RequestMapping(method = RequestMethod.POST, value = "/reset")
+    @AnonymousAccess
     public ResponseEntity<Void> reset(
             @RequestBody PasswordResetRequestBody body) {
 
@@ -107,12 +108,14 @@ public class PasswordResetController {
 
     @ApiOperation(value = "Gets the public key for verifying password reset tokens")
     @RequestMapping(path="/public-key", method = RequestMethod.GET)
+    @AnonymousAccess
     public String getPublicKey() {
         return this.passwordResetService.getPublicKey();
     }
 
     @ApiOperation(value = "Verify the signature and parse a password reset token", notes="Does NOT verify the claims")
     @RequestMapping(path="/verify", method = RequestMethod.GET)
+    @AnonymousAccess
     public HeaderClaimsModel verifyToken(
             @ApiParam(value = "The token to parse", required = true, allowMultiple = false)
             @RequestParam(required=true) String token) {

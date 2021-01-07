@@ -24,6 +24,7 @@ import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.module.DefaultPagesDefinition;
 import com.serotonin.m2m2.module.DefaultPagesDefinition.LoginUriInfo;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.web.mvc.spring.security.permissions.AnonymousAccess;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -56,6 +57,7 @@ public class LoginRestController {
      */
     @ApiOperation(value = "Login", notes = "Used to login using POST and JSON credentials")
     @RequestMapping(method = RequestMethod.POST)
+    @AnonymousAccess
     public ResponseEntity<UserModel> loginPost(
             @AuthenticationPrincipal User user,
             HttpServletRequest request, HttpServletResponse response) {
@@ -97,6 +99,7 @@ public class LoginRestController {
         AuthenticationException ex = (AuthenticationException) request.getAttribute(WebAttributes.AUTHENTICATION_EXCEPTION);
 
         if (ex != null) {
+            // TODO
             //return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
             response.sendError(HttpStatus.UNAUTHORIZED.value(), ex.getMessage());
             return null;

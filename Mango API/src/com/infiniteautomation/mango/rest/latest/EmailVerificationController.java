@@ -33,6 +33,7 @@ import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.Validatable;
+import com.serotonin.m2m2.web.mvc.spring.security.permissions.AnonymousAccess;
 
 import freemarker.template.TemplateException;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -68,6 +69,7 @@ public class EmailVerificationController {
     @ApiOperation(value = "Public endpoint that sends an email containing an email verification link",
             notes="This endpoint is for verifying new user's email addresses only, if a user is registered with this email address already they will recieve a warning email.")
     @RequestMapping(method = RequestMethod.POST, value = "/public/send-email")
+    @AnonymousAccess
     public ResponseEntity<Void> publicSendEmail(
             @RequestBody PublicEmailVerificationRequest body) throws AddressException, TemplateException, IOException {
 
@@ -133,6 +135,7 @@ public class EmailVerificationController {
      */
     @ApiOperation(value = "Registers a new user if the token's signature can be verified", notes="The new user is created disabled and must be approved by an administrator.")
     @RequestMapping(method = RequestMethod.POST, value = "/public/register")
+    @AnonymousAccess
     public ResponseEntity<UserModel> publicRegisterUser(
             @RequestBody PublicRegistrationRequest body) {
 
@@ -155,6 +158,7 @@ public class EmailVerificationController {
      */
     @ApiOperation(value = "Updates the target user's email address if the token's signature can be verified")
     @RequestMapping(method = RequestMethod.POST, value = "/public/update-email")
+    @AnonymousAccess
     public ResponseEntity<UserModel> publicUpdateEmail(
             @RequestBody UpdateEmailRequest body) {
 
@@ -172,6 +176,7 @@ public class EmailVerificationController {
      */
     @ApiOperation(value = "Gets the public key for verifying email verification tokens")
     @RequestMapping(path="/public/public-key", method = RequestMethod.GET)
+    @AnonymousAccess
     public String getPublicKey() {
         return this.emailVerificationService.getPublicKey();
     }
@@ -181,6 +186,7 @@ public class EmailVerificationController {
      */
     @ApiOperation(value = "Verify the signature and parse an email verification token", notes="Does NOT verify the claims")
     @RequestMapping(path="/public/verify", method = RequestMethod.GET)
+    @AnonymousAccess
     public HeaderClaimsModel publicVerifyToken(
             @ApiParam(value = "The token to parse", required = true, allowMultiple = false)
             @RequestParam(required=true) String token) {

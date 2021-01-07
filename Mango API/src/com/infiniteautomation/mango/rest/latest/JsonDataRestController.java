@@ -43,6 +43,7 @@ import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.json.JsonDataVO;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
+import com.serotonin.m2m2.web.mvc.spring.security.permissions.AnonymousAccess;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -91,6 +92,7 @@ public class JsonDataRestController {
 
     @ApiOperation(value = "Get Public JSON Data")
     @RequestMapping(method = RequestMethod.GET, value="/public/{xid}")
+    @AnonymousAccess
     public JsonDataModel getPublicData(
             HttpServletRequest request,
             @ApiParam(value = "XID", required = true, allowMultiple = false)

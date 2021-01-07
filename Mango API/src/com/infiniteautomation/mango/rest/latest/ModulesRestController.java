@@ -95,6 +95,7 @@ import com.serotonin.m2m2.rt.maint.work.BackupWorkItem;
 import com.serotonin.m2m2.rt.maint.work.DatabaseBackupWorkItem;
 import com.serotonin.m2m2.shared.ModuleUtils;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.web.mvc.spring.security.permissions.AnonymousAccess;
 import com.serotonin.provider.Providers;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -163,6 +164,7 @@ public class ModulesRestController {
 
     @ApiOperation(value = "AngularJS Modules", notes = "Publicly Available Angular JS Modules")
     @RequestMapping(method = RequestMethod.GET, value = "/angularjs-modules/public")
+    @AnonymousAccess
     public AngularJSModuleDefinitionGroupModel getPublicAngularJSModules() {
         return getAngularJSModules(env.getProperty("development.enabled", Boolean.class, false));
     }

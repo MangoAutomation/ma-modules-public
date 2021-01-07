@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2017 Infinite Automation Software. All rights reserved.
+/*
+ * Copyright (C) 2021 Radix IoT LLC. All rights reserved.
  */
 package com.infiniteautomation.mango.rest.latest;
 
@@ -32,7 +32,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.MediaTypeFactory;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -52,7 +51,8 @@ import com.infiniteautomation.mango.rest.latest.model.filestore.FileModel;
 import com.infiniteautomation.mango.rest.latest.resolver.RemainingPath;
 import com.infiniteautomation.mango.spring.service.FileStoreService;
 import com.infiniteautomation.mango.spring.service.FileStoreService.FileStorePath;
-import com.serotonin.m2m2.vo.User;
+import com.infiniteautomation.mango.webapp.FileStoreFilter;
+import com.serotonin.m2m2.web.mvc.spring.security.permissions.AnonymousAccess;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -87,8 +87,6 @@ public class FileStoreRestController extends AbstractMangoRestController {
     public ResponseEntity<List<FileModel>> uploadWithPath(
             @ApiParam(value = "Valid File Store name", required = true)
             @PathVariable("name") String name,
-
-            @AuthenticationPrincipal User user,
 
             @RequestParam(required = false, defaultValue = "false") boolean overwrite,
 
@@ -141,7 +139,6 @@ public class FileStoreRestController extends AbstractMangoRestController {
             @ApiParam(value = "Copy file/folder to")
             @RequestParam(required = false) String copyTo,
             @ApiIgnore @RemainingPath String pathInStore,
-            @AuthenticationPrincipal User user,
             HttpServletRequest request) {
 
         FileModel fileModel;
@@ -162,9 +159,7 @@ public class FileStoreRestController extends AbstractMangoRestController {
             @PathVariable("name") String name,
             @ApiParam(value = "Recursive delete of directory", defaultValue = "false")
             @RequestParam(required = false, defaultValue = "false") boolean recursive,
-            @ApiIgnore @RemainingPath String pathInStore,
-            @AuthenticationPrincipal User user,
-            HttpServletRequest request) {
+            @ApiIgnore @RemainingPath String pathInStore) {
 
         service.deleteFileOrFolder(name, pathInStore, recursive);
         return new ResponseEntity<>(null, HttpStatus.OK);
@@ -179,7 +174,6 @@ public class FileStoreRestController extends AbstractMangoRestController {
             @ApiParam(value = "Set content disposition to attachment", defaultValue = "true")
             @RequestParam(required = false, defaultValue = "true") boolean download,
             @ApiIgnore @RemainingPath String pathInStore,
-            @AuthenticationPrincipal User user,
             HttpServletRequest request,
             HttpServletResponse response) {
 
@@ -194,17 +188,18 @@ public class FileStoreRestController extends AbstractMangoRestController {
     }
 
     /**
-     * WARNING: This end point can be accessed publicly via the /file-stores/* filter
+     * WARNING: This end point can be accessed publicly.
+     * Requests are also forwarded here from /file-stores/* by the {@link FileStoreFilter}.
      */
     @ApiOperation(value = "Download a file from a store")
     @RequestMapping(method = RequestMethod.GET, value = "/download-file/{name}/**")
+    @AnonymousAccess
     public ResponseEntity<?> downloadOnly(
             @ApiParam(value = "Valid File Store name", required = true)
             @PathVariable("name") String name,
             @ApiParam(value = "Set content disposition to attachment", defaultValue = "true")
             @RequestParam(required = false, defaultValue = "true") boolean download,
             @ApiIgnore @RemainingPath String pathInStore,
-            @AuthenticationPrincipal User user,
             HttpServletRequest request,
             HttpServletResponse response) {
 
@@ -271,10 +266,6 @@ public class FileStoreRestController extends AbstractMangoRestController {
 
     /**
      * Convert a file to a model
-     *
-     * @param fileStorePath
-     * @param context
-     * @return
      */
     private FileModel fileToModel(FileStorePath fileStorePath, ServletContext context) {
         try {

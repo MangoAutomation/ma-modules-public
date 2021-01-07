@@ -27,6 +27,7 @@ import com.infiniteautomation.mango.rest.latest.exception.AccessDeniedException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.web.mvc.spring.security.permissions.AnonymousAccess;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -110,6 +111,7 @@ public class TranslationsController {
 
     @ApiOperation(value = "Get translations for public namespaces", notes = "Namespace must be base , ie public not public.messages. Returns sub-namespaces too. For > 1 use comma common,public")
     @RequestMapping(method = RequestMethod.GET, value = "/public/{namespaces}")
+    @AnonymousAccess
     public TranslationsModel publicNamespacedTranslations(
             @ApiParam(value = "Message Namespaces, simmilar to java package structure", allowMultiple = true)
             @PathVariable String[] namespaces,

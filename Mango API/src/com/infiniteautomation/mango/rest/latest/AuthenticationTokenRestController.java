@@ -30,6 +30,7 @@ import com.serotonin.m2m2.db.dao.UserDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.spring.security.MangoSessionRegistry;
+import com.serotonin.m2m2.web.mvc.spring.security.permissions.AnonymousAccess;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -45,9 +46,6 @@ import io.swagger.annotations.ApiParam;
 
 /**
  * JSON Web Token REST endpoint.
- *
- * WARNING! This REST controller is PUBLIC by default. Add @PreAuthorize annotations to restrict individual end-points.
- *
  * @author Jared Wiltshire
  */
 @Api(value = "Authentication tokens", description = "Creates and verifies JWT (JSON web token) authentication tokens")
@@ -129,12 +127,14 @@ public class AuthenticationTokenRestController {
 
     @ApiOperation(value = "Gets the public key for verifying authentication tokens")
     @RequestMapping(path="/public-key", method = RequestMethod.GET)
+    @AnonymousAccess
     public String getPublicKey() {
         return this.tokenAuthService.getPublicKey();
     }
 
     @ApiOperation(value = "Verify the sigature and parse an authentication token", notes="Does NOT verify the claims")
     @RequestMapping(path="/verify", method = RequestMethod.GET)
+    @AnonymousAccess
     public HeaderClaimsModel verifyToken(
             @ApiParam(value = "The token to parse", required = true, allowMultiple = false)
             @RequestParam(required=true) String token) {
