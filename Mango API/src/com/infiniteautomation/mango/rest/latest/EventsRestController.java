@@ -44,6 +44,7 @@ import com.infiniteautomation.mango.rest.latest.model.StreamedArray;
 import com.infiniteautomation.mango.rest.latest.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.latest.model.StreamedVORqlQueryWithTotal;
 import com.infiniteautomation.mango.rest.latest.model.TranslatableMessageModel;
+import com.infiniteautomation.mango.rest.latest.model.event.AlarmPointTagCountModel;
 import com.infiniteautomation.mango.rest.latest.model.event.DataPointEventSummaryModel;
 import com.infiniteautomation.mango.rest.latest.model.event.EventInstanceModel;
 import com.infiniteautomation.mango.rest.latest.model.event.EventLevelSummaryModel;
@@ -317,7 +318,7 @@ public class EventsRestController {
                     public void writeArrayValues(JsonGenerator jgen) throws IOException {
                         service.queryDataPointEventCountsByRQL(rql, body.getFrom() != null ? body.getFrom().getTime() : null, body.getTo() != null ? body.getTo().getTime() : null, (item, rowNum) -> {
                             try {
-                                jgen.writeObject(item);
+                                jgen.writeObject(new AlarmPointTagCountModel(item));
                                 count++;
                             } catch (IOException e) {
                                 throw new ServerErrorException(e);
