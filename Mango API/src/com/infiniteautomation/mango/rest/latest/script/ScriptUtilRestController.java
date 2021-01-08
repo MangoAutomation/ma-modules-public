@@ -29,7 +29,7 @@ import com.serotonin.m2m2.rt.script.ResultTypeException;
 import com.serotonin.m2m2.rt.script.ScriptPointValueSetter;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
-import com.serotonin.m2m2.web.mvc.spring.security.authentication.RunAs;
+import com.infiniteautomation.mango.spring.components.RunAs;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;

@@ -14,7 +14,7 @@ import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.infiniteautomation.mango.util.script.ScriptUtility;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventVO;
 import com.serotonin.m2m2.vo.permission.PermissionException;
-import com.serotonin.m2m2.web.mvc.spring.security.authentication.RunAs;
+import com.infiniteautomation.mango.spring.components.RunAs;
 
 /**
  *

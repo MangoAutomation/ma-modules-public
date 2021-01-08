@@ -33,7 +33,7 @@ import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
-import com.serotonin.m2m2.web.mvc.spring.security.authentication.RunAs;
+import com.infiniteautomation.mango.spring.components.RunAs;
 
 /**
  * @author Terry Packer

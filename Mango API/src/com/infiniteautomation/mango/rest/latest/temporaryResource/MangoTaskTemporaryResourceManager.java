@@ -19,7 +19,7 @@ import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.util.timeout.HighPriorityTask;
 import com.serotonin.m2m2.util.timeout.TimeoutClient;
 import com.serotonin.m2m2.util.timeout.TimeoutTask;
-import com.serotonin.m2m2.web.mvc.spring.security.authentication.RunAs;
+import com.infiniteautomation.mango.spring.components.RunAs;
 import com.serotonin.timer.RejectedTaskReason;
 import com.serotonin.timer.TimerTask;
 

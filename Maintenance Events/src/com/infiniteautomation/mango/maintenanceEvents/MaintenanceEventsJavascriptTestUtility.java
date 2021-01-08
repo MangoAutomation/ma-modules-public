@@ -16,7 +16,7 @@ import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventDao;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventRT;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventVO;
 import com.serotonin.m2m2.vo.permission.PermissionException;
-import com.serotonin.m2m2.web.mvc.spring.security.authentication.RunAs;
+import com.infiniteautomation.mango.spring.components.RunAs;
 
 /**
  * @author Terry Packer
