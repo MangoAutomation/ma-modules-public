@@ -244,7 +244,13 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
             log.debug(String.format("Exception handled, returning status %s for request %s", status, request.getDescription(true)), ex);
         }
 
-        PermissionHolder user = Common.getUser();
+        PermissionHolder user;
+        try {
+            user = Common.getUser();
+        } catch (PermissionException e) {
+            user = null;
+        }
+
         HttpServletRequest servletRequest = ((ServletWebRequest) request).getRequest();
         HttpServletResponse servletResponse = ((ServletWebRequest) request).getResponse();
 
