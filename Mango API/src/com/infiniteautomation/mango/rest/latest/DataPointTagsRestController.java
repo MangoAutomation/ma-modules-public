@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -112,8 +113,8 @@ public class DataPointTagsRestController {
 
     @Autowired
     public DataPointTagsRestController(TemporaryResourceWebSocketHandler websocket, DataPointService dataPointService,
-            DataPointTagsDao dataPointTagsDao, DataPointDao dataPointDao, PermissionService permissionService) {
-        this.bulkResourceManager = new MangoTaskTemporaryResourceManager<TagBulkResponse>(permissionService, websocket);
+            DataPointTagsDao dataPointTagsDao, DataPointDao dataPointDao, PermissionService permissionService, Environment environment) {
+        this.bulkResourceManager = new MangoTaskTemporaryResourceManager<TagBulkResponse>(permissionService, websocket, environment);
         this.dataPointService = dataPointService;
         this.dataPointTagsDao = dataPointTagsDao;
         this.dataPointDao = dataPointDao;

@@ -4,6 +4,7 @@
 package com.infiniteautomation.mango.rest.latest.model.system.actions;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,8 +38,8 @@ public class SystemActionTemporaryResourceManager {
     protected final PermissionService service;
 
     @Autowired
-    public SystemActionTemporaryResourceManager(TemporaryResourceWebSocketHandler websocket, PermissionService service) {
-        this.resourceManager = new MangoTaskTemporaryResourceManager<>(service, websocket);
+    public SystemActionTemporaryResourceManager(TemporaryResourceWebSocketHandler websocket, PermissionService service, Environment environment) {
+        this.resourceManager = new MangoTaskTemporaryResourceManager<>(service, websocket, environment);
         this.service = service;
     }
 

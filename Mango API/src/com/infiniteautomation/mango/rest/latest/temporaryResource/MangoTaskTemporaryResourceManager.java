@@ -5,6 +5,8 @@ package com.infiniteautomation.mango.rest.latest.temporaryResource;
 
 import java.util.Date;
 
+import org.springframework.core.env.Environment;
+
 import com.infiniteautomation.mango.rest.latest.exception.AbstractRestException;
 import com.infiniteautomation.mango.rest.latest.exception.ServerErrorException;
 import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResource.StatusUpdateException;
@@ -34,12 +36,12 @@ public final class MangoTaskTemporaryResourceManager<T> extends TemporaryResourc
     private final PermissionService permissionService;
     private final TemporaryResourceWebSocketHandler websocketHandler;
 
-    public MangoTaskTemporaryResourceManager(PermissionService permissionService) {
-        this(permissionService, null);
+    public MangoTaskTemporaryResourceManager(PermissionService permissionService, Environment environment) {
+        this(permissionService, null, environment);
     }
 
-    public MangoTaskTemporaryResourceManager(PermissionService permissionService, TemporaryResourceWebSocketHandler websocketHandler) {
-        super(permissionService);
+    public MangoTaskTemporaryResourceManager(PermissionService permissionService, TemporaryResourceWebSocketHandler websocketHandler, Environment environment) {
+        super(permissionService, environment);
         this.websocketHandler = websocketHandler;
         this.permissionService = permissionService;
     }

@@ -10,6 +10,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -71,9 +72,9 @@ public class MBusDataSourceRestController {
     private final ExecutorService executor;
 
     @Autowired
-    public MBusDataSourceRestController(DataSourceService service, TemporaryResourceWebSocketHandler handler, ExecutorService executor) {
+    public MBusDataSourceRestController(DataSourceService service, TemporaryResourceWebSocketHandler handler, ExecutorService executor, Environment environment) {
         this.service = service;
-        this.temporaryResourceManager = new MangoTaskTemporaryResourceManager<MBusScanResult>(service.getPermissionService(), handler);
+        this.temporaryResourceManager = new MangoTaskTemporaryResourceManager<MBusScanResult>(service.getPermissionService(), handler, environment);
         this.executor = executor;
     }
 

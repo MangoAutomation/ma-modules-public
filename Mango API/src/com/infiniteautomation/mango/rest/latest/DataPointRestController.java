@@ -17,6 +17,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.jooq.Field;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -101,8 +102,8 @@ public class DataPointRestController {
 
     @Autowired
     public DataPointRestController(TemporaryResourceWebSocketHandler websocket, final RestModelMapper modelMapper,
-            DataPointService service, DataSourceTableDefinition dataSourceTable, PermissionService permissionService) {
-        this.bulkResourceManager = new MangoTaskTemporaryResourceManager<DataPointBulkResponse>(permissionService, websocket);
+            DataPointService service, DataSourceTableDefinition dataSourceTable, PermissionService permissionService, Environment environment) {
+        this.bulkResourceManager = new MangoTaskTemporaryResourceManager<DataPointBulkResponse>(permissionService, websocket, environment);
         this.service = service;
         this.map = (vo, user) -> {
             return modelMapper.map(vo, DataPointModel.class, user);

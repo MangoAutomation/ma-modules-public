@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.jooq.Field;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -90,14 +91,14 @@ public class EventDetectorsRestController {
     public EventDetectorsRestController(EventDetectorsService service,
             EventDetectorTableDefinition table,
             RestModelMapper modelMapper,
-            TemporaryResourceWebSocketHandler websocket){
+            TemporaryResourceWebSocketHandler websocket, Environment environment){
         this.service = service;
         this.map = (vo, user) -> {
             AbstractEventDetectorModel<?> model = modelMapper.map(vo, AbstractEventDetectorModel.class, user);
             return model;
         };
         this.modelMapper = modelMapper;
-        this.bulkResourceManager = new MangoTaskTemporaryResourceManager<EventDetectorBulkResponse>(service.getPermissionService(), websocket);
+        this.bulkResourceManager = new MangoTaskTemporaryResourceManager<EventDetectorBulkResponse>(service.getPermissionService(), websocket, environment);
 
         this.fieldMap = new HashMap<>();
         this.fieldMap.put("detectorSourceType", table.getAlias("sourceTypeName"));

@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.core.env.Environment;
 
 import com.infiniteautomation.mango.rest.latest.util.ExceptionMapper;
 import com.infiniteautomation.mango.spring.service.PermissionService;
@@ -27,16 +28,7 @@ import com.serotonin.m2m2.vo.permission.PermissionHolder;
 public abstract class TemporaryResourceManager<T, E> implements ExceptionMapper<E> {
 
     protected Log log = LogFactory.getLog(TemporaryResourceManager.class);
-
-    /**
-     * Default time before the resource is removed after completion
-     */
-    public static final long DEFAULT_EXPIRATION_MILLISECONDS = 300000; // 5 minutes
-
-    /**
-     * Default time that the task is allowed to run for before it is cancelled
-     */
-    public static final long DEFAULT_TIMEOUT_MILLISECONDS = 600000; // 10 minutes
+    protected final Environment environment;
 
     @FunctionalInterface
     public static interface ResourceTask<T, E> {
@@ -46,8 +38,9 @@ public abstract class TemporaryResourceManager<T, E> implements ExceptionMapper<
     private final ConcurrentMap<String, TemporaryResource<T, E>> resources;
     private final PermissionService permissionService;
 
-    public TemporaryResourceManager(PermissionService permissionService) {
+    public TemporaryResourceManager(PermissionService permissionService, Environment environment) {
         this.permissionService = permissionService;
+        this.environment = environment;
         this.resources = new ConcurrentHashMap<>();
     }
 
@@ -68,10 +61,15 @@ public abstract class TemporaryResourceManager<T, E> implements ExceptionMapper<
      */
     public final TemporaryResource<T, E> newTemporaryResource(String resourceType, String id, Long expiration, Long timeout, ResourceTask<T, E> task) {
         if (expiration == null || expiration < 0) {
-            expiration = DEFAULT_EXPIRATION_MILLISECONDS;
+
+            expiration = Common.getMillis(
+                    Common.TIME_PERIOD_CODES.getId(environment.getProperty("rest.temporaryResource.expirationPeriodType", "HOURS")),
+                    environment.getProperty("rest.temporaryResource.expirationPeriods", Integer.class, 4));
         }
         if (timeout == null || timeout < 0) {
-            timeout = DEFAULT_TIMEOUT_MILLISECONDS;
+            timeout = Common.getMillis(
+                    Common.TIME_PERIOD_CODES.getId(environment.getProperty("rest.temporaryResource.timeoutPeriodType", "HOURS")),
+                    environment.getProperty("rest.temporaryResource.timeoutPeriods", Integer.class, 3));
         }
 
         PermissionHolder user = Common.getUser();

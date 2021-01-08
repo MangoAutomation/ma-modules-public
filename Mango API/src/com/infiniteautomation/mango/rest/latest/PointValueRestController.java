@@ -22,6 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.http.HttpHeaders;
@@ -123,9 +124,9 @@ public class PointValueRestController extends AbstractMangoRestController {
 
     @Autowired
     public PointValueRestController(TemporaryResourceWebSocketHandler websocket,
-                                    PermissionService permissionService, DataPointService dataPointService, DataSourceService dataSourceService) {
+                                    PermissionService permissionService, DataPointService dataPointService, DataSourceService dataSourceService, Environment environment) {
         this.dataSourceService = dataSourceService;
-        this.resourceManager = new MangoTaskTemporaryResourceManager<>(permissionService, websocket);
+        this.resourceManager = new MangoTaskTemporaryResourceManager<>(permissionService, websocket, environment);
         this.permissionService = permissionService;
         this.dataPointService = dataPointService;
     }
