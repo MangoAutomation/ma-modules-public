@@ -19,6 +19,7 @@ import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.util.timeout.HighPriorityTask;
 import com.serotonin.m2m2.util.timeout.TimeoutClient;
 import com.serotonin.m2m2.util.timeout.TimeoutTask;
+import com.serotonin.m2m2.web.mvc.spring.security.authentication.RunAs;
 import com.serotonin.timer.RejectedTaskReason;
 import com.serotonin.timer.TimerTask;
 
@@ -27,14 +28,14 @@ import com.serotonin.timer.TimerTask;
  */
 public final class MangoTaskTemporaryResourceManager<T> extends TemporaryResourceManager<T, AbstractRestException> implements RestExceptionMapper {
 
+    private final RunAs runAs;
+    private final TemporaryResourceWebSocketHandler websocketHandler;
+
     static class TaskData {
         HighPriorityTask mainTask;
         TimerTask timeoutTask;
         TimerTask expirationTask;
     }
-
-    private final PermissionService permissionService;
-    private final TemporaryResourceWebSocketHandler websocketHandler;
 
     public MangoTaskTemporaryResourceManager(PermissionService permissionService, Environment environment) {
         this(permissionService, null, environment);
@@ -43,7 +44,7 @@ public final class MangoTaskTemporaryResourceManager<T> extends TemporaryResourc
     public MangoTaskTemporaryResourceManager(PermissionService permissionService, TemporaryResourceWebSocketHandler websocketHandler, Environment environment) {
         super(permissionService, environment);
         this.websocketHandler = websocketHandler;
-        this.permissionService = permissionService;
+        this.runAs = Common.getBean(RunAs.class); // TODO remove?
     }
 
     @Override
@@ -98,10 +99,11 @@ public final class MangoTaskTemporaryResourceManager<T> extends TemporaryResourc
     private void scheduleTask(TemporaryResource<T, AbstractRestException> resource) {
         TaskData tasks = (TaskData) resource.getData();
 
+        // TODO do we even need runAs here?
         tasks.mainTask = new HighPriorityTask("Temporary resource " + resource.getResourceType() + " " + resource.getId()) {
             @Override
             public void run(long runtime) {
-                permissionService.runAs(resource.getUser(), ()-> {
+                runAs.runAs(resource.getUser(), ()-> {
                     try {
                         resource.runTask();
                     } catch (Exception e) {

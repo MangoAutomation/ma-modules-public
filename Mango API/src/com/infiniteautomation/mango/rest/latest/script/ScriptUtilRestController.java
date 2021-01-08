@@ -29,6 +29,7 @@ import com.serotonin.m2m2.rt.script.ResultTypeException;
 import com.serotonin.m2m2.rt.script.ScriptPointValueSetter;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
+import com.serotonin.m2m2.web.mvc.spring.security.authentication.RunAs;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -42,11 +43,13 @@ public class ScriptUtilRestController {
 
     private final MangoJavaScriptService service;
     private final PermissionService permissionService;
+    private final RunAs runAs;
 
     @Autowired
-    ScriptUtilRestController(MangoJavaScriptService service, PermissionService permissionService) {
+    ScriptUtilRestController(MangoJavaScriptService service, PermissionService permissionService, RunAs runAs) {
         this.service = service;
         this.permissionService = permissionService;
+        this.runAs = runAs;
     }
 
     @ApiOperation(value = "Validate a script, supplied permissions must already be granted to submitting User.")
@@ -68,7 +71,7 @@ public class ScriptUtilRestController {
 
         ScriptPermissions scriptUser = new ScriptPermissions(permissionService.explodeLegacyPermissionGroupsToRoles(scriptModel.getPermissions()));
 
-        return service.getPermissionService().runAs(scriptUser, () -> {
+        return runAs.runAs(scriptUser, () -> {
             return new MangoJavaScriptResultModel(service.executeScript(scriptModel.toVO(),
                     new SetCallback(scriptUser, user)));
         });

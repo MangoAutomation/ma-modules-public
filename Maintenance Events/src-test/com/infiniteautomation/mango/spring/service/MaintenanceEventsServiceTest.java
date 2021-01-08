@@ -174,7 +174,7 @@ public class MaintenanceEventsServiceTest extends AbstractVOServiceWithPermissio
             setReadPermission(MangoPermission.requireAnyRole(roleService.getUserRole()), vo);
             setEditPermission(MangoPermission.requireAnyRole(roleService.getUserRole()), vo);
             service.insert(vo);
-            getService().permissionService.runAs(readUser, () -> {
+            runAs.runAs(readUser, () -> {
                 MaintenanceEventVO fromDb = service.get(vo.getId());
                 assertVoEqual(vo, fromDb);
                 vo.setTogglePermission(MangoPermission.requireAnyRole(roleService.getSuperadminRole()));
@@ -197,7 +197,7 @@ public class MaintenanceEventsServiceTest extends AbstractVOServiceWithPermissio
             setReadPermission(MangoPermission.requireAnyRole(roleService.getUserRole()), vo);
             setEditPermission(MangoPermission.requireAnyRole(roleService.getUserRole()), vo);
             service.insert(vo);
-            getService().permissionService.runAs(readUser, () -> {
+            runAs.runAs(readUser, () -> {
                 MaintenanceEventVO fromDb = service.get(vo.getId());
                 assertVoEqual(vo, fromDb);
                 vo.setTogglePermission(MangoPermission.requireAnyRole(Collections.emptySet()));

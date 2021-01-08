@@ -329,7 +329,7 @@ public class EventsWebSocketHandler extends MangoWebSocketHandler implements Use
 
     protected void notify(EventActionEnum action, EventInstance event, WebSocketSession session) {
         //This is used for serialization where things like the TranslatableMessageSerializer
-        this.permissionService.runAs(user, () -> {
+        this.runAs.runAs(user, () -> {
             try {
                 EventInstanceModel instanceModel = modelMapper.map(event, EventInstanceModel.class, user);
                 sendRawMessage(session, new WebSocketNotification<EventInstanceModel>(action.name(), instanceModel));

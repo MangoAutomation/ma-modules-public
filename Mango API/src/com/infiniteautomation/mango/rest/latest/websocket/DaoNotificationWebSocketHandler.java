@@ -30,7 +30,7 @@ public abstract class DaoNotificationWebSocketHandler<T extends AbstractBasicVO>
         for (WebSocketSession session : sessions) {
             PermissionHolder user = getUser(session);
             if (hasPermission(user, vo) && isSubscribed(session, action, vo, originalVo)) {
-                this.permissionService.runAs(user, () -> {
+                this.runAs.runAs(user, () -> {
                     Object userMessage = createNotification(action, vo, originalVo, user);
                     if (userMessage != null) {
                         try {

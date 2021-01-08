@@ -16,6 +16,7 @@ import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventDao;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventRT;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventVO;
 import com.serotonin.m2m2.vo.permission.PermissionException;
+import com.serotonin.m2m2.web.mvc.spring.security.authentication.RunAs;
 
 /**
  * @author Terry Packer
@@ -24,14 +25,14 @@ import com.serotonin.m2m2.vo.permission.PermissionException;
 public class MaintenanceEventsJavascriptTestUtility extends MaintenanceEventsJavascriptUtility{
 
     @Autowired
-    public MaintenanceEventsJavascriptTestUtility(MangoJavaScriptService service, PermissionService permissionService, MaintenanceEventsService meService) {
-        super(service, permissionService, meService);
+    public MaintenanceEventsJavascriptTestUtility(MangoJavaScriptService service, PermissionService permissionService, MaintenanceEventsService meService, RunAs runAs) {
+        super(service, permissionService, meService, runAs);
     }
 
     @Override
     public boolean toggle(String xid)
             throws NotFoundException, PermissionException, TranslatableIllegalStateException {
-        return this.permissionService.runAs(permissions, () -> {
+        return this.runAs.runAs(permissions, () -> {
             MaintenanceEventRT rt = meService.getEventRT(xid);
             return !rt.isEventActive();
         });
@@ -40,7 +41,7 @@ public class MaintenanceEventsJavascriptTestUtility extends MaintenanceEventsJav
     @Override
     public boolean setState(String xid, boolean state) {
 
-        return this.permissionService.runAs(permissions, () -> {
+        return this.runAs.runAs(permissions, () -> {
             meService.getEventRT(xid); //check that it's enabled, we have toggle permissions
             return state;
         });
@@ -73,7 +74,7 @@ public class MaintenanceEventsJavascriptTestUtility extends MaintenanceEventsJav
     @Override
     public MaintenanceEventVO update(String existingXid, MaintenanceEventVO vo)
             throws NotFoundException, PermissionException, ValidationException {
-        return this.permissionService.runAs(permissions, () -> {
+        return this.runAs.runAs(permissions, () -> {
             MaintenanceEventVO existing = meService.get(existingXid);
             meService.ensureEditPermission(permissions, existing);
             //Don't change ID ever
@@ -85,7 +86,7 @@ public class MaintenanceEventsJavascriptTestUtility extends MaintenanceEventsJav
 
     @Override
     public MaintenanceEventVO delete(String xid) throws NotFoundException, PermissionException {
-        return this.permissionService.runAs(permissions, () -> {
+        return this.runAs.runAs(permissions, () -> {
             MaintenanceEventVO vo = meService.get(xid);
             meService.ensureEditPermission(permissions, vo);
             return vo;

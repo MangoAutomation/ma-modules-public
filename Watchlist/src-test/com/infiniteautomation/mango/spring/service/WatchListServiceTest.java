@@ -117,7 +117,7 @@ public class WatchListServiceTest extends AbstractVOServiceWithPermissionsTest<W
         WatchListVO vo = newVO(editUser);
         addRoleToCreatePermission(PermissionHolder.SUPERADMIN_ROLE);
         removeRoleFromCreatePermission(PermissionHolder.USER_ROLE);
-        getService().permissionService.runAs(editUser, () -> {
+        runAs.runAs(editUser, () -> {
             service.insert(vo);
         });
     }
