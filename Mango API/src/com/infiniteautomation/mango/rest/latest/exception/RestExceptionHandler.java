@@ -212,13 +212,13 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(AuthenticationRateException.class)
-    public ResponseEntity<Object> handleIpAddressAuthenticationRateException(HttpServletRequest request, HttpServletResponse response, AuthenticationRateException ex, WebRequest req) {
+    public ResponseEntity<Object> handleAuthenticationRateException(HttpServletRequest request, HttpServletResponse response, AuthenticationRateException ex, WebRequest req) {
         RateLimitedRestException body = RateLimitedRestException.restExceptionFor(ex);
         return handleExceptionInternal(ex, body, new HttpHeaders(), body.getStatus(), req);
     }
 
     @ExceptionHandler(AuthenticationException.class)
-    public ResponseEntity<Object> handleUsernameAuthenticationRateException(HttpServletRequest request, HttpServletResponse response, AuthenticationException ex, WebRequest req) {
+    public ResponseEntity<Object> handleAuthenticationException(HttpServletRequest request, HttpServletResponse response, AuthenticationException ex, WebRequest req) {
         AuthenticationFailedRestException body = AuthenticationFailedRestException.restExceptionFor(ex);
         return handleExceptionInternal(ex, body, new HttpHeaders(), body.getStatus(), req);
     }
@@ -248,6 +248,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         try {
             user = Common.getUser();
         } catch (PermissionException e) {
+            // SecurityContext holds a null authentication when AuthenticationException is thrown, e.g. failed login
             user = null;
         }
 
