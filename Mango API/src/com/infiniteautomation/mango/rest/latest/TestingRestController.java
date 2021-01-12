@@ -13,11 +13,11 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-import java.util.stream.Collectors;
 
 import javax.management.MBeanServer;
 import javax.servlet.http.HttpServletRequest;
@@ -76,8 +76,7 @@ public class TestingRestController {
     private final Logger log = LoggerFactory.getLogger(TestingRestController.class);
 
     private final Set<PosixFilePermission> readablePerms =
-            Arrays.asList(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE, PosixFilePermission.GROUP_READ, PosixFilePermission.OTHERS_READ)
-                    .stream().collect(Collectors.toSet());
+            new HashSet<>(Arrays.asList(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE, PosixFilePermission.GROUP_READ, PosixFilePermission.OTHERS_READ));
 
     private final MangoSessionRegistry sessionRegistry;
     private final MangoSessionDataStore sessionDataStore;
@@ -198,7 +197,6 @@ public class TestingRestController {
         }
     }
 
-    @PreAuthorize("isAdmin()")
     @ApiOperation(value = "Example User Credentials test", notes = "")
     @ApiResponses({
             @ApiResponse(code = 401, message = "Unauthorized user access", response = ResponseEntity.class),
@@ -274,7 +272,6 @@ public class TestingRestController {
         throw new LicenseViolatedException(new TranslatableMessage("common.default", "Test Violiation"));
     }
 
-    @PreAuthorize("isAdmin()")
     @ApiOperation(value = "Expire the session of the current user", notes = "must be admin")
     @ApiResponses({
             @ApiResponse(code = 401, message = "Unauthorized user access", response = ResponseEntity.class),
@@ -287,7 +284,6 @@ public class TestingRestController {
         return new ResponseEntity<Object>(HttpStatus.OK);
     }
 
-    @PreAuthorize("isAdmin()")
     @ApiOperation(value = "Example Path matching", notes = "")
     @ApiResponses({
             @ApiResponse(code = 401, message = "Unauthorized user access", response = ResponseEntity.class),
@@ -307,7 +303,6 @@ public class TestingRestController {
         return new ResponseEntity<String>(finalPath, HttpStatus.OK);
     }
 
-    @PreAuthorize("isAdmin()")
     @ApiOperation(value = "Raise an event", notes = "must be admin")
     @ApiResponses({
             @ApiResponse(code = 401, message = "Unauthorized user access", response = ResponseEntity.class),
@@ -321,7 +316,6 @@ public class TestingRestController {
         return new ResponseEntity<Object>(HttpStatus.OK);
     }
 
-    @PreAuthorize("isAdmin()")
     @ApiOperation(value = "Identity function", notes = "Returns whatever is sent in the request body. Useful for testing message converters. Must be admin")
     @RequestMapping(method = RequestMethod.POST, value = {"/identity"})
     public Object identityFunction(
@@ -330,7 +324,6 @@ public class TestingRestController {
         return node;
     }
 
-    @PreAuthorize("isAdmin()")
     @ApiOperation(value = "Log ERROR Level Message", notes = "Must be admin")
     @RequestMapping(method = RequestMethod.POST, value = {"/log-error-message"})
     public void logErorMessage(
@@ -338,7 +331,6 @@ public class TestingRestController {
         log.error(message);
     }
 
-    @PreAuthorize("isAdmin()")
     @ApiOperation(value = "Log WARN Level Message", notes = "Must be admin")
     @RequestMapping(method = RequestMethod.POST, value = {"/log-warn-message"})
     public void logWarnMessage(
@@ -346,7 +338,6 @@ public class TestingRestController {
         log.warn(message);
     }
 
-    @PreAuthorize("isAdmin()")
     @ApiOperation(value = "Log INFO Level Message", notes = "Must be admin")
     @RequestMapping(method = RequestMethod.POST, value = {"/log-info-message"})
     public void logInfoMessage(
@@ -354,7 +345,6 @@ public class TestingRestController {
         log.info(message);
     }
 
-    @PreAuthorize("isAdmin()")
     @ApiOperation(value = "Log DEBUG Level Message", notes = "Must be admin")
     @RequestMapping(method = RequestMethod.POST, value = {"/log-debug-message"})
     public void logDebugMessage(
@@ -362,7 +352,6 @@ public class TestingRestController {
         log.debug(message);
     }
 
-    @PreAuthorize("isAdmin()")
     @ApiOperation(value = "Get upload limit")
     @RequestMapping(method = RequestMethod.GET, value = {"/upload-limit"})
     public long getUploadLimit() {
@@ -370,14 +359,12 @@ public class TestingRestController {
     }
 
     @Async
-    @PreAuthorize("isAdmin()")
     @RequestMapping(method = RequestMethod.GET, value = {"/async-response"})
     public CompletableFuture<Double> delayedResponse() {
         return CompletableFuture.supplyAsync(Math::random);
     }
 
     @Async
-    @PreAuthorize("isAdmin()")
     @ApiOperation(value = "Execute a long running request that eventually returns OK")
     @RequestMapping(method = RequestMethod.GET, value = {"/delay-response/{delayMs}"})
     public CompletableFuture<String> delayedResponse(
@@ -394,7 +381,6 @@ public class TestingRestController {
     }
 
     @Async
-    @PreAuthorize("isAdmin()")
     @ApiOperation(value = "Execute a long running request that eventually fails on a runtime exception")
     @RequestMapping(method = RequestMethod.GET, value = {"/async-failure/{delayMs}"})
     public CompletableFuture<String> asyncFailure(
@@ -410,7 +396,6 @@ public class TestingRestController {
         });
     }
 
-    @PreAuthorize("isAdmin()")
     @ApiOperation(value = "Get a persistent session entry")
     @RequestMapping(method = RequestMethod.GET, value = {"/persistent-session/{sessionId}"})
     public ResponseEntity<MangoSessionDataModel> getPersistentSession(
@@ -437,7 +422,6 @@ public class TestingRestController {
     }
 
 
-    @PreAuthorize("isAdmin()")
     @ApiOperation(value = "Create a persistent session entry")
     @RequestMapping(method = RequestMethod.POST, value = {"/persistent-session"})
     public ResponseEntity<MangoSessionDataModel> insertPersistentSession(
@@ -466,7 +450,6 @@ public class TestingRestController {
         return new ResponseEntity<>(model, HttpStatus.CREATED);
     }
 
-    @PreAuthorize("isAdmin()")
     @ApiOperation(value = "Update a persistent session entry")
     @RequestMapping(method = RequestMethod.PUT, value = {"/persistent-session/{sessionId}"})
     public ResponseEntity<MangoSessionDataModel> updatePersistentSession(
@@ -499,7 +482,6 @@ public class TestingRestController {
         return new ResponseEntity<>(model, HttpStatus.OK);
     }
 
-    @PreAuthorize("isAdmin()")
     @ApiOperation(value = "Delete a persistent session entry")
     @RequestMapping(method = RequestMethod.DELETE, value = {"/persistent-session/{sessionId}"})
     public ResponseEntity<Void> deletePersistentSession(
