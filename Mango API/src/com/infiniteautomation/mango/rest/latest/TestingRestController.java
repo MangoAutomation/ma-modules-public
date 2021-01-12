@@ -55,7 +55,6 @@ import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.LicenseViolatedException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.MangoSessionDataVO;
-import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.web.mvc.spring.security.MangoSessionRegistry;
@@ -368,6 +367,13 @@ public class TestingRestController {
     @RequestMapping(method = RequestMethod.GET, value = {"/upload-limit"})
     public long getUploadLimit() {
         return Common.envProps.getLong("web.fileUpload.maxSize", 50000000);
+    }
+
+    @Async
+    @PreAuthorize("isAdmin()")
+    @RequestMapping(method = RequestMethod.GET, value = {"/async-response"})
+    public CompletableFuture<Double> delayedResponse() {
+        return CompletableFuture.supplyAsync(Math::random);
     }
 
     @Async
