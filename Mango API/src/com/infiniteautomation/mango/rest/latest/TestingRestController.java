@@ -146,6 +146,7 @@ public class TestingRestController {
             try {
                 Files.setPosixFilePermissions(filePath, readablePerms);
             } catch (UnsupportedOperationException e) {
+                // dont care
             }
         }
 
@@ -197,28 +198,26 @@ public class TestingRestController {
         }
     }
 
-    @ApiOperation(value = "Example User Credentials test", notes = "")
+    @ApiOperation(value = "Example User Credentials test")
     @ApiResponses({
             @ApiResponse(code = 401, message = "Unauthorized user access", response = ResponseEntity.class),
     })
     @RequestMapping(method = {RequestMethod.GET}, value = {"/admin-get/{resourceId}"})
-    public ResponseEntity<Object> exampleGet(@AuthenticationPrincipal PermissionHolder user,
-                                             @ApiParam(value = "Resource id", required = true, allowMultiple = false) @PathVariable String resourceId) {
-        return new ResponseEntity<Object>(HttpStatus.OK);
+    public ResponseEntity<Object> exampleGet(@ApiParam(value = "Resource id", required = true) @PathVariable String resourceId) {
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
 
-    @ApiOperation(value = "Example User Credentials test", notes = "")
+    @ApiOperation(value = "Example User Credentials test")
     @ApiResponses({
             @ApiResponse(code = 401, message = "Unauthorized user access", response = ResponseEntity.class),
     })
     @RequestMapping(method = {RequestMethod.GET}, value = {"/user-get/{resourceId}"})
-    public ResponseEntity<Object> userGet(@AuthenticationPrincipal PermissionHolder user,
-                                          @ApiParam(value = "Resource id", required = true, allowMultiple = false) @PathVariable String resourceId) {
-        return new ResponseEntity<Object>(HttpStatus.OK);
+    public ResponseEntity<Object> userGet(@ApiParam(value = "Resource id", required = true) @PathVariable String resourceId) {
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @ApiOperation(value = "Example Permission Exception Response", notes = "")
+    @ApiOperation(value = "Example Permission Exception Response")
     @ApiResponses({
             @ApiResponse(code = 401, message = "Unauthorized user access", response = ResponseEntity.class),
     })
@@ -227,48 +226,48 @@ public class TestingRestController {
         throw new PermissionException(new TranslatableMessage("common.default", "I always fail."), user);
     }
 
-    @ApiOperation(value = "Example Access Denied Exception Response", notes = "")
+    @ApiOperation(value = "Example Access Denied Exception Response")
     @ApiResponses({
             @ApiResponse(code = 401, message = "Unauthorized user access", response = ResponseEntity.class),
     })
     @RequestMapping(method = {RequestMethod.GET}, value = {"/access-denied-exception"})
-    public ResponseEntity<Object> accessDenied(@AuthenticationPrincipal PermissionHolder user) {
+    public ResponseEntity<Object> accessDenied() {
         throw new AccessDeniedException("I don't have access.");
     }
 
-    @ApiOperation(value = "Example Generic Rest Exception Response", notes = "")
+    @ApiOperation(value = "Example Generic Rest Exception Response")
     @ApiResponses({
             @ApiResponse(code = 401, message = "Unauthorized user access", response = ResponseEntity.class),
     })
     @RequestMapping(method = {RequestMethod.GET}, value = {"/generic-exception"})
-    public ResponseEntity<Object> genericFailure(@AuthenticationPrincipal PermissionHolder user) {
+    public ResponseEntity<Object> genericFailure() {
         throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @ApiOperation(value = "Example Runtime Exception Response", notes = "")
+    @ApiOperation(value = "Example Runtime Exception Response")
     @ApiResponses({
             @ApiResponse(code = 401, message = "Unauthorized user access", response = ResponseEntity.class),
     })
     @RequestMapping(method = {RequestMethod.GET}, value = {"/runtime-exception"})
-    public ResponseEntity<Object> runtimeFailure(@AuthenticationPrincipal PermissionHolder user) {
+    public ResponseEntity<Object> runtimeFailure() {
         throw new RuntimeException("I'm a runtime Exception");
     }
 
-    @ApiOperation(value = "Example IOException Response", notes = "")
+    @ApiOperation(value = "Example IOException Response")
     @ApiResponses({
             @ApiResponse(code = 401, message = "Unauthorized user access", response = ResponseEntity.class),
     })
     @RequestMapping(method = {RequestMethod.GET}, value = {"/io-exception"})
-    public ResponseEntity<Object> ioFailure(@AuthenticationPrincipal PermissionHolder user) throws IOException {
+    public ResponseEntity<Object> ioFailure() throws IOException {
         throw new IOException("I'm an Exception");
     }
 
-    @ApiOperation(value = "Example LicenseViolationException Response", notes = "")
+    @ApiOperation(value = "Example LicenseViolationException Response")
     @ApiResponses({
             @ApiResponse(code = 401, message = "Unauthorized user access", response = ResponseEntity.class),
     })
     @RequestMapping(method = {RequestMethod.GET}, value = {"/license-violation"})
-    public ResponseEntity<Object> licenseViolation(@AuthenticationPrincipal PermissionHolder user) throws IOException {
+    public ResponseEntity<Object> licenseViolation() throws IOException {
         throw new LicenseViolatedException(new TranslatableMessage("common.default", "Test Violiation"));
     }
 
@@ -281,16 +280,15 @@ public class TestingRestController {
         List<SessionInformation> infos = sessionRegistry.getAllSessions(user, false);
         for (SessionInformation info : infos)
             info.expireNow();
-        return new ResponseEntity<Object>(HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @ApiOperation(value = "Example Path matching", notes = "")
+    @ApiOperation(value = "Example Path matching")
     @ApiResponses({
             @ApiResponse(code = 401, message = "Unauthorized user access", response = ResponseEntity.class),
     })
     @RequestMapping(method = {RequestMethod.GET}, value = {"/{resourceId}/**"})
-    public ResponseEntity<String> matchPath(@AuthenticationPrincipal PermissionHolder user,
-                                            @ApiParam(value = "Resource id", required = true, allowMultiple = false) @PathVariable String resourceId,
+    public ResponseEntity<String> matchPath(@ApiParam(value = "Resource id", required = true) @PathVariable String resourceId,
                                             HttpServletRequest request) {
 
         String path = (String) request.getAttribute(
@@ -300,7 +298,7 @@ public class TestingRestController {
         AntPathMatcher apm = new AntPathMatcher();
         String finalPath = apm.extractPathWithinPattern(bestMatchPattern, path);
 
-        return new ResponseEntity<String>(finalPath, HttpStatus.OK);
+        return new ResponseEntity<>(finalPath, HttpStatus.OK);
     }
 
     @ApiOperation(value = "Raise an event", notes = "must be admin")
@@ -308,12 +306,11 @@ public class TestingRestController {
             @ApiResponse(code = 401, message = "Unauthorized user access", response = ResponseEntity.class),
     })
     @RequestMapping(method = {RequestMethod.POST}, value = {"/raise-event"})
-    public ResponseEntity<Object> raiseExampleEvent(@AuthenticationPrincipal PermissionHolder user,
-                                                    @RequestBody(required = true) RaiseEventModel model) {
+    public ResponseEntity<Object> raiseExampleEvent(@RequestBody RaiseEventModel model) {
         if (model == null)
             throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR);
         Common.eventManager.raiseEvent(model.getEvent().toVO(), Common.timer.currentTimeMillis(), true, model.getLevel(), new TranslatableMessage("common.default", model.getMessage()), model.getContext());
-        return new ResponseEntity<Object>(HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @ApiOperation(value = "Identity function", notes = "Returns whatever is sent in the request body. Useful for testing message converters. Must be admin")
@@ -368,8 +365,7 @@ public class TestingRestController {
     @ApiOperation(value = "Execute a long running request that eventually returns OK")
     @RequestMapping(method = RequestMethod.GET, value = {"/delay-response/{delayMs}"})
     public CompletableFuture<String> delayedResponse(
-            @ApiParam(value = "Delay ms", required = true, allowMultiple = false) @PathVariable int delayMs,
-            HttpServletRequest request) throws InterruptedException {
+            @ApiParam(value = "Delay ms", required = true) @PathVariable int delayMs) throws InterruptedException {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 Thread.sleep(delayMs);
@@ -384,8 +380,7 @@ public class TestingRestController {
     @ApiOperation(value = "Execute a long running request that eventually fails on a runtime exception")
     @RequestMapping(method = RequestMethod.GET, value = {"/async-failure/{delayMs}"})
     public CompletableFuture<String> asyncFailure(
-            @ApiParam(value = "Delay ms", required = true, allowMultiple = false) @PathVariable int delayMs,
-            HttpServletRequest request) throws InterruptedException {
+            @ApiParam(value = "Delay ms", required = true) @PathVariable int delayMs) throws InterruptedException {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 Thread.sleep(delayMs);
@@ -405,8 +400,7 @@ public class TestingRestController {
                     String contextPath,
             @RequestParam(required = false)
                     String virtualHost,
-            @AuthenticationPrincipal PermissionHolder user,
-            HttpServletRequest request) {
+            @AuthenticationPrincipal PermissionHolder user) {
 
         if (contextPath == null) {
             contextPath = sessionDataStore.getSessionContext().getCanonicalContextPath();
@@ -490,9 +484,7 @@ public class TestingRestController {
             @RequestParam(required = false)
                     String contextPath,
             @RequestParam(required = false)
-                    String virtualHost,
-            @AuthenticationPrincipal PermissionHolder user,
-            HttpServletRequest request) {
+                    String virtualHost) {
 
         if (contextPath == null) {
             contextPath = sessionDataStore.getSessionContext().getCanonicalContextPath();
