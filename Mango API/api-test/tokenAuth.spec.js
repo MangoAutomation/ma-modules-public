@@ -562,4 +562,15 @@ describe('JSON Web Token authentication', function() {
         });
     });
 
+    it('Works with async controllers', function() {
+        return this.createToken().then(token => {
+            const jwtClient = createClient(this.noCookieConfig);
+            jwtClient.setBearerAuthentication(token);
+            return jwtClient.restRequest({
+                path: '/rest/latest/testing/async-response'
+            });
+        }).then(response => {
+            assert.isNumber(response.data);
+        });
+    });
 });

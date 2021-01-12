@@ -48,7 +48,16 @@ describe('Basic authentication', function() {
         return this.testUser.delete();
     });
 
-    it('Can get current user using basic authentication', function() {
+    it('Can get current user', function() {
         return this.basicAuthClient.User.current();
+    });
+
+    it('Works with async controllers', function() {
+        this.timeout(9999999999);
+        return this.basicAuthClient.restRequest({
+            path: '/rest/latest/testing/async-response'
+        }).then(response => {
+            assert.isNumber(response.data);
+        });
     });
 });
