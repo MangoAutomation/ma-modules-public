@@ -53,7 +53,6 @@ describe('Basic authentication', function() {
     });
 
     it('Works with async controllers', function() {
-        this.timeout(9999999999);
         return this.basicAuthClient.restRequest({
             path: '/rest/latest/testing/async-response'
         }).then(response => {
