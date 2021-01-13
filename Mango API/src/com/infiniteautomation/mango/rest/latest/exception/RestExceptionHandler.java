@@ -240,8 +240,18 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     protected ResponseEntity<Object> handleExceptionInternal(Exception ex,
                                                              Object body, HttpHeaders headers, HttpStatus status, WebRequest request) {
 
-        if (log.isDebugEnabled()) {
-            log.debug(String.format("Exception handled, returning status %s for request %s", status, request.getDescription(true)), ex);
+        if (status == HttpStatus.UNAUTHORIZED || status == HttpStatus.FORBIDDEN || status == HttpStatus.TOO_MANY_REQUESTS) {
+            if (log.isWarnEnabled()) {
+                log.warn(String.format("Denying access, returning status %s for request %s", status, request.getDescription(true)), ex);
+            }
+        } else if (status.value() >= 500) {
+            if (log.isErrorEnabled()) {
+                log.error(String.format("Server error, returning status %s for request %s", status, request.getDescription(true)), ex);
+            }
+        } else if (status.value() >= 400) {
+            if (log.isDebugEnabled()) {
+                log.debug(String.format("Client error, returning status %s for request %s", status, request.getDescription(true)), ex);
+            }
         }
 
         PermissionHolder user;
