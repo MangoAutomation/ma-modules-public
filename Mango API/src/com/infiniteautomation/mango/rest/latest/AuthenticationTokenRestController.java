@@ -20,15 +20,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.infiniteautomation.mango.rest.latest.exception.BadRequestException;
-import com.infiniteautomation.mango.rest.latest.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.latest.model.jwt.HeaderClaimsModel;
 import com.infiniteautomation.mango.rest.latest.model.jwt.TokenModel;
 import com.infiniteautomation.mango.spring.components.TokenAuthenticationService;
-import com.infiniteautomation.mango.spring.service.PermissionService;
-import com.serotonin.m2m2.db.dao.UserDao;
+import com.infiniteautomation.mango.spring.service.UsersService;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.User;
-import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.web.mvc.spring.security.MangoSessionRegistry;
 import com.serotonin.m2m2.web.mvc.spring.security.permissions.AnonymousAccess;
 
@@ -55,13 +52,13 @@ public class AuthenticationTokenRestController {
 
     private final TokenAuthenticationService tokenAuthService;
     private final MangoSessionRegistry sessionRegistry;
-    private final PermissionService service;
+    private final UsersService usersService;
 
     @Autowired
-    public AuthenticationTokenRestController(TokenAuthenticationService jwtService, MangoSessionRegistry sessionRegistry, PermissionService service) {
+    public AuthenticationTokenRestController(TokenAuthenticationService jwtService, MangoSessionRegistry sessionRegistry, UsersService usersService) {
         this.tokenAuthService = jwtService;
         this.sessionRegistry = sessionRegistry;
-        this.service = service;
+        this.usersService = usersService;
     }
 
     @ApiOperation(value = "Create auth token", notes = "Creates an authentication token for the current user or for the username specified (admin only)")
@@ -70,7 +67,6 @@ public class AuthenticationTokenRestController {
     public ResponseEntity<TokenModel> createToken(
             @RequestBody
             CreateTokenRequest requestBody,
-
             @AuthenticationPrincipal User currentUser) {
 
         Date expiry = requestBody.getExpiry();
@@ -78,14 +74,7 @@ public class AuthenticationTokenRestController {
 
         User user = currentUser;
         if (username != null && !username.equals(currentUser.getUsername())) {
-            if (!service.hasAdminRole(currentUser)) {
-                throw new PermissionException(new TranslatableMessage("rest.error.onlyAdminsCanCreateTokens"), user);
-            }
-
-            user = UserDao.getInstance().getByXid(username);
-            if (user == null) {
-                throw new BadRequestException(new TranslatableMessage("rest.error.unknownUser", username));
-            }
+            user = usersService.get(username);
         }
 
         String token = tokenAuthService.generateToken(user, expiry);
@@ -97,7 +86,6 @@ public class AuthenticationTokenRestController {
     @PreAuthorize("isAuthenticated() and isPasswordAuthenticated()")
     public ResponseEntity<Void> revokeTokens(
             @AuthenticationPrincipal User user,
-
             HttpServletRequest request) {
 
         tokenAuthService.revokeTokens(user);
@@ -109,19 +97,13 @@ public class AuthenticationTokenRestController {
     @ApiOperation(value = "Revoke all tokens for user", notes = "Revokes all tokens for a given user")
     @RequestMapping(path="/revoke/{username}", method = RequestMethod.POST)
     @PreAuthorize("isAdmin() and isPasswordAuthenticated()")
-    public ResponseEntity<Void> createTokenForUser(
+    public ResponseEntity<Void> revokeTokensForUser(
             @PathVariable String username,
-
             HttpServletRequest request) {
 
-        User user = UserDao.getInstance().getByXid(username);
-        if (user == null) {
-            throw new NotFoundRestException();
-        }
-
+        User user = usersService.get(username);
         tokenAuthService.revokeTokens(user);
         sessionRegistry.userUpdated(request, user);
-
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
