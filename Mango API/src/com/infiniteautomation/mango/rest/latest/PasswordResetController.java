@@ -1,20 +1,16 @@
-/**
- * Copyright (C) 2017 Infinite Automation Software. All rights reserved.
+/*
+ * Copyright (C) 2021 Radix IoT LLC. All rights reserved.
  */
 package com.infiniteautomation.mango.rest.latest;
 
-import java.io.IOException;
 import java.net.URI;
+import java.net.UnknownHostException;
 import java.util.Date;
-import java.util.Locale;
-
-import javax.mail.internet.AddressException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -23,16 +19,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.infiniteautomation.mango.jwt.JwtSignerVerifier;
 import com.infiniteautomation.mango.rest.latest.exception.BadRequestException;
-import com.infiniteautomation.mango.rest.latest.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.latest.model.jwt.HeaderClaimsModel;
 import com.infiniteautomation.mango.spring.components.PasswordResetService;
-import com.serotonin.m2m2.db.dao.UserDao;
+import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.vo.User;
-import com.serotonin.m2m2.vo.permission.PermissionException;
+import com.serotonin.m2m2.vo.Validatable;
 import com.serotonin.m2m2.web.mvc.spring.security.permissions.AnonymousAccess;
 
-import freemarker.template.TemplateException;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.IncorrectClaimException;
 import io.jsonwebtoken.MalformedJwtException;
@@ -65,30 +58,10 @@ public class PasswordResetController {
     @AnonymousAccess
     public ResponseEntity<Void> sendEmail(
             @RequestBody
-            SendEmailRequestBody body
-            ) throws AddressException, TemplateException, IOException {
+            SendEmailRequestBody body) {
 
-        User user = UserDao.getInstance().getByXid(body.getUsername());
-        if (user == null) {
-            throw new NotFoundRestException();
-        }
-
-        String email = body.getEmail();
-        if (email == null) {
-            throw new BadRequestException(new TranslatableMessage("rest.error.emailRequired"));
-        }
-
-        String providedEmail = email.toLowerCase(Locale.ROOT);
-        String userEmail = user.getEmail().toLowerCase(Locale.ROOT);
-        if (!providedEmail.equals(userEmail)) {
-            throw new BadRequestException(new TranslatableMessage("rest.error.incorrectEmail"));
-        }
-
-        if (user.isDisabled()) {
-            throw new BadRequestException(new TranslatableMessage("rest.error.userIsDisabled"));
-        }
-
-        passwordResetService.sendEmail(user);
+        body.ensureValid();
+        passwordResetService.sendEmail(body.getUsername(), body.getEmail());
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
@@ -98,6 +71,7 @@ public class PasswordResetController {
     public ResponseEntity<Void> reset(
             @RequestBody PasswordResetRequestBody body) {
 
+        body.ensureValid();
         try {
             passwordResetService.resetPassword(body.getToken(), body.getNewPassword());
         } catch (ExpiredJwtException | UnsupportedJwtException | MalformedJwtException | IllegalArgumentException | SignatureException | MissingClaimException | IncorrectClaimException e) {
@@ -117,8 +91,8 @@ public class PasswordResetController {
     @RequestMapping(path="/verify", method = RequestMethod.GET)
     @AnonymousAccess
     public HeaderClaimsModel verifyToken(
-            @ApiParam(value = "The token to parse", required = true, allowMultiple = false)
-            @RequestParam(required=true) String token) {
+            @ApiParam(value = "The token to parse", required = true)
+            @RequestParam String token) {
 
         try {
             return new HeaderClaimsModel(this.passwordResetService.parse(token));
@@ -140,44 +114,25 @@ public class PasswordResetController {
     @PreAuthorize("isAdmin() and isPasswordAuthenticated()")
     public CreateTokenResponse createTokenForUser(
             @RequestBody
-            CreateTokenRequest requestBody,
+            CreateTokenRequest requestBody) throws UnknownHostException {
 
-            @AuthenticationPrincipal User currentUser) throws AddressException, TemplateException, IOException {
-
+        requestBody.ensureValid();
         String username = requestBody.getUsername();
         boolean lockPassword = requestBody.isLockPassword();
         boolean sendEmail = requestBody.isSendEmail();
         Date expiry = requestBody.getExpiry();
 
-        User user = UserDao.getInstance().getByXid(username);
-        if (user == null) {
-            throw new BadRequestException(new TranslatableMessage("rest.error.unknownUser", username));
-        }
-
-        if (user.getId() == currentUser.getId()) {
-            throw new PermissionException(new TranslatableMessage("rest.error.cantResetOwnUser"), user);
-        }
-
-        if (lockPassword) {
-            UserDao.getInstance().lockPassword(user);
-        }
-
         CreateTokenResponse response = new CreateTokenResponse();
-
-        String token = passwordResetService.generateToken(user, expiry);
+        String token = passwordResetService.generateToken(username, expiry, lockPassword, sendEmail);
         response.setToken(token);
         response.setFullUrl(passwordResetService.generateResetUrl(token));
         response.setRelativeUrl(passwordResetService.generateRelativeResetUrl(token));
-
-        if (sendEmail) {
-            passwordResetService.sendEmail(user, token);
-        }
 
         return response;
     }
 
 
-    public static class CreateTokenRequest {
+    public static class CreateTokenRequest implements Validatable {
         String username;
         boolean lockPassword = true;
         boolean sendEmail = false;
@@ -206,6 +161,13 @@ public class PasswordResetController {
         }
         public void setExpiry(Date expiry) {
             this.expiry = expiry;
+        }
+
+        @Override
+        public void validate(ProcessResult response) {
+            if (username == null || username.isEmpty()) {
+                response.addContextualMessage("username", "validate.required");
+            }
         }
 
         @Override
@@ -247,7 +209,7 @@ public class PasswordResetController {
         }
     }
 
-    public static class SendEmailRequestBody {
+    public static class SendEmailRequestBody implements Validatable {
         private String username;
         private String email;
 
@@ -266,9 +228,19 @@ public class PasswordResetController {
         public void setUsername(String username) {
             this.username = username;
         }
+
+        @Override
+        public void validate(ProcessResult response) {
+            if (email == null || email.isEmpty()) {
+                response.addContextualMessage("email", "validate.required");
+            }
+            if (username == null || username.isEmpty()) {
+                response.addContextualMessage("username", "validate.required");
+            }
+        }
     }
 
-    public static class PasswordResetRequestBody {
+    public static class PasswordResetRequestBody implements Validatable {
         private String token;
         private String newPassword;
 
@@ -283,6 +255,16 @@ public class PasswordResetController {
         }
         public void setNewPassword(String newPassword) {
             this.newPassword = newPassword;
+        }
+
+        @Override
+        public void validate(ProcessResult response) {
+            if (token == null || token.isEmpty()) {
+                response.addContextualMessage("token", "validate.required");
+            }
+            if (newPassword == null || newPassword.isEmpty()) {
+                response.addContextualMessage("newPassword", "validate.required");
+            }
         }
     }
 }

@@ -60,7 +60,7 @@ describe('Password reset', function() {
         });
     });
     
-    it('Rejects incorrect email addresses', function() {
+    it('Returns success even though email was not sent due to incorrect email addresses', function() {
         return this.testUser.save().then(() => {
             return this.publicClient.restRequest({
                 path: `${resetUrl}/send-email`,
@@ -71,19 +71,18 @@ describe('Password reset', function() {
                 }
             });
         }).then(response => {
-            throw new Error('Email should not have sent');
-        }, error => {
-            assert.strictEqual(error.status, 400);
+            // API gives us a successful response even though the email may not have been sent
+            assert.strictEqual(response.status, 204);
         });
     });
 
-    it(`Won't send emails for disabled users`, function() {
+    it(`Returns success even though email was not sent to disabled user`, function() {
         const disabledUsername = uuid();
         const disabledUser = new User({
             username: disabledUsername,
             email: `${disabledUsername}@example.com`,
             name: 'This is a name',
-            roles: '',
+            roles: [],
             password: uuid(),
             disabled: true
         });
@@ -97,17 +96,14 @@ describe('Password reset', function() {
                 method: 'POST',
                 data: {
                     username: disabledUser.username,
-                    email: disabledUser.email 
+                    email: disabledUser.email
                 }
             });
-        }).then(() => {
-            throw new Error(`Shouldn't send emails to disabled users`);
-        }, error => {
-            assert.strictEqual(error.status, 400);
-        }).then(result => {
-            return deleteDisabledUser().then(() => result);
-        }, error => {
-            return deleteDisabledUser().then(() => Promise.reject(error));
+        }).then(response => {
+            // API gives us a successful response even though the email may not have been sent
+            assert.strictEqual(response.status, 204);
+        }).finally(() => {
+            return deleteDisabledUser();
         });
     });
     
