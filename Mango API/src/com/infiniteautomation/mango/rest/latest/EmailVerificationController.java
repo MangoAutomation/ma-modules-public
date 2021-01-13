@@ -1,6 +1,5 @@
-/**
- * Copyright (C) 2019 Infinite Automation Software. All rights reserved.
- * @author Terry Packer
+/*
+ * Copyright (C) 2021 Radix IoT LLC. All rights reserved.
  */
 package com.infiniteautomation.mango.rest.latest;
 
@@ -15,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -33,7 +31,6 @@ import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.Validatable;
-import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.web.mvc.spring.security.permissions.AnonymousAccess;
 
 import freemarker.template.TemplateException;
@@ -50,7 +47,7 @@ import io.swagger.annotations.ApiParam;
 /**
  * @author Jared Wiltshire
  */
-@Api(value="Email verification")
+@Api(value = "Email verification")
 @RestController
 @RequestMapping("/email-verification")
 public class EmailVerificationController {
@@ -68,7 +65,7 @@ public class EmailVerificationController {
      * CAUTION: This method is public!
      */
     @ApiOperation(value = "Public endpoint that sends an email containing an email verification link",
-            notes="This endpoint is for verifying new user's email addresses only, if a user is registered with this email address already they will recieve a warning email.")
+            notes = "This endpoint is for verifying new user's email addresses only, if a user is registered with this email address already they will receive a warning email.")
     @RequestMapping(method = RequestMethod.POST, value = "/public/send-email")
     @AnonymousAccess
     public ResponseEntity<Void> publicSendEmail(
@@ -80,12 +77,10 @@ public class EmailVerificationController {
     }
 
     @ApiOperation(value = "Creates a token for verifying an email address and sends it to that email address",
-            notes="If the username is specified then the generated token is used to update that user's email address")
+            notes = "If the username is specified then the generated token is used to update that user's email address")
     @RequestMapping(method = RequestMethod.POST, value = "/send-email")
     public ResponseEntity<Void> sendEmail(
-            @RequestBody EmailVerificationRequest body,
-
-            @AuthenticationPrincipal PermissionHolder user) throws AddressException, TemplateException, IOException {
+            @RequestBody EmailVerificationRequest body) throws AddressException, TemplateException, IOException {
 
         body.ensureValid();
 
@@ -103,9 +98,7 @@ public class EmailVerificationController {
     @RequestMapping(method = RequestMethod.POST, value = "/create-token")
     @PreAuthorize("isAdmin() and isPasswordAuthenticated()")
     public ResponseEntity<CreateTokenResponse> createToken(
-            @RequestBody CreateTokenRequest body,
-
-            @AuthenticationPrincipal PermissionHolder user) throws AddressException, TemplateException, IOException {
+            @RequestBody CreateTokenRequest body) throws AddressException, TemplateException, IOException {
 
         body.ensureValid();
 
@@ -134,7 +127,7 @@ public class EmailVerificationController {
      * CAUTION: This method is public!
      * However the token's signature is cryptographically verified.
      */
-    @ApiOperation(value = "Registers a new user if the token's signature can be verified", notes="The new user is created disabled and must be approved by an administrator.")
+    @ApiOperation(value = "Registers a new user if the token's signature can be verified", notes = "The new user is created disabled and must be approved by an administrator.")
     @RequestMapping(method = RequestMethod.POST, value = "/public/register")
     @AnonymousAccess
     public ResponseEntity<UserModel> publicRegisterUser(
@@ -176,7 +169,7 @@ public class EmailVerificationController {
      * CAUTION: This method is public!
      */
     @ApiOperation(value = "Gets the public key for verifying email verification tokens")
-    @RequestMapping(path="/public/public-key", method = RequestMethod.GET)
+    @RequestMapping(path = "/public/public-key", method = RequestMethod.GET)
     @AnonymousAccess
     public String getPublicKey() {
         return this.emailVerificationService.getPublicKey();
@@ -185,12 +178,12 @@ public class EmailVerificationController {
     /**
      * CAUTION: This method is public!
      */
-    @ApiOperation(value = "Verify the signature and parse an email verification token", notes="Does NOT verify the claims")
-    @RequestMapping(path="/public/verify", method = RequestMethod.GET)
+    @ApiOperation(value = "Verify the signature and parse an email verification token", notes = "Does NOT verify the claims")
+    @RequestMapping(path = "/public/verify", method = RequestMethod.GET)
     @AnonymousAccess
     public HeaderClaimsModel publicVerifyToken(
-            @ApiParam(value = "The token to parse", required = true, allowMultiple = false)
-            @RequestParam(required=true) String token) {
+            @ApiParam(value = "The token to parse", required = true)
+            @RequestParam String token) {
 
         try {
             return new HeaderClaimsModel(this.emailVerificationService.parse(token));
@@ -200,7 +193,7 @@ public class EmailVerificationController {
     }
 
     @ApiOperation(value = "Resets the public and private keys", notes = "Will invalidate all email verification tokens")
-    @RequestMapping(path="/reset-keys", method = RequestMethod.POST)
+    @RequestMapping(path = "/reset-keys", method = RequestMethod.POST)
     @PreAuthorize("isAdmin() and isPasswordAuthenticated()")
     public ResponseEntity<Void> resetKeys() {
         emailVerificationService.resetKeys();
@@ -245,12 +238,15 @@ public class EmailVerificationController {
         public boolean isSendEmail() {
             return sendEmail;
         }
+
         public void setSendEmail(boolean sendEmail) {
             this.sendEmail = sendEmail;
         }
+
         public Date getExpiry() {
             return expiry;
         }
+
         public void setExpiry(Date expiry) {
             this.expiry = expiry;
         }
@@ -262,6 +258,7 @@ public class EmailVerificationController {
         public String getToken() {
             return token;
         }
+
         public void setToken(String token) {
             this.token = token;
         }
@@ -280,6 +277,7 @@ public class EmailVerificationController {
         public UserModel getUser() {
             return user;
         }
+
         public void setUser(UserModel user) {
             this.user = user;
         }
@@ -301,18 +299,23 @@ public class EmailVerificationController {
         public String getToken() {
             return token;
         }
+
         public void setToken(String token) {
             this.token = token;
         }
+
         public URI getFullUrl() {
             return fullUrl;
         }
+
         public void setFullUrl(URI fullUrl) {
             this.fullUrl = fullUrl;
         }
+
         public URI getRelativeUrl() {
             return relativeUrl;
         }
+
         public void setRelativeUrl(URI relativeUrl) {
             this.relativeUrl = relativeUrl;
         }
