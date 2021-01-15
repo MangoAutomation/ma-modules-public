@@ -13,8 +13,6 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -999,7 +997,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
 
     /**
      * @param info
-     * @param voMap
+     * @param points
      * @throws IOException
      * @throws QueryCancelledException
      */
@@ -1116,7 +1114,9 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
             this.vo = vo;
             this.initialValue = initial;
             DataPointWithEventDetectors dp = new DataPointWithEventDetectors(vo, new ArrayList<>());
-            this.rt = new DataPointRT(dp, vo.getPointLocator().createRuntime(), dsVo, null, timer);
+            this.rt = new DataPointRT(dp, vo.getPointLocator().createRuntime(), dsVo, null,
+                    Common.databaseProxy.newPointValueDao(), Common.databaseProxy.getPointValueCacheDao(),
+                    timer);
             runtimeManager.points.add(this.rt);
             this.nextValue = nextValue;
             this.creator = creator;

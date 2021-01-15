@@ -43,7 +43,7 @@ public class SerialDataSourceTestData {
         plVo.setValueIndex(2);
         plVo.setPointIdentifier("");
         vo.setPointLocator(plVo);
-        return new DataPointRT(new DataPointWithEventDetectors(vo, new ArrayList<>()), plVo.createRuntime(), ds, null, null);
+        return new DataPointRT(new DataPointWithEventDetectors(vo, new ArrayList<>()), plVo.createRuntime(), ds, null, null, null, null);
     }
     public static DataPointRT getNewlineTerminated(DataSourceVO ds) {
         DataPointVO vo = new DataPointVO();
@@ -56,7 +56,7 @@ public class SerialDataSourceTestData {
         plVo.setValueIndex(2);
         plVo.setPointIdentifier("");
         vo.setPointLocator(plVo);
-        return new DataPointRT(new DataPointWithEventDetectors(vo, new ArrayList<>()), plVo.createRuntime(), ds, null, null);
+        return new DataPointRT(new DataPointWithEventDetectors(vo, new ArrayList<>()), plVo.createRuntime(), ds, null, null, null, null);
     }
     public static DataPointRT getCustomPoint(String name, String xid, String valueRegex, int valueIndex, String pointIdentifier, DataSourceVO ds) {
         DataPointVO vo = new DataPointVO();
@@ -69,7 +69,7 @@ public class SerialDataSourceTestData {
         plVo.setValueIndex(valueIndex);
         plVo.setPointIdentifier(pointIdentifier);
         vo.setPointLocator(plVo);
-        return new DataPointRT(new DataPointWithEventDetectors(vo, new ArrayList<>()), plVo.createRuntime(), ds, null, null);
+        return new DataPointRT(new DataPointWithEventDetectors(vo, new ArrayList<>()), plVo.createRuntime(), ds, null, null, null, null);
     }
     // ============ END POINT CREATION SECTION =========
 
