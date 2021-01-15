@@ -51,7 +51,9 @@ public class SerialDataSourceTest extends MangoTestBase {
 
 
     @Before
-    public void setup() {
+    @Override
+    public void before() {
+        super.before();
         this.proxy = new TestSerialPortProxy(new TestSerialPortInputStream(), new TestSerialPortOutputStream());
         Common.serialPortManager = new SerialDataSourceSerialPortManager(proxy);
 
