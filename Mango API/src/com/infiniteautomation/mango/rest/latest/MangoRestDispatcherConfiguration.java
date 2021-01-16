@@ -81,20 +81,20 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
     public static final String CONTEXT_ID = "restV3Context";
     public static final String DISPATCHER_NAME = "restV3DispatcherServlet";
 
-    final ObjectMapper mapper;
-    final List<HandlerMethodArgumentResolver> handlerMethodArgumentResolvers;
-    final List<HttpMessageConverter<?>> converters;
-    final List<HandlerInterceptor> interceptors;
-    final Environment env;
+    ObjectMapper mapper;
+    List<HandlerMethodArgumentResolver> handlerMethodArgumentResolvers;
+    List<HttpMessageConverter<?>> converters;
+    List<HandlerInterceptor> interceptors;
+    Environment env;
 
     /**
      * Should be supplied by
      * com.infiniteautomation.mango.spring.MangoRuntimeContextConfiguration.taskExecutor(ExecutorService)
      */
-    final AsyncTaskExecutor asyncTaskExecutor;
+    AsyncTaskExecutor asyncTaskExecutor;
 
     @Autowired
-    public MangoRestDispatcherConfiguration(
+    public void configureMangoRestDispatcherConfiguration(
             @Qualifier(MangoRuntimeContextConfiguration.REST_OBJECT_MAPPER_NAME) ObjectMapper mapper,
             RestModelMapper modelMapper,
             List<HandlerMethodArgumentResolver> handlerMethodArgumentResolvers,
