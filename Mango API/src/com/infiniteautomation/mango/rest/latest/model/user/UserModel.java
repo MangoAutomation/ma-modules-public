@@ -267,7 +267,7 @@ public class UserModel extends AbstractVoModel<User> {
         this.organization = vo.getOrganization();
         this.organizationalRole = vo.getOrganizationalRole();
         this.created = vo.getCreated();
-        this.emailVerified = vo.getEmailVerified();
+        this.emailVerified = vo.getEmailVerifiedDate();
         this.data = vo.getData();
     }
 
