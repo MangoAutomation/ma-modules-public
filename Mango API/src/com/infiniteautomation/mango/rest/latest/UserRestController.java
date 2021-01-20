@@ -65,6 +65,7 @@ import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.PermissionException;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.web.MediaTypes;
 import com.serotonin.m2m2.web.mvc.spring.security.MangoSessionRegistry;
 
@@ -85,7 +86,7 @@ public class UserRestController {
     //Bulk management
     private static final String RESOURCE_TYPE_BULK_USER = "BULK_USER";
     private final TemporaryResourceManager<UserBulkResponse, AbstractRestException> bulkResourceManager;
-    private final BiFunction<User, User, UserModel> map = (vo, user) -> new UserModel(vo);
+    private final BiFunction<User, PermissionHolder, UserModel> map = (vo, user) -> new UserModel(vo);
     private final UsersService service;
     private final MangoSessionRegistry sessionRegistry;
 
@@ -111,9 +112,9 @@ public class UserRestController {
     @ApiOperation(value = "Get current user",
             notes = "Returns the logged in user")
     @RequestMapping(method = RequestMethod.GET, value = "/current")
-    public UserModel getCurrentUser(
-            @AuthenticationPrincipal User user) {
-        return new UserModel(user);
+    @PreAuthorize("hasMangoUser()")
+    public UserModel getCurrentUser(@AuthenticationPrincipal PermissionHolder principal) {
+        return new UserModel(principal.getUser());
     }
 
     @ApiOperation(
@@ -125,7 +126,7 @@ public class UserRestController {
     @RequestMapping(method = RequestMethod.GET)
     public StreamedArrayWithTotal queryRQL(
             HttpServletRequest request,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
         return doQuery(rql, user, null);
     }
@@ -159,13 +160,14 @@ public class UserRestController {
             @ApiParam(value = "User", required = true)
             @RequestBody
             UserModel model,
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             HttpServletRequest request,
             UriComponentsBuilder builder,
             Authentication authentication) {
 
         User existing = service.get(username);
-        if (existing.getId() == user.getId() && !(authentication instanceof UsernamePasswordAuthenticationToken))
+        User currentUser = user.getUser();
+        if (currentUser != null && existing.getId() == currentUser.getId() && !(authentication instanceof UsernamePasswordAuthenticationToken))
             throw new PermissionException(new TranslatableMessage("rest.error.usernamePasswordOnly"), user);
 
         User update = service.update(existing, model.toVO());
@@ -192,13 +194,14 @@ public class UserRestController {
                     idType = PatchIdField.OTHER,
                     urlPathVariableName = "username")
             UserModel model,
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             HttpServletRequest request,
             UriComponentsBuilder builder,
             Authentication authentication) {
 
         User existing = service.get(username);
-        if (existing.getId() == user.getId() && !(authentication instanceof UsernamePasswordAuthenticationToken))
+        User currentUser = user.getUser();
+        if (currentUser != null && existing.getId() == currentUser.getId() && !(authentication instanceof UsernamePasswordAuthenticationToken))
             throw new PermissionException(new TranslatableMessage("rest.error.usernamePasswordOnly"), user);
 
         User update = service.update(existing, model.toVO());
@@ -227,14 +230,15 @@ public class UserRestController {
             @ApiParam(value = "Home Url", required = true)
             @RequestParam String url,
 
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
 
             HttpServletRequest request,
             UriComponentsBuilder builder,
             Authentication authentication) {
 
         User update = service.get(username);
-        if (update.getId() == user.getId() && !(authentication instanceof UsernamePasswordAuthenticationToken))
+        User currentUser = user.getUser();
+        if (currentUser != null && update.getId() == currentUser.getId() && !(authentication instanceof UsernamePasswordAuthenticationToken))
             throw new PermissionException(new TranslatableMessage("rest.error.usernamePasswordOnly"), user);
 
         update.setHomeUrl(url);
@@ -260,11 +264,12 @@ public class UserRestController {
             Boolean mute,
             HttpServletRequest request,
             UriComponentsBuilder builder,
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             Authentication authentication) {
 
         User update = service.get(username);
-        if (update.getId() == user.getId() && !(authentication instanceof UsernamePasswordAuthenticationToken))
+        User currentUser = user.getUser();
+        if (currentUser != null && update.getId() == currentUser.getId() && !(authentication instanceof UsernamePasswordAuthenticationToken))
             throw new PermissionException(new TranslatableMessage("rest.error.usernamePasswordOnly"), user);
 
         if (mute == null) {
@@ -320,18 +325,19 @@ public class UserRestController {
             value = "Export formatted for Configuration Import by supplying an RQL query",
             notes = "User must have read permission")
     @RequestMapping(method = RequestMethod.GET, value = "/export", produces = MediaTypes.SEROTONIN_JSON_VALUE)
-    public Map<String, JsonStreamedArray> exportQuery(HttpServletRequest request, @AuthenticationPrincipal User user) {
+    public Map<String, JsonStreamedArray> exportQuery(HttpServletRequest request, @AuthenticationPrincipal PermissionHolder user) {
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
 
         Map<String, JsonStreamedArray> export = new HashMap<>();
         if (!service.getPermissionService().hasAdminRole(user)) {
-            rql = RQLUtils.addAndRestriction(rql, new ASTNode("eq", "id", user.getId()));
+            User currentUser = user.getUser();
+            rql = RQLUtils.addAndRestriction(rql, new ASTNode("eq", "id", currentUser == null ? Common.NEW_ID : currentUser.getId()));
         }
         export.put("users", new StreamedSeroJsonVORqlQuery<>(service, rql, null, null, null));
         return export;
     }
 
-    protected StreamedArrayWithTotal doQuery(ASTNode rql, User user, Function<UserModel, ?> toModel) {
+    protected StreamedArrayWithTotal doQuery(ASTNode rql, PermissionHolder user, Function<UserModel, ?> toModel) {
         final Function<User, Object> transformUser = item -> {
             UserModel model = map.apply(item, user);
 
@@ -343,8 +349,8 @@ public class UserRestController {
             return model;
         };
         if (!service.getPermissionService().hasAdminRole(user)) {
-            // Add some conditions to restrict based on user permissions
-            rql = RQLUtils.addAndRestriction(rql, new ASTNode("eq", "id", user.getId()));
+            User currentUser = user.getUser();
+            rql = RQLUtils.addAndRestriction(rql, new ASTNode("eq", "id", currentUser == null ? Common.NEW_ID : currentUser.getId()));
         }
         return new StreamedVORqlQueryWithTotal<>(service, rql, null, null, null, transformUser);
     }
@@ -354,7 +360,7 @@ public class UserRestController {
     @RequestMapping(method = RequestMethod.GET, produces = MediaTypes.CSV_VALUE)
     public StreamedArrayWithTotal queryCsv(
             HttpServletRequest request,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
 
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
         return this.queryCsvPost(rql, user);
@@ -366,7 +372,7 @@ public class UserRestController {
             @ApiParam(value = "RQL query AST", required = true)
             @RequestBody ASTNode rql,
 
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
 
         return doQuery(rql, user, userModel -> {
             UserActionAndModel actionAndModel = new UserActionAndModel();
