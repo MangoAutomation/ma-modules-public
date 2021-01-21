@@ -3,6 +3,23 @@
  */
 package com.infiniteautomation.mango.rest.latest.websocket;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.socket.CloseStatus;
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketSession;
+
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -19,21 +36,16 @@ import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.rt.event.*;
+import com.serotonin.m2m2.rt.event.AlarmLevels;
+import com.serotonin.m2m2.rt.event.DataPointEventLevelSummary;
+import com.serotonin.m2m2.rt.event.EventInstance;
+import com.serotonin.m2m2.rt.event.UserEventLevelSummary;
+import com.serotonin.m2m2.rt.event.UserEventListener;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.Validatable;
 import com.serotonin.m2m2.vo.permission.PermissionException;
-import net.jazdw.rql.parser.ASTNode;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.socket.CloseStatus;
-import org.springframework.web.socket.TextMessage;
-import org.springframework.web.socket.WebSocketSession;
 
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import net.jazdw.rql.parser.ASTNode;
 
 /**
  * @author Terry Packer
@@ -167,10 +179,12 @@ public class EventsWebSocketHandler extends MangoWebSocketHandler implements Use
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        // Check for permissions, must be a User for UserEventListener
-        this.user = (User) this.getUser(session);
         this.session = session;
         session.getAttributes().put(SUBSCRIPTION_ATTRIBUTE, Boolean.FALSE);
+
+        // Check for permissions, must be a User for UserEventListener
+        this.user = Objects.requireNonNull(getUser(session).getUser());
+
         super.afterConnectionEstablished(session);
     }
 
@@ -209,7 +223,6 @@ public class EventsWebSocketHandler extends MangoWebSocketHandler implements Use
     @Override
     public void handleTextMessage(WebSocketSession session, TextMessage message) {
         try {
-            User user = (User) this.getUser(session);
             JsonNode tree = this.jacksonMapper.readTree(message.getPayload());
 
             if (!WebSocketMessageType.REQUEST.messageTypeMatches(tree) || tree.get("requestType") == null) {
