@@ -26,7 +26,6 @@ import org.springframework.web.servlet.support.RequestContextUtils;
 import com.infiniteautomation.mango.rest.latest.exception.BadRequestException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.Translations;
-import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.web.mvc.spring.security.permissions.AnonymousAccess;
 
@@ -163,16 +162,7 @@ public class TranslationsController {
             return Common.getLocale();
         }
 
-        String userLocale = null;
-        if (user instanceof User) {
-            userLocale = ((User) user).getLocale();
-        }
-
-        if (user == null || StringUtils.isBlank(userLocale)) {
-            return Common.getLocale();
-        } else {
-            return Locale.forLanguageTag(userLocale.replace('_', '-'));
-        }
+        return user.getLocaleObject();
     }
 
     /**
