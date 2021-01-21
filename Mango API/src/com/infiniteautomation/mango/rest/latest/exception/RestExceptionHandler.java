@@ -51,7 +51,6 @@ import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableException;
 import com.serotonin.m2m2.module.DefaultPagesDefinition;
-import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.web.mvc.spring.security.authentication.MangoPasswordAuthenticationProvider.AuthenticationRateException;
@@ -273,7 +272,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
             } else if (status == HttpStatus.UNAUTHORIZED) {
                 uri = DefaultPagesDefinition.getLoginUri(servletRequest, servletResponse);
             } else if (status == HttpStatus.FORBIDDEN) {
-                uri = DefaultPagesDefinition.getUnauthorizedUri(servletRequest, servletResponse, user instanceof User ? (User) user : null);
+                uri = DefaultPagesDefinition.getUnauthorizedUri(servletRequest, servletResponse, user != null ? user.getUser() : null);
             } else {
                 uri = DefaultPagesDefinition.getErrorUri(servletRequest, servletResponse);
             }

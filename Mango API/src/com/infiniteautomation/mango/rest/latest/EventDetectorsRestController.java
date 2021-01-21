@@ -63,7 +63,6 @@ import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.event.detectors.PointEventDetectorRT;
-import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.detector.AbstractEventDetectorVO;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.web.MediaTypes;
@@ -456,7 +455,7 @@ public class EventDetectorsRestController {
 
             AbstractEventDetectorModel<? extends AbstractEventDetectorVO> body = request.getBody() == null ? defaultBody : request.getBody();
 
-            User user = (User) Common.getUser();
+            PermissionHolder user = Common.getUser();
 
             switch (action) {
                 case GET:

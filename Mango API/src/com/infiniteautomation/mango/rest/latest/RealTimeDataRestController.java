@@ -27,7 +27,6 @@ import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.types.ImageValue;
 import com.serotonin.m2m2.rt.dataSource.DataSourceRT;
 import com.serotonin.m2m2.view.text.TextRenderer;
-import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 import io.swagger.annotations.Api;
@@ -72,11 +71,8 @@ public class RealTimeDataRestController {
                 model.setRenderedValue(rt.getVO().getTextRenderer().getText(pvt, TextRenderer.HINT_FULL));
             }
 
-            if(user instanceof User) {
-                model.setType(rt.getVO().getPointLocator().getDataTypeMessage().translate(((User)user).getTranslations()));
-            }else {
-                model.setType(rt.getVO().getPointLocator().getDataTypeMessage().translate(Common.getTranslations()));
-            }
+            Translations translations = Translations.getTranslations(user.getLocaleObject());
+            model.setType(rt.getVO().getPointLocator().getDataTypeMessage().translate(translations));
 
             model.setAttributes(new HashMap<>(rt.getAttributes()));
 

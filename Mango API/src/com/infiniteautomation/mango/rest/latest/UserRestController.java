@@ -449,7 +449,7 @@ public class UserRestController {
 
                     for (UserIndividualRequest request : requests) {
                         UriComponentsBuilder reqBuilder = UriComponentsBuilder.newInstance();
-                        User resourceUser = (User) Common.getUser();
+                        PermissionHolder resourceUser = Common.getUser();
                         UserIndividualResponse individualResponse = doIndividualRequest(request, defaultAction, defaultBody, resourceUser, servletRequest, authentication, reqBuilder);
                         bulkResponse.addResponse(individualResponse);
 
@@ -525,7 +525,7 @@ public class UserRestController {
 
     private UserIndividualResponse doIndividualRequest(UserIndividualRequest request,
             VoAction defaultAction, UserModel defaultBody,
-            User user, HttpServletRequest servletRequest,
+            PermissionHolder user, HttpServletRequest servletRequest,
             Authentication authentication, UriComponentsBuilder builder) {
         UserIndividualResponse result = new UserIndividualResponse();
 

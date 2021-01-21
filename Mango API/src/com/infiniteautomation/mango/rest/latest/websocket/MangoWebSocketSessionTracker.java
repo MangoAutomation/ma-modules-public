@@ -10,7 +10,6 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -30,6 +29,7 @@ import com.infiniteautomation.mango.spring.events.DaoEventType;
 import com.serotonin.m2m2.util.timeout.TimeoutClient;
 import com.serotonin.m2m2.util.timeout.TimeoutTask;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.web.mvc.spring.security.authentication.JwtAuthentication;
 
 /**
@@ -227,12 +227,13 @@ public final class MangoWebSocketSessionTracker {
             sessionsByHttpSessionId.put(httpSessionId, session);
         }
 
-        PermissionHolder user = this.userForSession(session);
+        PermissionHolder permissionHolder = this.userForSession(session);
         Authentication authentication = this.authenticationForSession(session);
         boolean isJwt = authentication instanceof JwtAuthentication;
 
-        if (user instanceof User) {
-            int userId = ((User) user).getId();
+        User user = permissionHolder.getUser();
+        if (user != null) {
+            int userId = user.getId();
             if (isJwt) {
                 jwtSessionsByUserId.put(userId, session);
             } else {
@@ -257,12 +258,13 @@ public final class MangoWebSocketSessionTracker {
             sessionsByHttpSessionId.remove(httpSessionId, session);
         }
 
-        PermissionHolder user = this.userForSession(session);
+        PermissionHolder permissionHolder = this.userForSession(session);
         Authentication authentication = this.authenticationForSession(session);
         boolean isJwt = authentication instanceof JwtAuthentication;
 
-        if (user instanceof User) {
-            int userId = ((User) user).getId();
+        User user = permissionHolder.getUser();
+        if (user != null) {
+            int userId = user.getId();
             if (isJwt) {
                 jwtSessionsByUserId.remove(userId, session);
             } else {

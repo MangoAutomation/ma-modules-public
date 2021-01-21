@@ -61,7 +61,6 @@ import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.vo.DataPointVO;
-import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.vo.role.Role;
 import com.serotonin.m2m2.web.MediaTypes;
@@ -321,9 +320,10 @@ public class DataPointRestController {
 
                     resource.progressOrSuccess(bulkResponse, i++, requests.size());
 
+                    PermissionHolder resourceUser = Common.getUser();
+
                     for (DataPointIndividualRequest request : requests) {
                         UriComponentsBuilder reqBuilder = UriComponentsBuilder.newInstance();
-                        User resourceUser = (User) Common.getUser();
                         DataPointIndividualResponse individualResponse = doIndividualRequest(request, defaultAction, defaultBody, resourceUser, reqBuilder);
                         bulkResponse.addResponse(individualResponse);
 
@@ -397,7 +397,7 @@ public class DataPointRestController {
         resource.remove();
     }
 
-    private DataPointIndividualResponse doIndividualRequest(DataPointIndividualRequest request, VoAction defaultAction, DataPointModel defaultBody, User user, UriComponentsBuilder builder) {
+    private DataPointIndividualResponse doIndividualRequest(DataPointIndividualRequest request, VoAction defaultAction, DataPointModel defaultBody, PermissionHolder user, UriComponentsBuilder builder) {
         DataPointIndividualResponse result = new DataPointIndividualResponse();
 
         try {

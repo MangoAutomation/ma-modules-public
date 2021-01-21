@@ -11,7 +11,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResourceManager.ResourceTask;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.OwnedResource;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
@@ -24,9 +23,7 @@ public final class TemporaryResource<T, E> implements OwnedResource {
 
     @Override
     public boolean isOwnedBy(PermissionHolder user) {
-        return user == this.user ||
-                user instanceof User && this.user instanceof User
-                        && ((User) user).getId() == ((User) this.user).getId();
+        return PermissionHolder.sameUser(user, this.user);
     }
 
     public static enum TemporaryResourceStatus {

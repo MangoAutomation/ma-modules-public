@@ -23,7 +23,6 @@ import com.serotonin.m2m2.module.PermissionDefinition;
 import com.serotonin.m2m2.rt.event.type.EventType.EventTypeNames;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.IDataPoint;
-import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.EventInstanceVO;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.watchlist.WatchListCreatePermission;
@@ -235,8 +234,8 @@ public class WatchListService extends AbstractVOService<WatchListVO, WatchListTa
         //Create Event Query for these Points
         if(args.size() > 1) {
             ASTNode query = new ASTNode("in", args);
-            if(user instanceof User) {
-                query = addAndRestriction(query, new ASTNode("eq", "userId", ((User)user).getId()));
+            if(user.getUser() != null) {
+                query = addAndRestriction(query, new ASTNode("eq", "userId", user.getUser().getId()));
             }
             query = addAndRestriction(query, new ASTNode("eq", "typeName", EventTypeNames.DATA_POINT));
 

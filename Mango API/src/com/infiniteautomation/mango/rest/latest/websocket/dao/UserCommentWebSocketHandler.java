@@ -11,7 +11,6 @@ import com.infiniteautomation.mango.rest.latest.model.comment.UserCommentModel;
 import com.infiniteautomation.mango.rest.latest.websocket.DaoNotificationWebSocketHandler;
 import com.infiniteautomation.mango.rest.latest.websocket.WebSocketMapping;
 import com.infiniteautomation.mango.spring.events.DaoEvent;
-import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.comment.UserCommentVO;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
@@ -25,13 +24,10 @@ public class UserCommentWebSocketHandler extends DaoNotificationWebSocketHandler
 
     @Override
     protected boolean hasPermission(PermissionHolder user, UserCommentVO vo) {
-        if(permissionService.hasAdminRole(user)) {
+        if (permissionService.hasAdminRole(user)) {
             return true;
-        }else if(user instanceof User && ((User)user).getId() == vo.getUserId()){
-            return true;
-        }else {
-            return false;
         }
+        return user.getUser() != null && user.getUser().getId() == vo.getUserId();
     }
 
     @Override

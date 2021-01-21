@@ -23,13 +23,10 @@ public class UserWebSocketHandler extends DaoNotificationWebSocketHandler<User>{
 
     @Override
     protected boolean hasPermission(PermissionHolder user, User vo) {
-        if(permissionService.hasAdminRole(user)) {
+        if (permissionService.hasAdminRole(user)) {
             return true;
-        }else if(user instanceof User && ((User)user).getId() == vo.getId()){
-            return true;
-        }else {
-            return false;
         }
+        return user.getUser() != null && user.getUser().getId() == vo.getId();
     }
 
     @Override
