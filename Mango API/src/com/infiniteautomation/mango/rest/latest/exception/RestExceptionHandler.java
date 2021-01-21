@@ -47,10 +47,10 @@ import com.infiniteautomation.mango.util.exception.TranslatableExceptionI;
 import com.infiniteautomation.mango.util.exception.TranslatableIllegalStateException;
 import com.infiniteautomation.mango.util.exception.TranslatableRuntimeException;
 import com.infiniteautomation.mango.util.exception.ValidationException;
+import com.infiniteautomation.mango.spring.components.pageresolver.PageResolver;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableException;
-import com.serotonin.m2m2.module.DefaultPagesDefinition;
 import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.web.mvc.spring.security.authentication.MangoPasswordAuthenticationProvider.AuthenticationRateException;
@@ -68,18 +68,20 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     final PermissionService service;
     final Environment env;
     final AuthenticationTrustResolver authenticationTrustResolver;
+    final PageResolver pageResolver;
 
     @Autowired
     public RestExceptionHandler(
             @Qualifier("browserHtmlRequestMatcher")
                     RequestMatcher browserHtmlRequestMatcher,
             RestModelMapper mapper,
-            PermissionService service, Environment env, AuthenticationTrustResolver authenticationTrustResolver) {
+            PermissionService service, Environment env, AuthenticationTrustResolver authenticationTrustResolver, PageResolver pageResolver) {
         this.browserHtmlRequestMatcher = browserHtmlRequestMatcher;
         this.mapper = mapper;
         this.service = service;
         this.env = env;
         this.authenticationTrustResolver = authenticationTrustResolver;
+        this.pageResolver = pageResolver;
     }
 
     /**
@@ -268,13 +270,13 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         if (!env.getProperty("rest.disableErrorRedirects", Boolean.class, false) && this.browserHtmlRequestMatcher.matches(servletRequest)) {
             String uri;
             if (status == HttpStatus.NOT_FOUND) {
-                uri = DefaultPagesDefinition.getNotFoundUri(servletRequest, servletResponse);
+                uri = pageResolver.getNotFoundUri(servletRequest, servletResponse);
             } else if (status == HttpStatus.UNAUTHORIZED) {
-                uri = DefaultPagesDefinition.getLoginUri(servletRequest, servletResponse);
+                uri = pageResolver.getLoginUri(servletRequest, servletResponse);
             } else if (status == HttpStatus.FORBIDDEN) {
-                uri = DefaultPagesDefinition.getUnauthorizedUri(servletRequest, servletResponse, user != null ? user.getUser() : null);
+                uri = pageResolver.getUnauthorizedUri(servletRequest, servletResponse, user != null ? user.getUser() : null);
             } else {
-                uri = DefaultPagesDefinition.getErrorUri(servletRequest, servletResponse);
+                uri = pageResolver.getErrorUri(servletRequest, servletResponse);
             }
 
             if (uri != null) {

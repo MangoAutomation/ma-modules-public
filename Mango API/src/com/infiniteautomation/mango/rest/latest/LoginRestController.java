@@ -9,6 +9,7 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
@@ -20,9 +21,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.infiniteautomation.mango.rest.latest.model.user.UserModel;
+import com.infiniteautomation.mango.spring.components.pageresolver.LoginUriInfo;
+import com.infiniteautomation.mango.spring.components.pageresolver.PageResolver;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.module.DefaultPagesDefinition;
-import com.serotonin.m2m2.module.DefaultPagesDefinition.LoginUriInfo;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.spring.security.permissions.AnonymousAccess;
 
@@ -45,6 +46,12 @@ public class LoginRestController {
     public static final String LOGIN_DEFAULT_URI_HEADER = "X-Mango-Default-URI";
     public static final String LOGIN_DEFAULT_URI_REQUIRED_HEADER = "X-Mango-Default-URI-Required";
     public static final String LOGIN_LAST_UPGRADE_HEADER = "X-Mango-Last-Upgrade";
+    private final PageResolver pageResolver;
+
+    @Autowired
+    public LoginRestController(PageResolver pageResolver) {
+        this.pageResolver = pageResolver;
+    }
 
     /**
      * <p>The actual authentication for the login occurs in the core, by the time this
@@ -70,7 +77,7 @@ public class LoginRestController {
         if (user == null) {
             return new ResponseEntity<>(HttpStatus.OK);
         } else {
-            LoginUriInfo info = DefaultPagesDefinition.getDefaultUriInfo(request, response, user);
+            LoginUriInfo info = pageResolver.getDefaultUriInfo(request, response, user);
             response.setHeader(LOGIN_DEFAULT_URI_HEADER, info.getUri());
             response.setHeader(LOGIN_LAST_UPGRADE_HEADER, Integer.toString(Common.getLastUpgradeTime()));
             if(info.isRequired())
@@ -108,7 +115,7 @@ public class LoginRestController {
         if (user == null) {
             return new ResponseEntity<>(HttpStatus.OK);
         } else {
-            LoginUriInfo info = DefaultPagesDefinition.getDefaultUriInfo(request, response, user);
+            LoginUriInfo info = pageResolver.getDefaultUriInfo(request, response, user);
             response.setHeader(LOGIN_DEFAULT_URI_HEADER, info.getUri());
             response.setHeader(LOGIN_LAST_UPGRADE_HEADER, Integer.toString(Common.getLastUpgradeTime()));
             if(info.isRequired())
@@ -143,7 +150,7 @@ public class LoginRestController {
         if (user == null) {
             return new ResponseEntity<>(HttpStatus.OK);
         } else {
-            LoginUriInfo info = DefaultPagesDefinition.getDefaultUriInfo(request, response, user);
+            LoginUriInfo info = pageResolver.getDefaultUriInfo(request, response, user);
             response.setHeader(LOGIN_DEFAULT_URI_HEADER, info.getUri());
             response.setHeader(LOGIN_LAST_UPGRADE_HEADER, Integer.toString(Common.getLastUpgradeTime()));
             if(info.isRequired())
