@@ -5,6 +5,7 @@
 package com.infiniteautomation.mango.rest.latest;
 
 import java.io.IOException;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -25,6 +26,7 @@ import com.infiniteautomation.mango.spring.components.pageresolver.LoginUriInfo;
 import com.infiniteautomation.mango.spring.components.pageresolver.PageResolver;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.web.mvc.spring.security.oauth2.OAuth2Information;
 import com.serotonin.m2m2.web.mvc.spring.security.permissions.AnonymousAccess;
 
 import io.swagger.annotations.Api;
@@ -47,10 +49,12 @@ public class LoginRestController {
     public static final String LOGIN_DEFAULT_URI_REQUIRED_HEADER = "X-Mango-Default-URI-Required";
     public static final String LOGIN_LAST_UPGRADE_HEADER = "X-Mango-Last-Upgrade";
     private final PageResolver pageResolver;
+    private final OAuth2Information oAuth2Information;
 
     @Autowired
-    public LoginRestController(PageResolver pageResolver) {
+    public LoginRestController(PageResolver pageResolver, OAuth2Information oAuth2Information) {
         this.pageResolver = pageResolver;
+        this.oAuth2Information = oAuth2Information;
     }
 
     /**
@@ -157,5 +161,11 @@ public class LoginRestController {
                 response.setHeader(LOGIN_DEFAULT_URI_REQUIRED_HEADER, Boolean.TRUE.toString());
             return new ResponseEntity<>(new UserModel(user), HttpStatus.OK);
         }
+    }
+
+    @ApiOperation(value = "Get list of enabled OAuth2 / OpenID connect clients")
+    @RequestMapping(method = RequestMethod.GET,  value="/oauth2-clients")
+    public List<OAuth2Information.OAuth2ClientInfo> oauth2Clients() {
+        return oAuth2Information.enabledClients();
     }
 }
