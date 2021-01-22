@@ -165,6 +165,7 @@ public class LoginRestController {
 
     @ApiOperation(value = "Get list of enabled OAuth2 / OpenID connect clients")
     @RequestMapping(method = RequestMethod.GET,  value="/oauth2-clients")
+    @AnonymousAccess
     public List<OAuth2Information.OAuth2ClientInfo> oauth2Clients() {
         return oAuth2Information.enabledClients();
     }
