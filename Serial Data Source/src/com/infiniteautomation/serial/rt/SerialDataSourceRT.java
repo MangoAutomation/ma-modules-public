@@ -334,7 +334,7 @@ public class SerialDataSourceRT extends EventDataSource<SerialDataSourceVO> impl
                             final AtomicBoolean matcherFailed = new AtomicBoolean(false);
                             pointListChangeLock.readLock().lock();
                             try {
-                                for(final DataPointRT dp: this.dataPoints){
+                                for(final DataPointRT dp: this.dataPoints.values()){
                                     SerialPointLocatorVO plVo = dp.getVO().getPointLocator();
                                     MatchCallback callback = new MatchCallback(){
 
@@ -421,7 +421,7 @@ public class SerialDataSourceRT extends EventDataSource<SerialDataSourceVO> impl
                         final AtomicBoolean matcherFailed = new AtomicBoolean(false);
                         pointListChangeLock.readLock().lock();
                         try {
-                            for(final DataPointRT dp: this.dataPoints){
+                            for(final DataPointRT dp: this.dataPoints.values()){
                                 SerialPointLocatorVO plVo = dp.getVO().getPointLocator();
                                 MatchCallback callback = new MatchCallback(){
 
@@ -534,8 +534,8 @@ public class SerialDataSourceRT extends EventDataSource<SerialDataSourceVO> impl
 
     /**
      * Update a value if possible and return if we did
-     * @param value
-     * @param dataTypeId
+     * @param pvt
+     * @param dp
      * @param dp
      * @return
      */
@@ -572,7 +572,7 @@ public class SerialDataSourceRT extends EventDataSource<SerialDataSourceVO> impl
 
     /**
      * Convert a string value to HEX
-     * @param stringValue
+     * @param hexValue
      * @return
      */
     public  static String convertFromHex(byte[] hexValue) {
