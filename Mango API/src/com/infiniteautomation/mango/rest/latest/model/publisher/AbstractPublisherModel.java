@@ -6,6 +6,8 @@ package com.infiniteautomation.mango.rest.latest.model.publisher;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -35,6 +37,8 @@ import io.swagger.annotations.ApiModelProperty;
 public abstract class AbstractPublisherModel<POINT extends PublishedPointVO, PUBLISHER extends PublisherVO<POINT>> extends AbstractVoModel<PUBLISHER> {
 
     public static final String MODEL_TYPE = "modelType";
+
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractPublisherModel.class);
 
     @JsonIgnore
     protected PublisherDefinition<?> definition;
@@ -111,7 +115,14 @@ public abstract class AbstractPublisherModel<POINT extends PublishedPointVO, PUB
 
         this.points = new ArrayList<>();
         for(POINT point : vo.getPoints()) {
-            this.points.add(modelPoint(point));
+            //If a data point was deleted while this publisher was in the database
+            // we need to ignore it here
+            AbstractPublishedPointModel<POINT> model = modelPoint(point);
+            if(model.getDataPointXid() != null) {
+                this.points.add(model);
+            }else {
+                LOG.warn("Publisher missing data point with id {}, discarding point when rendering model", point.getDataPointId());
+            }
         }
 
         this.publishType = PublisherVO.PUBLISH_TYPE_CODES.getCode(vo.getPublishType());
@@ -135,8 +146,9 @@ public abstract class AbstractPublisherModel<POINT extends PublishedPointVO, PUB
 
         if(points != null) {
             List<POINT> pointVos = new ArrayList<>();
-            for(AbstractPublishedPointModel<POINT> pm : points)
+            for(AbstractPublishedPointModel<POINT> pm : points) {
                 pointVos.add(pm.toVO());
+            }
             vo.setPoints(pointVos);
         }
 

@@ -4,7 +4,9 @@
 package com.infiniteautomation.mango.rest.latest.model.publisher;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.vo.publish.PublishedPointVO;
 
 /**
@@ -34,8 +36,14 @@ public abstract class AbstractPublishedPointModel<T extends PublishedPointVO> {
     public T toVO() {
         T vo = newVO();
         Integer id = DataPointDao.getInstance().getIdByXid(dataPointXid);
-        if(id != null)
+        if(id != null) {
             vo.setDataPointId(id);
+        }else {
+            //Only place we have the incomming XID to throw a validation exception
+            ProcessResult result = new ProcessResult();
+            result.addContextualMessage("points", "validate.publisher.missingPointXid");
+            throw new ValidationException(result);
+        }
         return vo;
     }
     
