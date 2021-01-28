@@ -53,7 +53,8 @@ public class MangoFileSystem implements FileSystem {
     @Override
     public Path parsePath(URI uri) {
         if ("filestore".equals(uri.getScheme())) {
-            return fileStoreService.getPathForRead(uri.getHost(), uri.getPath().substring(1));
+            String filePath = uri.getPath().length() > 0 ? uri.getPath().substring(1) : uri.getPath();
+            return fileStoreService.getPathForRead(uri.getHost(), filePath);
         }
         return delegate.parsePath(uri);
     }
