@@ -19,7 +19,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import com.infiniteautomation.mango.permission.MangoPermission;
 import com.serotonin.db.spring.ExtendedJdbcTemplate;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.db.DatabaseProxy;
+import com.serotonin.m2m2.db.DatabaseType;
 import com.serotonin.m2m2.db.upgrade.DBUpgrade;
 import com.serotonin.m2m2.db.upgrade.PermissionMigration;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -105,10 +105,10 @@ public class Upgrade7 extends DBUpgrade implements PermissionMigration {
 
             //Drop the columns and indexes
             Map<String, String[]> scripts = new HashMap<>();
-            scripts.put(DatabaseProxy.DatabaseType.MYSQL.name(), mySQL);
-            scripts.put(DatabaseProxy.DatabaseType.H2.name(), sql);
-            scripts.put(DatabaseProxy.DatabaseType.MSSQL.name(), sql);
-            scripts.put(DatabaseProxy.DatabaseType.POSTGRES.name(), mySQL);
+            scripts.put(DatabaseType.MYSQL.name(), mySQL);
+            scripts.put(DatabaseType.H2.name(), sql);
+            scripts.put(DatabaseType.MSSQL.name(), sql);
+            scripts.put(DatabaseType.POSTGRES.name(), mySQL);
             runScript(scripts, out);
         }
     }

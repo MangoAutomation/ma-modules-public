@@ -9,7 +9,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.jdbc.core.RowCallbackHandler;
 
-import com.serotonin.m2m2.db.DatabaseProxy;
+import com.serotonin.m2m2.db.DatabaseType;
 import com.serotonin.m2m2.db.upgrade.DBUpgrade;
 
 public class Upgrade2 extends DBUpgrade {
@@ -19,11 +19,11 @@ public class Upgrade2 extends DBUpgrade {
     protected void upgrade() throws Exception {
         // Run the script.
         Map<String, String[]> scripts = new HashMap<>();
-        scripts.put(DatabaseProxy.DatabaseType.DERBY.name(), mysqlScript);
-        scripts.put(DatabaseProxy.DatabaseType.MYSQL.name(), mysqlScript);
-        scripts.put(DatabaseProxy.DatabaseType.MSSQL.name(), mssqlScript);
-        scripts.put(DatabaseProxy.DatabaseType.H2.name(), mysqlScript);
-        scripts.put(DatabaseProxy.DatabaseType.POSTGRES.name(), mysqlScript);
+        scripts.put(DatabaseType.DERBY.name(), mysqlScript);
+        scripts.put(DatabaseType.MYSQL.name(), mysqlScript);
+        scripts.put(DatabaseType.MSSQL.name(), mssqlScript);
+        scripts.put(DatabaseType.H2.name(), mysqlScript);
+        scripts.put(DatabaseType.POSTGRES.name(), mysqlScript);
         runScript(scripts);
 
         // Convert existing permissions data.
@@ -52,11 +52,11 @@ public class Upgrade2 extends DBUpgrade {
             ejt.update("UPDATE watchLists SET editPermission=? WHERE id=?", e.getValue(), e.getKey());
 
         // Goodbye share table.
-        scripts.put(DatabaseProxy.DatabaseType.DERBY.name(), dropScript);
-        scripts.put(DatabaseProxy.DatabaseType.MYSQL.name(), dropScript);
-        scripts.put(DatabaseProxy.DatabaseType.MSSQL.name(), dropScript);
-        scripts.put(DatabaseProxy.DatabaseType.H2.name(), dropScript);
-        scripts.put(DatabaseProxy.DatabaseType.POSTGRES.name(), dropScript);
+        scripts.put(DatabaseType.DERBY.name(), dropScript);
+        scripts.put(DatabaseType.MYSQL.name(), dropScript);
+        scripts.put(DatabaseType.MSSQL.name(), dropScript);
+        scripts.put(DatabaseType.H2.name(), dropScript);
+        scripts.put(DatabaseType.POSTGRES.name(), dropScript);
         runScript(scripts);
     }
 

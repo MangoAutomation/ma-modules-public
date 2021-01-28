@@ -3,7 +3,7 @@ package com.serotonin.m2m2.watchlist.upgrade;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.serotonin.m2m2.db.DatabaseProxy;
+import com.serotonin.m2m2.db.DatabaseType;
 import com.serotonin.m2m2.db.upgrade.DBUpgrade;
 
 public class Upgrade3 extends DBUpgrade {
@@ -13,11 +13,11 @@ public class Upgrade3 extends DBUpgrade {
     protected void upgrade() throws Exception {
         // Run the script.
         Map<String, String[]> scripts = new HashMap<>();
-        scripts.put(DatabaseProxy.DatabaseType.DERBY.name(), derbyScript);
-        scripts.put(DatabaseProxy.DatabaseType.MYSQL.name(), mysqlScript);
-        scripts.put(DatabaseProxy.DatabaseType.MSSQL.name(), mssqlScript);
-        scripts.put(DatabaseProxy.DatabaseType.H2.name(), mysqlScript);
-        scripts.put(DatabaseProxy.DatabaseType.POSTGRES.name(), mysqlScript);
+        scripts.put(DatabaseType.DERBY.name(), derbyScript);
+        scripts.put(DatabaseType.MYSQL.name(), mysqlScript);
+        scripts.put(DatabaseType.MSSQL.name(), mssqlScript);
+        scripts.put(DatabaseType.H2.name(), mysqlScript);
+        scripts.put(DatabaseType.POSTGRES.name(), mysqlScript);
         runScript(scripts);
     }
 

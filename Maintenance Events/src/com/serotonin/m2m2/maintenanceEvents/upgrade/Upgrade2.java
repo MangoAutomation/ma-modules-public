@@ -10,7 +10,7 @@ import java.util.Map;
 
 import org.springframework.jdbc.core.RowCallbackHandler;
 
-import com.serotonin.m2m2.db.DatabaseProxy;
+import com.serotonin.m2m2.db.DatabaseType;
 import com.serotonin.m2m2.db.upgrade.DBUpgrade;
 
 /**
@@ -28,10 +28,10 @@ public class Upgrade2 extends DBUpgrade {
     protected void upgrade() throws Exception {
         
         Map<String, String[]> scripts = new HashMap<>();
-        scripts.put(DatabaseProxy.DatabaseType.MYSQL.name(), mysqlCreateTables);
-        scripts.put(DatabaseProxy.DatabaseType.H2.name(), h2CreateTables);
-        scripts.put(DatabaseProxy.DatabaseType.MSSQL.name(), mssqlCreateTables);
-        scripts.put(DatabaseProxy.DatabaseType.POSTGRES.name(), postgresCreateTables);
+        scripts.put(DatabaseType.MYSQL.name(), mysqlCreateTables);
+        scripts.put(DatabaseType.H2.name(), h2CreateTables);
+        scripts.put(DatabaseType.MSSQL.name(), mssqlCreateTables);
+        scripts.put(DatabaseType.POSTGRES.name(), postgresCreateTables);
         runScript(scripts);
         
         //Copy over the dataSourceId info to new table before we delete it
@@ -47,17 +47,17 @@ public class Upgrade2 extends DBUpgrade {
         });
         
         //Drop the dataSourceId
-        scripts.put(DatabaseProxy.DatabaseType.MYSQL.name(), dropDataSourceId);
-        scripts.put(DatabaseProxy.DatabaseType.H2.name(), dropDataSourceId);
-        scripts.put(DatabaseProxy.DatabaseType.MSSQL.name(), dropDataSourceId);
-        scripts.put(DatabaseProxy.DatabaseType.POSTGRES.name(), dropDataSourceId);
+        scripts.put(DatabaseType.MYSQL.name(), dropDataSourceId);
+        scripts.put(DatabaseType.H2.name(), dropDataSourceId);
+        scripts.put(DatabaseType.MSSQL.name(), dropDataSourceId);
+        scripts.put(DatabaseType.POSTGRES.name(), dropDataSourceId);
         runScript(scripts);
 
         //Add the timeout columns
-        scripts.put(DatabaseProxy.DatabaseType.MYSQL.name(), addTimeoutColumns);
-        scripts.put(DatabaseProxy.DatabaseType.H2.name(), addTimeoutColumns);
-        scripts.put(DatabaseProxy.DatabaseType.MSSQL.name(), addTimeoutColumns);
-        scripts.put(DatabaseProxy.DatabaseType.POSTGRES.name(), addTimeoutColumns);
+        scripts.put(DatabaseType.MYSQL.name(), addTimeoutColumns);
+        scripts.put(DatabaseType.H2.name(), addTimeoutColumns);
+        scripts.put(DatabaseType.MSSQL.name(), addTimeoutColumns);
+        scripts.put(DatabaseType.POSTGRES.name(), addTimeoutColumns);
         runScript(scripts);
         
     }

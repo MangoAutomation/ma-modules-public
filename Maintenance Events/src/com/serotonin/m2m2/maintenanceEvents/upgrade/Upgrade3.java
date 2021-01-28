@@ -5,7 +5,7 @@ package com.serotonin.m2m2.maintenanceEvents.upgrade;
 
 import com.infiniteautomation.mango.permission.MangoPermission;
 import com.serotonin.db.spring.ExtendedJdbcTemplate;
-import com.serotonin.m2m2.db.DatabaseProxy;
+import com.serotonin.m2m2.db.DatabaseType;
 import com.serotonin.m2m2.db.upgrade.DBUpgrade;
 import com.serotonin.m2m2.db.upgrade.PermissionMigration;
 import com.serotonin.m2m2.vo.role.Role;
@@ -31,10 +31,10 @@ public class Upgrade3 extends DBUpgrade implements PermissionMigration {
 
         //Create permission columns
         Map<String, String[]> scripts = new HashMap<>();
-        scripts.put(DatabaseProxy.DatabaseType.MYSQL.name(), addPermissionsSQL);
-        scripts.put(DatabaseProxy.DatabaseType.H2.name(), addPermissionsSQL);
-        scripts.put(DatabaseProxy.DatabaseType.MSSQL.name(), addPermissionsSQL);
-        scripts.put(DatabaseProxy.DatabaseType.POSTGRES.name(), addPermissionsSQL);
+        scripts.put(DatabaseType.MYSQL.name(), addPermissionsSQL);
+        scripts.put(DatabaseType.H2.name(), addPermissionsSQL);
+        scripts.put(DatabaseType.MSSQL.name(), addPermissionsSQL);
+        scripts.put(DatabaseType.POSTGRES.name(), addPermissionsSQL);
         runScript(scripts, out);
 
         //Convert permissions into roles
@@ -49,18 +49,18 @@ public class Upgrade3 extends DBUpgrade implements PermissionMigration {
 
         //Modify permission columns
         scripts = new HashMap<>();
-        scripts.put(DatabaseProxy.DatabaseType.MYSQL.name(), permissionsNotNullMySQL);
-        scripts.put(DatabaseProxy.DatabaseType.H2.name(), permissionsNotNullSQL);
-        scripts.put(DatabaseProxy.DatabaseType.MSSQL.name(), permissionsNotNullSQL);
-        scripts.put(DatabaseProxy.DatabaseType.POSTGRES.name(), permissionsNotNullSQL);
+        scripts.put(DatabaseType.MYSQL.name(), permissionsNotNullMySQL);
+        scripts.put(DatabaseType.H2.name(), permissionsNotNullSQL);
+        scripts.put(DatabaseType.MSSQL.name(), permissionsNotNullSQL);
+        scripts.put(DatabaseType.POSTGRES.name(), permissionsNotNullSQL);
         runScript(scripts, out);
 
         scripts = new HashMap<>();
         //Drop the togglePermissions
-        scripts.put(DatabaseProxy.DatabaseType.MYSQL.name(), dropTogglePermission);
-        scripts.put(DatabaseProxy.DatabaseType.H2.name(), dropTogglePermission);
-        scripts.put(DatabaseProxy.DatabaseType.MSSQL.name(), dropTogglePermission);
-        scripts.put(DatabaseProxy.DatabaseType.POSTGRES.name(), dropTogglePermission);
+        scripts.put(DatabaseType.MYSQL.name(), dropTogglePermission);
+        scripts.put(DatabaseType.H2.name(), dropTogglePermission);
+        scripts.put(DatabaseType.MSSQL.name(), dropTogglePermission);
+        scripts.put(DatabaseType.POSTGRES.name(), dropTogglePermission);
         runScript(scripts, out);
     }
 
