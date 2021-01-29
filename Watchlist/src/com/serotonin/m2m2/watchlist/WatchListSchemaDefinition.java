@@ -6,7 +6,10 @@ package com.serotonin.m2m2.watchlist;
 
 import java.util.List;
 
+import org.jooq.Table;
+
 import com.serotonin.m2m2.module.DatabaseSchemaDefinition;
+import com.serotonin.m2m2.watchlist.db.DefaultSchema;
 
 public class WatchListSchemaDefinition extends DatabaseSchemaDefinition {
 
@@ -16,10 +19,8 @@ public class WatchListSchemaDefinition extends DatabaseSchemaDefinition {
     }
 
     @Override
-    public void addConversionTableNames(List<String> tableNames) {
-        tableNames.add("watchLists");
-        tableNames.add("watchListPoints");
-        tableNames.add("selectedWatchList");
+    public List<Table<?>> getTablesForConversion() {
+        return DefaultSchema.DEFAULT_SCHEMA.getTables();
     }
 
     @Override

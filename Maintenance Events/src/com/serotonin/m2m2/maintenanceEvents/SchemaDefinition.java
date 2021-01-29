@@ -6,6 +6,9 @@ package com.serotonin.m2m2.maintenanceEvents;
 
 import java.util.List;
 
+import org.jooq.Table;
+
+import com.serotonin.m2m2.maintenanceEvents.db.DefaultSchema;
 import com.serotonin.m2m2.module.DatabaseSchemaDefinition;
 
 public class SchemaDefinition extends DatabaseSchemaDefinition {
@@ -18,10 +21,8 @@ public class SchemaDefinition extends DatabaseSchemaDefinition {
     }
 
     @Override
-    public void addConversionTableNames(List<String> tableNames) {
-        tableNames.add(TABLE_NAME);
-        tableNames.add("maintenanceEventDataPoints");
-        tableNames.add("maintenanceEventDataSources");
+    public List<Table<?>> getTablesForConversion() {
+        return DefaultSchema.DEFAULT_SCHEMA.getTables();
     }
 
     @Override
