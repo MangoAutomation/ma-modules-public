@@ -36,7 +36,7 @@ import net.jazdw.rql.parser.ASTNode;
  * @author Terry Packer
  */
 @Service
-public class WatchListService extends AbstractVOService<WatchListVO, WatchListsRecord, WatchLists, WatchListDao> {
+public class WatchListService extends AbstractVOService<WatchListVO, WatchListDao> {
 
     private final DataPointService dataPointService;
     private final EventInstanceService eventService;

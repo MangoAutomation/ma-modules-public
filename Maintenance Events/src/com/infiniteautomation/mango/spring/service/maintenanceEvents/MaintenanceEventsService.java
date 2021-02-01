@@ -37,7 +37,7 @@ import com.serotonin.timer.CronTimerTrigger;
  * @author Terry Packer
  */
 @Service
-public class MaintenanceEventsService extends AbstractVOService<MaintenanceEventVO, MaintenanceEventsRecord, MaintenanceEvents, MaintenanceEventDao>{
+public class MaintenanceEventsService extends AbstractVOService<MaintenanceEventVO, MaintenanceEventDao>{
 
     @Autowired
     public MaintenanceEventsService(MaintenanceEventDao dao, PermissionService permissionService) {

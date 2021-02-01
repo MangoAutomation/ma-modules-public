@@ -24,7 +24,7 @@ import net.jazdw.rql.parser.ASTNode;
  *
  * @author Terry Packer
  */
-public class StreamedSeroJsonVORqlQuery<T extends AbstractVO, R extends Record, TABLE extends Table<R>, DAO extends AbstractVoDao<T, R, TABLE>, SERVICE extends AbstractVOService<T, R, TABLE, DAO>> extends StreamedSeroJsonBasicVORqlQuery<T, R, TABLE, DAO, SERVICE> {
+public class StreamedSeroJsonVORqlQuery<T extends AbstractVO, R extends Record, TABLE extends Table<R>, DAO extends AbstractVoDao<T, R, TABLE>, SERVICE extends AbstractVOService<T, DAO>> extends StreamedSeroJsonBasicVORqlQuery<T, R, TABLE, DAO, SERVICE> {
 
     /**
      * Use if permissions cannot be enforced in the RQL/Database query, this will perform a full query and count the results while respecting the limit.

@@ -30,7 +30,7 @@ import net.jazdw.rql.parser.ASTNode;
  *
  * @author Terry Packer
  */
-public class StreamedSeroJsonBasicVORqlQuery <T extends AbstractBasicVO, R extends Record, TABLE extends Table<R>, DAO extends AbstractBasicDao<T, R, TABLE>, SERVICE extends AbstractBasicVOService<T, R, TABLE, DAO>> implements JsonStreamedArray {
+public class StreamedSeroJsonBasicVORqlQuery <T extends AbstractBasicVO, R extends Record, TABLE extends Table<R>, DAO extends AbstractBasicDao<T, R, TABLE>, SERVICE extends AbstractBasicVOService<T, DAO>> implements JsonStreamedArray {
 
     protected final SERVICE service;
     protected final ConditionSortLimit conditions;
