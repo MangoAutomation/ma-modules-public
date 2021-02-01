@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.infiniteautomation.mango.db.tables.DataSources;
 import com.infiniteautomation.mango.rest.latest.bulk.BulkRequest;
 import com.infiniteautomation.mango.rest.latest.bulk.BulkResponse;
 import com.infiniteautomation.mango.rest.latest.bulk.VoAction;
@@ -52,7 +53,6 @@ import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResou
 import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResourceManager;
 import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResourceStatusUpdate;
 import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResourceWebSocketHandler;
-import com.infiniteautomation.mango.spring.db.DataSourceTableDefinition;
 import com.infiniteautomation.mango.spring.service.DataPointService;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.RQLUtils;
@@ -98,10 +98,11 @@ public class DataPointRestController {
     private final Map<String, Function<Object, Object>> valueConverters;
     private final Map<String, Field<?>> fieldMap;
     private final DataPointService service;
+    private final DataSources dataSourceTable = DataSources.DATA_SOURCES;
 
     @Autowired
     public DataPointRestController(TemporaryResourceWebSocketHandler websocket, final RestModelMapper modelMapper,
-            DataPointService service, DataSourceTableDefinition dataSourceTable, PermissionService permissionService, Environment environment) {
+            DataPointService service, PermissionService permissionService, Environment environment) {
         this.bulkResourceManager = new MangoTaskTemporaryResourceManager<DataPointBulkResponse>(permissionService, websocket, environment);
         this.service = service;
         this.map = (vo, user) -> {
@@ -110,9 +111,9 @@ public class DataPointRestController {
         this.valueConverters = new HashMap<>();
         //Setup any exposed special query aliases to map model fields to db columns
         this.fieldMap = new HashMap<>();
-        this.fieldMap.put("dataSourceName", dataSourceTable.getAlias("name"));
-        this.fieldMap.put("dataSourceTypeName", dataSourceTable.getAlias("typeName"));
-        this.fieldMap.put("dataSourceXid", dataSourceTable.getAlias("xid"));
+        this.fieldMap.put("dataSourceName", dataSourceTable.name);
+        this.fieldMap.put("dataSourceTypeName", dataSourceTable.dataSourceType);
+        this.fieldMap.put("dataSourceXid", dataSourceTable.xid);
     }
 
     @ApiOperation(

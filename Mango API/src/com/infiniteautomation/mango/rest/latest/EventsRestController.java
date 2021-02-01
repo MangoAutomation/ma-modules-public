@@ -36,6 +36,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.infiniteautomation.mango.db.query.ConditionSortLimit;
+import com.infiniteautomation.mango.db.tables.Events;
 import com.infiniteautomation.mango.rest.latest.exception.ServerErrorException;
 import com.infiniteautomation.mango.rest.latest.model.JSONStreamedArray;
 import com.infiniteautomation.mango.rest.latest.model.ListWithTotal;
@@ -49,7 +50,6 @@ import com.infiniteautomation.mango.rest.latest.model.event.DataPointEventSummar
 import com.infiniteautomation.mango.rest.latest.model.event.EventInstanceModel;
 import com.infiniteautomation.mango.rest.latest.model.event.EventLevelSummaryModel;
 import com.infiniteautomation.mango.rest.latest.model.event.EventQueryBySourceType;
-import com.infiniteautomation.mango.spring.db.EventInstanceTableDefinition;
 import com.infiniteautomation.mango.spring.service.DataPointService;
 import com.infiniteautomation.mango.spring.service.DataSourceService;
 import com.infiniteautomation.mango.spring.service.EventInstanceService;
@@ -91,9 +91,11 @@ public class EventsRestController {
     private final DataSourceService dataSourceService;
     private final DataPointService dataPointService;
 
+    private final Events eventTable = Events.EVENTS;
+
     @Autowired
     public EventsRestController(RestModelMapper modelMapper, EventInstanceService service,
-            EventInstanceTableDefinition eventTable, DataSourceService dataSourceService, DataPointService dataPointService) {
+            DataSourceService dataSourceService, DataPointService dataPointService) {
         this.modelMapper = modelMapper;
         this.service = service;
         this.map = (vo, user) -> modelMapper.map(vo, EventInstanceModel.class, user);
@@ -349,17 +351,16 @@ public class EventsRestController {
 
         private static final long serialVersionUID = 1L;
 
-        public EventTableRqlMappings(EventInstanceTableDefinition eventTable) {
+        public EventTableRqlMappings(Events eventTable) {
             //Setup any exposed special query aliases to map model fields to db columns
-            this.put("activeTimestamp", eventTable.getAlias("activeTs"));
-            this.put("rtnTimestamp", eventTable.getAlias("rtnTs"));
-            this.put("userNotified", eventTable.getAlias("silenced"));
-            this.put("acknowledged", eventTable.getAlias("ackTs"));
-            this.put("acknowledgedTimestamp", eventTable.getAlias("ackTs"));
-            this.put("eventType", eventTable.getAlias("typeName"));
-            this.put("referenceId1", eventTable.getAlias("typeRef1"));
-            this.put("referenceId2", eventTable.getAlias("typeRef2"));
-            this.put("active", eventTable.getAlias("rtnTs"));
+            this.put("activeTimestamp", eventTable.activeTs);
+            this.put("rtnTimestamp", eventTable.rtnTs);
+            this.put("acknowledged", eventTable.ackTs);
+            this.put("acknowledgedTimestamp", eventTable.ackTs);
+            this.put("eventType", eventTable.typeName);
+            this.put("referenceId1", eventTable.typeRef1);
+            this.put("referenceId2", eventTable.typeRef2);
+            this.put("active", eventTable.rtnTs);
         }
     }
 

@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.infiniteautomation.mango.db.tables.EventHandlersMapping;
 import com.infiniteautomation.mango.permission.MangoPermission;
 import com.infiniteautomation.mango.rest.latest.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.latest.model.StreamedArrayWithTotal;
@@ -41,7 +42,6 @@ import com.infiniteautomation.mango.rest.latest.model.javascript.MangoJavaScript
 import com.infiniteautomation.mango.rest.latest.model.javascript.MangoJavaScriptResultModel;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.DataTypeEnum;
 import com.infiniteautomation.mango.rest.latest.patch.PatchVORequestBody;
-import com.infiniteautomation.mango.spring.db.EventHandlerTableDefinition;
 import com.infiniteautomation.mango.spring.service.EventHandlerService;
 import com.infiniteautomation.mango.spring.service.MangoJavaScriptService;
 import com.infiniteautomation.mango.spring.service.PermissionService;
@@ -83,6 +83,8 @@ public class EventHandlersRestController {
     private final Map<String, Function<Object, Object>> valueConverters;
     private final Map<String, Field<?>> fieldMap;
 
+    private final EventHandlersMapping eventHandlersMapping = EventHandlersMapping.EVENT_HANDLERS_MAPPING;
+
     @Autowired
     public EventHandlersRestController(EventHandlerService service, MangoJavaScriptService javaScriptService, final RestModelMapper modelMapper) {
         this.service = service;
@@ -105,10 +107,10 @@ public class EventHandlersRestController {
         this.valueConverters = new HashMap<>();
         //Setup any exposed special query aliases to map model fields to db columns
         this.fieldMap = new HashMap<>();
-        this.fieldMap.put("eventTypeName", EventHandlerTableDefinition.EVENT_HANDLER_MAPPING_EVENT_TYPE_NAME_ALIAS);
-        this.fieldMap.put("eventSubtypeName", EventHandlerTableDefinition.EVENT_HANDLER_MAPPING_EVENT_SUB_TYPE_NAME_ALIAS);
-        this.fieldMap.put("eventTypeRef1", EventHandlerTableDefinition.EVENT_HANDLER_MAPPING_TYPEREF1_ALIAS);
-        this.fieldMap.put("eventTypeRef2", EventHandlerTableDefinition.EVENT_HANDLER_MAPPING_TYPEREF2_ALIAS);
+        this.fieldMap.put("eventTypeName", eventHandlersMapping.eventTypeName);
+        this.fieldMap.put("eventSubtypeName", eventHandlersMapping.eventSubtypeName);
+        this.fieldMap.put("eventTypeRef1", eventHandlersMapping.eventTypeRef1);
+        this.fieldMap.put("eventTypeRef2", eventHandlersMapping.eventTypeRef2);
     }
 
     @ApiOperation(

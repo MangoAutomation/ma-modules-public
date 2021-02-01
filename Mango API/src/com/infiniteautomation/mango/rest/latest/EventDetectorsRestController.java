@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.infiniteautomation.mango.db.tables.EventDetectors;
 import com.infiniteautomation.mango.rest.latest.bulk.BulkRequest;
 import com.infiniteautomation.mango.rest.latest.bulk.BulkResponse;
 import com.infiniteautomation.mango.rest.latest.bulk.VoAction;
@@ -52,7 +53,6 @@ import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResou
 import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResourceManager;
 import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResourceStatusUpdate;
 import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResourceWebSocketHandler;
-import com.infiniteautomation.mango.spring.db.EventDetectorTableDefinition;
 import com.infiniteautomation.mango.spring.service.EventDetectorsService;
 import com.infiniteautomation.mango.spring.service.EventHandlerService;
 import com.infiniteautomation.mango.util.RQLUtils;
@@ -88,7 +88,6 @@ public class EventDetectorsRestController {
 
     @Autowired
     public EventDetectorsRestController(EventDetectorsService service,
-            EventDetectorTableDefinition table,
             RestModelMapper modelMapper,
             TemporaryResourceWebSocketHandler websocket, Environment environment){
         this.service = service;
@@ -100,9 +99,9 @@ public class EventDetectorsRestController {
         this.bulkResourceManager = new MangoTaskTemporaryResourceManager<EventDetectorBulkResponse>(service.getPermissionService(), websocket, environment);
 
         this.fieldMap = new HashMap<>();
-        this.fieldMap.put("detectorSourceType", table.getAlias("sourceTypeName"));
+        this.fieldMap.put("detectorSourceType", EventDetectors.EVENT_DETECTORS.sourceTypeName);
         //TODO This will break if we add new detector types and keep the same table structure, we should break this out into a mapping table
-        this.fieldMap.put("sourceId", table.getAlias("dataPointId"));
+        this.fieldMap.put("sourceId", EventDetectors.EVENT_DETECTORS.dataPointId);
     }
 
     @ApiOperation(

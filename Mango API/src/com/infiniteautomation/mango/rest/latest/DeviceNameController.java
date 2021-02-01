@@ -18,8 +18,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.infiniteautomation.mango.spring.db.DataPointTableDefinition;
-import com.infiniteautomation.mango.spring.db.DataSourceTableDefinition;
+import com.infiniteautomation.mango.db.tables.DataPoints;
+import com.infiniteautomation.mango.db.tables.DataSources;
 import com.infiniteautomation.mango.spring.service.DataPointService;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
@@ -35,16 +35,12 @@ import io.swagger.annotations.ApiOperation;
 public class DeviceNameController {
 
     private final DataPointService service;
-    private final DataPointTableDefinition dataPointTable;
-    private final DataSourceTableDefinition dataSourceTable;
+    private final DataPoints dataPointTable = DataPoints.DATA_POINTS;
+    private final DataSources dataSourceTable = DataSources.DATA_SOURCES;
 
     @Autowired
-    public DeviceNameController(DataPointService service,
-            DataPointTableDefinition dataPointTable,
-            DataSourceTableDefinition dataSourceTable) {
+    public DeviceNameController(DataPointService service) {
         this.service = service;
-        this.dataPointTable = dataPointTable;
-        this.dataSourceTable = dataSourceTable;
     }
 
     @ApiOperation(
@@ -54,7 +50,7 @@ public class DeviceNameController {
     @RequestMapping(method = RequestMethod.GET)
     public Set<String> deviceNames(@RequestParam(value="contains", required=false) String contains,
             @AuthenticationPrincipal PermissionHolder user) {
-        Field<String> deviceName = dataPointTable.getAlias("deviceName");
+        Field<String> deviceName = dataPointTable.deviceName;
         Condition conditions;
         if(StringUtils.isEmpty(contains)) {
             conditions = DSL.trueCondition();
@@ -76,8 +72,8 @@ public class DeviceNameController {
     public Set<String> deviceNamesByDataSourceId(
             @PathVariable int id,
             @RequestParam(value="contains", required=false) String contains) {
-        Field<String> deviceName = dataPointTable.getAlias("deviceName");
-        Field<Integer> dataSourceId = dataPointTable.getAlias("dataSourceId");
+        Field<String> deviceName = dataPointTable.deviceName;
+        Field<Integer> dataSourceId = dataPointTable.dataSourceId;
         Condition conditions;
         if(StringUtils.isEmpty(contains)) {
             conditions = DSL.trueCondition();
@@ -99,8 +95,8 @@ public class DeviceNameController {
     public Set<String> deviceNamesByDataSourceXid(
             @PathVariable String xid,
             @RequestParam(value="contains", required=false) String contains) {
-        Field<String> deviceName = dataPointTable.getAlias("deviceName");
-        Field<String> dataSourceXid = dataSourceTable.getAlias("xid");
+        Field<String> deviceName = dataPointTable.deviceName;
+        Field<String> dataSourceXid = dataSourceTable.xid;
         Condition conditions;
         if(StringUtils.isEmpty(contains)) {
             conditions = DSL.trueCondition();

@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.infiniteautomation.mango.db.tables.Events;
 import com.infiniteautomation.mango.rest.latest.EventsRestController.EventTableRqlMappings;
 import com.infiniteautomation.mango.rest.latest.model.EventQueryByMaintenanceCriteria;
 import com.infiniteautomation.mango.rest.latest.model.EventQueryByMaintenanceEventRql;
@@ -40,7 +41,6 @@ import com.infiniteautomation.mango.rest.latest.model.StreamedSeroJsonVORqlQuery
 import com.infiniteautomation.mango.rest.latest.model.StreamedVORqlQueryWithTotal;
 import com.infiniteautomation.mango.rest.latest.model.event.EventInstanceModel;
 import com.infiniteautomation.mango.rest.latest.patch.PatchVORequestBody;
-import com.infiniteautomation.mango.spring.db.EventInstanceTableDefinition;
 import com.infiniteautomation.mango.spring.service.EventInstanceService;
 import com.infiniteautomation.mango.spring.service.maintenanceEvents.MaintenanceEventsService;
 import com.infiniteautomation.mango.spring.service.maintenanceEvents.MaintenanceEventsService.DataPointPermissionsCheckCallback;
@@ -80,13 +80,12 @@ public class MaintenanceEventsRestController {
     @Autowired
     public MaintenanceEventsRestController(MaintenanceEventsService service,
             MaintenanceEventDao dao,
-            RestModelMapper modelMapper, EventInstanceService eventService,
-            EventInstanceTableDefinition eventTable) {
+            RestModelMapper modelMapper, EventInstanceService eventService) {
         this.service = service;
         this.dao = dao;
         this.eventService = eventService;
         this.eventTableValueConverters = new HashMap<>();
-        this.eventTableFieldMap = new EventTableRqlMappings(eventTable);
+        this.eventTableFieldMap = new EventTableRqlMappings(Events.EVENTS);
 
         this.eventMap = (vo, user) -> {
             return modelMapper.map(vo, EventInstanceModel.class, user);

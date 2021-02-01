@@ -26,12 +26,12 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.infiniteautomation.mango.db.tables.UserComments;
+import com.infiniteautomation.mango.db.tables.Users;
 import com.infiniteautomation.mango.rest.latest.model.ListWithTotal;
 import com.infiniteautomation.mango.rest.latest.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.latest.model.StreamedBasicVORqlQueryWithTotal;
 import com.infiniteautomation.mango.rest.latest.model.comment.UserCommentModel;
-import com.infiniteautomation.mango.spring.db.UserCommentTableDefinition;
-import com.infiniteautomation.mango.spring.db.UserTableDefinition;
 import com.infiniteautomation.mango.spring.service.UserCommentService;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.vo.User;
@@ -60,16 +60,16 @@ public class UserCommentRestController {
     private final BiFunction<UserCommentVO, PermissionHolder, UserCommentModel> map = (vo, user) -> {return new UserCommentModel(vo);};
 
     @Autowired
-    public UserCommentRestController(UserCommentService service, UserCommentTableDefinition userCommentTable, UserTableDefinition userTable){
+    public UserCommentRestController(UserCommentService service){
         this.service = service;
         this.valueConverterMap = new HashMap<>();
         this.valueConverterMap.put("commentType", (toConvert) -> {
             return UserCommentVO.COMMENT_TYPE_CODES.getId((String)toConvert);
         });
         this.fieldMap = new HashMap<>();
-        this.fieldMap.put("username", userTable.getAlias("username"));
-        this.fieldMap.put("referenceId", userCommentTable.getAlias("typeKey"));
-        this.fieldMap.put("timestamp", userCommentTable.getAlias("ts"));
+        this.fieldMap.put("username", Users.USERS.username);
+        this.fieldMap.put("referenceId", UserComments.USER_COMMENTS.typeKey);
+        this.fieldMap.put("timestamp", UserComments.USER_COMMENTS.ts);
     }
 
     /**
@@ -95,11 +95,6 @@ public class UserCommentRestController {
      *
      * The timestamp and UserID are optional
      * Username is not used for input
-     *
-     * @param model
-     * @param request
-     * @return
-     * @throws RestValidationFailedException
      */
     @ApiOperation(
             value = "Create New User Comment"

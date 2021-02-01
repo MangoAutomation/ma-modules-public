@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.infiniteautomation.mango.db.tables.Users;
 import com.infiniteautomation.mango.rest.latest.bulk.VoAction;
 import com.infiniteautomation.mango.rest.latest.model.ActionAndModel;
 import com.infiniteautomation.mango.rest.latest.model.JSONStreamedArray;
@@ -47,12 +48,10 @@ import com.infiniteautomation.mango.rest.latest.model.WatchListSummaryModelMappi
 import com.infiniteautomation.mango.rest.latest.model.dataPoint.DataPointModel;
 import com.infiniteautomation.mango.rest.latest.model.event.EventInstanceModel;
 import com.infiniteautomation.mango.rest.latest.patch.PatchVORequestBody;
-import com.infiniteautomation.mango.spring.db.UserTableDefinition;
 import com.infiniteautomation.mango.spring.service.WatchListService;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.json.type.JsonStreamedArray;
 import com.serotonin.m2m2.vo.DataPointVO;
-import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.EventInstanceVO;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.watchlist.WatchListEmportDefinition;
@@ -87,8 +86,7 @@ public class WatchListRestController {
 
     @Autowired
     public WatchListRestController(WatchListService service, WatchListModelMapping mapping,
-            WatchListSummaryModelMapping summaryMapping,
-            UserTableDefinition userTable, RestModelMapper modelMapper){
+            WatchListSummaryModelMapping summaryMapping, RestModelMapper modelMapper){
         this.service = service;
         this.mapping = mapping;
         this.summaryMapping = summaryMapping;
@@ -106,7 +104,7 @@ public class WatchListRestController {
 
         //Setup any exposed special query aliases to map model fields to db columns
         this.fieldMap = new HashMap<>();
-        this.fieldMap.put("username", userTable.getXidAlias());
+        this.fieldMap.put("username", Users.USERS.username);
     }
 
     /**
