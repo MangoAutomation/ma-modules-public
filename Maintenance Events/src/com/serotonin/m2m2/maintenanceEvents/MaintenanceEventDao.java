@@ -67,7 +67,7 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
             ApplicationEventPublisher publisher,
             PermissionService permissionService) {
         super(AuditEvent.TYPE_NAME,
-                MaintenanceEvents.MAINTENANCE_EVENTS.as("me"), new TranslatableMessage("header.maintenanceEvents"),
+                MaintenanceEvents.MAINTENANCE_EVENTS, new TranslatableMessage("header.maintenanceEvents"),
                 mapper, publisher);
         this.dataPointDao = dataPointDao;
         this.dataSourceDao = dataSourceDao;

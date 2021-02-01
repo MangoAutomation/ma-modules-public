@@ -76,13 +76,13 @@ public class WatchListDao extends AbstractVoDao<WatchListVO, WatchListsRecord, W
                          @Qualifier(MangoRuntimeContextConfiguration.DAO_OBJECT_MAPPER_NAME) ObjectMapper mapper,
                          ApplicationEventPublisher publisher,
                          PermissionService permissionService) {
-        super(AuditEvent.TYPE_NAME, WatchLists.WATCH_LISTS.as("wl"),
+        super(AuditEvent.TYPE_NAME, WatchLists.WATCH_LISTS,
                 new TranslatableMessage("internal.monitor.WATCHLIST_COUNT"),
                 mapper, publisher);
         this.dataPointDao = dataPointDao;
         this.permissionService = permissionService;
-        this.dataPoints = DataPoints.DATA_POINTS.as("dp");
-        this.watchListPoints = WatchListPoints.WATCH_LIST_POINTS.as("wlp");
+        this.dataPoints = DataPoints.DATA_POINTS;
+        this.watchListPoints = WatchListPoints.WATCH_LIST_POINTS;
     }
 
     /**
