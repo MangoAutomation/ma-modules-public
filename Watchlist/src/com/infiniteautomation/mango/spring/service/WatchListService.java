@@ -26,8 +26,6 @@ import com.serotonin.m2m2.vo.event.EventInstanceVO;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.watchlist.WatchListCreatePermission;
 import com.serotonin.m2m2.watchlist.WatchListVO;
-import com.serotonin.m2m2.watchlist.db.tables.WatchLists;
-import com.serotonin.m2m2.watchlist.db.tables.records.WatchListsRecord;
 
 import net.jazdw.rql.parser.ASTNode;
 
@@ -164,7 +162,7 @@ public class WatchListService extends AbstractVOService<WatchListVO, WatchListDa
                     throw new ServerErrorException(new TranslatableMessage("watchList.queryParametersNotSupported"));
                 ASTNode rql = RQLUtils.parseRQLtoAST(vo.getQuery());
                 ConditionSortLimit conditions = dataPointService.rqlToCondition(rql, null, null, null);
-                dataPointService.customizedQuery(conditions, (dp, index) -> callback.accept(dp));
+                dataPointService.customizedQuery(conditions, (dp) -> callback.accept(dp));
                 break;
             case WatchListVO.TAGS_TYPE:
                 throw new ServerErrorException(new TranslatableMessage("watchList.queryParametersNotSupported"));
@@ -221,7 +219,7 @@ public class WatchListService extends AbstractVOService<WatchListVO, WatchListDa
                 if(vo.getParams().size() > 0)
                     throw new ServerErrorException(new TranslatableMessage("watchList.queryParametersNotSupported"));
                 ASTNode conditions = RQLUtils.parseRQLtoAST(vo.getQuery());
-                dataPointService.customizedQuery(conditions, (dp, index) -> {
+                dataPointService.customizedQuery(conditions, (dp) -> {
                     if(dataPointService.hasReadPermission(user, dp)) {
                         args.add(Integer.toString(dp.getId()));
                     }
@@ -246,7 +244,7 @@ public class WatchListService extends AbstractVOService<WatchListVO, WatchListDa
                 }
                 query = addAndRestriction(query, new ASTNode("limit", limit, offset));
             }
-            eventService.customizedQuery(query, (event, index) -> {
+            eventService.customizedQuery(query, (event) -> {
                 if(eventService.hasReadPermission(user, event)) {
                     callback.accept(event);
                 }

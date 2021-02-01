@@ -92,7 +92,7 @@ public class StreamedSeroJsonBasicVORqlQuery <T extends AbstractBasicVO, R exten
             //Using memory filter
             Integer offset = conditions.getOffset();
             Integer limit = conditions.getLimit();
-            service.customizedQuery(conditions.withNullLimitOffset(), (T item, int index) -> {
+            service.customizedQuery(conditions.withNullLimitOffset(), (T item) -> {
                 if (filter.test(item)) {
                     if ((offset == null || count >= offset) && (limit == null || offsetCount < limit)) {
                         try {
@@ -113,7 +113,7 @@ public class StreamedSeroJsonBasicVORqlQuery <T extends AbstractBasicVO, R exten
             });
         }else {
             //No filter just run query
-            service.customizedQuery(conditions, (T item, int index) -> {
+            service.customizedQuery(conditions, (T item) -> {
                 try {
                     if (count > 0)
                         writer.append(',');

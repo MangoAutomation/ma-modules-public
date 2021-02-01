@@ -8,6 +8,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.jooq.Record;
 import org.jooq.Select;
@@ -25,7 +26,6 @@ import com.infiniteautomation.mango.spring.MangoRuntimeContextConfiguration;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.LazyInitSupplier;
 import com.serotonin.ShouldNeverHappenException;
-import com.serotonin.db.MappedRowCallback;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.AbstractVoDao;
 import com.serotonin.m2m2.db.dao.DataPointDao;
@@ -139,7 +139,7 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
      * @param maintenanceEventId
      * @param callback
      */
-    public void getPoints(int maintenanceEventId, final MappedRowCallback<DataPointVO> callback){
+    public void getPoints(int maintenanceEventId, final Consumer<DataPointVO> callback){
         RowMapper<DataPointVO> pointMapper = dataPointDao.getRowMapper();
         this.ejt.query(SELECT_POINTS, new Object[]{maintenanceEventId}, new RowCallbackHandler(){
             private int row = 0;
@@ -148,7 +148,7 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
             public void processRow(ResultSet rs) throws SQLException {
                 DataPointVO vo = pointMapper.mapRow(rs, row);
                 dataPointDao.loadRelationalData(vo);
-                callback.row(vo, row);
+                callback.accept(vo);
                 row++;
             }
 
@@ -160,13 +160,13 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
      * @param maintenanceEventId
      * @param callback
      */
-    public void getPointXids(int maintenanceEventId, final MappedRowCallback<String> callback){
+    public void getPointXids(int maintenanceEventId, final Consumer<String> callback){
         this.ejt.query(SELECT_POINT_XIDS, new Object[]{maintenanceEventId}, new RowCallbackHandler(){
             private int row = 0;
 
             @Override
             public void processRow(ResultSet rs) throws SQLException {
-                callback.row(rs.getString(1), row);
+                callback.accept(rs.getString(1));
                 row++;
             }
 
@@ -178,7 +178,7 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
      * @param maintenanceEventId
      * @param callback
      */
-    public void getDataSources(int maintenanceEventId, final MappedRowCallback<DataSourceVO> callback) {
+    public void getDataSources(int maintenanceEventId, final Consumer<DataSourceVO> callback) {
         RowMapper<DataSourceVO> mapper = dataSourceDao.getRowMapper();
         this.ejt.query(SELECT_DATA_SOURCES, new Object[]{maintenanceEventId}, new RowCallbackHandler(){
             private int row = 0;
@@ -187,7 +187,7 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
             public void processRow(ResultSet rs) throws SQLException {
                 DataSourceVO vo = mapper.mapRow(rs, row);
                 dataSourceDao.loadRelationalData(vo);
-                callback.row(vo, row);
+                callback.accept(vo);
                 row++;
             }
 
@@ -199,13 +199,13 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
      * @param maintenanceEventId
      * @param callback
      */
-    public void getSourceXids(int maintenanceEventId, final MappedRowCallback<String> callback){
+    public void getSourceXids(int maintenanceEventId, final Consumer<String> callback){
         this.ejt.query(SELECT_DATA_SOURCE_XIDS, new Object[]{maintenanceEventId}, new RowCallbackHandler(){
             private int row = 0;
 
             @Override
             public void processRow(ResultSet rs) throws SQLException {
-                callback.row(rs.getString(1), row);
+                callback.accept(rs.getString(1));
                 row++;
             }
 
@@ -219,7 +219,7 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
      * @param dataPointId
      * @param callback
      */
-    public void getForDataPoint(int dataPointId, MappedRowCallback<MaintenanceEventVO> callback) {
+    public void getForDataPoint(int dataPointId, Consumer<com.serotonin.m2m2.maintenanceEvents.MaintenanceEventVO> callback) {
         DataPointVO vo = dataPointDao.get(dataPointId);
         if(vo == null)
             return;
@@ -230,13 +230,13 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
      * @param dataPointXid
      * @param callback
      */
-    public void getForDataPoint(String dataPointXid, MappedRowCallback<MaintenanceEventVO> callback) {
+    public void getForDataPoint(String dataPointXid, Consumer<com.serotonin.m2m2.maintenanceEvents.MaintenanceEventVO> callback) {
         DataPointVO vo = dataPointDao.getByXid(dataPointXid);
         if(vo == null)
             return;
         getForDataPoint(vo, callback);
     }
-    protected void getForDataPoint(DataPointVO vo, MappedRowCallback<MaintenanceEventVO> callback) {
+    protected void getForDataPoint(DataPointVO vo, Consumer<com.serotonin.m2m2.maintenanceEvents.MaintenanceEventVO> callback) {
 
         //Get the events that are listed for this point
         List<Integer> ids = queryForList(SELECT_BY_DATA_POINT, new Object[] {vo.getId()}, Integer.class);
@@ -260,7 +260,7 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
      * @param dataSourceXid
      * @param callback
      */
-    public void getForDataSource(String dataSourceXid, MappedRowCallback<MaintenanceEventVO> callback) {
+    public void getForDataSource(String dataSourceXid, Consumer<com.serotonin.m2m2.maintenanceEvents.MaintenanceEventVO> callback) {
         Integer id = dataPointDao.getIdByXid(dataSourceXid);
         if(id == null)
             return;
@@ -273,7 +273,7 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
      * @param dataSourceId
      * @param callback
      */
-    public void getForDataSource(int dataSourceId, MappedRowCallback<MaintenanceEventVO> callback) {
+    public void getForDataSource(int dataSourceId, Consumer<com.serotonin.m2m2.maintenanceEvents.MaintenanceEventVO> callback) {
         //Get the events that are listed for the point's data source
         List<Integer> ids = queryForList(SELECT_BY_DATA_SOURCE, new Object[] {dataSourceId}, Integer.class);
         if(ids.size() == 0)

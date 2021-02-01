@@ -59,7 +59,7 @@ public class DeviceNameController {
         }
 
         Set<String> deviceNames = new HashSet<>();
-        service.queryDeviceNames(conditions, true, null, null, (name, index) -> deviceNames.add(name));
+        service.queryDeviceNames(conditions, true, null, null, (name) -> deviceNames.add(name));
 
         return deviceNames;
     }
@@ -82,7 +82,7 @@ public class DeviceNameController {
         }
 
         Set<String> deviceNames = new HashSet<>();
-        service.queryDeviceNames(conditions, true, null, null, (name, index) -> deviceNames.add(name));
+        service.queryDeviceNames(conditions, true, null, null, (name) -> deviceNames.add(name));
 
         return deviceNames;
     }
@@ -105,7 +105,7 @@ public class DeviceNameController {
         }
 
         Set<String> deviceNames = new HashSet<>();
-        service.queryDeviceNames(conditions, true, null, null, (name, index) -> deviceNames.add(name));
+        service.queryDeviceNames(conditions, true, null, null, (name) -> deviceNames.add(name));
 
         return deviceNames;
     }

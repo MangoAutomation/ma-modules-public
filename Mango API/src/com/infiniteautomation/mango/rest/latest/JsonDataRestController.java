@@ -84,7 +84,7 @@ public class JsonDataRestController {
     @RequestMapping(method = RequestMethod.GET)
     public List<String> list(){
         List<String> xids = new ArrayList<>();
-        service.customizedQuery(new ConditionSortLimit(null, null, null, null), (item, row) -> {
+        service.customizedQuery(new ConditionSortLimit(null, null, null, null), (item) -> {
             xids.add(item.getXid());
         });
         return xids;

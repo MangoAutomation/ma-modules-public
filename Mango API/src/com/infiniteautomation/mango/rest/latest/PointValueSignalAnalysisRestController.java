@@ -26,7 +26,6 @@ import com.infiniteautomation.mango.rest.latest.model.pointValue.RollupEnum;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.query.PointValueTimeCacheControl;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.query.ZonedDateTimeRangeQueryInfo;
 import com.infiniteautomation.mango.spring.service.DataPointService;
-import com.serotonin.db.MappedRowCallback;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
@@ -195,12 +194,7 @@ public class PointValueSignalAnalysisRestController {
         List<PointValueTime> data = new ArrayList<>();
         //Make the call to get the data and quantize it
         pvd.getPointValuesBetween(vo, info.getFromMillis(), info.getToMillis(),
-                new MappedRowCallback<PointValueTime>() {
-            @Override
-            public void row(PointValueTime pvt, int row) {
-                data.add(pvt);
-            }
-        });
+                data::add);
         FftGenerator generator = new FftGenerator(data.size());
         for(PointValueTime pvt : data)
             generator.data(pvt);

@@ -90,7 +90,7 @@ public class StreamedBasicVORqlQuery <T extends AbstractBasicVO, R extends Recor
             //Using memory filter
             Integer offset = conditions.getOffset();
             Integer limit = conditions.getLimit();
-            service.customizedQuery(conditions.withNullLimitOffset(), (T item, int index) -> {
+            service.customizedQuery(conditions.withNullLimitOffset(), (T item) -> {
                 if (filter.test(item)) {
                     if ((offset == null || count >= offset) && (limit == null || offsetCount < limit)) {
                         try {
@@ -108,7 +108,7 @@ public class StreamedBasicVORqlQuery <T extends AbstractBasicVO, R extends Recor
             });
         }else {
             //No filter just run query
-            service.customizedQuery(conditions, (T item, int index) -> {
+            service.customizedQuery(conditions, (T item) -> {
                 try {
                     jgen.writeObject(item);
                 } catch (IOException e) {

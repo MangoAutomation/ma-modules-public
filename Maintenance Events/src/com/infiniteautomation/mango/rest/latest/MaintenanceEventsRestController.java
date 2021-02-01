@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import javax.servlet.http.HttpServletRequest;
@@ -46,7 +47,6 @@ import com.infiniteautomation.mango.spring.service.maintenanceEvents.Maintenance
 import com.infiniteautomation.mango.spring.service.maintenanceEvents.MaintenanceEventsService.DataPointPermissionsCheckCallback;
 import com.infiniteautomation.mango.spring.service.maintenanceEvents.MaintenanceEventsService.DataSourcePermissionsCheckCallback;
 import com.infiniteautomation.mango.util.RQLUtils;
-import com.serotonin.db.MappedRowCallback;
 import com.serotonin.json.type.JsonStreamedArray;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventDao;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventType;
@@ -291,10 +291,10 @@ public class MaintenanceEventsRestController {
         for(Integer id: pointIds) {
             List<MaintenanceEventModel> models = new ArrayList<>();
             map.put(id, models);
-            dao.getForDataPoint(id, new MappedRowCallback<MaintenanceEventVO>() {
+            dao.getForDataPoint(id, new Consumer<MaintenanceEventVO>() {
 
                 @Override
-                public void row(MaintenanceEventVO vo, int index) {
+                public void accept(MaintenanceEventVO vo) {
                     MaintenanceEventModel model = new MaintenanceEventModel(vo);
                     fillDataPoints(model);
                     fillDataSources(model);
@@ -322,10 +322,10 @@ public class MaintenanceEventsRestController {
         for(String xid: pointXids) {
             List<MaintenanceEventModel> models = new ArrayList<>();
             map.put(xid, models);
-            dao.getForDataPoint(xid, new MappedRowCallback<MaintenanceEventVO>() {
+            dao.getForDataPoint(xid, new Consumer<MaintenanceEventVO>() {
 
                 @Override
-                public void row(MaintenanceEventVO vo, int index) {
+                public void accept(MaintenanceEventVO vo) {
                     MaintenanceEventModel model = new MaintenanceEventModel(vo);
                     fillDataPoints(model);
                     fillDataSources(model);
@@ -353,10 +353,10 @@ public class MaintenanceEventsRestController {
         for(Integer id: sourceIds) {
             List<MaintenanceEventModel> models = new ArrayList<>();
             map.put(id, models);
-            dao.getForDataSource(id, new MappedRowCallback<MaintenanceEventVO>() {
+            dao.getForDataSource(id, new Consumer<MaintenanceEventVO>() {
 
                 @Override
-                public void row(MaintenanceEventVO vo, int index) {
+                public void accept(MaintenanceEventVO vo) {
                     MaintenanceEventModel model = new MaintenanceEventModel(vo);
                     fillDataPoints(model);
                     fillDataSources(model);
@@ -385,10 +385,10 @@ public class MaintenanceEventsRestController {
             List<MaintenanceEventModel> models = new ArrayList<>();
             map.put(xid, models);
             if(xid != null) {
-                dao.getForDataSource(xid, new MappedRowCallback<MaintenanceEventVO>() {
+                dao.getForDataSource(xid, new Consumer<MaintenanceEventVO>() {
 
                     @Override
-                    public void row(MaintenanceEventVO vo, int index) {
+                    public void accept(MaintenanceEventVO vo) {
                         MaintenanceEventModel model = new MaintenanceEventModel(vo);
                         fillDataPoints(model);
                         fillDataSources(model);
@@ -417,12 +417,7 @@ public class MaintenanceEventsRestController {
         //First do the RQL on maintenance events
         List<Object> args = new ArrayList<>();
         args.add("typeRef1");
-        service.customizedQuery(rql, new MappedRowCallback<MaintenanceEventVO>() {
-            @Override
-            public void row(MaintenanceEventVO vo, int index) {
-                args.add(Integer.toString(vo.getId()));
-            }
-        });
+        service.customizedQuery(rql, vo -> args.add(Integer.toString(vo.getId())));
         //Second query the events
         if(args.size() > 1) {
             ASTNode query = new ASTNode("in", args);
@@ -482,9 +477,9 @@ public class MaintenanceEventsRestController {
         }
         //Find all matching Maintenance Events
         Set<Integer> ids = new HashSet<>();
-        MappedRowCallback<MaintenanceEventVO> callback = new MappedRowCallback<MaintenanceEventVO>() {
+        Consumer<com.serotonin.m2m2.maintenanceEvents.MaintenanceEventVO> callback = new Consumer<MaintenanceEventVO>() {
             @Override
-            public void row(MaintenanceEventVO vo, int index) {
+            public void accept(MaintenanceEventVO vo) {
                 ids.add(vo.getId());
             }
         };
@@ -595,13 +590,8 @@ public class MaintenanceEventsRestController {
      * @param model
      */
     private void fillDataPoints(MaintenanceEventModel model) {
-        List<String> xids = new ArrayList<String>();
-        dao.getPointXids(model.getId(), new MappedRowCallback<String>() {
-            @Override
-            public void row(String item, int index) {
-                xids.add(item);
-            }
-        });
+        List<String> xids = new ArrayList<>();
+        dao.getPointXids(model.getId(), xids::add);
         model.setDataPoints(xids.size() == 0 ? null : xids);
     }
 
@@ -610,13 +600,8 @@ public class MaintenanceEventsRestController {
      * @param model
      */
     private void fillDataSources(MaintenanceEventModel model) {
-        List<String> dsXids = new ArrayList<String>();
-        dao.getSourceXids(model.getId(), new MappedRowCallback<String>() {
-            @Override
-            public void row(String item, int index) {
-                dsXids.add(item);
-            }
-        });
+        List<String> dsXids = new ArrayList<>();
+        dao.getSourceXids(model.getId(), dsXids::add);
         model.setDataSources(dsXids.size() == 0 ? null : dsXids);
     }
 }

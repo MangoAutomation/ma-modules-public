@@ -237,14 +237,14 @@ public class EventsRestController {
         //Query for the sources
         switch(body.getSourceType()) {
             case "DATA_POINT":
-                dataPointService.customizedQuery(rql, (vo, index) -> args.add(Integer.toString(vo.getId())));
+                dataPointService.customizedQuery(rql, (vo) -> args.add(Integer.toString(vo.getId())));
                 if(args.size() > 1) {
                     query = new ASTNode("in", args);
                     query = RQLUtils.addAndRestriction(query, new ASTNode("eq", "typeName", EventTypeNames.DATA_POINT));
                 }
                 break;
             case "DATA_SOURCE":
-                dataSourceService.customizedQuery(rql, (vo, index) -> args.add(Integer.toString(vo.getId())));
+                dataSourceService.customizedQuery(rql, (vo) -> args.add(Integer.toString(vo.getId())));
                 if(args.size() > 1) {
                     query = new ASTNode("in", args);
                     query = RQLUtils.addAndRestriction(query, new ASTNode("eq", "typeName", EventTypeNames.DATA_SOURCE));
@@ -318,7 +318,7 @@ public class EventsRestController {
                 return new JSONStreamedArray() {
                     @Override
                     public void writeArrayValues(JsonGenerator jgen) throws IOException {
-                        service.queryDataPointEventCountsByRQL(rql, body.getFrom() != null ? body.getFrom().getTime() : null, body.getTo() != null ? body.getTo().getTime() : null, (item, rowNum) -> {
+                        service.queryDataPointEventCountsByRQL(rql, body.getFrom() != null ? body.getFrom().getTime() : null, body.getTo() != null ? body.getTo().getTime() : null, (item) -> {
                             try {
                                 jgen.writeObject(new AlarmPointTagCountModel(item));
                                 count++;

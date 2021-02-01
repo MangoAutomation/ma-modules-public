@@ -3,6 +3,8 @@
  */
 package com.infiniteautomation.mango.spring.service.maintenanceEvents;
 
+import java.util.function.Consumer;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.joda.time.DateTime;
@@ -14,7 +16,6 @@ import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.infiniteautomation.mango.util.exception.TranslatableIllegalStateException;
 import com.infiniteautomation.mango.util.exception.ValidationException;
-import com.serotonin.db.MappedRowCallback;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
@@ -24,8 +25,6 @@ import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventDao;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventRT;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventVO;
 import com.serotonin.m2m2.maintenanceEvents.RTMDefinition;
-import com.serotonin.m2m2.maintenanceEvents.db.tables.MaintenanceEvents;
-import com.serotonin.m2m2.maintenanceEvents.db.tables.records.MaintenanceEventsRecord;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.permission.PermissionException;
@@ -177,7 +176,7 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
      *
      * @author Terry Packer
      */
-    public static class DataPointPermissionsCheckCallback implements MappedRowCallback<DataPointVO> {
+    public static class DataPointPermissionsCheckCallback implements Consumer<DataPointVO> {
 
         final MutableBoolean hasPermission = new MutableBoolean(true);
         final boolean read;
@@ -200,7 +199,7 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
         }
 
         @Override
-        public void row(DataPointVO point, int index) {
+        public void accept(DataPointVO point) {
             // TODO Mango 4.0 review
             if(!hasPermission.getValue()) {
                 //short circuit the logic if we already failed
@@ -223,7 +222,7 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
      *
      * @author Terry Packer
      */
-    public static class DataSourcePermissionsCheckCallback implements MappedRowCallback<DataSourceVO> {
+    public static class DataSourcePermissionsCheckCallback implements Consumer<DataSourceVO> {
 
         final MutableBoolean hasPermission = new MutableBoolean(true);
         final boolean read;
@@ -245,7 +244,7 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
         }
 
         @Override
-        public void row(DataSourceVO source, int index) {
+        public void accept(DataSourceVO source) {
             // TODO Mango 4.0 review
             if(!hasPermission.getValue()) {
                 //short circuit the logic if we already failed

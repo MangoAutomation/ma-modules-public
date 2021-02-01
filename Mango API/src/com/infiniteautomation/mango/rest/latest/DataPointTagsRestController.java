@@ -187,7 +187,7 @@ public class DataPointTagsRestController {
 
         AtomicInteger count = new AtomicInteger();
 
-        dataPointDao.customizedEditQuery(conditions, user, (dataPoint, index) -> {
+        dataPointDao.customizedEditQuery(conditions, user, (dataPoint) -> {
             dataPoint.setTags(tags);
             dataPointTagsDao.saveDataPointTags(dataPoint);
             count.incrementAndGet();
@@ -214,7 +214,7 @@ public class DataPointTagsRestController {
 
         AtomicInteger count = new AtomicInteger();
 
-        dataPointDao.customizedEditQuery(conditions, user, (dataPoint, index) -> {
+        dataPointDao.customizedEditQuery(conditions, user, (dataPoint) -> {
             dataPointTagsDao.doInTransaction(txStatus -> {
                 Map<String, String> existingTags = dataPointTagsDao.getTagsForDataPointId(dataPoint.getId());
 

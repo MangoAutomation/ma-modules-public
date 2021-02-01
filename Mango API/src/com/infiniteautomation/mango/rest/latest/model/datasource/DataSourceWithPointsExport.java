@@ -75,7 +75,7 @@ public class DataSourceWithPointsExport {
 
         @Override
         public void writeArrayValues(JsonWriter writer) throws IOException {
-            service.customizedQuery(conditions, (DataSourceVO item, int index) -> {
+            service.customizedQuery(conditions, (DataSourceVO item) -> {
                 try {
                     if (count > 0)
                         writer.append(',');
