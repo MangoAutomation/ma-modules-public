@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 import com.infiniteautomation.mango.db.query.ConditionSortLimit;
 import com.infiniteautomation.mango.rest.latest.exception.ServerErrorException;
 import com.infiniteautomation.mango.spring.dao.WatchListDao;
-import com.infiniteautomation.mango.spring.dao.WatchListTableDefinition;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.ProcessResult;
@@ -27,6 +26,8 @@ import com.serotonin.m2m2.vo.event.EventInstanceVO;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.watchlist.WatchListCreatePermission;
 import com.serotonin.m2m2.watchlist.WatchListVO;
+import com.serotonin.m2m2.watchlist.db.tables.WatchLists;
+import com.serotonin.m2m2.watchlist.db.tables.records.WatchListsRecord;
 
 import net.jazdw.rql.parser.ASTNode;
 
@@ -35,7 +36,7 @@ import net.jazdw.rql.parser.ASTNode;
  * @author Terry Packer
  */
 @Service
-public class WatchListService extends AbstractVOService<WatchListVO, WatchListTableDefinition, WatchListDao> {
+public class WatchListService extends AbstractVOService<WatchListVO, WatchListsRecord, WatchLists, WatchListDao> {
 
     private final DataPointService dataPointService;
     private final EventInstanceService eventService;

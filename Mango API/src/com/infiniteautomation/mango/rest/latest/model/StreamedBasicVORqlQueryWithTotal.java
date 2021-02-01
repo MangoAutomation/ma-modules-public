@@ -9,13 +9,14 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.jooq.Field;
+import org.jooq.Record;
+import org.jooq.Table;
 import org.springframework.http.HttpStatus;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.infiniteautomation.mango.db.query.ConditionSortLimit;
 import com.infiniteautomation.mango.db.query.RQLSubSelectCondition;
 import com.infiniteautomation.mango.rest.latest.exception.GenericRestException;
-import com.infiniteautomation.mango.spring.db.AbstractBasicTableDefinition;
 import com.infiniteautomation.mango.spring.service.AbstractBasicVOService;
 import com.serotonin.m2m2.db.dao.AbstractBasicDao;
 import com.serotonin.m2m2.vo.AbstractBasicVO;
@@ -26,7 +27,7 @@ import net.jazdw.rql.parser.ASTNode;
  * @author Jared Wiltshire
  * @author Terry Packer
  */
-public class StreamedBasicVORqlQueryWithTotal<T extends AbstractBasicVO, TABLE extends AbstractBasicTableDefinition, DAO extends AbstractBasicDao<T, TABLE>, SERVICE extends AbstractBasicVOService<T, TABLE, DAO>> implements StreamedArrayWithTotal {
+public class StreamedBasicVORqlQueryWithTotal<T extends AbstractBasicVO, R extends Record, TABLE extends Table<R>, DAO extends AbstractBasicDao<T, R, TABLE>, SERVICE extends AbstractBasicVOService<T, R, TABLE, DAO>> implements StreamedArrayWithTotal {
 
     protected final SERVICE service;
     protected final ConditionSortLimit conditions;

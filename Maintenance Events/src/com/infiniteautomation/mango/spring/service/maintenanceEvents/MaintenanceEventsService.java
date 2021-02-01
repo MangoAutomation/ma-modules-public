@@ -23,8 +23,9 @@ import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventDao;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventRT;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventVO;
-import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventsTableDefinition;
 import com.serotonin.m2m2.maintenanceEvents.RTMDefinition;
+import com.serotonin.m2m2.maintenanceEvents.db.tables.MaintenanceEvents;
+import com.serotonin.m2m2.maintenanceEvents.db.tables.records.MaintenanceEventsRecord;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.permission.PermissionException;
@@ -36,7 +37,7 @@ import com.serotonin.timer.CronTimerTrigger;
  * @author Terry Packer
  */
 @Service
-public class MaintenanceEventsService extends AbstractVOService<MaintenanceEventVO, MaintenanceEventsTableDefinition, MaintenanceEventDao>{
+public class MaintenanceEventsService extends AbstractVOService<MaintenanceEventVO, MaintenanceEventsRecord, MaintenanceEvents, MaintenanceEventDao>{
 
     @Autowired
     public MaintenanceEventsService(MaintenanceEventDao dao, PermissionService permissionService) {

@@ -290,10 +290,10 @@ public class EventTypesRestController {
 
                 //Get Event Detectors, ensure only 1 data point in list
                 //TODO via query instead
-                List<AbstractPointEventDetectorVO> peds = this.eventDetectorDao.getForSourceType(EventTypeNames.DATA_POINT);
+                List<AbstractPointEventDetectorVO> detectors = this.eventDetectorDao.getAllPointEventDetectors();
                 Map<Integer, DataPointVO> uniquePointsMap = new HashMap<>();
-                for(AbstractPointEventDetectorVO ped : peds) {
-                    uniquePointsMap.put(ped.getDataPoint().getId(), ped.getDataPoint());
+                for(AbstractPointEventDetectorVO detector : detectors) {
+                    uniquePointsMap.put(detector.getDataPoint().getId(), detector.getDataPoint());
                 }
 
                 for(DataPointVO vo : uniquePointsMap.values()) {

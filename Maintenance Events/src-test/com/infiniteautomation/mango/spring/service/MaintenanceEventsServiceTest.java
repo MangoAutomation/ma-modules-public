@@ -18,7 +18,8 @@ import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventDao;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventVO;
-import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventsTableDefinition;
+import com.serotonin.m2m2.maintenanceEvents.db.tables.MaintenanceEvents;
+import com.serotonin.m2m2.maintenanceEvents.db.tables.records.MaintenanceEventsRecord;
 import com.serotonin.m2m2.module.definitions.permissions.DataSourcePermissionDefinition;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.IDataPoint;
@@ -30,7 +31,7 @@ import com.serotonin.m2m2.vo.role.Role;
  *
  * @author Terry Packer
  */
-public class MaintenanceEventsServiceTest extends AbstractVOServiceWithPermissionsTest<MaintenanceEventVO, MaintenanceEventsTableDefinition, MaintenanceEventDao, MaintenanceEventsService> {
+public class MaintenanceEventsServiceTest extends AbstractVOServiceWithPermissionsTest<MaintenanceEventVO, MaintenanceEventsRecord, MaintenanceEvents, MaintenanceEventDao, MaintenanceEventsService> {
 
     @BeforeClass
     public static void setup() {

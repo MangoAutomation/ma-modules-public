@@ -86,7 +86,7 @@ public class PartialUpdateArgumentResolver implements HandlerMethodArgumentResol
         PatchVORequestBody patch = parameter.getParameterAnnotation(PatchVORequestBody.class);
 
         Class<?> serviceClass = patch.service();
-        AbstractVOService<?,?,?> service = (AbstractVOService<?,?,?>)context.getBean(serviceClass);
+        AbstractVOService<?,?,?,?> service = (AbstractVOService<?,?,?,?>)context.getBean(serviceClass);
         PermissionHolder user = Common.getUser();
 
         //Set the source class into the request scope to use if validation fails

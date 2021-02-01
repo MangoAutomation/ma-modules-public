@@ -4,7 +4,6 @@
  */
 package com.infiniteautomation.mango.spring.dao;
 
-import java.sql.Clob;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -36,6 +35,9 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.infiniteautomation.mango.db.query.ConditionSortLimit;
+import com.infiniteautomation.mango.db.tables.DataPoints;
+import com.infiniteautomation.mango.db.tables.MintermsRoles;
+import com.infiniteautomation.mango.db.tables.PermissionsMinterms;
 import com.infiniteautomation.mango.permission.MangoPermission;
 import com.infiniteautomation.mango.spring.MangoRuntimeContextConfiguration;
 import com.infiniteautomation.mango.spring.db.RoleTableDefinition;
@@ -45,37 +47,43 @@ import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.AbstractVoDao;
 import com.serotonin.m2m2.db.dao.DataPointDao;
-import com.infiniteautomation.mango.db.tables.MintermsRoles;
-import com.infiniteautomation.mango.db.tables.PermissionsMinterms;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
+import com.serotonin.m2m2.vo.role.Role;
 import com.serotonin.m2m2.watchlist.AuditEvent;
 import com.serotonin.m2m2.watchlist.WatchListParameter;
 import com.serotonin.m2m2.watchlist.WatchListVO;
+import com.serotonin.m2m2.watchlist.db.tables.WatchListPoints;
+import com.serotonin.m2m2.watchlist.db.tables.WatchLists;
+import com.serotonin.m2m2.watchlist.db.tables.records.WatchListsRecord;
 
 /**
  * @author Matthew Lohbihler
  * @author Terry Packer
  */
 @Repository
-public class WatchListDao extends AbstractVoDao<WatchListVO, WatchListTableDefinition> {
+public class WatchListDao extends AbstractVoDao<WatchListVO, WatchListsRecord, WatchLists> {
 
     private static final LazyInitializer<WatchListDao> springInstance = new LazyInitializer<>();
 
     private final DataPointDao dataPointDao;
     private final PermissionService permissionService;
+    private final DataPoints dataPoints;
+    private final WatchListPoints watchListPoints;
 
     @Autowired
-    private WatchListDao(WatchListTableDefinition table, DataPointDao dataPointDao,
-            @Qualifier(MangoRuntimeContextConfiguration.DAO_OBJECT_MAPPER_NAME)ObjectMapper mapper,
-            ApplicationEventPublisher publisher,
-            PermissionService permissionService) {
-        super(AuditEvent.TYPE_NAME, table,
+    private WatchListDao(DataPointDao dataPointDao,
+                         @Qualifier(MangoRuntimeContextConfiguration.DAO_OBJECT_MAPPER_NAME) ObjectMapper mapper,
+                         ApplicationEventPublisher publisher,
+                         PermissionService permissionService) {
+        super(AuditEvent.TYPE_NAME, WatchLists.WATCH_LISTS.as("wl"),
                 new TranslatableMessage("internal.monitor.WATCHLIST_COUNT"),
                 mapper, publisher);
         this.dataPointDao = dataPointDao;
         this.permissionService = permissionService;
+        this.dataPoints = DataPoints.DATA_POINTS.as("dp");
+        this.watchListPoints = WatchListPoints.WATCH_LIST_POINTS.as("wlp");
     }
 
     /**
@@ -97,25 +105,24 @@ public class WatchListDao extends AbstractVoDao<WatchListVO, WatchListTableDefin
      * @param callback
      */
     public void getPoints(int watchListId, final Consumer<DataPointVO> callback){
-
+        // TODO Mango 4.0 no more select distinct? Not needed now?
         //To cater for the select distinct needing the sort order column
         List<Field<?>> selectFields = dataPointDao.getSelectFields();
-        selectFields.add(table.POINTS_DATA_POINT_WATCHLIST_SORT_ORDER);
+        selectFields.add(watchListPoints.sortOrder);
 
         SelectJoinStep<Record> selectPoints = dataPointDao.getSelectQuery(selectFields);
         selectPoints = dataPointDao.joinTables(selectPoints, null);
 
-        selectPoints.join(table.POINTS_TABLE_AS_ALIAS)
-        .on(table.POINTS_DATA_POINT_ID_ALIAS.eq(dataPointDao.getTable().getAlias("id")))
-        .where(table.POINTS_DATA_POINT_WATCHLIST_ID_ALIAS.eq(watchListId))
-        .orderBy(table.POINTS_DATA_POINT_WATCHLIST_SORT_ORDER);
-
+        selectPoints.join(watchListPoints)
+        .on(watchListPoints.dataPointId.eq(dataPoints.id))
+        .where(watchListPoints.watchListId.eq(watchListId))
+        .orderBy(watchListPoints.sortOrder);
 
         RowMapper<DataPointVO> pointMapper = DataPointDao.getInstance().getRowMapper();
         String sql = selectPoints.getSQL();
         List<Object> args = selectPoints.getBindValues();
 
-        this.ejt.query(sql, args.toArray(new Object[args.size()]), new RowCallbackHandler(){
+        this.ejt.query(sql, args.toArray(new Object[0]), new RowCallbackHandler(){
             private int row = 0;
             @Override
             public void processRow(ResultSet rs) throws SQLException {
@@ -140,7 +147,7 @@ public class WatchListDao extends AbstractVoDao<WatchListVO, WatchListTableDefin
     @Override
     public void saveRelationalData(WatchListVO existing, WatchListVO vo) {
         if(existing != null) {
-            ejt.update("DELETE FROM watchListPoints WHERE watchListId=?", new Object[] { vo.getId() });
+            ejt.update("DELETE FROM watchListPoints WHERE watchListId=?", vo.getId());
         }
         if(WatchListVO.STATIC_TYPE.equals(vo.getType())) {
             ejt.batchUpdate("INSERT INTO watchListPoints VALUES (?,?,?)", new InsertPoints(vo));
@@ -173,7 +180,7 @@ public class WatchListDao extends AbstractVoDao<WatchListVO, WatchListTableDefin
             PermissionHolder user) {
         //Join on permissions
         if(!permissionService.hasAdminRole(user)) {
-            List<Integer> roleIds = permissionService.getAllInheritedRoles(user).stream().map(r -> r.getId()).collect(Collectors.toList());
+            List<Integer> roleIds = permissionService.getAllInheritedRoles(user).stream().map(Role::getId).collect(Collectors.toList());
 
             Condition roleIdsIn = RoleTableDefinition.roleIdField.in(roleIds);
 
@@ -222,7 +229,7 @@ public class WatchListDao extends AbstractVoDao<WatchListVO, WatchListTableDefin
     }
 
     @Override
-    protected Object[] voToObjectArray(WatchListVO vo) {
+    protected Record voToObjectArray(WatchListVO vo) {
         String jsonData = null;
         try{
             WatchListDbDataModel2 data = new WatchListDbDataModel2();
@@ -234,50 +241,41 @@ public class WatchListDao extends AbstractVoDao<WatchListVO, WatchListTableDefin
             LOG.error(e.getMessage(), e);
         }
 
-        return new Object[]{
-                vo.getXid(),
-                vo.getName(),
-                vo.getType(),
-                jsonData,
-                vo.getReadPermission().getId(),
-                vo.getEditPermission().getId()
-        };
+        WatchListsRecord record = table.newRecord();
+        record.set(table.xid, vo.getXid());
+        record.set(table.name, vo.getName());
+        record.set(table.type, vo.getType());
+        record.set(table.data, jsonData);
+        record.set(table.readPermissionId, vo.getReadPermission().getId());
+        record.set(table.editPermissionId, vo.getEditPermission().getId());
+        return record;
     }
 
     @Override
-    public RowMapper<WatchListVO> getRowMapper() {
-        return rowMapper;
-    }
-
-    private final WatchListRowMapper rowMapper = new WatchListRowMapper();
-
-    class WatchListRowMapper implements RowMapper<WatchListVO> {
-        @Override
-        public WatchListVO mapRow(ResultSet rs, int rowNum) throws SQLException {
-            int i = 0;
-            WatchListVO wl = new WatchListVO();
-            wl.setId(rs.getInt(++i));
-            wl.setXid(rs.getString(++i));
-            wl.setName(rs.getString(++i));
-            wl.setType(rs.getString(++i));
-            //Read the data
-            try{
-                Clob c = rs.getClob(++i);
-                if(c != null) {
-                    WatchListDbDataModel data = getObjectReader(WatchListDbDataModel.class).readValue(c.getCharacterStream());
-                    if (data != null) {
-                        wl.setQuery(data.query);
-                        wl.setParams(data.params);
-                        wl.setData(data.data);
-                    }
+    public WatchListVO mapRecord(Record record) {
+        int i = 0;
+        WatchListVO wl = new WatchListVO();
+        wl.setId(record.get(table.id));
+        wl.setXid(record.get(table.xid));
+        wl.setName(record.get(table.name));
+        wl.setType(record.get(table.type));
+        //Read the data
+        try{
+            String c = record.get(table.data);
+            if(c != null) {
+                WatchListDbDataModel data = getObjectReader(WatchListDbDataModel.class).readValue(c);
+                if (data != null) {
+                    wl.setQuery(data.query);
+                    wl.setParams(data.params);
+                    wl.setData(data.data);
                 }
-            }catch(Exception e){
-                LOG.error(e.getMessage(), e);
             }
-            wl.setReadPermission(new MangoPermission(rs.getInt(++i)));
-            wl.setEditPermission(new MangoPermission(rs.getInt(++i)));
-            return wl;
+        }catch(Exception e){
+            LOG.error(e.getMessage(), e);
         }
+        wl.setReadPermission(new MangoPermission(record.get(table.readPermissionId)));
+        wl.setEditPermission(new MangoPermission(record.get(table.editPermissionId)));
+        return wl;
     }
 
     @JsonTypeInfo(use=Id.NAME, include=As.PROPERTY, property="version", defaultImpl=WatchListDbDataModel1.class)

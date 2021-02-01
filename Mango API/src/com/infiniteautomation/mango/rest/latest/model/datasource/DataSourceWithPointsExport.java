@@ -12,9 +12,10 @@ import org.springframework.http.HttpStatus;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.infiniteautomation.mango.db.query.ConditionSortLimit;
+import com.infiniteautomation.mango.db.tables.DataSources;
+import com.infiniteautomation.mango.db.tables.records.DataSourcesRecord;
 import com.infiniteautomation.mango.rest.latest.exception.GenericRestException;
 import com.infiniteautomation.mango.rest.latest.model.StreamedSeroJsonVORqlQuery;
-import com.infiniteautomation.mango.spring.db.DataSourceTableDefinition;
 import com.infiniteautomation.mango.spring.service.DataPointService;
 import com.infiniteautomation.mango.spring.service.DataSourceService;
 import com.serotonin.json.JsonException;
@@ -55,7 +56,7 @@ public class DataSourceWithPointsExport {
 
     @JsonGetter("dataPoints")
     public JsonStreamedArray getDataPoints() {
-        ConditionSortLimit csl = new ConditionSortLimit(dataPointDao.getTable().getAlias("dataSourceId").in(dataSourceIds), null, null, null);
+        ConditionSortLimit csl = new ConditionSortLimit(dataPointDao.getTable().dataSourceId.in(dataSourceIds), null, null, null);
         return new StreamedSeroJsonVORqlQuery<>(dataPointService, csl);
     }
 
@@ -65,7 +66,7 @@ public class DataSourceWithPointsExport {
      *
      * @author Terry Packer
      */
-    private class StreamedSeroJsonDataSourceRqlQuery extends StreamedSeroJsonVORqlQuery<DataSourceVO, DataSourceTableDefinition, DataSourceDao, DataSourceService> {
+    private class StreamedSeroJsonDataSourceRqlQuery extends StreamedSeroJsonVORqlQuery<DataSourceVO, DataSourcesRecord, DataSources, DataSourceDao, DataSourceService> {
         private final List<Integer> dataSourceIds;
 
         public StreamedSeroJsonDataSourceRqlQuery(DataSourceService service, ASTNode rql, List<Integer> dataSourceIds) {

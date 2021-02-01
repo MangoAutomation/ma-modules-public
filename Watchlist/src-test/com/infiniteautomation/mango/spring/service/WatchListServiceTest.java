@@ -16,7 +16,6 @@ import org.junit.Test;
 
 import com.infiniteautomation.mango.permission.MangoPermission;
 import com.infiniteautomation.mango.spring.dao.WatchListDao;
-import com.infiniteautomation.mango.spring.dao.WatchListTableDefinition;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.vo.IDataPoint;
 import com.serotonin.m2m2.vo.User;
@@ -25,12 +24,14 @@ import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.vo.role.Role;
 import com.serotonin.m2m2.watchlist.WatchListCreatePermission;
 import com.serotonin.m2m2.watchlist.WatchListVO;
+import com.serotonin.m2m2.watchlist.db.tables.WatchLists;
+import com.serotonin.m2m2.watchlist.db.tables.records.WatchListsRecord;
 
 /**
  *
  * @author Terry Packer
  */
-public class WatchListServiceTest extends AbstractVOServiceWithPermissionsTest<WatchListVO, WatchListTableDefinition, WatchListDao, WatchListService> {
+public class WatchListServiceTest extends AbstractVOServiceWithPermissionsTest<WatchListVO, WatchListsRecord, WatchLists, WatchListDao, WatchListService> {
 
     @BeforeClass
     public static void setup() {

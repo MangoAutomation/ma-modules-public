@@ -8,10 +8,11 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.jooq.Field;
+import org.jooq.Record;
+import org.jooq.Table;
 
 import com.infiniteautomation.mango.db.query.ConditionSortLimit;
 import com.infiniteautomation.mango.db.query.RQLSubSelectCondition;
-import com.infiniteautomation.mango.spring.db.AbstractTableDefinition;
 import com.infiniteautomation.mango.spring.service.AbstractVOService;
 import com.serotonin.m2m2.db.dao.AbstractVoDao;
 import com.serotonin.m2m2.vo.AbstractVO;
@@ -22,7 +23,7 @@ import net.jazdw.rql.parser.ASTNode;
  * @author Jared Wiltshire
  * @author Terry Packer
  */
-public class StreamedVORqlQueryWithTotal<T extends AbstractVO, TABLE extends AbstractTableDefinition, DAO extends AbstractVoDao<T, TABLE>, SERVICE extends AbstractVOService<T, TABLE, DAO>> extends StreamedBasicVORqlQueryWithTotal<T, TABLE, DAO, SERVICE> {
+public class StreamedVORqlQueryWithTotal<T extends AbstractVO, R extends Record, TABLE extends Table<R>, DAO extends AbstractVoDao<T, R, TABLE>, SERVICE extends AbstractVOService<T, R, TABLE, DAO>> extends StreamedBasicVORqlQueryWithTotal<T, R, TABLE, DAO, SERVICE> {
 
     /**
      * Use if permissions cannot be enforced in the RQL/Database query, this will perform a full query and count the results while respecting the limit.

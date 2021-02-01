@@ -31,12 +31,14 @@ import com.serotonin.m2m2.db.dao.AbstractVoDao;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
+import com.serotonin.m2m2.maintenanceEvents.db.tables.MaintenanceEvents;
+import com.serotonin.m2m2.maintenanceEvents.db.tables.records.MaintenanceEventsRecord;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 
 @Repository()
-public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, MaintenanceEventsTableDefinition> {
+public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, MaintenanceEventsRecord, MaintenanceEvents> {
 
     private final String SELECT_POINT_IDS = "SELECT dataPointId FROM maintenanceEventDataPoints WHERE maintenanceEventId=?";
     private final String SELECT_DATA_SOURCE_IDS = "SELECT dataSourceId FROM maintenanceEventDataSources WHERE maintenanceEventId=?";
@@ -60,13 +62,12 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
 
     @Autowired
     private MaintenanceEventDao(
-            MaintenanceEventsTableDefinition table,
             DataPointDao dataPointDao, DataSourceDao dataSourceDao,
             @Qualifier(MangoRuntimeContextConfiguration.DAO_OBJECT_MAPPER_NAME)ObjectMapper mapper,
             ApplicationEventPublisher publisher,
             PermissionService permissionService) {
         super(AuditEvent.TYPE_NAME,
-                table, new TranslatableMessage("header.maintenanceEvents"),
+                MaintenanceEvents.MAINTENANCE_EVENTS.as("me"), new TranslatableMessage("header.maintenanceEvents"),
                 mapper, publisher);
         this.dataPointDao = dataPointDao;
         this.dataSourceDao = dataSourceDao;
@@ -241,7 +242,7 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
         List<Integer> ids = queryForList(SELECT_BY_DATA_POINT, new Object[] {vo.getId()}, Integer.class);
         if(ids.size() == 0)
             return;
-        Select<Record> query = this.getJoinedSelectQuery().where(this.table.getIdAlias().in(ids));
+        Select<Record> query = this.getJoinedSelectQuery().where(getIdField().in(ids));
         List<Object> args = query.getBindValues();
         query(query.getSQL(), args.toArray(), getRowMapper(), callback);
 
@@ -249,7 +250,7 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
         ids = queryForList(SELECT_BY_DATA_SOURCE, new Object[] {vo.getDataSourceId()}, Integer.class);
         if(ids.size() == 0)
             return;
-        query = this.getJoinedSelectQuery().where(this.table.getIdAlias().in(ids));
+        query = this.getJoinedSelectQuery().where(getIdField().in(ids));
         args = query.getBindValues();
         query(query.getSQL(), args.toArray(), getRowMapper(), callback);
     }
@@ -277,7 +278,7 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
         List<Integer> ids = queryForList(SELECT_BY_DATA_SOURCE, new Object[] {dataSourceId}, Integer.class);
         if(ids.size() == 0)
             return;
-        Select<Record> query = this.getJoinedSelectQuery().where(this.table.getIdAlias().in(ids));
+        Select<Record> query = this.getJoinedSelectQuery().where(getIdField().in(ids));
         List<Object> args = query.getBindValues();
         query(query.getSQL(), args.toArray(), getRowMapper(), callback);
     }
@@ -332,36 +333,41 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
     }
 
     @Override
-    protected Object[] voToObjectArray(MaintenanceEventVO me) {
-        return new Object[] {
-                me.getXid(),
-                me.getName(),
-                me.getAlarmLevel().value(),
-                me.getScheduleType(),
-                boolToChar(me.isDisabled()),
-                me.getActiveYear(),
-                me.getActiveMonth(),
-                me.getActiveDay(),
-                me.getActiveHour(),
-                me.getActiveMinute(),
-                me.getActiveSecond(),
-                me.getActiveCron(),
-                me.getInactiveYear(),
-                me.getInactiveMonth(),
-                me.getInactiveDay(),
-                me.getInactiveHour(),
-                me.getInactiveMinute(),
-                me.getInactiveSecond(),
-                me.getInactiveCron(),
-                me.getTimeoutPeriods(),
-                me.getTimeoutPeriodType(),
-                me.getTogglePermission().getId()
-        };
+    protected Record voToObjectArray(MaintenanceEventVO me) {
+        Record record = table.newRecord();
+        record.set(table.xid, me.getXid());
+        record.set(table.alias, me.getName());
+        record.set(table.alarmLevel, me.getAlarmLevel().value());
+        record.set(table.scheduleType, me.getScheduleType());
+        record.set(table.disabled, boolToChar(me.isDisabled()));
+        record.set(table.activeYear, me.getActiveYear());
+        record.set(table.activeMonth, me.getActiveMonth());
+        record.set(table.activeDay, me.getActiveDay());
+        record.set(table.activeHour, me.getActiveHour());
+        record.set(table.activeMinute, me.getActiveMinute());
+        record.set(table.activeSecond, me.getActiveSecond());
+        record.set(table.activeCron, me.getActiveCron());
+        record.set(table.inactiveYear, me.getInactiveYear());
+        record.set(table.inactiveMonth, me.getInactiveMonth());
+        record.set(table.inactiveDay, me.getInactiveDay());
+        record.set(table.inactiveHour, me.getInactiveHour());
+        record.set(table.inactiveMinute, me.getInactiveMinute());
+        record.set(table.inactiveSecond, me.getInactiveSecond());
+        record.set(table.inactiveCron, me.getInactiveCron());
+        record.set(table.timeoutPeriods, me.getTimeoutPeriods());
+        record.set(table.timeoutPeriodType, me.getTimeoutPeriodType());
+        record.set(table.togglePermissionId, me.getTogglePermission().getId());
+        return record;
     }
 
     @Override
     public RowMapper<MaintenanceEventVO> getRowMapper() {
         return new MaintenanceEventRowMapper();
+    }
+
+    @Override
+    public MaintenanceEventVO mapRecord(Record record) {
+        return null;
     }
 
     class MaintenanceEventRowMapper implements RowMapper<MaintenanceEventVO> {
