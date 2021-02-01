@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.infiniteautomation.mango.db.query.ConditionSortLimit;
+import com.infiniteautomation.mango.db.tables.DataPoints;
 import com.infiniteautomation.mango.db.tables.DataSources;
 import com.infiniteautomation.mango.db.tables.records.DataSourcesRecord;
 import com.infiniteautomation.mango.rest.latest.exception.GenericRestException;
@@ -22,7 +23,6 @@ import com.serotonin.json.JsonException;
 import com.serotonin.json.JsonWriter;
 import com.serotonin.json.spi.JsonPropertyOrder;
 import com.serotonin.json.type.JsonStreamedArray;
-import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 
@@ -39,14 +39,13 @@ public class DataSourceWithPointsExport {
     private final DataSourceService dataSourceService;
     private ASTNode dataSourceRql;
     private final DataPointService dataPointService;
-    private final DataPointDao dataPointDao;
     private final List<Integer> dataSourceIds = new ArrayList<>();
+    private final DataPoints dataPoints = DataPoints.DATA_POINTS;
 
-    public DataSourceWithPointsExport(DataSourceService dataSourceService, ASTNode dataSourceRql, DataPointService dataPointService, DataPointDao dataPointDao) {
+    public DataSourceWithPointsExport(DataSourceService dataSourceService, ASTNode dataSourceRql, DataPointService dataPointService) {
         this.dataSourceService = dataSourceService;
         this.dataSourceRql = dataSourceRql;
         this.dataPointService = dataPointService;
-        this.dataPointDao = dataPointDao;
     }
 
     @JsonGetter("dataSources")
@@ -56,7 +55,7 @@ public class DataSourceWithPointsExport {
 
     @JsonGetter("dataPoints")
     public JsonStreamedArray getDataPoints() {
-        ConditionSortLimit csl = new ConditionSortLimit(dataPointDao.getTable().dataSourceId.in(dataSourceIds), null, null, null);
+        ConditionSortLimit csl = new ConditionSortLimit(dataPoints.dataSourceId.in(dataSourceIds), null, null, null);
         return new StreamedSeroJsonVORqlQuery<>(dataPointService, csl);
     }
 
