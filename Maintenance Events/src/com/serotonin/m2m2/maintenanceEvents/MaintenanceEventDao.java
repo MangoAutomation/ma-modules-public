@@ -361,44 +361,32 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
     }
 
     @Override
-    public RowMapper<MaintenanceEventVO> getRowMapper() {
-        return new MaintenanceEventRowMapper();
-    }
-
-    @Override
     public MaintenanceEventVO mapRecord(Record record) {
-        return null;
+        MaintenanceEventVO me = new MaintenanceEventVO();
+        me.setId(record.get(table.id));
+        me.setXid(record.get(table.xid));
+        me.setName(record.get(table.alias));
+        me.setAlarmLevel(AlarmLevels.fromValue(record.get(table.alarmLevel)));
+        me.setScheduleType(record.get(table.scheduleType));
+        me.setDisabled(charToBool(record.get(table.disabled)));
+        me.setActiveYear(record.get(table.activeYear));
+        me.setActiveMonth(record.get(table.activeMonth));
+        me.setActiveDay(record.get(table.activeDay));
+        me.setActiveHour(record.get(table.activeHour));
+        me.setActiveMinute(record.get(table.activeMinute));
+        me.setActiveSecond(record.get(table.activeSecond));
+        me.setActiveCron(record.get(table.activeCron));
+        me.setInactiveYear(record.get(table.inactiveYear));
+        me.setInactiveMonth(record.get(table.inactiveMonth));
+        me.setInactiveDay(record.get(table.inactiveDay));
+        me.setInactiveHour(record.get(table.inactiveHour));
+        me.setInactiveMinute(record.get(table.inactiveMinute));
+        me.setInactiveSecond(record.get(table.inactiveSecond));
+        me.setInactiveCron(record.get(table.inactiveCron));
+        me.setTimeoutPeriods(record.get(table.timeoutPeriods));
+        me.setTimeoutPeriodType(record.get(table.timeoutPeriodType));
+        me.setTogglePermission(new MangoPermission(record.get(table.togglePermissionId)));
+        return me;
     }
 
-    class MaintenanceEventRowMapper implements RowMapper<MaintenanceEventVO> {
-        @Override
-        public MaintenanceEventVO mapRow(ResultSet rs, int rowNum) throws SQLException {
-            MaintenanceEventVO me = new MaintenanceEventVO();
-            int i = 0;
-            me.setId(rs.getInt(++i));
-            me.setXid(rs.getString(++i));
-            me.setName(rs.getString(++i));
-            me.setAlarmLevel(AlarmLevels.fromValue(rs.getInt(++i)));
-            me.setScheduleType(rs.getInt(++i));
-            me.setDisabled(charToBool(rs.getString(++i)));
-            me.setActiveYear(rs.getInt(++i));
-            me.setActiveMonth(rs.getInt(++i));
-            me.setActiveDay(rs.getInt(++i));
-            me.setActiveHour(rs.getInt(++i));
-            me.setActiveMinute(rs.getInt(++i));
-            me.setActiveSecond(rs.getInt(++i));
-            me.setActiveCron(rs.getString(++i));
-            me.setInactiveYear(rs.getInt(++i));
-            me.setInactiveMonth(rs.getInt(++i));
-            me.setInactiveDay(rs.getInt(++i));
-            me.setInactiveHour(rs.getInt(++i));
-            me.setInactiveMinute(rs.getInt(++i));
-            me.setInactiveSecond(rs.getInt(++i));
-            me.setInactiveCron(rs.getString(++i));
-            me.setTimeoutPeriods(rs.getInt(++i));
-            me.setTimeoutPeriodType(rs.getInt(++i));
-            me.setTogglePermission(new MangoPermission(rs.getInt(++i)));
-            return me;
-        }
-    }
 }
