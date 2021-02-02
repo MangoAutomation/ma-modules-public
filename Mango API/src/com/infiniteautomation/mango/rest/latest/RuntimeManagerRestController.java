@@ -88,4 +88,25 @@ public class RuntimeManagerRestController {
         }
         dsRt.relinquish(rt);
     }
+
+    @ApiOperation(
+            value = "Reset the cache on a running data point",
+            notes = "Must have edit access to the data point",
+            response=Void.class
+    )
+    @RequestMapping(method = RequestMethod.POST, value = "/reset-cache/{xid}")
+    public void resetCache(
+            @ApiParam(value = "Valid Data Point XID", required = true, allowMultiple = false)
+            @PathVariable String xid,
+            @AuthenticationPrincipal PermissionHolder user,
+            HttpServletRequest request){
+
+        DataPointVO vo = service.get(xid);
+        service.ensureEditPermission(user, vo);
+        DataPointRT rt = Common.runtimeManager.getDataPoint(vo.getId());
+        if(rt == null){
+            throw new TranslatableIllegalStateException(new TranslatableMessage("rest.error.pointNotEnabled", xid));
+        }
+        rt.resetValues();
+    }
 }
