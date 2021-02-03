@@ -5,7 +5,6 @@
 package com.infiniteautomation.mango.spring.dao;
 
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
@@ -22,8 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
-import org.springframework.jdbc.core.RowCallbackHandler;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -103,34 +100,18 @@ public class WatchListDao extends AbstractVoDao<WatchListVO, WatchListsRecord, W
      * @param watchListId
      * @param callback
      */
-    public void getPoints(int watchListId, final Consumer<DataPointVO> callback){
-        // TODO Mango 4.0 no more select distinct? Not needed now?
-        //To cater for the select distinct needing the sort order column
+    public void getPoints(int watchListId, final Consumer<DataPointVO> callback) {
         List<Field<?>> selectFields = dataPointDao.getSelectFields();
         selectFields.add(watchListPoints.sortOrder);
 
-        SelectJoinStep<Record> selectPoints = dataPointDao.getSelectQuery(selectFields);
-        selectPoints = dataPointDao.joinTables(selectPoints, null);
-
-        selectPoints.join(watchListPoints)
-        .on(watchListPoints.dataPointId.eq(dataPoints.id))
-        .where(watchListPoints.watchListId.eq(watchListId))
-        .orderBy(watchListPoints.sortOrder);
-
-        RowMapper<DataPointVO> pointMapper = DataPointDao.getInstance().getRowMapper();
-        String sql = selectPoints.getSQL();
-        List<Object> args = selectPoints.getBindValues();
-
-        this.ejt.query(sql, args.toArray(new Object[0]), new RowCallbackHandler(){
-            private int row = 0;
-            @Override
-            public void processRow(ResultSet rs) throws SQLException {
-                DataPointVO vo = pointMapper.mapRow(rs, row);
-                dataPointDao.loadRelationalData(vo);
-                callback.accept(vo);
-                row++;
-            }
-
+        dataPointDao.joinTables(dataPointDao.getSelectQuery(selectFields), null)
+                .join(watchListPoints)
+                .on(watchListPoints.dataPointId.eq(dataPoints.id))
+                .where(watchListPoints.watchListId.eq(watchListId))
+                .orderBy(watchListPoints.sortOrder).forEach(record -> {
+            DataPointVO vo = dataPointDao.mapRecord(record);
+            dataPointDao.loadRelationalData(vo);
+            callback.accept(vo);
         });
     }
 

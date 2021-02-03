@@ -7,20 +7,22 @@ package com.serotonin.m2m2.maintenanceEvents;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.function.Consumer;
 
 import org.jooq.Record;
+import org.jooq.Record1;
 import org.jooq.Select;
+import org.jooq.impl.DSL;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.RowCallbackHandler;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.infiniteautomation.mango.db.tables.DataPoints;
+import com.infiniteautomation.mango.db.tables.DataSources;
 import com.infiniteautomation.mango.permission.MangoPermission;
 import com.infiniteautomation.mango.spring.MangoRuntimeContextConfiguration;
 import com.infiniteautomation.mango.spring.service.PermissionService;
@@ -31,6 +33,8 @@ import com.serotonin.m2m2.db.dao.AbstractVoDao;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
+import com.serotonin.m2m2.maintenanceEvents.db.tables.MaintenanceEventDataPoints;
+import com.serotonin.m2m2.maintenanceEvents.db.tables.MaintenanceEventDataSources;
 import com.serotonin.m2m2.maintenanceEvents.db.tables.MaintenanceEvents;
 import com.serotonin.m2m2.maintenanceEvents.db.tables.records.MaintenanceEventsRecord;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
@@ -39,15 +43,6 @@ import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 
 @Repository()
 public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, MaintenanceEventsRecord, MaintenanceEvents> {
-
-    private final String SELECT_POINT_IDS = "SELECT dataPointId FROM maintenanceEventDataPoints WHERE maintenanceEventId=?";
-    private final String SELECT_DATA_SOURCE_IDS = "SELECT dataSourceId FROM maintenanceEventDataSources WHERE maintenanceEventId=?";
-
-    private final String SELECT_POINT_XIDS = "SELECT xid from dataPoints AS dp JOIN maintenanceEventDataPoints mep ON mep.dataPointId = dp.id WHERE mep.maintenanceEventId=?";
-    private final String SELECT_DATA_SOURCE_XIDS = "SELECT xid from dataSources AS ds JOIN maintenanceEventDataSources med ON med.dataSourceId = ds.id WHERE med.maintenanceEventId=?";
-
-    private final String SELECT_POINTS;
-    private final String SELECT_DATA_SOURCES;
 
     private final DataPointDao dataPointDao;
     private final DataSourceDao dataSourceDao;
@@ -59,6 +54,11 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
             throw new ShouldNeverHappenException("DAO not initialized in Spring Runtime Context");
         return (MaintenanceEventDao)o;
     });
+
+    private final DataPoints dataPoints;
+    private final DataSources dataSources;
+    private final MaintenanceEventDataPoints mePoints;
+    private final MaintenanceEventDataSources meSources;
 
     @Autowired
     private MaintenanceEventDao(
@@ -72,8 +72,11 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
         this.dataPointDao = dataPointDao;
         this.dataSourceDao = dataSourceDao;
         this.permissionService = permissionService;
-        SELECT_POINTS = dataPointDao.getJoinedSelectQuery().getSQL() + " JOIN maintenanceEventDataPoints mep ON mep.dataPointId = dp.id WHERE mep.maintenanceEventId=?";
-        SELECT_DATA_SOURCES = dataSourceDao.getJoinedSelectQuery().getSQL() + " JOIN maintenanceEventDataSources med ON med.dataSourceId = ds.id WHERE med.maintenanceEventId=?";
+
+        this.dataPoints = DataPoints.DATA_POINTS;
+        this.dataSources = DataSources.DATA_SOURCES;
+        this.mePoints = MaintenanceEventDataPoints.MAINTENANCE_EVENT_DATA_POINTS;
+        this.meSources = MaintenanceEventDataSources.MAINTENANCE_EVENT_DATA_SOURCES;
     }
 
     /**
@@ -122,8 +125,8 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
 
     @Override
     public void loadRelationalData(MaintenanceEventVO vo) {
-        vo.setDataPoints(queryForList(SELECT_POINT_IDS, new Object[] {vo.getId()}, Integer.class));
-        vo.setDataSources(queryForList(SELECT_DATA_SOURCE_IDS, new Object[] {vo.getId()}, Integer.class));
+        vo.setDataPoints(queryForList("SELECT dataPointId FROM maintenanceEventDataPoints WHERE maintenanceEventId=?", new Object[] {vo.getId()}, Integer.class));
+        vo.setDataSources(queryForList("SELECT dataSourceId FROM maintenanceEventDataSources WHERE maintenanceEventId=?", new Object[] {vo.getId()}, Integer.class));
         //Populate permissions
         vo.setTogglePermission(permissionService.get(vo.getTogglePermission().getId()));
     }
@@ -140,18 +143,12 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
      * @param callback
      */
     public void getPoints(int maintenanceEventId, final Consumer<DataPointVO> callback){
-        RowMapper<DataPointVO> pointMapper = dataPointDao.getRowMapper();
-        this.ejt.query(SELECT_POINTS, new Object[]{maintenanceEventId}, new RowCallbackHandler(){
-            private int row = 0;
-
-            @Override
-            public void processRow(ResultSet rs) throws SQLException {
-                DataPointVO vo = pointMapper.mapRow(rs, row);
-                dataPointDao.loadRelationalData(vo);
-                callback.accept(vo);
-                row++;
-            }
-
+        dataPointDao.getJoinedSelectQuery()
+                .join(mePoints).on(mePoints.dataPointId.equal(dataPoints.id))
+                .where(mePoints.maintenanceEventId.equal(maintenanceEventId)).forEach(record -> {
+            DataPointVO vo = dataPointDao.mapRecord(record);
+            dataPointDao.loadRelationalData(vo);
+            callback.accept(vo);
         });
     }
 
@@ -161,7 +158,7 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
      * @param callback
      */
     public void getPointXids(int maintenanceEventId, final Consumer<String> callback){
-        this.ejt.query(SELECT_POINT_XIDS, new Object[]{maintenanceEventId}, new RowCallbackHandler(){
+        this.ejt.query("SELECT xid from dataPoints AS dp JOIN maintenanceEventDataPoints mep ON mep.dataPointId = dp.id WHERE mep.maintenanceEventId=?", new Object[]{maintenanceEventId}, new RowCallbackHandler(){
             private int row = 0;
 
             @Override
@@ -179,18 +176,12 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
      * @param callback
      */
     public void getDataSources(int maintenanceEventId, final Consumer<DataSourceVO> callback) {
-        RowMapper<DataSourceVO> mapper = dataSourceDao.getRowMapper();
-        this.ejt.query(SELECT_DATA_SOURCES, new Object[]{maintenanceEventId}, new RowCallbackHandler(){
-            private int row = 0;
-
-            @Override
-            public void processRow(ResultSet rs) throws SQLException {
-                DataSourceVO vo = mapper.mapRow(rs, row);
-                dataSourceDao.loadRelationalData(vo);
-                callback.accept(vo);
-                row++;
-            }
-
+        dataSourceDao.getJoinedSelectQuery()
+                .join(meSources).on(meSources.dataSourceId.equal(dataSources.id))
+                .where(meSources.maintenanceEventId.equal(maintenanceEventId)).forEach(record -> {
+            DataSourceVO vo = dataSourceDao.mapRecord(record);
+            dataSourceDao.loadRelationalData(vo);
+            callback.accept(vo);
         });
     }
 
@@ -200,7 +191,7 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
      * @param callback
      */
     public void getSourceXids(int maintenanceEventId, final Consumer<String> callback){
-        this.ejt.query(SELECT_DATA_SOURCE_XIDS, new Object[]{maintenanceEventId}, new RowCallbackHandler(){
+        this.ejt.query("SELECT xid from dataSources AS ds JOIN maintenanceEventDataSources med ON med.dataSourceId = ds.id WHERE med.maintenanceEventId=?", new Object[]{maintenanceEventId}, new RowCallbackHandler(){
             private int row = 0;
 
             @Override
@@ -212,14 +203,12 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
         });
     }
 
-    private static final String SELECT_BY_DATA_POINT = "SELECT maintenanceEventId FROM maintenanceEventDataPoints WHERE dataPointId=?";
-    private static final String SELECT_BY_DATA_SOURCE = "SELECT maintenanceEventId FROM maintenanceEventDataSources WHERE dataSourceId=?";
     /**
      * Get all maintenance events that have this data point in their list OR the its data source in the list
      * @param dataPointId
      * @param callback
      */
-    public void getForDataPoint(int dataPointId, Consumer<com.serotonin.m2m2.maintenanceEvents.MaintenanceEventVO> callback) {
+    public void getForDataPoint(int dataPointId, Consumer<MaintenanceEventVO> callback) {
         DataPointVO vo = dataPointDao.get(dataPointId);
         if(vo == null)
             return;
@@ -230,29 +219,24 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
      * @param dataPointXid
      * @param callback
      */
-    public void getForDataPoint(String dataPointXid, Consumer<com.serotonin.m2m2.maintenanceEvents.MaintenanceEventVO> callback) {
+    public void getForDataPoint(String dataPointXid, Consumer<MaintenanceEventVO> callback) {
         DataPointVO vo = dataPointDao.getByXid(dataPointXid);
         if(vo == null)
             return;
         getForDataPoint(vo, callback);
     }
-    protected void getForDataPoint(DataPointVO vo, Consumer<com.serotonin.m2m2.maintenanceEvents.MaintenanceEventVO> callback) {
+    protected void getForDataPoint(DataPointVO vo, Consumer<MaintenanceEventVO> callback) {
+        Select<Record1<Integer>> idsForPoint = DSL.select(mePoints.maintenanceEventId)
+                .from(mePoints)
+                .where(mePoints.dataPointId.eq(vo.getId()));
 
-        //Get the events that are listed for this point
-        List<Integer> ids = queryForList(SELECT_BY_DATA_POINT, new Object[] {vo.getId()}, Integer.class);
-        if(ids.size() == 0)
-            return;
-        Select<Record> query = this.getJoinedSelectQuery().where(getIdField().in(ids));
-        List<Object> args = query.getBindValues();
-        query(query.getSQL(), args.toArray(), getRowMapper(), callback);
+        Select<Record1<Integer>> idsForSource = DSL.select(meSources.maintenanceEventId)
+                .from(meSources)
+                .where(meSources.dataSourceId.eq(vo.getDataSourceId()));
 
-        //Get the events that are listed for the point's data source
-        ids = queryForList(SELECT_BY_DATA_SOURCE, new Object[] {vo.getDataSourceId()}, Integer.class);
-        if(ids.size() == 0)
-            return;
-        query = this.getJoinedSelectQuery().where(getIdField().in(ids));
-        args = query.getBindValues();
-        query(query.getSQL(), args.toArray(), getRowMapper(), callback);
+        getJoinedSelectQuery()
+                .where(DSL.or(table.id.in(idsForPoint), table.id.in(idsForSource)))
+                .forEach(record -> callback.accept(mapRecord(record)));
     }
 
     /**
@@ -260,7 +244,7 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
      * @param dataSourceXid
      * @param callback
      */
-    public void getForDataSource(String dataSourceXid, Consumer<com.serotonin.m2m2.maintenanceEvents.MaintenanceEventVO> callback) {
+    public void getForDataSource(String dataSourceXid, Consumer<MaintenanceEventVO> callback) {
         Integer id = dataPointDao.getIdByXid(dataSourceXid);
         if(id == null)
             return;
@@ -273,14 +257,14 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
      * @param dataSourceId
      * @param callback
      */
-    public void getForDataSource(int dataSourceId, Consumer<com.serotonin.m2m2.maintenanceEvents.MaintenanceEventVO> callback) {
-        //Get the events that are listed for the point's data source
-        List<Integer> ids = queryForList(SELECT_BY_DATA_SOURCE, new Object[] {dataSourceId}, Integer.class);
-        if(ids.size() == 0)
-            return;
-        Select<Record> query = this.getJoinedSelectQuery().where(getIdField().in(ids));
-        List<Object> args = query.getBindValues();
-        query(query.getSQL(), args.toArray(), getRowMapper(), callback);
+    public void getForDataSource(int dataSourceId, Consumer<MaintenanceEventVO> callback) {
+        Select<Record1<Integer>> idsForSource = DSL.select(meSources.maintenanceEventId)
+                .from(meSources)
+                .where(meSources.dataSourceId.eq(dataSourceId));
+
+        getJoinedSelectQuery()
+                .where(table.id.in(idsForSource))
+                .forEach(record -> callback.accept(mapRecord(record)));
     }
 
     private static final String INSERT_DATA_SOURCE_IDS = "INSERT INTO maintenanceEventDataSources (maintenanceEventId, dataSourceId) VALUES (?,?)";

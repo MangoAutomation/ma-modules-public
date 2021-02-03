@@ -55,10 +55,12 @@ public class WatchListModelMapping implements RestModelMapping<WatchListVO, Watc
         model.setReadPermission(new MangoPermissionModel(vo.getReadPermission()));
         model.setEditPermission(new MangoPermissionModel(vo.getEditPermission()));
 
-        //Set the point summaries
-        List<WatchListDataPointModel> points = new ArrayList<>();
-        watchListService.getWatchListPoints(vo.getId(), (point) -> points.add(new WatchListDataPointModel(point)));
-        model.setPoints(points);
+        if (WatchListVO.STATIC_TYPE.equals(vo.getType())) {
+            //Set the point summaries
+            List<WatchListDataPointModel> points = new ArrayList<>();
+            watchListService.getWatchListPoints(vo.getId(), (point) -> points.add(new WatchListDataPointModel(point)));
+            model.setPoints(points);
+        }
 
         return model;
     }
