@@ -74,10 +74,11 @@ const validateSchema = {
     },
     'WatchListModel': function(item, path) {
         this['WatchListSummaryModel'](item, path);
-        assert.isArray(item.points, path + '.points');
-        item.points.forEach((item, index) => {
-            this['WatchListDataPointModel'](item, path + '.points' + `[${index}]`);
-        });
+        if (Array.isArray(item.points)) {
+            item.points.forEach((item, index) => {
+                this['WatchListDataPointModel'](item, path + '.points' + `[${index}]`);
+            });
+        }
     },
     'WatchListDataPointModel': function(item, path) {
         assert.isObject(item, path);
