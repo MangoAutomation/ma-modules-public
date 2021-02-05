@@ -43,57 +43,57 @@ public class RestModelMapper {
         }
     }
 
-    public <T> T map(Object from, Class<T> model, PermissionHolder user) {
-        Objects.requireNonNull(from);
-        Objects.requireNonNull(model);
+    public <T> T map(Object vo, Class<T> modelClass, PermissionHolder user) {
+        Objects.requireNonNull(vo);
+        Objects.requireNonNull(modelClass);
 
         for (RestModelMapping<?,?> mapping : mappings) {
-            if (mapping.supports(from.getClass(), model)) {
+            if (mapping.supports(vo.getClass(), modelClass)) {
                 @SuppressWarnings("unchecked")
-                T result = (T) mapping.map(from, user, this);
+                T result = (T) mapping.map(vo, user, this);
                 if (result != null) {
                     return result;
                 }
             }
         }
 
-        throw new ServerErrorException(new TranslatableMessage("rest.missingModelMapping", from.getClass(), model));
+        throw new ServerErrorException(new TranslatableMessage("rest.missingModelMapping", vo.getClass(), modelClass));
     }
 
-    public <T> MappingJacksonValue mapWithView(Object from, Class<T> model, PermissionHolder user) {
-        Objects.requireNonNull(from);
-        Objects.requireNonNull(model);
+    public <T> MappingJacksonValue mapWithView(Object vo, Class<T> modelClass, PermissionHolder user) {
+        Objects.requireNonNull(vo);
+        Objects.requireNonNull(modelClass);
 
         for (RestModelMapping<?,?> mapping : mappings) {
-            if (mapping.supports(from.getClass(), model)) {
+            if (mapping.supports(vo.getClass(), modelClass)) {
                 @SuppressWarnings("unchecked")
-                T result = (T) mapping.map(from, user, this);
+                T result = (T) mapping.map(vo, user, this);
                 if (result != null) {
                     MappingJacksonValue mappingValue = new MappingJacksonValue(result);
-                    mappingValue.setSerializationView(mapping.view(from, user));
+                    mappingValue.setSerializationView(mapping.view(vo, user));
                     return mappingValue;
                 }
             }
         }
 
-        throw new ServerErrorException(new TranslatableMessage("rest.missingModelMapping", from.getClass(), model));
+        throw new ServerErrorException(new TranslatableMessage("rest.missingModelMapping", vo.getClass(), modelClass));
     }
 
-    public <T> T unMap(Object from, Class<T> vo, PermissionHolder user) {
-        Objects.requireNonNull(from);
-        Objects.requireNonNull(vo);
+    public <T> T unMap(Object model, Class<T> voClass, PermissionHolder user) {
+        Objects.requireNonNull(model);
+        Objects.requireNonNull(voClass);
 
         for (RestModelMapping<?,?> mapping : mappings) {
-            if (mapping.supports(vo, from.getClass())) {
+            if (mapping.unmapSupports(model.getClass(), voClass)) {
                 @SuppressWarnings("unchecked")
-                T result = (T) mapping.unmap(from, user, this);
+                T result = (T) mapping.unmap(model, user, this);
                 if (result != null) {
                     return result;
                 }
             }
         }
 
-        throw new ServerErrorException(new TranslatableMessage("rest.missingModelMapping", from.getClass(), vo));
+        throw new ServerErrorException(new TranslatableMessage("rest.missingModelMapping", model.getClass(), voClass));
     }
 
     /**

@@ -6,7 +6,6 @@ package com.infiniteautomation.mango.rest.latest.model;
 import java.util.Map;
 
 import com.infiniteautomation.mango.util.exception.ValidationException;
-import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.i18n.ProcessMessage;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
@@ -19,19 +18,36 @@ import com.serotonin.m2m2.vo.permission.PermissionHolder;
  */
 public interface RestModelMapping<F, T> {
 
-    public Class<? extends F> fromClass();
-    public Class<? extends T> toClass();
+    /**
+     * @return the VO class supported by this mapper
+     */
+    Class<? extends F> fromClass();
+
+    /**
+     *
+     * @return the model class supported by this mapper
+     */
+    Class<? extends T> toClass();
 
     /**
      * Checks if the mapping supports mapping the object to the desired model class.
      *
-     * @param from
-     * @param toClass
+     * @param voClass vo class
+     * @param modelClass model class
      * @return true if the mapping supports mapping the object to the desired model class
      */
-    public default boolean supports(Class<?> from, Class<?> toClass) {
-        return this.fromClass().isAssignableFrom(from) &&
-                toClass.isAssignableFrom(this.toClass());
+    default boolean supports(Class<?> voClass, Class<?> modelClass) {
+        return fromClass().isAssignableFrom(voClass) && modelClass.isAssignableFrom(toClass());
+    }
+
+    /**
+     * Check for reverse mapping support.
+     * @param modelClass the model class
+     * @param voClass vo class
+     * @return
+     */
+    default boolean unmapSupports(Class<?> modelClass, Class<?> voClass) {
+        return toClass().isAssignableFrom(modelClass) && voClass.isAssignableFrom(fromClass());
     }
 
     /**
@@ -42,7 +58,7 @@ public interface RestModelMapping<F, T> {
      * @param mapper
      * @return The model object or null
      */
-    public T map(Object from, PermissionHolder user, RestModelMapper mapper);
+    T map(Object from, PermissionHolder user, RestModelMapper mapper);
 
     /**
      * TODO Mango 4.0 remove default and require an implementation
@@ -51,9 +67,10 @@ public interface RestModelMapping<F, T> {
      * @param user
      * @param mapper
      * @return
+     * @throws ValidationException
      */
-    default public F unmap(Object from, PermissionHolder user, RestModelMapper mapper) throws ValidationException {
-        throw new ShouldNeverHappenException("Unimplemented");
+    default F unmap(Object from, PermissionHolder user, RestModelMapper mapper) throws ValidationException {
+        throw new UnsupportedOperationException("Unimplemented");
     }
 
     /**
@@ -66,8 +83,8 @@ public interface RestModelMapping<F, T> {
      * @return
      * @throws ValidationException
      */
-    default public F unmapInto(Object from, F into, PermissionHolder user, RestModelMapper mapper) throws ValidationException {
-        throw new ShouldNeverHappenException("Unimplemented");
+    default F unmapInto(Object from, F into, PermissionHolder user, RestModelMapper mapper) throws ValidationException {
+        throw new UnsupportedOperationException("Unimplemented");
     }
 
     /**
@@ -77,7 +94,7 @@ public interface RestModelMapping<F, T> {
      * @param user
      * @return
      */
-    public default Class<?> view(Object from, PermissionHolder user) {
+    default Class<?> view(Object from, PermissionHolder user) {
         return null;
     }
 
@@ -90,7 +107,7 @@ public interface RestModelMapping<F, T> {
      * @param restModelMapper
      * @return
      */
-    default public ProcessResult mapValidationErrors(Class<?> modelClass, Class<?> validatedClass,
+    default ProcessResult mapValidationErrors(Class<?> modelClass, Class<?> validatedClass,
             ProcessResult result, RestModelMapper restModelMapper) {
         return result;
     }
