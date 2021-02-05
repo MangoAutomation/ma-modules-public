@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -38,16 +37,19 @@ import com.infiniteautomation.mango.rest.latest.bulk.VoAction;
 import com.infiniteautomation.mango.rest.latest.exception.AbstractRestException;
 import com.infiniteautomation.mango.rest.latest.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.latest.model.FilteredStreamWithTotal;
+import com.infiniteautomation.mango.rest.latest.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.latest.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.latest.model.StreamedSeroJsonVORqlQuery;
 import com.infiniteautomation.mango.rest.latest.model.StreamedVORqlQueryWithTotal;
 import com.infiniteautomation.mango.rest.latest.model.datasource.RuntimeStatusModel;
 import com.infiniteautomation.mango.rest.latest.model.user.ApproveUsersModel;
 import com.infiniteautomation.mango.rest.latest.model.user.ApprovedUsersModel;
+import com.infiniteautomation.mango.rest.latest.model.user.LinkedAccountModel;
 import com.infiniteautomation.mango.rest.latest.model.user.UserActionAndModel;
 import com.infiniteautomation.mango.rest.latest.model.user.UserIndividualRequest;
 import com.infiniteautomation.mango.rest.latest.model.user.UserIndividualResponse;
 import com.infiniteautomation.mango.rest.latest.model.user.UserModel;
+import com.infiniteautomation.mango.rest.latest.model.user.UserModelMapping;
 import com.infiniteautomation.mango.rest.latest.patch.PatchVORequestBody;
 import com.infiniteautomation.mango.rest.latest.patch.PatchVORequestBody.PatchIdField;
 import com.infiniteautomation.mango.rest.latest.temporaryResource.MangoTaskTemporaryResourceManager;
@@ -63,6 +65,7 @@ import com.serotonin.json.type.JsonStreamedArray;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.i18n.Translations;
+import com.serotonin.m2m2.vo.LinkedAccount;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
@@ -86,12 +89,17 @@ public class UserRestController {
     //Bulk management
     private static final String RESOURCE_TYPE_BULK_USER = "BULK_USER";
     private final TemporaryResourceManager<UserBulkResponse, AbstractRestException> bulkResourceManager;
-    private final BiFunction<User, PermissionHolder, UserModel> map = (vo, user) -> new UserModel(vo);
     private final UsersService service;
     private final MangoSessionRegistry sessionRegistry;
+    private final RestModelMapper mapper;
+    private final UserModelMapping userModelMapper;
 
     @Autowired
-    public UserRestController(UsersService service, TemporaryResourceWebSocketHandler websocket, MangoSessionRegistry sessionRegistry, Environment environment) {
+    public UserRestController(UsersService service, TemporaryResourceWebSocketHandler websocket,
+                              MangoSessionRegistry sessionRegistry, Environment environment, RestModelMapper mapper,
+                              UserModelMapping userModelMapper) {
+        this.mapper = mapper;
+        this.userModelMapper = userModelMapper;
         this.bulkResourceManager = new MangoTaskTemporaryResourceManager<>(service.getPermissionService(), websocket, environment);
         this.service = service;
         this.sessionRegistry = sessionRegistry;
@@ -171,7 +179,6 @@ public class UserRestController {
             throw new PermissionException(new TranslatableMessage("rest.error.usernamePasswordOnly"), user);
 
         User update = service.update(existing, model.toVO());
-
         sessionRegistry.userUpdated(request, update);
         URI location = builder.path("/users/{username}").buildAndExpand(update.getUsername()).toUri();
         HttpHeaders headers = new HttpHeaders();
@@ -339,7 +346,7 @@ public class UserRestController {
 
     protected StreamedArrayWithTotal doQuery(ASTNode rql, PermissionHolder user, Function<UserModel, ?> toModel) {
         final Function<User, Object> transformUser = item -> {
-            UserModel model = map.apply(item, user);
+            UserModel model = userModelMapper.map(item, user, mapper);
 
             // option to apply a further transformation
             if (toModel != null) {
@@ -597,6 +604,33 @@ public class UserRestController {
         export.put("users", users);
         return export;
     }
+
+    @RequestMapping(method = RequestMethod.PUT, value = "/linked-accounts/{username}")
+    public void updateLinkedAccounts(
+            @PathVariable String username,
+            @RequestBody List<LinkedAccountModel> linkedAccountModels,
+            @AuthenticationPrincipal PermissionHolder currentUser) {
+
+        User userToUpdate = service.get(username);
+
+        List<LinkedAccount> linkedAccounts = linkedAccountModels.stream()
+                .map(a -> mapper.unMap(a, LinkedAccount.class, currentUser))
+                .collect(Collectors.toList());
+
+        service.updateLinkedAccounts(userToUpdate.getId(), linkedAccounts);
+    }
+
+    @RequestMapping(method = RequestMethod.GET, value = "/linked-accounts/{username}")
+    public List<LinkedAccountModel> getLinkedAccounts(
+            @PathVariable String username,
+            @AuthenticationPrincipal PermissionHolder currentUser) {
+
+        User userToGet = service.get(username);
+        return service.getLinkedAccounts(userToGet).stream()
+                .map(a -> mapper.map(a, LinkedAccountModel.class, currentUser))
+                .collect(Collectors.toList());
+    }
+
 
     public static class UserBulkRequest extends BulkRequest<VoAction, UserModel, UserIndividualRequest> {
     }

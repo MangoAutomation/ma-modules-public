@@ -5,6 +5,7 @@ package com.infiniteautomation.mango.rest.latest.model.user;
 
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
@@ -50,6 +51,7 @@ public class UserModel extends AbstractVoModel<User> {
     private Date created;
     private Date emailVerified;
     private JsonNode data;
+    private List<LinkedAccountModel> linkedAccounts;
 
     @ApiModelProperty("List of system settings permission definitions this user has access to")
     private Set<String> systemPermissions;
@@ -306,5 +308,13 @@ public class UserModel extends AbstractVoModel<User> {
         user.setData(data);
 
         return user;
+    }
+
+    public List<LinkedAccountModel> getLinkedAccounts() {
+        return linkedAccounts;
+    }
+
+    public void setLinkedAccounts(List<LinkedAccountModel> linkedAccounts) {
+        this.linkedAccounts = linkedAccounts;
     }
 }
