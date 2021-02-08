@@ -4,6 +4,8 @@
 
 package com.infiniteautomation.mango.rest;
 
+import java.util.EnumSet;
+
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.serotonin.json.type.JsonValue;
@@ -23,8 +25,8 @@ public class RestApiJacksonModuleDefinition extends JacksonModuleDefinition {
     }
 
     @Override
-    public ObjectMapperSource getSourceMapperType() {
-        return ObjectMapperSource.REST;
+    public EnumSet<ObjectMapperSource> getSourceMapperTypes() {
+        return EnumSet.of(ObjectMapperSource.REST);
     }
 
     public class RestApiJacksonModule extends SimpleModule {
