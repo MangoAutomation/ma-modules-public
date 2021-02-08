@@ -23,7 +23,7 @@ public class RestApiJacksonModuleDefinition extends JacksonModuleDefinition {
 
     @Override
     public Iterable<? extends Module> getJacksonModules() {
-        return Collections.singleton(new RestApiJacksonModule());
+        return Collections.singleton(new RestApiJacksonModule(getModule().getName(), createJacksonVersion()));
     }
 
     @Override
@@ -34,8 +34,8 @@ public class RestApiJacksonModuleDefinition extends JacksonModuleDefinition {
     public static class RestApiJacksonModule extends SimpleModule {
         private static final long serialVersionUID = 1L;
 
-        public RestApiJacksonModule() {
-            super("MangoApi", new Version(4, 0, 0, "", "com.infiniteautomation", "mango"));
+        public RestApiJacksonModule(String name, Version version) {
+            super(name, version);
 
             this.addSerializer(ASTNode.class, new ASTNodeSerializer());
             this.addSerializer(JsonValue.class, new SerotoninJsonValueSerializer());
