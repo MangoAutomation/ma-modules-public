@@ -4,9 +4,11 @@
 
 package com.infiniteautomation.mango.rest;
 
+import java.util.Collections;
 import java.util.EnumSet;
 
 import com.fasterxml.jackson.core.Version;
+import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.serotonin.json.type.JsonValue;
 import com.serotonin.m2m2.module.JacksonModuleDefinition;
@@ -20,8 +22,8 @@ import net.jazdw.rql.parser.ASTNode;
 public class RestApiJacksonModuleDefinition extends JacksonModuleDefinition {
 
     @Override
-    public SimpleModule getJacksonModule() {
-        return new RestApiJacksonModule();
+    public Iterable<? extends Module> getJacksonModules() {
+        return Collections.singleton(new RestApiJacksonModule());
     }
 
     @Override
@@ -29,7 +31,7 @@ public class RestApiJacksonModuleDefinition extends JacksonModuleDefinition {
         return EnumSet.of(ObjectMapperSource.REST);
     }
 
-    public class RestApiJacksonModule extends SimpleModule {
+    public static class RestApiJacksonModule extends SimpleModule {
         private static final long serialVersionUID = 1L;
 
         public RestApiJacksonModule() {
