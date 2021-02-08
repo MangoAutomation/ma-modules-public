@@ -25,6 +25,7 @@ import com.infiniteautomation.mango.rest.latest.model.StreamedVORqlQueryWithTota
 import com.infiniteautomation.mango.rest.latest.model.role.RoleModel;
 import com.infiniteautomation.mango.rest.latest.model.role.RoleModelMapping;
 import com.infiniteautomation.mango.rest.latest.patch.PatchVORequestBody;
+import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.spring.service.RoleService;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.vo.role.RoleVO;
@@ -49,12 +50,14 @@ public class RoleRestController {
     private final RoleService service;
     private final RoleModelMapping mapping;
     private final RestModelMapper mapper;
+    private final PermissionService permissionService;
 
     @Autowired
-    public RoleRestController(RoleService service, RoleModelMapping mapping, RestModelMapper mapper) {
+    public RoleRestController(RoleService service, RoleModelMapping mapping, RestModelMapper mapper, PermissionService permissionService) {
         this.service = service;
         this.mapping = mapping;
         this.mapper = mapper;
+        this.permissionService = permissionService;
     }
 
     /**
@@ -128,7 +131,7 @@ public class RoleRestController {
     }
 
     private StreamedArrayWithTotal doQuery(ASTNode rql, PermissionHolder user) {
-        if (service.getPermissionService().hasAdminRole(user)) {
+        if (permissionService.hasAdminRole(user)) {
             return new StreamedVORqlQueryWithTotal<>(service, rql, null, null, null, vo -> mapping.map(vo, user, mapper));
         } else {
             return new StreamedVORqlQueryWithTotal<>(service, rql, null, null, null, vo -> service.hasReadPermission(user, vo), vo -> mapping.map(vo, user, mapper));

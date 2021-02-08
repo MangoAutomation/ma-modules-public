@@ -38,6 +38,7 @@ import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResou
 import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResourceManager;
 import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResourceWebSocketHandler;
 import com.infiniteautomation.mango.spring.service.DataSourceService;
+import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -72,9 +73,9 @@ public class MBusDataSourceRestController {
     private final ExecutorService executor;
 
     @Autowired
-    public MBusDataSourceRestController(DataSourceService service, TemporaryResourceWebSocketHandler handler, ExecutorService executor, Environment environment) {
+    public MBusDataSourceRestController(DataSourceService service, TemporaryResourceWebSocketHandler handler, ExecutorService executor, Environment environment, PermissionService permissionService) {
         this.service = service;
-        this.temporaryResourceManager = new MangoTaskTemporaryResourceManager<MBusScanResult>(service.getPermissionService(), handler, environment);
+        this.temporaryResourceManager = new MangoTaskTemporaryResourceManager<>(permissionService, handler, environment);
         this.executor = executor;
     }
 

@@ -58,6 +58,7 @@ import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResou
 import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResourceManager;
 import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResourceStatusUpdate;
 import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResourceWebSocketHandler;
+import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.spring.service.UsersService;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.infiniteautomation.mango.util.exception.TranslatableExceptionI;
@@ -93,14 +94,16 @@ public class UserRestController {
     private final MangoSessionRegistry sessionRegistry;
     private final RestModelMapper mapper;
     private final UserModelMapping userModelMapper;
+    private final PermissionService permissionService;
 
     @Autowired
     public UserRestController(UsersService service, TemporaryResourceWebSocketHandler websocket,
                               MangoSessionRegistry sessionRegistry, Environment environment, RestModelMapper mapper,
-                              UserModelMapping userModelMapper) {
+                              UserModelMapping userModelMapper, PermissionService permissionService) {
         this.mapper = mapper;
         this.userModelMapper = userModelMapper;
-        this.bulkResourceManager = new MangoTaskTemporaryResourceManager<>(service.getPermissionService(), websocket, environment);
+        this.permissionService = permissionService;
+        this.bulkResourceManager = new MangoTaskTemporaryResourceManager<>(permissionService, websocket, environment);
         this.service = service;
         this.sessionRegistry = sessionRegistry;
     }
@@ -336,7 +339,7 @@ public class UserRestController {
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
 
         Map<String, JsonStreamedArray> export = new HashMap<>();
-        if (!service.getPermissionService().hasAdminRole(user)) {
+        if (!permissionService.hasAdminRole(user)) {
             User currentUser = user.getUser();
             rql = RQLUtils.addAndRestriction(rql, new ASTNode("eq", "id", currentUser == null ? Common.NEW_ID : currentUser.getId()));
         }
@@ -355,7 +358,7 @@ public class UserRestController {
 
             return model;
         };
-        if (!service.getPermissionService().hasAdminRole(user)) {
+        if (!permissionService.hasAdminRole(user)) {
             User currentUser = user.getUser();
             rql = RQLUtils.addAndRestriction(rql, new ASTNode("eq", "id", currentUser == null ? Common.NEW_ID : currentUser.getId()));
         }

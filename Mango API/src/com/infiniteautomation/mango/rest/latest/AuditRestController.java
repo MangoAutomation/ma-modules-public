@@ -24,6 +24,7 @@ import com.infiniteautomation.mango.rest.latest.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.latest.model.StreamedBasicVORqlQueryWithTotal;
 import com.infiniteautomation.mango.rest.latest.model.audit.AuditEventInstanceModel;
 import com.infiniteautomation.mango.spring.service.AuditEventService;
+import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
@@ -57,10 +58,12 @@ public class AuditRestController {
     //Map of keys -> model members to value -> Vo member/sql column
     protected Map<String, String> modelMap;
     private final Map<String, Function<Object, Object>> valueConverterMap;
+    private final PermissionService permissionService;
 
     @Autowired
-    public AuditRestController(AuditEventService service) {
+    public AuditRestController(AuditEventService service, PermissionService permissionService) {
         this.service = service;
+        this.permissionService = permissionService;
         this.valueConverterMap = new HashMap<>();
         this.valueConverterMap.put("alarmLevel", (toConvert) -> {
             return Enum.valueOf(AlarmLevels.class, (String)toConvert).value();
@@ -94,7 +97,7 @@ public class AuditRestController {
             @AuthenticationPrincipal User user,
             HttpServletRequest request) {
 
-        service.getPermissionService().ensureAdminRole(user);
+        permissionService.ensureAdminRole(user);
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
         return doQuery(rql, user);
     }
@@ -108,7 +111,7 @@ public class AuditRestController {
             @AuthenticationPrincipal User user,
             HttpServletRequest request) {
 
-        service.getPermissionService().ensureAdminRole(user);
+        permissionService.ensureAdminRole(user);
 
         return AuditEventType.getRegisteredEventTypes().stream().map(vo -> {
             EventTypeInfo info = new EventTypeInfo();
@@ -121,7 +124,7 @@ public class AuditRestController {
     }
 
     protected StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
-        if (service.getPermissionService().hasAdminRole(user)) {
+        if (permissionService.hasAdminRole(user)) {
             return new StreamedBasicVORqlQueryWithTotal<>(service, rql, null, null, valueConverterMap, vo -> map.apply(vo, user));
         } else {
             // Add some conditions to restrict based on user permissions

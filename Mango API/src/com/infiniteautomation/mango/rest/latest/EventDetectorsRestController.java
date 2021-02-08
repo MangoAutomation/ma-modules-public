@@ -55,6 +55,7 @@ import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResou
 import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResourceWebSocketHandler;
 import com.infiniteautomation.mango.spring.service.EventDetectorsService;
 import com.infiniteautomation.mango.spring.service.EventHandlerService;
+import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.infiniteautomation.mango.util.exception.TranslatableIllegalStateException;
 import com.serotonin.json.type.JsonStreamedArray;
@@ -85,18 +86,20 @@ public class EventDetectorsRestController {
     private final BiFunction<AbstractEventDetectorVO, PermissionHolder, AbstractEventDetectorModel<?>> map;
     private final RestModelMapper modelMapper;
     private final Map<String, Field<?>> fieldMap;
+    private final PermissionService permissionService;
 
     @Autowired
     public EventDetectorsRestController(EventDetectorsService service,
-            RestModelMapper modelMapper,
-            TemporaryResourceWebSocketHandler websocket, Environment environment){
+                                        RestModelMapper modelMapper,
+                                        PermissionService permissionService, TemporaryResourceWebSocketHandler websocket, Environment environment){
         this.service = service;
         this.map = (vo, user) -> {
             AbstractEventDetectorModel<?> model = modelMapper.map(vo, AbstractEventDetectorModel.class, user);
             return model;
         };
         this.modelMapper = modelMapper;
-        this.bulkResourceManager = new MangoTaskTemporaryResourceManager<EventDetectorBulkResponse>(service.getPermissionService(), websocket, environment);
+        this.permissionService = permissionService;
+        this.bulkResourceManager = new MangoTaskTemporaryResourceManager<EventDetectorBulkResponse>(permissionService, websocket, environment);
 
         this.fieldMap = new HashMap<>();
         this.fieldMap.put("detectorSourceType", EventDetectors.EVENT_DETECTORS.sourceTypeName);
@@ -502,7 +505,7 @@ public class EventDetectorsRestController {
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
 
         Map<String, JsonStreamedArray> export = new HashMap<>();
-        if (service.getPermissionService().hasAdminRole(user)) {
+        if (permissionService.hasAdminRole(user)) {
             export.put("eventDetectors", new StreamedSeroJsonVORqlQuery<>(service, rql, null, fieldMap, null));
         }else {
             export.put("eventDetectors", new StreamedSeroJsonVORqlQuery<>(service, rql, null, fieldMap, null,  vo -> service.hasReadPermission(user, vo)));
@@ -512,7 +515,7 @@ public class EventDetectorsRestController {
 
     private StreamedArrayWithTotal doQuery(ASTNode rql, PermissionHolder user, Function<AbstractEventDetectorVO, ?> toModel) {
         //If we are admin or have overall data source permission we can view all
-        if (service.getPermissionService().hasAdminRole(user)) {
+        if (permissionService.hasAdminRole(user)) {
             return new StreamedVORqlQueryWithTotal<>(service, rql, null, fieldMap, null, toModel);
         } else {
             return new StreamedVORqlQueryWithTotal<>(service, rql, null, fieldMap, null, vo -> service.hasReadPermission(user, vo), toModel);

@@ -43,6 +43,7 @@ import com.infiniteautomation.mango.rest.latest.model.StreamedVORqlQueryWithTota
 import com.infiniteautomation.mango.rest.latest.model.event.EventInstanceModel;
 import com.infiniteautomation.mango.rest.latest.patch.PatchVORequestBody;
 import com.infiniteautomation.mango.spring.service.EventInstanceService;
+import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.spring.service.maintenanceEvents.MaintenanceEventsService;
 import com.infiniteautomation.mango.spring.service.maintenanceEvents.MaintenanceEventsService.DataPointPermissionsCheckCallback;
 import com.infiniteautomation.mango.spring.service.maintenanceEvents.MaintenanceEventsService.DataSourcePermissionsCheckCallback;
@@ -76,14 +77,16 @@ public class MaintenanceEventsRestController {
 
     private final MaintenanceEventDao dao;
     private final MaintenanceEventsService service;
+    private final PermissionService permissionService;
 
     @Autowired
     public MaintenanceEventsRestController(MaintenanceEventsService service,
-            MaintenanceEventDao dao,
-            RestModelMapper modelMapper, EventInstanceService eventService) {
+                                           MaintenanceEventDao dao,
+                                           RestModelMapper modelMapper, EventInstanceService eventService, PermissionService permissionService) {
         this.service = service;
         this.dao = dao;
         this.eventService = eventService;
+        this.permissionService = permissionService;
         this.eventTableValueConverters = new HashMap<>();
         this.eventTableFieldMap = new EventTableRqlMappings(Events.EVENTS);
 
@@ -224,18 +227,18 @@ public class MaintenanceEventsRestController {
     public StreamedArrayWithTotal doQuery(ASTNode rql, PermissionHolder user, Function<MaintenanceEventVO, Object> transformVO) {
 
         //If we are admin or have overall data source permission we can view all
-        if (service.getPermissionService().hasAdminRole(user) || service.getPermissionService().hasDataSourcePermission(user)) {
+        if (permissionService.hasAdminRole(user) || permissionService.hasDataSourcePermission(user)) {
             return new StreamedVORqlQueryWithTotal<>(service, rql, null, null, null, transformVO);
         } else {
             return new StreamedVORqlQueryWithTotal<>(service, rql, null, null, null, item -> {
                 if(item.getDataPoints().size() > 0) {
-                    DataPointPermissionsCheckCallback callback = new DataPointPermissionsCheckCallback(user, true, this.service.getPermissionService());
+                    DataPointPermissionsCheckCallback callback = new DataPointPermissionsCheckCallback(user, true, permissionService);
                     dao.getPoints(item.getId(), callback);
                     if(!callback.hasPermission())
                         return false;
                 }
                 if(item.getDataSources().size() > 0) {
-                    DataSourcePermissionsCheckCallback callback = new DataSourcePermissionsCheckCallback(user, true, this.service.getPermissionService());
+                    DataSourcePermissionsCheckCallback callback = new DataSourcePermissionsCheckCallback(user, true, permissionService);
                     dao.getDataSources(item.getId(), callback);
                     if(!callback.hasPermission())
                         return false;
@@ -253,18 +256,18 @@ public class MaintenanceEventsRestController {
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
 
         Map<String, JsonStreamedArray> export = new HashMap<>();
-        if (service.getPermissionService().hasAdminRole(user) || service.getPermissionService().hasDataSourcePermission(user)) {
+        if (permissionService.hasAdminRole(user) || permissionService.hasDataSourcePermission(user)) {
             export.put("maintenanceEvents", new StreamedSeroJsonVORqlQuery<>(service, rql, null, null, null));
         } else {
             export.put("maintenanceEvents", new StreamedSeroJsonVORqlQuery<>(service, rql, null, null, null, item -> {
                 if(item.getDataPoints().size() > 0) {
-                    DataPointPermissionsCheckCallback callback = new DataPointPermissionsCheckCallback(user, true, this.service.getPermissionService());
+                    DataPointPermissionsCheckCallback callback = new DataPointPermissionsCheckCallback(user, true, permissionService);
                     dao.getPoints(item.getId(), callback);
                     if(!callback.hasPermission())
                         return false;
                 }
                 if(item.getDataSources().size() > 0) {
-                    DataSourcePermissionsCheckCallback callback = new DataSourcePermissionsCheckCallback(user, true, this.service.getPermissionService());
+                    DataSourcePermissionsCheckCallback callback = new DataSourcePermissionsCheckCallback(user, true, permissionService);
                     dao.getDataSources(item.getId(), callback);
                     if(!callback.hasPermission())
                         return false;
@@ -531,7 +534,7 @@ public class MaintenanceEventsRestController {
 
     //Helpers for Queries
     private StreamedArrayWithTotal doEventQuery(ASTNode rql, PermissionHolder user) {
-        if (eventService.getPermissionService().hasAdminRole(user)) {
+        if (permissionService.hasAdminRole(user)) {
             return new StreamedVORqlQueryWithTotal<>(eventService, rql, null, eventTableFieldMap, eventTableValueConverters, item -> true, vo -> eventMap.apply(vo, user));
         } else {
             return new StreamedVORqlQueryWithTotal<>(eventService, rql, null, eventTableFieldMap, eventTableValueConverters, item -> eventService.hasReadPermission(user, item), vo -> eventMap.apply(vo, user));

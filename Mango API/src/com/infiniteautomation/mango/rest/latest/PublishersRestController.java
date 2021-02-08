@@ -31,6 +31,7 @@ import com.infiniteautomation.mango.rest.latest.model.StreamedSeroJsonVORqlQuery
 import com.infiniteautomation.mango.rest.latest.model.StreamedVORqlQueryWithTotal;
 import com.infiniteautomation.mango.rest.latest.model.publisher.AbstractPublisherModel;
 import com.infiniteautomation.mango.rest.latest.patch.PatchVORequestBody;
+import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.spring.service.PublisherService;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.json.type.JsonStreamedArray;
@@ -54,13 +55,15 @@ public class PublishersRestController {
 
     private final PublisherService service;
     private final BiFunction<PublisherVO<?>, PermissionHolder, AbstractPublisherModel<?,?>> map;
+    private final PermissionService permissionService;
 
     @Autowired
-    public PublishersRestController(final PublisherService service, final RestModelMapper modelMapper) {
+    public PublishersRestController(final PublisherService service, final RestModelMapper modelMapper, PermissionService permissionService) {
         this.service = service;
         this.map = (vo, user) -> {
             return modelMapper.map(vo, AbstractPublisherModel.class, user);
         };
+        this.permissionService = permissionService;
     }
 
 
@@ -214,7 +217,7 @@ public class PublishersRestController {
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
 
         Map<String, JsonStreamedArray> export = new HashMap<>();
-        if (service.getPermissionService().hasAdminRole(user)) {
+        if (permissionService.hasAdminRole(user)) {
             export.put("publishers", new StreamedSeroJsonVORqlQuery<>(service, rql, null, null, null));
         }else {
             export.put("publishers", new StreamedSeroJsonVORqlQuery<>(service, rql, null, null, null,  vo -> service.hasReadPermission(user, vo)));
@@ -229,7 +232,7 @@ public class PublishersRestController {
      * @return
      */
     private StreamedArrayWithTotal doQuery(ASTNode rql, PermissionHolder user) {
-        if (service.getPermissionService().hasAdminRole(user)) {
+        if (permissionService.hasAdminRole(user)) {
             return new StreamedVORqlQueryWithTotal<>(service, rql, null, null, null, vo -> map.apply(vo, user));
         } else {
             return new StreamedVORqlQueryWithTotal<>(service, rql, null, null, null, vo -> service.hasReadPermission(user, vo), vo -> map.apply(vo, user));
