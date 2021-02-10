@@ -18,6 +18,7 @@ import com.github.zafarkhaja.semver.Version;
 import com.infiniteautomation.mango.monitor.ValueMonitor;
 import com.infiniteautomation.mango.spring.components.DiskUsageMonitoringService;
 import com.infiniteautomation.mango.spring.components.ServerMonitoringService;
+import com.infiniteautomation.mango.spring.service.DataSourceService;
 import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.Common.Rollups;
@@ -184,7 +185,7 @@ public class InternalLifecycle extends LifecycleDefinition {
                 InternalDataSourceVO existing = (InternalDataSourceVO) ds.copy();
                 if (!safe) {
                     vo.setEnabled(true);
-                    Common.runtimeManager.updateDataSource(existing, vo);
+                    Common.getBean(DataSourceService.class).update(existing, vo);
                 }
             }catch(ValidationException e) {
                 for(ProcessMessage message : e.getValidationResult().getMessages()){
