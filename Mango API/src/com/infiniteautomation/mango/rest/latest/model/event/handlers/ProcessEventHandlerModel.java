@@ -22,6 +22,7 @@ public class ProcessEventHandlerModel extends AbstractEventHandlerModel<ProcessE
     private Integer activeProcessTimeout;
     private String inactiveProcessCommand;
     private Integer inactiveProcessTimeout;
+    private boolean interpolateCommands;
     
     public ProcessEventHandlerModel() { }
 
@@ -90,6 +91,14 @@ public class ProcessEventHandlerModel extends AbstractEventHandlerModel<ProcessE
         this.inactiveProcessTimeout = inactiveProcessTimeout;
     }
 
+    public boolean isInterpolateCommands() {
+        return interpolateCommands;
+    }
+
+    public void setInterpolateCommands(boolean interpolateCommands) {
+        this.interpolateCommands = interpolateCommands;
+    }
+
     @Override
     public ProcessEventHandlerVO toVO() {
         ProcessEventHandlerVO vo = super.toVO();
@@ -99,6 +108,7 @@ public class ProcessEventHandlerModel extends AbstractEventHandlerModel<ProcessE
         vo.setInactiveProcessCommand(inactiveProcessCommand);
         if(inactiveProcessTimeout != null)
             vo.setInactiveProcessTimeout(inactiveProcessTimeout);
+        vo.setInterpolateCommands(interpolateCommands);
         return vo;
     }
     
@@ -110,6 +120,7 @@ public class ProcessEventHandlerModel extends AbstractEventHandlerModel<ProcessE
         this.activeProcessTimeout = handler.getActiveProcessTimeout();
         this.inactiveProcessCommand = handler.getInactiveProcessCommand();
         this.inactiveProcessTimeout = handler.getInactiveProcessTimeout();
+        this.interpolateCommands = handler.isInterpolateCommands();
     }
     
     @Override
