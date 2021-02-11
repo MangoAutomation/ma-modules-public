@@ -34,6 +34,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
@@ -74,6 +75,7 @@ import com.infiniteautomation.mango.spring.service.ModulesService.UpgradeStatus;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.serotonin.db.pair.StringStringPair;
+import com.serotonin.json.JsonException;
 import com.serotonin.json.type.JsonArray;
 import com.serotonin.json.type.JsonObject;
 import com.serotonin.json.type.JsonString;
@@ -283,10 +285,9 @@ public class ModulesRestController {
             throw new ServerErrorException(new TranslatableMessage("rest.error.requestTimeout", Common.envProps.getString("store.url")));
         } catch(UnknownHostException e) {
             throw new ServerErrorException(new TranslatableMessage("rest.error.unknownHost", Common.envProps.getString("store.url")));
-        } catch (Exception e) {
+        } catch (IOException | JsonException | HttpException e) {
             throw new ServerErrorException(e);
         }
-
     }
 
     @ApiOperation(value = "Download Upgrades and optionally backup and restart", notes = "Use Modules web socket to track progress")
