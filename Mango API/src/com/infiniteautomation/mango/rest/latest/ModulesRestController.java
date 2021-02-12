@@ -73,6 +73,7 @@ import com.infiniteautomation.mango.rest.latest.util.MangoStoreClient;
 import com.infiniteautomation.mango.spring.service.ModulesService;
 import com.infiniteautomation.mango.spring.service.ModulesService.UpgradeStatus;
 import com.infiniteautomation.mango.spring.service.PermissionService;
+import com.infiniteautomation.mango.util.exception.FeatureDisabledException;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.serotonin.db.pair.StringStringPair;
 import com.serotonin.json.JsonException;
@@ -506,6 +507,10 @@ public class ModulesRestController {
             boolean restart,
 
             MultipartHttpServletRequest multipartRequest) throws IOException {
+
+        if (env.getProperty("store.disableUpgrades", Boolean.class, false)) {
+            throw new FeatureDisabledException(new TranslatableMessage("modules.error.upgradesDisabled"));
+        }
 
         synchronized (UPLOAD_UPGRADE_LOCK){
             if(UPLOAD_UPGRADE_IN_PROGRESS == null) {
