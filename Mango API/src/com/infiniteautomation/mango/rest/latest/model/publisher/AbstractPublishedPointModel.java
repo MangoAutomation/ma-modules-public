@@ -20,7 +20,7 @@ public abstract class AbstractPublishedPointModel<T extends PublishedPointVO> {
     protected String dataPointXid;
     
     public void fromVO(T vo) {
-        this.dataPointXid = DataPointDao.getInstance().getXidById(vo.getDataPointId());
+        this.dataPointXid = vo.getDataPointXid();
     }
 
     /**
@@ -37,6 +37,7 @@ public abstract class AbstractPublishedPointModel<T extends PublishedPointVO> {
         T vo = newVO();
         Integer id = DataPointDao.getInstance().getIdByXid(dataPointXid);
         if(id != null) {
+            vo.setDataPointXid(dataPointXid);
             vo.setDataPointId(id);
         }else {
             //Only place we have the incomming XID to throw a validation exception
