@@ -1222,7 +1222,9 @@ public class PointValueRestController extends AbstractMangoRestController {
         TemporaryResource<PurgePointValuesResponseModel, AbstractRestException> resource = resourceManager.get(id);
 
         if (body.getStatus() == TemporaryResourceStatus.CANCELLED) {
-            resource.cancel();
+            if(!resource.isComplete()) {
+                resource.cancel();
+            }
         } else {
             throw new BadRequestException(new TranslatableMessage("rest.error.onlyCancel"));
         }
