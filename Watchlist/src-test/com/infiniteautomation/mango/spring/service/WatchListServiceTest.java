@@ -17,13 +17,13 @@ import org.junit.Test;
 import com.infiniteautomation.mango.permission.MangoPermission;
 import com.infiniteautomation.mango.spring.dao.WatchListDao;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.vo.IDataPoint;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.vo.role.Role;
 import com.serotonin.m2m2.watchlist.WatchListCreatePermission;
 import com.serotonin.m2m2.watchlist.WatchListVO;
+import com.serotonin.m2m2.watchlist.WatchListVO.WatchListType;
 import com.serotonin.m2m2.watchlist.db.tables.WatchLists;
 import com.serotonin.m2m2.watchlist.db.tables.records.WatchListsRecord;
 
@@ -81,14 +81,13 @@ public class WatchListServiceTest extends AbstractVOServiceWithPermissionsTest<W
     WatchListVO newVO(User owner) {
         WatchListVO vo = new WatchListVO();
         vo.setName(UUID.randomUUID().toString());
-        vo.setType(WatchListVO.STATIC_TYPE);
-        for(IDataPoint point : createMockDataPoints(5, false, MangoPermission.requireAnyRole(owner.getRoles()), MangoPermission.requireAnyRole(owner.getRoles()))) {
-            vo.getPointList().add(point);
-        }
+        vo.setType(WatchListType.STATIC);
+        vo.setPointList(createMockDataPoints(5, false,
+                MangoPermission.requireAnyRole(owner.getRoles()),
+                MangoPermission.requireAnyRole(owner.getRoles())));
         Map<String, Object> randomData = new HashMap<>();
         randomData.put(UUID.randomUUID().toString(), UUID.randomUUID().toString());
         vo.setData(randomData);
-
         return vo;
     }
 

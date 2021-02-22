@@ -5,12 +5,14 @@
 package com.infiniteautomation.mango.rest.latest.model;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import com.infiniteautomation.mango.rest.latest.model.permissions.MangoPermissionModel;
 import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.m2m2.watchlist.WatchListParameter;
 import com.serotonin.m2m2.watchlist.WatchListVO;
+import com.serotonin.m2m2.watchlist.WatchListVO.WatchListType;
 
 /**
  *
@@ -33,7 +35,7 @@ public class WatchListSummaryModel extends AbstractVoModel<WatchListVO>  {
     @Override
     public void fromVO(WatchListVO vo) {
         super.fromVO(vo);
-        type = vo.getType();
+        type = vo.getType().name().toLowerCase(Locale.ROOT);
         query = vo.getQuery();
         params = vo.getParams();
         data = vo.getData();
@@ -42,7 +44,13 @@ public class WatchListSummaryModel extends AbstractVoModel<WatchListVO>  {
     @Override
     public WatchListVO toVO() throws ValidationException {
         WatchListVO vo = super.toVO();
-        vo.setType(type);
+        try {
+            if (type != null) {
+                vo.setType(WatchListType.valueOf(type.toUpperCase(Locale.ROOT)));
+            }
+        } catch (IllegalArgumentException e) {
+            vo.setType(null);
+        }
         vo.setQuery(query);
         vo.setParams(params);
         vo.setData(data);

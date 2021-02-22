@@ -5,8 +5,11 @@
 package com.infiniteautomation.mango.spring.service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,7 +18,9 @@ import com.infiniteautomation.mango.db.query.ConditionSortLimit;
 import com.infiniteautomation.mango.rest.latest.exception.ServerErrorException;
 import com.infiniteautomation.mango.spring.dao.WatchListDao;
 import com.infiniteautomation.mango.util.RQLUtils;
+import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.PermissionDefinition;
@@ -23,9 +28,11 @@ import com.serotonin.m2m2.rt.event.type.EventType.EventTypeNames;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.IDataPoint;
 import com.serotonin.m2m2.vo.event.EventInstanceVO;
+import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.watchlist.WatchListCreatePermission;
 import com.serotonin.m2m2.watchlist.WatchListVO;
+import com.serotonin.m2m2.watchlist.WatchListVO.WatchListType;
 
 import net.jazdw.rql.parser.ASTNode;
 
@@ -39,17 +46,19 @@ public class WatchListService extends AbstractVOService<WatchListVO, WatchListDa
     private final DataPointService dataPointService;
     private final EventInstanceService eventService;
     private final WatchListCreatePermission createPermission;
+    private final DataPointDao dataPointDao;
 
     @Autowired
     public WatchListService(WatchListDao dao,
-            PermissionService permissionService,
-            DataPointService dataPointService,
-            EventInstanceService eventService,
-            WatchListCreatePermission createPermission) {
+                            PermissionService permissionService,
+                            DataPointService dataPointService,
+                            EventInstanceService eventService,
+                            WatchListCreatePermission createPermission, DataPointDao dataPointDao) {
         super(dao, permissionService);
         this.dataPointService = dataPointService;
         this.eventService = eventService;
         this.createPermission = createPermission;
+        this.dataPointDao = dataPointDao;
     }
 
     @Override
@@ -89,36 +98,28 @@ public class WatchListService extends AbstractVOService<WatchListVO, WatchListDa
 
     protected ProcessResult commonValidation(WatchListVO vo, PermissionHolder user) {
         ProcessResult response = super.validate(vo, user);
-        switch(vo.getType()) {
-            case WatchListVO.STATIC_TYPE:
-            case WatchListVO.QUERY_TYPE:
-            case WatchListVO.TAGS_TYPE:
-                break;
-            default:
-                response.addContextualMessage("type", "validate.invalidValueWithAcceptable", vo.getType(), WatchListVO.STATIC_TYPE + "," + WatchListVO.QUERY_TYPE + "," + WatchListVO.TAGS_TYPE);
+        if (vo.getType() == null) {
+            String values = Arrays.asList(WatchListType.values()).toString();
+            response.addContextualMessage("type", "validate.invalidValueWithAcceptable", vo.getType(), values);
         }
 
-        //Validate Points
-        for(IDataPoint point : vo.getPointList()) {
-            if(!permissionService.hasPermission(user, point.getReadPermission())) {
-                response.addContextualMessage("points", "watchlist.validate.pointNoReadPermission", point.getXid());
-            }
+        if (vo.getType() == WatchListType.STATIC) {
+            // Validate Points, we cannot trust the permissions from the passed in points from vo, we must look them up from the DB
+            List<IDataPoint> newSummaries = vo.getPointList().stream().map(s -> {
+                try {
+                    return dataPointService.getSummary(s.getXid());
+                } catch (PermissionException e) {
+                    response.addContextualMessage("points", "watchlist.validate.pointNoReadPermission", s.getXid());
+                } catch (NotFoundException e) {
+                    response.addContextualMessage("points", "watchList.validate.pointNotFound", s.getXid());
+                }
+                return null;
+            }).filter(Objects::nonNull).collect(Collectors.toList());
+
+            vo.setPointList(newSummaries);
         }
 
         return response;
-    }
-
-    /**
-     * Load data points from the mapping table for a watchlist
-     */
-    public void getWatchListPoints(int id, Consumer<DataPointVO> callback) {
-        PermissionHolder user = Common.getUser();
-
-        this.dao.getPoints(id, (dp) -> {
-            if(dataPointService.hasReadPermission(user, dp)) {
-                callback.accept(dp);
-            }
-        });
     }
 
     /**
@@ -150,21 +151,21 @@ public class WatchListService extends AbstractVOService<WatchListVO, WatchListDa
         PermissionHolder user = Common.getUser();
 
         switch(vo.getType()) {
-            case WatchListVO.STATIC_TYPE:
+            case STATIC:
                 this.dao.getPoints(vo.getId(), (dp) -> {
                     if(dataPointService.hasReadPermission(user, dp)) {
                         callback.accept(dp);
                     }
                 });
                 break;
-            case WatchListVO.QUERY_TYPE:
+            case QUERY:
                 if(vo.getParams().size() > 0)
                     throw new ServerErrorException(new TranslatableMessage("watchList.queryParametersNotSupported"));
                 ASTNode rql = RQLUtils.parseRQLtoAST(vo.getQuery());
                 ConditionSortLimit conditions = dataPointService.rqlToCondition(rql, null, null, null);
-                dataPointService.customizedQuery(conditions, (dp) -> callback.accept(dp));
+                dataPointService.customizedQuery(conditions, callback);
                 break;
-            case WatchListVO.TAGS_TYPE:
+            case TAGS:
                 throw new ServerErrorException(new TranslatableMessage("watchList.queryParametersNotSupported"));
             default:
                 throw new ServerErrorException(new TranslatableMessage("common.default", "unknown watchlist type: " + vo.getType()));
@@ -208,14 +209,14 @@ public class WatchListService extends AbstractVOService<WatchListVO, WatchListDa
         args.add("typeRef1");
 
         switch(vo.getType()) {
-            case WatchListVO.STATIC_TYPE:
+            case STATIC:
                 this.dao.getPoints(vo.getId(), (dp) -> {
                     if(dataPointService.hasReadPermission(user, dp)) {
                         args.add(Integer.toString(dp.getId()));
                     }
                 });
                 break;
-            case WatchListVO.QUERY_TYPE:
+            case QUERY:
                 if(vo.getParams().size() > 0)
                     throw new ServerErrorException(new TranslatableMessage("watchList.queryParametersNotSupported"));
                 ASTNode conditions = RQLUtils.parseRQLtoAST(vo.getQuery());
@@ -225,7 +226,7 @@ public class WatchListService extends AbstractVOService<WatchListVO, WatchListDa
                     }
                 });
                 break;
-            case WatchListVO.TAGS_TYPE:
+            case TAGS:
                 throw new ServerErrorException(new TranslatableMessage("watchList.queryParametersNotSupported"));
             default:
                 throw new ServerErrorException(new TranslatableMessage("common.default", "unknown watchlist type: " + vo.getType()));

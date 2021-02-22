@@ -7,6 +7,7 @@ package com.infiniteautomation.mango.spring.dao;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -45,11 +46,13 @@ import com.serotonin.m2m2.db.dao.AbstractVoDao;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.DataPointVO;
+import com.serotonin.m2m2.vo.IDataPoint;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.vo.role.Role;
 import com.serotonin.m2m2.watchlist.AuditEvent;
 import com.serotonin.m2m2.watchlist.WatchListParameter;
 import com.serotonin.m2m2.watchlist.WatchListVO;
+import com.serotonin.m2m2.watchlist.WatchListVO.WatchListType;
 import com.serotonin.m2m2.watchlist.db.tables.WatchListPoints;
 import com.serotonin.m2m2.watchlist.db.tables.WatchLists;
 import com.serotonin.m2m2.watchlist.db.tables.records.WatchListsRecord;
@@ -129,7 +132,7 @@ public class WatchListDao extends AbstractVoDao<WatchListVO, WatchListsRecord, W
         if(existing != null) {
             ejt.update("DELETE FROM watchListPoints WHERE watchListId=?", vo.getId());
         }
-        if(WatchListVO.STATIC_TYPE.equals(vo.getType())) {
+        if(vo.getType() == WatchListType.STATIC) {
             ejt.batchUpdate("INSERT INTO watchListPoints VALUES (?,?,?)", new InsertPoints(vo));
         }
         if(existing != null) {
@@ -147,6 +150,26 @@ public class WatchListDao extends AbstractVoDao<WatchListVO, WatchListsRecord, W
         //Populate permissions
         vo.setReadPermission(permissionService.get(vo.getReadPermission().getId()));
         vo.setEditPermission(permissionService.get(vo.getEditPermission().getId()));
+
+        if (vo.getType() == WatchListType.STATIC) {
+            List<IDataPoint> points = create.select(
+                    dataPoints.id,
+                    dataPoints.xid,
+                    dataPoints.name,
+                    dataPoints.dataSourceId,
+                    dataPoints.deviceName,
+                    dataPoints.readPermissionId,
+                    dataPoints.editPermissionId,
+                    dataPoints.setPermissionId,
+                    dataPoints.seriesId)
+                    .from(dataPoints)
+                    .join(watchListPoints)
+                    .on(dataPoints.id.equal(watchListPoints.dataPointId))
+                    .orderBy(watchListPoints.sortOrder)
+                    .fetch(dataPointDao::mapDataPointSummary);
+
+            vo.setPointList(points);
+        }
     }
 
     @Override
@@ -224,7 +247,7 @@ public class WatchListDao extends AbstractVoDao<WatchListVO, WatchListsRecord, W
         WatchListsRecord record = table.newRecord();
         record.set(table.xid, vo.getXid());
         record.set(table.name, vo.getName());
-        record.set(table.type, vo.getType());
+        record.set(table.type, vo.getType().name());
         record.set(table.data, jsonData);
         record.set(table.readPermissionId, vo.getReadPermission().getId());
         record.set(table.editPermissionId, vo.getEditPermission().getId());
@@ -233,12 +256,14 @@ public class WatchListDao extends AbstractVoDao<WatchListVO, WatchListsRecord, W
 
     @Override
     public WatchListVO mapRecord(Record record) {
-        int i = 0;
         WatchListVO wl = new WatchListVO();
         wl.setId(record.get(table.id));
         wl.setXid(record.get(table.xid));
         wl.setName(record.get(table.name));
-        wl.setType(record.get(table.type));
+        String type = record.get(table.type);
+        if (type != null) {
+            wl.setType(WatchListType.valueOf(type.toUpperCase(Locale.ROOT)));
+        }
         //Read the data
         try{
             String c = record.get(table.data);

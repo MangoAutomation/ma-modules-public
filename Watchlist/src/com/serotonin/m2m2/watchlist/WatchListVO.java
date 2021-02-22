@@ -9,10 +9,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -48,15 +48,18 @@ public class WatchListVO extends AbstractVO {
     private static final long serialVersionUID = 1L;
 
     public static final String XID_PREFIX = "WL_";
-    public static final String STATIC_TYPE = "static"; //current types also include hierarchy, query, and tags
-    public static final String QUERY_TYPE = "query";
-    public static final String TAGS_TYPE = "tags";
 
-    private final List<IDataPoint> pointList = new CopyOnWriteArrayList<>();
+    public enum WatchListType {
+        STATIC,
+        QUERY,
+        TAGS
+    }
+
+    private List<IDataPoint> pointList = Collections.emptyList();
     private MangoPermission readPermission = new MangoPermission();
     private MangoPermission editPermission = new MangoPermission();
-    @JsonProperty
-    private String type;
+    private WatchListType type;
+
     @JsonProperty
     private String query;
     @JsonProperty
@@ -64,7 +67,7 @@ public class WatchListVO extends AbstractVO {
     private Map<String, Object> data;
 
     public WatchListVO() {
-        type = STATIC_TYPE;
+        type = WatchListType.STATIC;
     }
 
     @Override
@@ -104,6 +107,10 @@ public class WatchListVO extends AbstractVO {
         return pointList;
     }
 
+    public void setPointList(List<IDataPoint> pointList) {
+        this.pointList = pointList;
+    }
+
     public MangoPermission getReadPermission() {
         return readPermission;
     }
@@ -120,11 +127,11 @@ public class WatchListVO extends AbstractVO {
         this.editPermission = editPermission;
     }
 
-    public String getType() {
+    public WatchListType getType() {
         return type;
     }
 
-    public void setType(String type) {
+    public void setType(WatchListType type) {
         this.type = type;
     }
 
@@ -159,6 +166,7 @@ public class WatchListVO extends AbstractVO {
     @Override
     public void jsonWrite(ObjectWriter writer) throws IOException, JsonException {
         super.jsonWrite(writer);
+        writer.writeEntry("type", this.type.name());
         writer.writeEntry("readPermission", readPermission);
         writer.writeEntry("editPermission", editPermission);
 
@@ -172,6 +180,13 @@ public class WatchListVO extends AbstractVO {
     @Override
     public void jsonRead(JsonReader reader, JsonObject jsonObject) throws JsonException {
         super.jsonRead(reader, jsonObject);
+
+        String type = jsonObject.getString("type");
+        try {
+            this.type = WatchListType.valueOf(type.toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException e) {
+            this.type = null;
+        }
 
         JsonValue read = jsonObject.get("readPermission");
         if(read != null) {
@@ -224,7 +239,7 @@ public class WatchListVO extends AbstractVO {
 
         JsonArray jsonDataPoints = jsonObject.getJsonArray("dataPoints");
         if (jsonDataPoints != null) {
-            pointList.clear();
+            pointList = new ArrayList<>();
             DataPointDao dataPointDao = DataPointDao.getInstance();
             for (JsonValue jv : jsonDataPoints) {
                 String xid = jv.toString();
