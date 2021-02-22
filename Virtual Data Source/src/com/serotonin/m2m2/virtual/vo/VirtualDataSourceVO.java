@@ -40,7 +40,11 @@ public class VirtualDataSourceVO extends PollingDataSourceVO {
 
     @Override
     public TranslatableMessage getConnectionDescription() {
-        return Common.getPeriodDescription(updatePeriodType, updatePeriods);
+        if(polling) {
+            return Common.getPeriodDescription(updatePeriodType, updatePeriods);
+        }else {
+            return new TranslatableMessage("dsEdit.virtual.nonPollingDescription");
+        }
     }
 
     @Override
