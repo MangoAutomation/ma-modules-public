@@ -25,6 +25,7 @@ const DataPoint = client.DataPoint;
 const DataSource = client.DataSource;
 const path = require('path');
 const fs = require('fs');
+const tmp = require('tmp');
 
 describe('Point value emport tests', function() {
     before('Login', function() { return login.call(this, client); });
@@ -159,7 +160,6 @@ describe('Point value emport tests', function() {
     });
     
     it('Can upload a CSV file as text', function() {
-
         return client.restRequest({
             path: `/rest/latest/point-value-modification/import`,
             method: 'POST',
@@ -171,7 +171,45 @@ describe('Point value emport tests', function() {
             assert.strictEqual(response.data.length, 1);
             assert.strictEqual(response.data[0].xid, testPointXid1);
             assert.strictEqual(response.data[0].totalQueued, 1);
-        }, error => {console.log(error.data);});
+        });
+    });
+
+    it('Can upload a large CSV file', function() {
+        this.timeout(60000);
+
+        const csvFile = tmp.fileSync({postfix: '.csv'});
+
+        fs.appendFileSync(csvFile.fd, 'timestamp,value,xid\n');
+
+        // results in a file about 66 MiB in size
+        const numSamples = 1e6;
+        const period = 100;
+        const endDate = new Date();
+        const startDate = new Date(endDate - numSamples * period);
+
+        for (let i = 0; i < numSamples; i++) {
+            const timestamp = startDate + i * period;
+            const row = [new Date(timestamp).toISOString(), '1.0', testPointXid1];
+            fs.appendFileSync(csvFile.fd, row.join(',') + '\n');
+        }
+
+        // console.log('File size (MiB): ' + fs.statSync(csvFile.name).size / Math.pow(1024, 2));
+
+        // TODO no facility to upload a file directly, use buffer for now
+        const buffer = fs.readFileSync(csvFile.name);
+
+        return client.restRequest({
+            path: `/rest/latest/point-value-modification/import`,
+            method: 'POST',
+            headers: {
+                'Content-Type': 'text/csv;charset=UTF-8'
+            },
+            data: buffer
+        }).then(response => {
+            assert.strictEqual(response.data.length, 1);
+            assert.strictEqual(response.data[0].xid, testPointXid1);
+            assert.strictEqual(response.data[0].totalQueued, numSamples);
+        });
     });
     
     it('Fails to upload an invalid CSV file', function() {
