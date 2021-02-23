@@ -12,9 +12,9 @@ import org.springframework.stereotype.Component;
 
 import com.infiniteautomation.mango.rest.latest.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.latest.model.RestModelMapping;
+import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.db.dao.RoleDao;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.vo.role.Role;
 import com.serotonin.m2m2.vo.role.RoleVO;
@@ -26,11 +26,11 @@ import com.serotonin.m2m2.vo.role.RoleVO;
 @Component
 public class RoleModelMapping implements RestModelMapping<RoleVO, RoleModel> {
 
-    private final RoleDao dao;
+    private final PermissionService service;
 
     @Autowired
-    public RoleModelMapping(RoleDao dao) {
-        this.dao = dao;
+    public RoleModelMapping(PermissionService service) {
+        this.service = service;
     }
 
     @Override
@@ -64,8 +64,12 @@ public class RoleModelMapping implements RestModelMapping<RoleVO, RoleModel> {
         Set<Role> roles = new HashSet<>();
         if(model.getInherited() != null ) {
             for(String xid : model.getInherited()) {
-                Integer id = dao.getIdByXid(xid);
-                roles.add(new Role(id == null ? Common.NEW_ID : id, xid));
+                Role role = service.getRole(xid);
+                if(role != null) {
+                    roles.add(role);
+                }else {
+                    roles.add(new Role(Common.NEW_ID, xid));
+                }
             }
         }
         vo.setInherited(roles);
