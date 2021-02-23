@@ -1,12 +1,12 @@
-
-Maintenance Events/web/angular/
-
-VMStat data source/\.vscode/
+# Mango module build output directories
+maven-target/
+web/angular/
 
 # IntelliJ settings
 *.iml
 .idea
 #Eclipse Settings
 .classpath
-.settings
+.settings/
 .project
+.vscode/
