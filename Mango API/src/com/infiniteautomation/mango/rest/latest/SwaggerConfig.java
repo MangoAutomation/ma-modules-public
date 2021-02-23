@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
+import org.jooq.Field;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -74,7 +75,9 @@ public class SwaggerConfig {
     @Bean
     public Docket describe() {
         Docket docket = new Docket(DocumentationType.SWAGGER_2)
-                .ignoredParameterTypes(AuthenticationPrincipal.class).select()
+                .ignoredParameterTypes(
+                        AuthenticationPrincipal.class,
+                        Field.class).select()
                 .apis(RequestHandlerSelectors.any())
                 .paths(PathSelectors.any()).build()
                 .securitySchemes(Arrays.asList(new ApiKey(SECURITY_TOKEN_REFERENCE,
