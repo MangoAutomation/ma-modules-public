@@ -39,6 +39,7 @@ import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueField
 import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueTimeJsonWriter;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueTimeStream.StreamContentType;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueTimeWriter;
+import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.statistics.AnalogStatistics;
 import com.infiniteautomation.mango.statistics.StartsAndRuntime;
 import com.infiniteautomation.mango.statistics.StartsAndRuntimeList;
@@ -79,13 +80,19 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
 
     protected ZoneId zoneId;
     protected static final TestRuntimeManager runtimeManager = new TestRuntimeManager();
-    protected final ImageValueServlet imageServlet = new ImageValueServlet();
+    protected ImageValueServlet imageServlet;
 
     public MultiPointStatisticsStreamTest() {
         this.zoneId = ZoneId.systemDefault();
     }
 
     //TODO Test initial values and no initial values
+
+    @Override
+    public void before() {
+        super.before();
+        this.imageServlet = new ImageValueServlet(Common.getBean(PermissionService.class));
+    }
 
     @Override
     public void after() {
