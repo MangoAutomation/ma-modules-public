@@ -57,7 +57,6 @@ public class WatchListDao extends AbstractVoDao<WatchListVO, WatchListsRecord, W
     private static final LazyInitializer<WatchListDao> springInstance = new LazyInitializer<>();
 
     private final DataPointDao dataPointDao;
-    private final PermissionService permissionService;
     private final DataPoints dataPoints;
     private final WatchListPoints watchListPoints;
 
@@ -68,9 +67,8 @@ public class WatchListDao extends AbstractVoDao<WatchListVO, WatchListsRecord, W
                          PermissionService permissionService) {
         super(AuditEvent.TYPE_NAME, WatchLists.WATCH_LISTS,
                 new TranslatableMessage("internal.monitor.WATCHLIST_COUNT"),
-                mapper, publisher);
+                mapper, publisher, permissionService);
         this.dataPointDao = dataPointDao;
-        this.permissionService = permissionService;
         this.dataPoints = DataPoints.DATA_POINTS;
         this.watchListPoints = WatchListPoints.WATCH_LIST_POINTS;
     }
