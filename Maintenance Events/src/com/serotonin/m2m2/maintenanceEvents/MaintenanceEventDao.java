@@ -317,7 +317,7 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
     }
 
     @Override
-    protected Record voToObjectArray(MaintenanceEventVO me) {
+    protected Record toRecord(MaintenanceEventVO me) {
         Record record = table.newRecord();
         record.set(table.xid, me.getXid());
         record.set(table.alias, me.getName());

@@ -194,7 +194,7 @@ public class WatchListDao extends AbstractVoDao<WatchListVO, WatchListsRecord, W
     }
 
     @Override
-    protected Record voToObjectArray(WatchListVO vo) {
+    protected Record toRecord(WatchListVO vo) {
         String jsonData = null;
         try{
             WatchListDbDataModel2 data = new WatchListDbDataModel2();
