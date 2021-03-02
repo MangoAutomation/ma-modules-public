@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2018 Infinite Automation Software. All rights reserved.
+/*
+ * Copyright (C) 2021 Radix IoT LLC. All rights reserved.
  */
 package com.infiniteautomation.mango.rest.latest.model.user;
 
@@ -11,7 +11,9 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.infiniteautomation.mango.permission.MangoPermission;
 import com.infiniteautomation.mango.rest.latest.model.AbstractVoModel;
+import com.infiniteautomation.mango.rest.latest.model.permissions.MangoPermissionModel;
 import com.infiniteautomation.mango.rest.latest.model.time.TimePeriod;
 import com.infiniteautomation.mango.rest.latest.model.time.TimePeriodType;
 import com.infiniteautomation.mango.spring.service.PermissionService;
@@ -19,6 +21,7 @@ import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.role.Role;
+
 import io.swagger.annotations.ApiModelProperty;
 
 /**
@@ -52,6 +55,8 @@ public class UserModel extends AbstractVoModel<User> {
     private Date emailVerified;
     private JsonNode data;
     private List<LinkedAccountModel> linkedAccounts;
+    private MangoPermissionModel editPermission;
+    private MangoPermissionModel readPermission;
 
     @ApiModelProperty("List of system settings permission definitions this user has access to")
     private Set<String> systemPermissions;
@@ -226,6 +231,22 @@ public class UserModel extends AbstractVoModel<User> {
         return !defaultAlgorithm.equals(algorithm);
     }
 
+    public MangoPermissionModel getEditPermission() {
+        return editPermission;
+    }
+
+    public void setEditPermission(MangoPermissionModel editPermission) {
+        this.editPermission = editPermission;
+    }
+
+    public MangoPermissionModel getReadPermission() {
+        return readPermission;
+    }
+
+    public void setReadPermission(MangoPermissionModel readPermission) {
+        this.readPermission = readPermission;
+    }
+
     @Override
     protected User newVO() {
         return new User();
@@ -271,6 +292,8 @@ public class UserModel extends AbstractVoModel<User> {
         this.created = vo.getCreated();
         this.emailVerified = vo.getEmailVerifiedDate();
         this.data = vo.getData();
+        this.editPermission = new MangoPermissionModel(vo.getEditPermission());
+        this.readPermission = new MangoPermissionModel(vo.getReadPermission());
     }
 
     @Override
@@ -306,7 +329,8 @@ public class UserModel extends AbstractVoModel<User> {
         user.setOrganization(organization);
         user.setOrganizationalRole(organizationalRole);
         user.setData(data);
-
+        user.setEditPermission(editPermission != null ? editPermission.getPermission() : new MangoPermission());
+        user.setReadPermission(readPermission != null ? readPermission.getPermission() : new MangoPermission());
         return user;
     }
 
