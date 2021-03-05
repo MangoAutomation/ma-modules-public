@@ -75,10 +75,10 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
 
     boolean mergeTags = false;
     Map<String, String> tags;
+    int seriesId;
 
     //For display purposes
     String extendedName;
-    int seriesId;
 
     public DataPointModel() {
     }
@@ -305,6 +305,8 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
         if(this.data != null) {
             point.setData(data);
         }
+
+        point.setSeriesId(this.seriesId);
 
         return point;
     }
