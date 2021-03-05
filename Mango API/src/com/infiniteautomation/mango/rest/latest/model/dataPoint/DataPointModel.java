@@ -75,7 +75,7 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
 
     boolean mergeTags = false;
     Map<String, String> tags;
-    int seriesId;
+    int seriesId = Common.NEW_ID;
 
     //For display purposes
     String extendedName;
