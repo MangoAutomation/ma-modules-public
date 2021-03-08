@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -44,10 +45,13 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
     private boolean connectionClosed = false;
     private WebSocketSession session;
     private final PermissionService permissionService;
+    private final DataPointDao dataPointDao;
 
-    public PointValueWebSocketHandler(PermissionService permissionService){
+    @Autowired
+    public PointValueWebSocketHandler(PermissionService permissionService, DataPointDao dataPointDao) {
         super();
         this.permissionService = permissionService;
+        this.dataPointDao = dataPointDao;
     }
 
     @Override
@@ -83,7 +87,7 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
             PointValueRegistrationModel model = this.jacksonMapper.readValue(message.getPayload(), PointValueRegistrationModel.class);
 
             // Handle message.getPayload() here
-            DataPointVO vo = DataPointDao.getInstance().getByXid(model.getDataPointXid());
+            DataPointVO vo = dataPointDao.getByXid(model.getDataPointXid());
             if (vo == null) {
                 this.sendErrorMessage(session,MangoWebSocketErrorType.SERVER_ERROR,
                         new TranslatableMessage("rest.error.pointNotFound", model.getDataPointXid()));
@@ -181,7 +185,7 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
                     convertedValue = vo.getUnit().getConverterTo(vo.getRenderedUnit()).convert(pvt.getValue().getDoubleValue());
                 }
             }else {
-                pointEnabled = DataPointDao.getInstance().isEnabled(vo.getId());
+                pointEnabled = dataPointDao.isEnabled(vo.getId());
             }
 
             PointValueTimeModel pvtModel = null;
