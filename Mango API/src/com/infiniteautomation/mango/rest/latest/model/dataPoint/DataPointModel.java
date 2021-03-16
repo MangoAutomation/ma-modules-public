@@ -75,7 +75,7 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
 
     boolean mergeTags = false;
     Map<String, String> tags;
-    int seriesId = Common.NEW_ID;
+    Integer seriesId;
 
     //For display purposes
     String extendedName;
@@ -306,7 +306,7 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
             point.setData(data);
         }
 
-        point.setSeriesId(this.seriesId);
+        point.setSeriesId(this.seriesId == null || this.seriesId < 0 ? Common.NEW_ID : this.seriesId);
 
         return point;
     }
@@ -588,8 +588,12 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
         this.data = data;
     }
 
-    public int getSeriesId() {
+    public Integer getSeriesId() {
         return this.seriesId;
+    }
+
+    public void setSeriesId(Integer seriesId) {
+        this.seriesId = seriesId;
     }
 
     @Override
