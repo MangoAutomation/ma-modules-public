@@ -75,7 +75,6 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
 
     boolean mergeTags = false;
     Map<String, String> tags;
-    Integer seriesId;
 
     //For display purposes
     String extendedName;
@@ -138,7 +137,6 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
             this.setExtremeHighLimit = point.getSetExtremeHighLimit();
         }
         this.extendedName = point.getExtendedName();
-        this.seriesId = point.getSeriesId();
         this.data = point.getData();
     }
 
@@ -305,9 +303,6 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
         if(this.data != null) {
             point.setData(data);
         }
-
-        point.setSeriesId(this.seriesId == null || this.seriesId < 0 ? Common.NEW_ID : this.seriesId);
-
         return point;
     }
 
@@ -586,14 +581,6 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
 
     public void setData(JsonNode data) {
         this.data = data;
-    }
-
-    public Integer getSeriesId() {
-        return this.seriesId;
-    }
-
-    public void setSeriesId(Integer seriesId) {
-        this.seriesId = seriesId;
     }
 
     @Override

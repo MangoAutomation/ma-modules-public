@@ -141,19 +141,6 @@ describe('Data point service', function() {
         });
     });
 
-    it('Series id does not change on update', function() {
-        let seriesId = -1;
-        return DataPoint.get(testPointXid1).then(dataPoint => {
-            dataPoint.name = 'Changed name';
-            seriesId = dataPoint.seriesId;
-            return dataPoint.save();
-        }).then(dataPoint => {
-            assert.strictEqual(dataPoint.name, 'Changed name');
-            assert.isNumber(dataPoint.seriesId);
-            assert.strictEqual(dataPoint.seriesId, seriesId);
-        });
-    });
-    
     it('Lists all data points', function() {
         return DataPoint.list().then((dpList) => {
             assert.isArray(dpList);
