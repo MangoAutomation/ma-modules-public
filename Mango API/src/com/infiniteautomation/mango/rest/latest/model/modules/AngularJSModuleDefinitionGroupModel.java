@@ -18,17 +18,7 @@ public class AngularJSModuleDefinitionGroupModel {
         String url;
         String name;
         String version;
-        boolean supportsBundling;
-        int priority;
-        List<String> angularJsModuleNames;
-        List<String> amdModuleNames;
 
-        public boolean isSupportsBundling() {
-            return supportsBundling;
-        }
-        public void setSupportsBundling(boolean supportsBundling) {
-            this.supportsBundling = supportsBundling;
-        }
         public String getName() {
             return name;
         }
@@ -46,24 +36,6 @@ public class AngularJSModuleDefinitionGroupModel {
         }
         public void setUrl(String url) {
             this.url = url;
-        }
-        public List<String> getAngularJsModuleNames() {
-            return angularJsModuleNames;
-        }
-        public void setAngularJsModuleNames(List<String> angularJsModuleNames) {
-            this.angularJsModuleNames = angularJsModuleNames;
-        }
-        public List<String> getAmdModuleNames() {
-            return amdModuleNames;
-        }
-        public void setAmdModuleNames(List<String> amdModuleNames) {
-            this.amdModuleNames = amdModuleNames;
-        }
-        public int getPriority() {
-            return priority;
-        }
-        public void setPriority(int priority) {
-            this.priority = priority;
         }
     }
 

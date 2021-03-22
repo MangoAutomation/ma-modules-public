@@ -156,10 +156,6 @@ public class ModulesRestController {
             info.setUrl(uri.toString());
             info.setVersion(version);
             info.setName(module.getName());
-            info.setSupportsBundling(def.supportsBundling());
-            info.setPriority(def.getOrder());
-            info.setAngularJsModuleNames(def.angularJsModuleNames());
-            info.setAmdModuleNames(def.amdModuleNames());
 
             model.add("/" + urlWithVersion, info);
         }

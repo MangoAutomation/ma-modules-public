@@ -51,17 +51,7 @@ describe('modules-rest-controller', function() {
             response.data.modules.forEach((item, index) => {
                 // MODEL: ModuleInfo
                 assert.isObject(item, 'data.modules[]');
-                assert.isArray(item.amdModuleNames, 'data.modules[].amdModuleNames');
-                item.amdModuleNames.forEach((item, index) => {
-                    assert.isString(item, 'data.modules[].amdModuleNames[]');
-                });
-                assert.isArray(item.angularJsModuleNames, 'data.modules[].angularJsModuleNames');
-                item.angularJsModuleNames.forEach((item, index) => {
-                    assert.isString(item, 'data.modules[].angularJsModuleNames[]');
-                });
                 assert.isString(item.name, 'data.modules[].name');
-                assert.isNumber(item.priority, 'data.modules[].priority');
-                assert.isBoolean(item.supportsBundling, 'data.modules[].supportsBundling');
                 assert.isString(item.url, 'data.modules[].url');
                 assert.isString(item.version, 'data.modules[].version');
                 // END MODEL: ModuleInfo
