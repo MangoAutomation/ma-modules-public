@@ -156,7 +156,7 @@ public class ModulesRestController {
             info.setUrl(uri.toString());
             info.setVersion(version);
             info.setName(module.getName());
-
+            info.setUpgradedDate(module.getUpgradedDate());
             model.add("/" + urlWithVersion, info);
         }
 

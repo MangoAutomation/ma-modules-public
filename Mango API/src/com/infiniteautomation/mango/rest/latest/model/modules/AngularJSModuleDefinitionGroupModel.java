@@ -5,6 +5,7 @@
 package com.infiniteautomation.mango.rest.latest.model.modules;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -18,6 +19,7 @@ public class AngularJSModuleDefinitionGroupModel {
         String url;
         String name;
         String version;
+        Date upgradedDate;
 
         public String getName() {
             return name;
@@ -36,6 +38,14 @@ public class AngularJSModuleDefinitionGroupModel {
         }
         public void setUrl(String url) {
             this.url = url;
+        }
+
+        public Date getUpgradedDate() {
+            return upgradedDate;
+        }
+
+        public void setUpgradedDate(Date upgradedDate) {
+            this.upgradedDate = upgradedDate;
         }
     }
 
