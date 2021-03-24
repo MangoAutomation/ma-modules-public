@@ -130,10 +130,6 @@ public class ModulesRestController {
     }
 
     public static AngularJSModuleDefinitionGroupModel getAngularJSModules(boolean developmentMode) {
-        // construct a Maven-like snapshot version string
-        Date date = developmentMode ? new Date() : new Date(Common.START_TIME);
-        String dateString = "-" + (new SimpleDateFormat("yyyyMMdd.HHmmss")).format(date) + "-1";
-
         AngularJSModuleDefinitionGroupModel model = new AngularJSModuleDefinitionGroupModel();
         URI webUri = Common.MA_HOME_PATH.resolve(Constants.DIR_WEB).toUri();
 
@@ -142,6 +138,18 @@ public class ModulesRestController {
 
             String version = module.getVersion().toString();
             if (version.endsWith(SNAPSHOT)) {
+                // construct a Maven-like snapshot version string
+                Date date = module.getUpgradedDate();
+                if (developmentMode) {
+                    Path filePath = def.getAbsoluteJavaScriptPath();
+                    try {
+                        date = new Date(Files.getLastModifiedTime(filePath).toMillis());
+                    } catch (IOException e) {
+                        // ignore
+                    }
+                }
+
+                String dateString = "-" + (new SimpleDateFormat("yyyyMMdd.HHmmss")).format(date) + "-1";
                 version = version.substring(0, version.length() - SNAPSHOT.length()) + dateString;
             }
 
