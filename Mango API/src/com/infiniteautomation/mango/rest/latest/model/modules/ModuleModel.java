@@ -4,6 +4,8 @@
  */
 package com.infiniteautomation.mango.rest.latest.model.modules;
 
+import java.util.Date;
+
 import com.fasterxml.jackson.annotation.JsonView;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -37,6 +39,8 @@ public class ModuleModel {
     boolean unloaded;
     @JsonView(AdminView.class)
     boolean signed;
+	@JsonView(AdminView.class)
+	Date upgradedDate;
     
 	public ModuleModel(){ }
 	
@@ -58,6 +62,7 @@ public class ModuleModel {
 		this.dependencies = module.getDependencies();
 		this.markedForDeletion = module.isMarkedForDeletion();
 		this.signed = module.isSigned();
+		this.upgradedDate = module.getUpgradedDate();
 	}
 
 	public String getName() {
@@ -150,5 +155,13 @@ public class ModuleModel {
 	
 	public boolean isSigned() {
 		return signed;
+	}
+
+	public Date getUpgradedDate() {
+		return upgradedDate;
+	}
+
+	public void setUpgradedDate(Date upgradedDate) {
+		this.upgradedDate = upgradedDate;
 	}
 }
