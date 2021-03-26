@@ -5,8 +5,8 @@
 package com.infiniteautomation.mango.rest.latest.model.permissions;
 
 import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.module.Module;
 import com.serotonin.m2m2.module.PermissionDefinition;
+import com.serotonin.m2m2.module.PermissionGroup;
 
 /**
  * @author Terry Packer
@@ -15,8 +15,9 @@ public class PermissionDefinitionModel {
     private String name;
     private TranslatableMessage description;
     private MangoPermissionModel permission;
-    private String moduleName;
-    private TranslatableMessage moduleDescription;
+    private String groupName;
+    private TranslatableMessage groupTitle;
+    private TranslatableMessage groupDescription;
 
     public PermissionDefinitionModel() {}
 
@@ -24,9 +25,10 @@ public class PermissionDefinitionModel {
         this.name = def.getPermissionTypeName();
         this.description = def.getDescription();
         this.permission = new MangoPermissionModel(def.getPermission());
-        Module module = def.getModule();
-        this.moduleName = module.getName();
-        this.moduleDescription = module.getDescription();
+        PermissionGroup group = def.getGroup();
+        this.groupName = group.getName();
+        this.groupTitle = group.getTitle();
+        this.groupDescription = group.getDescription();
     }
 
     public String getName() {
@@ -49,12 +51,27 @@ public class PermissionDefinitionModel {
         this.permission = roles;
     }
 
-    public String getModuleName() {
-        return moduleName;
+    public String getGroupName() {
+        return groupName;
     }
 
-    public TranslatableMessage getModuleDescription() {
-        return moduleDescription;
+    public void setGroupName(String groupName) {
+        this.groupName = groupName;
     }
 
+    public TranslatableMessage getGroupTitle() {
+        return groupTitle;
+    }
+
+    public void setGroupTitle(TranslatableMessage groupTitle) {
+        this.groupTitle = groupTitle;
+    }
+
+    public TranslatableMessage getGroupDescription() {
+        return groupDescription;
+    }
+
+    public void setGroupDescription(TranslatableMessage groupDescription) {
+        this.groupDescription = groupDescription;
+    }
 }

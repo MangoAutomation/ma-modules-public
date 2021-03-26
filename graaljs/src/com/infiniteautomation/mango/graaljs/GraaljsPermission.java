@@ -5,6 +5,7 @@ package com.infiniteautomation.mango.graaljs;
 
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.PermissionDefinition;
+import com.serotonin.m2m2.module.PermissionGroup;
 
 /**
  * Grants access to use the Graal.js scripting engine
@@ -24,4 +25,8 @@ public class GraaljsPermission extends PermissionDefinition {
         return PERMISSION;
     }
 
+    @Override
+    public PermissionGroup getGroup() {
+        return SCRIPTING_ENGINES_GROUP;
+    }
 }

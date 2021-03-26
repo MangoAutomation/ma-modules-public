@@ -5,6 +5,7 @@ package com.infiniteautomation.mango.groovy;
 
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.PermissionDefinition;
+import com.serotonin.m2m2.module.PermissionGroup;
 
 /**
  * Grants access to use the Groovy scripting engine
@@ -24,4 +25,8 @@ public class GroovyPermission extends PermissionDefinition {
         return PERMISSION;
     }
 
+    @Override
+    public PermissionGroup getGroup() {
+        return SCRIPTING_ENGINES_GROUP;
+    }
 }
