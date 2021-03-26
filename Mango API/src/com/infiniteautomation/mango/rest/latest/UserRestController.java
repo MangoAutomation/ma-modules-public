@@ -348,21 +348,14 @@ public class UserRestController {
     }
 
     protected StreamedArrayWithTotal doQuery(ASTNode rql, PermissionHolder user, Function<UserModel, ?> toModel) {
-        final Function<User, Object> transformUser = item -> {
+        return new StreamedVORqlQueryWithTotal<>(service, rql, null, null, null, item -> {
             UserModel model = userModelMapper.map(item, user, mapper);
-
             // option to apply a further transformation
             if (toModel != null) {
                 return toModel.apply(model);
             }
-
             return model;
-        };
-        if (!permissionService.hasAdminRole(user)) {
-            User currentUser = user.getUser();
-            rql = RQLUtils.addAndRestriction(rql, new ASTNode("eq", "id", currentUser == null ? Common.NEW_ID : currentUser.getId()));
-        }
-        return new StreamedVORqlQueryWithTotal<>(service, rql, null, null, null, transformUser);
+        });
     }
 
     //Bulk operations
