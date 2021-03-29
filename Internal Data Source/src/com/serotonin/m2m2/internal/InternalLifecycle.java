@@ -54,9 +54,13 @@ public class InternalLifecycle extends LifecycleDefinition {
     private static Log LOG = LogFactory.getLog(InternalLifecycle.class);
 
     @Override
-    public void postInitialize(Version previousVersion, Version curren) {
-        IMangoLifecycle lifecycle = Providers.get(IMangoLifecycle.class);
-        maybeInstallSystemMonitor(lifecycle.isSafeMode());
+    public void postInitialize(Version previousVersion, Version current) {
+        try {
+            IMangoLifecycle lifecycle = Providers.get(IMangoLifecycle.class);
+            maybeInstallSystemMonitor(lifecycle.isSafeMode());
+        }catch(Exception e) {
+            LOG.error("Failed to create internal data points", e);
+        }
     }
 
     //Module Monitor IDs
