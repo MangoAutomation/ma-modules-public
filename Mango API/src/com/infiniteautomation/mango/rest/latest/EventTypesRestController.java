@@ -231,7 +231,7 @@ public class EventTypesRestController {
                 found = true;
                 for(SystemEventTypeDefinition def : ModuleRegistry.getDefinitions(SystemEventTypeDefinition.class)) {
                     EventTypeVO type = SystemEventType.getEventType(def.getTypeName());
-                    if(permissionService.hasEventTypePermission(user, type.getEventType())) {
+                    if(type.getEventType().hasPermission(user, permissionService)) {
                         SystemEventTypeModel model = modelMapper.map(type.getEventType(), SystemEventTypeModel.class, user);
                         types.add(new EventTypeVOModel<>(model, type.getDescription(), type.getAlarmLevel(), true, def.supportsReferenceId1(), def.supportsReferenceId2()));
                     }
@@ -241,7 +241,7 @@ public class EventTypesRestController {
                 found = true;
                 for(EventTypeVO vo : AuditEventType.getRegisteredEventTypes()) {
                     AuditEventType aet = (AuditEventType) vo.getEventType();
-                    if(permissionService.hasEventTypePermission(user, aet)) {
+                    if(aet.hasPermission(user, permissionService)) {
                         AuditEventTypeModel aetm = new AuditEventTypeModel(aet);
                         EventTypeVOModel<?,?,?> audit = new EventTypeVOModel<>(aetm, vo.getDescription(), vo.getAlarmLevel(), true, false, false);
                         types.add(audit);
@@ -475,7 +475,7 @@ public class EventTypesRestController {
                         if(!StringUtils.equals(eventType.getEventSubtype(), subtype))
                             continue;
 
-                        if(!permissionService.hasEventTypePermission(user, eventType))
+                        if(!eventType.hasPermission(user, permissionService))
                             continue;
 
                         AbstractEventTypeModel<?,?,?> model = modelMapper.map(eventType, AbstractEventTypeModel.class, user);

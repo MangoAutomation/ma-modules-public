@@ -42,7 +42,7 @@ public class MaintenanceEventTypeDefinition extends EventTypeDefinition {
     public List<EventTypeVO> getEventTypeVOs(PermissionHolder user, PermissionService service) {
         List<EventTypeVO> vos = new ArrayList<EventTypeVO>();
         for (MaintenanceEventVO me : MaintenanceEventDao.getInstance().getAll())
-            if(service.hasEventTypePermission(user, me.getEventType().getEventType()))
+            if(me.getEventType().getEventType().hasPermission(user, service))
                 vos.add(me.getEventType());
 
         return vos;
@@ -83,7 +83,7 @@ public class MaintenanceEventTypeDefinition extends EventTypeDefinition {
             String subtype, PermissionService service) {
         List<EventTypeVO> vos = new ArrayList<EventTypeVO>();
         for (MaintenanceEventVO me : MaintenanceEventDao.getInstance().getAll())
-            if(service.hasEventTypePermission(user, me.getEventType().getEventType()) && StringUtils.equals(me.getEventType().getEventType().getEventSubtype(), subtype))
+            if(me.getEventType().getEventType().hasPermission(user, service) && StringUtils.equals(me.getEventType().getEventType().getEventSubtype(), subtype))
                 vos.add(me.getEventType());
         return vos;
     }
