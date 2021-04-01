@@ -158,12 +158,12 @@ public class MaintenanceEventsServiceTest extends AbstractVOServiceWithPermissio
     //TODO Test Add/Remove/Use Toggle Permission
 
     @Override
-    String getReadRolesContextKey() {
+    String getReadPermissionContextKey() {
         return "togglePermission";
     }
 
     @Override
-    String getEditRolesContextKey() {
+    String getEditPermissionContextKey() {
         return "togglePermission";
     }
 
@@ -182,7 +182,7 @@ public class MaintenanceEventsServiceTest extends AbstractVOServiceWithPermissio
                 service.update(fromDb.getId(), fromDb);
             });
 
-        }, getReadRolesContextKey(), getReadRolesContextKey());
+        }, getReadPermissionContextKey(), getReadPermissionContextKey());
     }
 
     @Override
@@ -204,6 +204,6 @@ public class MaintenanceEventsServiceTest extends AbstractVOServiceWithPermissio
                 vo.setTogglePermission(MangoPermission.requireAnyRole(Collections.emptySet()));
                 service.update(fromDb.getId(), fromDb);
             });
-        }, getReadRolesContextKey());
+        }, getReadPermissionContextKey());
     }
 }

@@ -123,12 +123,12 @@ public class WatchListServiceTest extends AbstractVOServiceWithPermissionsTest<W
     }
 
     @Override
-    String getReadRolesContextKey() {
+    String getReadPermissionContextKey() {
         return "readPermission";
     }
 
     @Override
-    String getEditRolesContextKey() {
+    String getEditPermissionContextKey() {
         return "editPermission";
     }
 }
