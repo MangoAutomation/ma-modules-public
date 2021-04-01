@@ -159,19 +159,17 @@ public class MaintenanceEventsServiceTest extends AbstractVOServiceWithPermissio
     @Test
     @Override
     public void testAddReadRoleUserDoesNotHave() {
-        runTest(() -> {
-            MaintenanceEventVO vo = newVO(readUser);
-            setReadPermission(MangoPermission.requireAnyRole(roleService.getUserRole()), vo);
-            setEditPermission(MangoPermission.requireAnyRole(roleService.getUserRole()), vo);
-            service.insert(vo);
-            runAs.runAs(readUser, () -> {
-                MaintenanceEventVO fromDb = service.get(vo.getId());
-                assertVoEqual(vo, fromDb);
-                vo.setTogglePermission(MangoPermission.requireAnyRole(roleService.getSuperadminRole()));
-                service.update(fromDb.getId(), fromDb);
-            });
-
-        }, getReadPermissionContextKey(), getReadPermissionContextKey());
+        expectValidationErrorRule.expectValidationException(getReadPermissionContextKey(), getReadPermissionContextKey());
+        MaintenanceEventVO vo = newVO(readUser);
+        setReadPermission(MangoPermission.requireAnyRole(roleService.getUserRole()), vo);
+        setEditPermission(MangoPermission.requireAnyRole(roleService.getUserRole()), vo);
+        service.insert(vo);
+        runAs.runAs(readUser, () -> {
+            MaintenanceEventVO fromDb = service.get(vo.getId());
+            assertVoEqual(vo, fromDb);
+            vo.setTogglePermission(MangoPermission.requireAnyRole(roleService.getSuperadminRole()));
+            service.update(fromDb.getId(), fromDb);
+        });
     }
 
     @Override
@@ -182,17 +180,16 @@ public class MaintenanceEventsServiceTest extends AbstractVOServiceWithPermissio
 
     @Test
     public void testCannotRemoveToggleAccess() {
-        runTest(() -> {
-            MaintenanceEventVO vo = newVO(editUser);
-            setReadPermission(MangoPermission.requireAnyRole(roleService.getUserRole()), vo);
-            setEditPermission(MangoPermission.requireAnyRole(roleService.getUserRole()), vo);
-            service.insert(vo);
-            runAs.runAs(readUser, () -> {
-                MaintenanceEventVO fromDb = service.get(vo.getId());
-                assertVoEqual(vo, fromDb);
-                vo.setTogglePermission(MangoPermission.requireAnyRole(Collections.emptySet()));
-                service.update(fromDb.getId(), fromDb);
-            });
-        }, getReadPermissionContextKey());
+        expectValidationErrorRule.expectValidationException(getReadPermissionContextKey());
+        MaintenanceEventVO vo = newVO(editUser);
+        setReadPermission(MangoPermission.requireAnyRole(roleService.getUserRole()), vo);
+        setEditPermission(MangoPermission.requireAnyRole(roleService.getUserRole()), vo);
+        service.insert(vo);
+        runAs.runAs(readUser, () -> {
+            MaintenanceEventVO fromDb = service.get(vo.getId());
+            assertVoEqual(vo, fromDb);
+            vo.setTogglePermission(MangoPermission.requireAnyRole(Collections.emptySet()));
+            service.update(fromDb.getId(), fromDb);
+        });
     }
 }
