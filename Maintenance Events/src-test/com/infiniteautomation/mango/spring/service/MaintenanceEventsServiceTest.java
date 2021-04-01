@@ -25,7 +25,6 @@ import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.IDataPoint;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
-import com.serotonin.m2m2.vo.role.Role;
 
 /**
  *
@@ -58,11 +57,6 @@ public class MaintenanceEventsServiceTest extends AbstractVOServiceWithPermissio
     }
 
     @Override
-    void addReadRoleToFail(Role role, MaintenanceEventVO vo) {
-        vo.getTogglePermission().getRoles().add(Collections.singleton(role));
-    }
-
-    @Override
     void setEditPermission(MangoPermission permission, MaintenanceEventVO vo) {
         //A user with edit permission for the sources of all points (and all data sources sources) in this event has edit permission
         if(permission != null) {
@@ -78,11 +72,6 @@ public class MaintenanceEventsServiceTest extends AbstractVOServiceWithPermissio
             }
         }
         vo.setTogglePermission(permission);
-    }
-
-    @Override
-    void addEditRoleToFail(Role role, MaintenanceEventVO vo) {
-        vo.getTogglePermission().getRoles().add(Collections.singleton(role));
     }
 
     @Override

@@ -6,7 +6,6 @@ package com.infiniteautomation.mango.spring.service;
 
 import static org.junit.Assert.assertEquals;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -20,7 +19,6 @@ import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
-import com.serotonin.m2m2.vo.role.Role;
 import com.serotonin.m2m2.watchlist.WatchListCreatePermission;
 import com.serotonin.m2m2.watchlist.WatchListVO;
 import com.serotonin.m2m2.watchlist.WatchListVO.WatchListType;
@@ -99,16 +97,6 @@ public class WatchListServiceTest extends AbstractVOServiceWithPermissionsTest<W
         randomData.put(UUID.randomUUID().toString(), UUID.randomUUID().toString());
         copy.setData(randomData);
         return copy;
-    }
-
-    @Override
-    void addReadRoleToFail(Role role, WatchListVO vo) {
-        vo.getReadPermission().getRoles().add(Collections.singleton(role));
-    }
-
-    @Override
-    void addEditRoleToFail(Role role, WatchListVO vo) {
-        vo.getEditPermission().getRoles().add(Collections.singleton(role));
     }
 
     @Test(expected = PermissionException.class)
