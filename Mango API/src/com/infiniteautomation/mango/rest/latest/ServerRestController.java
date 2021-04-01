@@ -385,7 +385,7 @@ public class ServerRestController extends AbstractMangoRestController {
 
     @ApiOperation(value = "Get available serial ports, optionally refresh cached list.")
     @RequestMapping(method = {RequestMethod.GET}, value = "/serial-ports")
-    @PreAuthorize("hasDataSourcePermission()")
+    @PreAuthorize("isGrantedPermission('permissionDatasource')")
     public Set<String> refreshFreeSerialPorts(
             @RequestParam(value = "refresh", required = false, defaultValue = "false") boolean refresh
             ) throws Exception {
@@ -438,7 +438,7 @@ public class ServerRestController extends AbstractMangoRestController {
 
     @ApiOperation(value = "List network interfaces", notes="Requires global data source permission")
     @RequestMapping(method = {RequestMethod.GET}, value = "/network-interfaces")
-    @PreAuthorize("hasDataSourcePermission()")
+    @PreAuthorize("isGrantedPermission('permissionDatasource')")
     public List<NetworkInterfaceModel> getNetworkInterfaces(
             @RequestParam(value = "includeLoopback", required = false, defaultValue = "false") boolean includeLoopback,
             @RequestParam(value = "includeDefault", required = false, defaultValue = "false") boolean includeDefault,

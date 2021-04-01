@@ -79,7 +79,7 @@ public class MBusDataSourceRestController {
         this.executor = executor;
     }
 
-    @PreAuthorize("hasDataSourcePermission()")
+    @PreAuthorize("isGrantedPermission('permissionDatasource')")
     @ApiOperation(value = "Start an MBus scan")
     @RequestMapping(method = RequestMethod.POST, value= {"/scan"})
     public ResponseEntity<TemporaryResource<MBusScanResult, AbstractRestException>> operation(

@@ -57,7 +57,7 @@ public class AsciiFileDataSourceRestController {
         this.service = service;
     }
 
-    @PreAuthorize("hasDataSourcePermission()")
+    @PreAuthorize("isGrantedPermission('permissionDatasource')")
     @ApiOperation(value = "Validate ASCII File is readable on Server", notes = "")
     @RequestMapping(method = RequestMethod.POST, value = "/validate-ascii-file-exists", consumes= {"text/plain;charset=UTF-8"})
     public void validateFileExists(
