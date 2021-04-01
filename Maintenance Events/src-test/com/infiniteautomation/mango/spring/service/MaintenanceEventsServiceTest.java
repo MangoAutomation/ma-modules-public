@@ -159,7 +159,7 @@ public class MaintenanceEventsServiceTest extends AbstractVOServiceWithPermissio
     @Test
     @Override
     public void testAddReadRoleUserDoesNotHave() {
-        expectValidationErrorRule.expectValidationException(getReadPermissionContextKey(), getReadPermissionContextKey());
+        validation.expectValidationException(getReadPermissionContextKey(), getReadPermissionContextKey());
         MaintenanceEventVO vo = newVO(readUser);
         setReadPermission(MangoPermission.requireAnyRole(roleService.getUserRole()), vo);
         setEditPermission(MangoPermission.requireAnyRole(roleService.getUserRole()), vo);
@@ -180,7 +180,7 @@ public class MaintenanceEventsServiceTest extends AbstractVOServiceWithPermissio
 
     @Test
     public void testCannotRemoveToggleAccess() {
-        expectValidationErrorRule.expectValidationException(getReadPermissionContextKey());
+        validation.expectValidationException(getReadPermissionContextKey());
         MaintenanceEventVO vo = newVO(editUser);
         setReadPermission(MangoPermission.requireAnyRole(roleService.getUserRole()), vo);
         setEditPermission(MangoPermission.requireAnyRole(roleService.getUserRole()), vo);
