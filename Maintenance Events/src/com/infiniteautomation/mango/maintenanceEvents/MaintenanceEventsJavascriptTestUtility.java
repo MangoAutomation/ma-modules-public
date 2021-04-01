@@ -6,6 +6,7 @@ package com.infiniteautomation.mango.maintenanceEvents;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.infiniteautomation.mango.spring.components.RunAs;
 import com.infiniteautomation.mango.spring.service.MangoJavaScriptService;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.spring.service.maintenanceEvents.MaintenanceEventsService;
@@ -15,8 +16,8 @@ import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventDao;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventRT;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventVO;
+import com.serotonin.m2m2.module.definitions.permissions.DataSourcePermissionDefinition;
 import com.serotonin.m2m2.vo.permission.PermissionException;
-import com.infiniteautomation.mango.spring.components.RunAs;
 
 /**
  * @author Terry Packer
@@ -24,9 +25,13 @@ import com.infiniteautomation.mango.spring.components.RunAs;
  */
 public class MaintenanceEventsJavascriptTestUtility extends MaintenanceEventsJavascriptUtility{
 
+    private final DataSourcePermissionDefinition dataSourcePermissionDefinition;
+
     @Autowired
-    public MaintenanceEventsJavascriptTestUtility(MangoJavaScriptService service, PermissionService permissionService, MaintenanceEventsService meService, RunAs runAs) {
+    public MaintenanceEventsJavascriptTestUtility(MangoJavaScriptService service, PermissionService permissionService,
+                                                  MaintenanceEventsService meService, RunAs runAs, DataSourcePermissionDefinition dataSourcePermissionDefinition) {
         super(service, permissionService, meService, runAs);
+        this.dataSourcePermissionDefinition = dataSourcePermissionDefinition;
     }
 
     @Override
@@ -51,7 +56,7 @@ public class MaintenanceEventsJavascriptTestUtility extends MaintenanceEventsJav
     public MaintenanceEventVO insert(MaintenanceEventVO vo)
             throws NotFoundException, PermissionException, ValidationException {
         //Ensure they can create an event
-        permissionService.ensureDataSourcePermission(permissions);
+        permissionService.ensurePermission(permissions, dataSourcePermissionDefinition.getPermission());
 
         //Generate an Xid if necessary
         if(StringUtils.isEmpty(vo.getXid()))

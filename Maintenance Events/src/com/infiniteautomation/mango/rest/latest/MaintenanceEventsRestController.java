@@ -52,6 +52,7 @@ import com.serotonin.json.type.JsonStreamedArray;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventDao;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventType;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventVO;
+import com.serotonin.m2m2.module.definitions.permissions.DataSourcePermissionDefinition;
 import com.serotonin.m2m2.vo.event.EventInstanceVO;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.web.MediaTypes;
@@ -78,15 +79,19 @@ public class MaintenanceEventsRestController {
     private final MaintenanceEventDao dao;
     private final MaintenanceEventsService service;
     private final PermissionService permissionService;
+    private final DataSourcePermissionDefinition dataSourcePermissionDefinition;
 
     @Autowired
     public MaintenanceEventsRestController(MaintenanceEventsService service,
                                            MaintenanceEventDao dao,
-                                           RestModelMapper modelMapper, EventInstanceService eventService, PermissionService permissionService) {
+                                           RestModelMapper modelMapper,
+                                           EventInstanceService eventService, PermissionService permissionService,
+                                           DataSourcePermissionDefinition dataSourcePermissionDefinition) {
         this.service = service;
         this.dao = dao;
         this.eventService = eventService;
         this.permissionService = permissionService;
+        this.dataSourcePermissionDefinition = dataSourcePermissionDefinition;
         this.eventTableValueConverters = new HashMap<>();
         this.eventTableFieldMap = new EventTableRqlMappings(Events.EVENTS);
 
@@ -227,7 +232,7 @@ public class MaintenanceEventsRestController {
     public StreamedArrayWithTotal doQuery(ASTNode rql, PermissionHolder user, Function<MaintenanceEventVO, Object> transformVO) {
 
         //If we are admin or have overall data source permission we can view all
-        if (permissionService.hasAdminRole(user) || permissionService.hasDataSourcePermission(user)) {
+        if (permissionService.hasPermission(user, dataSourcePermissionDefinition.getPermission())) {
             return new StreamedVORqlQueryWithTotal<>(service, rql, null, null, null, transformVO);
         } else {
             return new StreamedVORqlQueryWithTotal<>(service, rql, null, null, null, item -> {
@@ -256,7 +261,7 @@ public class MaintenanceEventsRestController {
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
 
         Map<String, JsonStreamedArray> export = new HashMap<>();
-        if (permissionService.hasAdminRole(user) || permissionService.hasDataSourcePermission(user)) {
+        if (permissionService.hasPermission(user, dataSourcePermissionDefinition.getPermission())) {
             export.put("maintenanceEvents", new StreamedSeroJsonVORqlQuery<>(service, rql, null, null, null));
         } else {
             export.put("maintenanceEvents", new StreamedSeroJsonVORqlQuery<>(service, rql, null, null, null, item -> {

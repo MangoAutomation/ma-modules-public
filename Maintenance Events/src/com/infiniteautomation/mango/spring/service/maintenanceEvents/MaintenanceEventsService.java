@@ -25,6 +25,7 @@ import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventDao;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventRT;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventVO;
 import com.serotonin.m2m2.maintenanceEvents.RTMDefinition;
+import com.serotonin.m2m2.module.definitions.permissions.DataSourcePermissionDefinition;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.permission.PermissionException;
@@ -38,9 +39,13 @@ import com.serotonin.timer.CronTimerTrigger;
 @Service
 public class MaintenanceEventsService extends AbstractVOService<MaintenanceEventVO, MaintenanceEventDao>{
 
+    private final DataSourcePermissionDefinition dataSourcePermissionDefinition;
+
     @Autowired
-    public MaintenanceEventsService(MaintenanceEventDao dao, PermissionService permissionService) {
+    public MaintenanceEventsService(MaintenanceEventDao dao, PermissionService permissionService,
+                                    DataSourcePermissionDefinition dataSourcePermissionDefinition) {
         super(dao, permissionService);
+        this.dataSourcePermissionDefinition = dataSourcePermissionDefinition;
     }
 
     @Override
@@ -80,7 +85,7 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
 
     /**
      * Delete an event
-     * @param event
+     * @param vo
      * @return
      * @throws NotFoundException
      * @throws PermissionException
@@ -164,7 +169,7 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
      */
     public void ensureTogglePermission(MaintenanceEventVO vo, PermissionHolder user) {
         // TODO Mango 4.0 review
-        if (!(permissionService.hasDataSourcePermission(user) || permissionService.hasPermission(user, vo.getTogglePermission()))) {
+        if (!(permissionService.hasPermission(user, dataSourcePermissionDefinition.getPermission()) || permissionService.hasPermission(user, vo.getTogglePermission()))) {
             throw new PermissionException(new TranslatableMessage("maintenanceEvents.permission.unableToToggleEvent"), user);
         }
     }
@@ -266,17 +271,15 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
 
     @Override
     public boolean hasCreatePermission(PermissionHolder user, MaintenanceEventVO vo) {
-        return permissionService.hasDataSourcePermission(user);
+        return permissionService.hasPermission(user, dataSourcePermissionDefinition.getPermission());
     }
 
     @Override
     public boolean hasEditPermission(PermissionHolder user, MaintenanceEventVO vo) {
-        if(permissionService.hasAdminRole(user))
+        if(permissionService.hasPermission(user, dataSourcePermissionDefinition.getPermission())){
+            //TODO Review how this permission works
             return true;
-        else if(permissionService.hasDataSourcePermission(user))
-            //TODO Mango 4.0 Review how this permission works
-            return true;
-        else {
+        } else{
             if(vo.getDataPoints().size() > 0) {
                 DataPointPermissionsCheckCallback callback = new DataPointPermissionsCheckCallback(user, false, this.permissionService);
                 dao.getPoints(vo.getId(), callback);
@@ -296,12 +299,10 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
 
     @Override
     public boolean hasReadPermission(PermissionHolder user, MaintenanceEventVO vo) {
-        if(permissionService.hasAdminRole(user))
-            return true;
-        else if(permissionService.hasDataSourcePermission(user))
+        if(permissionService.hasPermission(user, dataSourcePermissionDefinition.getPermission())) {
             //TODO Review how this permission works
             return true;
-        else {
+        }else {
             if(vo.getDataPoints().size() > 0) {
                 DataPointPermissionsCheckCallback callback = new DataPointPermissionsCheckCallback(user, true, this.permissionService);
                 dao.getPoints(vo.getId(), callback);
