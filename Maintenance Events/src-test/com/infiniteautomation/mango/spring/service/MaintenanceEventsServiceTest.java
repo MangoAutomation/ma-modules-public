@@ -167,7 +167,7 @@ public class MaintenanceEventsServiceTest extends AbstractVOServiceWithPermissio
         runAs.runAs(readUser, () -> {
             MaintenanceEventVO fromDb = service.get(vo.getId());
             assertVoEqual(vo, fromDb);
-            vo.setTogglePermission(MangoPermission.requireAnyRole(roleService.getSuperadminRole()));
+            vo.setTogglePermission(MangoPermission.superadminOnly());
             service.update(fromDb.getId(), fromDb);
         });
     }
