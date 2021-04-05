@@ -72,7 +72,7 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
 
         ensureEditPermission(user, existing);
         vo.setId(existing.getId());
-        ensureValid(vo, user);
+        ensureValid(existing, vo, user);
         RTMDefinition.instance.saveMaintenanceEvent(vo);
         return vo;
     }
@@ -322,21 +322,13 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
 
     @Override
     public ProcessResult validate(MaintenanceEventVO vo, PermissionHolder user) {
-        ProcessResult response = commonValidation(vo, user);
-        permissionService.validatePermission(response, "togglePermission", user, vo.getTogglePermission());
-        return response;
-    }
-
-    @Override
-    public ProcessResult validate(MaintenanceEventVO existing, MaintenanceEventVO vo,
-            PermissionHolder user) {
-        ProcessResult result = commonValidation(vo, user);
-        permissionService.validatePermission(result, "togglePermission", user, vo.getTogglePermission());
-        return result;
+        return commonValidation(vo, user);
     }
 
     public ProcessResult commonValidation(MaintenanceEventVO vo, PermissionHolder user) {
         ProcessResult response = super.validate(vo, user);
+
+        permissionService.validatePermission(response, "togglePermission", user, vo.getTogglePermission());
 
         if((vo.getDataSources().size() < 1) &&(vo.getDataPoints().size() < 1)) {
             response.addContextualMessage("dataSources", "validate.invalidValue");

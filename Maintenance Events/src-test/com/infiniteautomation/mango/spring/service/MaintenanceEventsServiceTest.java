@@ -6,8 +6,6 @@ package com.infiniteautomation.mango.spring.service;
 
 import static org.junit.Assert.assertEquals;
 
-import java.util.Collections;
-
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -159,7 +157,7 @@ public class MaintenanceEventsServiceTest extends AbstractVOServiceWithPermissio
     @Test
     @Override
     public void testAddReadRoleUserDoesNotHave() {
-        validation.expectValidationException(getReadPermissionContextKey(), getReadPermissionContextKey());
+        validation.expectValidationException(getReadPermissionContextKey());
         MaintenanceEventVO vo = newVO(readUser);
         setReadPermission(MangoPermission.requireAnyRole(roleService.getUserRole()), vo);
         setEditPermission(MangoPermission.requireAnyRole(roleService.getUserRole()), vo);
@@ -167,7 +165,7 @@ public class MaintenanceEventsServiceTest extends AbstractVOServiceWithPermissio
         runAs.runAs(readUser, () -> {
             MaintenanceEventVO fromDb = service.get(vo.getId());
             assertVoEqual(vo, fromDb);
-            vo.setTogglePermission(MangoPermission.superadminOnly());
+            fromDb.setTogglePermission(MangoPermission.superadminOnly());
             service.update(fromDb.getId(), fromDb);
         });
     }
@@ -179,8 +177,8 @@ public class MaintenanceEventsServiceTest extends AbstractVOServiceWithPermissio
     }
 
     @Test
+    @ExpectValidationException("togglePermission")
     public void testCannotRemoveToggleAccess() {
-        validation.expectValidationException(getReadPermissionContextKey());
         MaintenanceEventVO vo = newVO(editUser);
         setReadPermission(MangoPermission.requireAnyRole(roleService.getUserRole()), vo);
         setEditPermission(MangoPermission.requireAnyRole(roleService.getUserRole()), vo);
@@ -188,7 +186,7 @@ public class MaintenanceEventsServiceTest extends AbstractVOServiceWithPermissio
         runAs.runAs(readUser, () -> {
             MaintenanceEventVO fromDb = service.get(vo.getId());
             assertVoEqual(vo, fromDb);
-            vo.setTogglePermission(MangoPermission.requireAnyRole(Collections.emptySet()));
+            fromDb.setTogglePermission(MangoPermission.superadminOnly());
             service.update(fromDb.getId(), fromDb);
         });
     }
