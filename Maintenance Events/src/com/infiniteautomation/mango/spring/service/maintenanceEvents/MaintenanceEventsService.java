@@ -323,7 +323,7 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
     @Override
     public ProcessResult validate(MaintenanceEventVO vo, PermissionHolder user) {
         ProcessResult response = commonValidation(vo, user);
-        permissionService.validatePermission(response, "togglePermission", user, null, vo.getTogglePermission());
+        permissionService.validatePermission(response, "togglePermission", user, vo.getTogglePermission());
         return response;
     }
 
@@ -331,7 +331,7 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
     public ProcessResult validate(MaintenanceEventVO existing, MaintenanceEventVO vo,
             PermissionHolder user) {
         ProcessResult result = commonValidation(vo, user);
-        permissionService.validatePermission(result, "togglePermission", user, existing.getTogglePermission(), vo.getTogglePermission());
+        permissionService.validatePermission(result, "togglePermission", user, vo.getTogglePermission());
         return result;
     }
 
