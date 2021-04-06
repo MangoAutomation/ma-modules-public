@@ -91,11 +91,34 @@ public class LoggingRestController {
     @PreAuthorize("isAdmin()")
     @ApiOperation(value = "View log", notes = "Optionally download file as attachment", response = String.class)
     @RequestMapping(method = RequestMethod.GET, produces = {MediaType.TEXT_PLAIN_VALUE}, value = "/view/{filename}")
-    public ResponseEntity<FileSystemResource> download(
+    public ResponseEntity<FileSystemResource> viewLogFile(
             @ApiParam(value = "Set content disposition to attachment", defaultValue = "false")
             @RequestParam(required = false, defaultValue = "false") boolean download,
             @PathVariable String filename) {
+        return getLogFile(filename, download);
+    }
 
+    /**
+     * Alias for {@link #viewLogFile(boolean, java.lang.String)} as Firefox downloads file as .gz file and ignores
+     * the Content-Disposition header if the URL ends with .gz.
+     *
+     * <ul>
+     *     <li><a href="https://bugzilla.mozilla.org/show_bug.cgi?id=610679">FF bug 610679</a></li>
+     *     <li><a href="https://bugzilla.mozilla.org/show_bug.cgi?id=852868">FF bug 852868</a></li>
+     * </ul>
+     *
+     * @param filename
+     * @return
+     */
+    @PreAuthorize("isAdmin()")
+    @ApiOperation(value = "Download log file", response = String.class)
+    @RequestMapping(method = RequestMethod.GET, produces = {MediaType.TEXT_PLAIN_VALUE}, value = "/download")
+    public ResponseEntity<FileSystemResource> downloadLogFile(
+            @RequestParam String filename) {
+        return getLogFile(filename, true);
+    }
+
+    private ResponseEntity<FileSystemResource> getLogFile(String filename, boolean download) {
         Path file = Common.getLogsPath().resolve(filename);
         if (!filterFiles(file)) {
             throw new NotFoundRestException();
@@ -118,5 +141,4 @@ public class LoggingRestController {
 
         return new ResponseEntity<>(new FileSystemResource(file), responseHeaders, HttpStatus.OK);
     }
-
 }
