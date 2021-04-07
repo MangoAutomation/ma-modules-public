@@ -49,8 +49,8 @@ import com.infiniteautomation.mango.rest.latest.genericcsv.GenericCSVMessageConv
 import com.infiniteautomation.mango.rest.latest.mapping.HtmlHttpMessageConverter;
 import com.infiniteautomation.mango.rest.latest.mapping.JScienceModule;
 import com.infiniteautomation.mango.rest.latest.mapping.JsonStreamMessageConverter;
-import com.infiniteautomation.mango.rest.latest.mapping.MangoPermissionModelConverter;
-import com.infiniteautomation.mango.rest.latest.mapping.MangoPermissionModelDeserializer;
+import com.infiniteautomation.mango.rest.latest.mapping.SingleMintermPermissionConverter;
+import com.infiniteautomation.mango.rest.latest.mapping.PermissionConverter;
 import com.infiniteautomation.mango.rest.latest.mapping.MangoRestJacksonModule;
 import com.infiniteautomation.mango.rest.latest.mapping.PointValueTimeStreamCsvMessageConverter;
 import com.infiniteautomation.mango.rest.latest.mapping.SerotoninJsonMessageConverter;
@@ -59,6 +59,7 @@ import com.infiniteautomation.mango.rest.latest.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.latest.util.MangoRestTemporaryResourceContainer;
 import com.infiniteautomation.mango.spring.MangoCommonConfiguration;
 import com.infiniteautomation.mango.spring.MangoRuntimeContextConfiguration;
+import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.webapp.RestWebApplicationInitializer;
 import com.serotonin.m2m2.web.MediaTypes;
 import com.serotonin.m2m2.web.mvc.spring.security.MangoMethodSecurityConfiguration;
@@ -86,6 +87,7 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
     List<HttpMessageConverter<?>> converters;
     List<HandlerInterceptor> interceptors;
     Environment env;
+    PermissionService permissionService;
 
     /**
      * Should be supplied by
@@ -99,13 +101,15 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
             RestModelMapper modelMapper,
             List<HandlerMethodArgumentResolver> handlerMethodArgumentResolvers,
             List<HandlerInterceptor> interceptors, AsyncTaskExecutor asyncTaskExecutor,
-            Environment env) {
+            Environment env,
+            PermissionService permissionService) {
         this.mapper = mapper;
         this.handlerMethodArgumentResolvers = handlerMethodArgumentResolvers;
         this.interceptors = interceptors;
         this.converters = new ArrayList<>();
         this.asyncTaskExecutor = asyncTaskExecutor;
         this.env = env;
+        this.permissionService = permissionService;
 
         mapper
         .registerModule(new MangoRestJacksonModule())
@@ -215,7 +219,8 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
 
     @Override
     public void addFormatters(FormatterRegistry registry) {
-        registry.addConverter(new MangoPermissionModelConverter(mapper, new MangoPermissionModelDeserializer()));
+        registry.addConverter(new SingleMintermPermissionConverter(permissionService));
+        registry.addConverter(new PermissionConverter(permissionService));
     }
 
     @Override

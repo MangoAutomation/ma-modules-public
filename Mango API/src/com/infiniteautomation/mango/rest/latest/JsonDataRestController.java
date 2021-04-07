@@ -34,10 +34,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.infiniteautomation.mango.db.query.ConditionSortLimit;
+import com.infiniteautomation.mango.permission.MangoPermission;
 import com.infiniteautomation.mango.rest.latest.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.latest.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.latest.model.jsondata.JsonDataModel;
-import com.infiniteautomation.mango.rest.latest.model.permissions.MangoPermissionModel;
 import com.infiniteautomation.mango.spring.service.JsonDataService;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -149,11 +149,11 @@ public class JsonDataRestController {
             @ApiParam(value = "XID", required = true, allowMultiple = false)
             @PathVariable String xid,
 
-            @ApiParam(value = "Read Permissions", required = false, defaultValue="", allowMultiple = true)
-            @RequestParam(required=false, defaultValue="") MangoPermissionModel readPermission,
+            @ApiParam(value = "Read Permissions")
+            @RequestParam(required=false, defaultValue="") MangoPermission readPermission,
 
-            @ApiParam(value = "Edit Permissions", required = false, defaultValue="", allowMultiple = true)
-            @RequestParam(required=false, defaultValue="") MangoPermissionModel editPermission,
+            @ApiParam(value = "Edit Permissions")
+            @RequestParam(required=false, defaultValue="") MangoPermission editPermission,
 
             @ApiParam(value = "Name", required = true, allowMultiple = false, defaultValue="")
             @RequestParam(required=false, defaultValue="") String name,
@@ -196,11 +196,11 @@ public class JsonDataRestController {
             @ApiParam(value = "Data path using dots as separator", required = true, allowMultiple = false)
             @PathVariable String path,
 
-            @ApiParam(value = "Read Permissions", required = false, defaultValue="", allowMultiple = true)
-            @RequestParam(required=false, defaultValue="") MangoPermissionModel readPermission,
+            @ApiParam(value = "Read Permissions")
+            @RequestParam(required=false, defaultValue="") MangoPermission readPermission,
 
-            @ApiParam(value = "Edit Permissions", required = false, defaultValue="", allowMultiple = true)
-            @RequestParam(required=false, defaultValue="") MangoPermissionModel editPermission,
+            @ApiParam(value = "Edit Permissions")
+            @RequestParam(required=false, defaultValue="") MangoPermission editPermission,
 
             @ApiParam(value = "Name", required = true, allowMultiple = false, defaultValue="")
             @RequestParam(required=false, defaultValue="") String name,
@@ -240,11 +240,11 @@ public class JsonDataRestController {
             @ApiParam(value = "XID", required = true, allowMultiple = false)
             @PathVariable String xid,
 
-            @ApiParam(value = "Read Permissions", required = false, defaultValue="", allowMultiple = true)
-            @RequestParam(required=false, defaultValue="") MangoPermissionModel readPermission,
+            @ApiParam(value = "Read Permissions")
+            @RequestParam(required=false, defaultValue="") MangoPermission readPermission,
 
-            @ApiParam(value = "Edit Permissions", required = false, defaultValue="", allowMultiple = true)
-            @RequestParam(required=false, defaultValue="") MangoPermissionModel editPermission,
+            @ApiParam(value = "Edit Permissions")
+            @RequestParam(required=false, defaultValue="") MangoPermission editPermission,
 
             @ApiParam(value = "Name", required = true, allowMultiple = false, defaultValue="")
             @RequestParam(required=false, defaultValue="") String name,
@@ -285,11 +285,11 @@ public class JsonDataRestController {
             @ApiParam(value = "Data path using dots as separator", required = true, allowMultiple = false)
             @PathVariable String path,
 
-            @ApiParam(value = "Read Permissions", required = false, defaultValue="", allowMultiple = true)
-            @RequestParam(required=false, defaultValue="") MangoPermissionModel readPermission,
+            @ApiParam(value = "Read Permissions")
+            @RequestParam(required=false, defaultValue="") MangoPermission readPermission,
 
-            @ApiParam(value = "Edit Permissions", required = false, defaultValue="", allowMultiple = true)
-            @RequestParam(required=false, defaultValue="") MangoPermissionModel editPermission,
+            @ApiParam(value = "Edit Permissions")
+            @RequestParam(required=false, defaultValue="") MangoPermission editPermission,
 
             @ApiParam(value = "Name", required = true, allowMultiple = false, defaultValue="")
             @RequestParam(required=false, defaultValue="") String name,
@@ -381,8 +381,8 @@ public class JsonDataRestController {
      * @return
      */
     private ResponseEntity<JsonDataModel> modifyJsonData(MapOperation operation,
-            String xid, String[] pathParts, MangoPermissionModel readPermissions, MangoPermissionModel editPermissions, String name,
-            JsonNode data, PermissionHolder user, UriComponentsBuilder builder, HttpServletRequest request, HttpStatus successStatus) {
+                                                         String xid, String[] pathParts, MangoPermission readPermissions, MangoPermission editPermissions, String name,
+                                                         JsonNode data, PermissionHolder user, UriComponentsBuilder builder, HttpServletRequest request, HttpStatus successStatus) {
 
         // check we are using this method only for replace and append
         if (operation != MapOperation.REPLACE && operation != MapOperation.APPEND) throw new IllegalArgumentException();
@@ -393,8 +393,8 @@ public class JsonDataRestController {
             vo = service.get(xid);
             //Replace the data
             vo.setName(name);
-            vo.setReadPermission(readPermissions != null ? readPermissions.getPermission() : null);
-            vo.setEditPermission(editPermissions!= null ? editPermissions.getPermission() : null);
+            vo.setReadPermission(readPermissions);
+            vo.setEditPermission(editPermissions);
 
             JsonNode existingData = vo.getJsonData();
 
@@ -414,8 +414,8 @@ public class JsonDataRestController {
             vo = new JsonDataVO();
             vo.setXid(xid);
             vo.setName(name);
-            vo.setReadPermission(readPermissions != null ? readPermissions.getPermission() : null);
-            vo.setEditPermission(editPermissions!= null ? editPermissions.getPermission() : null);
+            vo.setReadPermission(readPermissions);
+            vo.setEditPermission(editPermissions);
             vo.setJsonData(data);
             this.service.insert(vo);
         }
