@@ -16,7 +16,9 @@ import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.text.SimpleDateFormat;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -54,6 +56,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.github.zafarkhaja.semver.Version;
 import com.infiniteautomation.mango.rest.latest.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.latest.exception.GenericRestException;
 import com.infiniteautomation.mango.rest.latest.exception.ModuleRestException;
@@ -116,7 +119,6 @@ import io.swagger.annotations.ApiParam;
 public class ModulesRestController {
 
     private static final String WEB_MODULE_PREFIX = Constants.DIR_WEB + "/" + Constants.DIR_MODULES + "/" + ModuleUtils.Constants.MODULE_PREFIX;
-    private static final String SNAPSHOT = "-SNAPSHOT";
 
     private final Environment env;
     private final ModulesService service;
@@ -129,17 +131,22 @@ public class ModulesRestController {
         this.permissionService = permissionService;
     }
 
+    public static final DateTimeFormatter PRE_RELEASE_FORMATTER = DateTimeFormatter
+            .ofPattern("yyyyMMdd.HHmmss-1")
+            .withZone(ZoneId.from(ZoneOffset.UTC));
+
     public static AngularJSModuleDefinitionGroupModel getAngularJSModules(boolean developmentMode) {
         AngularJSModuleDefinitionGroupModel model = new AngularJSModuleDefinitionGroupModel();
         URI webUri = Common.MA_HOME_PATH.resolve(Constants.DIR_WEB).toUri();
 
         for (AngularJSModuleDefinition def : ModuleRegistry.getAngularJSDefinitions()) {
             Module module = def.getModule();
+            Version moduleVersion = module.getVersion();
 
-            String version = module.getVersion().toString();
-            if (version.endsWith(SNAPSHOT)) {
-                // construct a Maven-like snapshot version string
-                Date date = module.getUpgradedDate();
+            String version = moduleVersion.toString();
+            String preReleaseVersion = moduleVersion.getPreReleaseVersion();
+            if ("SNAPSHOT".equals(preReleaseVersion)) {
+                Date date = module.getBuildDate() == null ? module.getUpgradedDate() : module.getBuildDate();
                 if (developmentMode) {
                     Path filePath = def.getAbsoluteJavaScriptPath();
                     try {
@@ -148,9 +155,8 @@ public class ModulesRestController {
                         // ignore
                     }
                 }
-
-                String dateString = "-" + (new SimpleDateFormat("yyyyMMdd.HHmmss")).format(date) + "-1";
-                version = version.substring(0, version.length() - SNAPSHOT.length()) + dateString;
+                String preRelease = PRE_RELEASE_FORMATTER.format(date.toInstant());
+                version = moduleVersion.setPreReleaseVersion(preRelease).toString();
             }
 
             URI uri = webUri.relativize(def.getAbsoluteJavaScriptPath().toUri());
