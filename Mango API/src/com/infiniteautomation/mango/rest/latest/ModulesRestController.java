@@ -146,16 +146,16 @@ public class ModulesRestController {
             String version = moduleVersion.toString();
             String preReleaseVersion = moduleVersion.getPreReleaseVersion();
             if ("SNAPSHOT".equals(preReleaseVersion)) {
-                Date date = module.getBuildDate() == null ? module.getUpgradedDate() : module.getBuildDate();
+                Date buildDate = module.getBuildDate();
                 if (developmentMode) {
                     Path filePath = def.getAbsoluteJavaScriptPath();
                     try {
-                        date = new Date(Files.getLastModifiedTime(filePath).toMillis());
+                        buildDate = new Date(Files.getLastModifiedTime(filePath).toMillis());
                     } catch (IOException e) {
                         // ignore
                     }
                 }
-                String preRelease = PRE_RELEASE_FORMATTER.format(date.toInstant());
+                String preRelease = PRE_RELEASE_FORMATTER.format(buildDate.toInstant());
                 version = moduleVersion.setPreReleaseVersion(preRelease).toString();
             }
 
