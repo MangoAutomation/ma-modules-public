@@ -21,6 +21,7 @@ public class ModuleModel {
 	
 	String name;
 	String version;
+	Date buildDate;
     String normalVersion;
 	String licenseType;
     @JsonView(AdminView.class)
@@ -52,6 +53,7 @@ public class ModuleModel {
 	public ModuleModel(Module module){
 		this.name = module.getName();
         this.version = module.getVersion().toString();
+        this.buildDate = module.getBuildDate();
         this.normalVersion = module.getVersion().getNormalVersion();
 		this.licenseType = module.getLicenseType();
 		TranslatableMessage m = module.getDescription();
@@ -81,7 +83,23 @@ public class ModuleModel {
 		this.version = version;
 	}
 
-   public String getNormalVersion() {
+	public Date getBuildDate() {
+		return buildDate;
+	}
+
+	public void setBuildDate(Date buildDate) {
+		this.buildDate = buildDate;
+	}
+
+	public boolean isMarkedForDeletion() {
+		return markedForDeletion;
+	}
+
+	public void setMarkedForDeletion(boolean markedForDeletion) {
+		this.markedForDeletion = markedForDeletion;
+	}
+
+	public String getNormalVersion() {
         return normalVersion;
 	}
 
@@ -135,10 +153,6 @@ public class ModuleModel {
 
 	public void setDependencies(String dependencies) {
 		this.dependencies = dependencies;
-	}
-
-	public boolean markedForDeletion(){
-		return this.markedForDeletion;
 	}
 
 	public void setUnloaded(boolean unloaded){
