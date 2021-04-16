@@ -18,7 +18,8 @@ public class ModuleUpgradesModel {
 	
 	private List<ModuleUpgradeModel> upgrades;
 	private List<ModuleUpgradeModel> newInstalls;
-	
+	private List<ModuleModel> unavailableModules;
+
 	public ModuleUpgradesModel(){ }
 	
 	/**
@@ -41,6 +42,14 @@ public class ModuleUpgradesModel {
 	}
 	public void setNewInstalls(List<ModuleUpgradeModel> newInstalls) {
 		this.newInstalls = newInstalls;
+	}
+
+	public List<ModuleModel> getUnavailableModules() {
+		return unavailableModules;
+	}
+
+	public void setUnavailableModules(List<ModuleModel> unavailableModules) {
+		this.unavailableModules = unavailableModules;
 	}
 
 	/**
