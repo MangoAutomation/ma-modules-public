@@ -29,6 +29,8 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
@@ -101,6 +103,8 @@ import io.swagger.annotations.ApiParam;
 @RestController
 @RequestMapping("/modules")
 public class ModulesRestController extends MangoRestController {
+
+    private final Log LOG = LogFactory.getLog(ModulesRestController.class);
 
     private static final String MODULES_WEB_DIR = Constants.DIR_WEB + "/" + Constants.DIR_MODULES;
     private static final String WEB_MODULE_PREFIX = MODULES_WEB_DIR + "/" + ModuleUtils.Constants.MODULE_PREFIX;
@@ -285,6 +289,8 @@ public class ModulesRestController extends MangoRestController {
                     } else {
                         List<ModuleUpgradeModel> upgrades = new ArrayList<>();
                         List<ModuleUpgradeModel> newInstalls = new ArrayList<>();
+                        List<ModuleModel> unavailableModules = new ArrayList<>();
+
                         ModuleUpgradesModel model = new ModuleUpgradesModel(upgrades, newInstalls);
 
                         JsonObject root = jsonResponse.toJsonObject();
@@ -310,6 +316,28 @@ public class ModulesRestController extends MangoRestController {
                         for (JsonValue v : jsonInstallsArray) {
                             newInstalls.add(new ModuleUpgradeModel(v));
                         }
+
+                        //Extract any unavailable modules
+                        JsonValue jsonUnavailableModules = root.get("unavailableModules");
+                        JsonArray jsonUnavailableModulesArray = jsonUnavailableModules.toJsonArray();
+                        List<Module> modules = ModuleRegistry.getModules();
+                        for (JsonValue v : jsonUnavailableModulesArray) {
+                            Module unavailable = null;
+                            String moduleName = v.toString();
+                            for(Module module : modules) {
+                                if(StringUtils.equals(module.getName(), moduleName)) {
+                                    unavailable = module;
+                                    break;
+                                }
+                            }
+                            if(unavailable == null) {
+                                //Didn't find it?  Store must be wrong?
+                                LOG.warn("Store reported unavailable module " + moduleName + " but it isn't installed.");
+                            }else {
+                                unavailableModules.add(new ModuleModel(unavailable));
+                            }
+                        }
+                        model.setUnavailableModules(unavailableModules);
                         return result.createResponseEntity(model);
                     }
                 } catch(SocketTimeoutException e) {
