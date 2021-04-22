@@ -17,6 +17,7 @@ import com.infiniteautomation.mango.spring.service.DataPointService;
 import com.infiniteautomation.mango.util.exception.TranslatableIllegalStateException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
+import com.serotonin.m2m2.rt.RTException;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataSource.DataSourceRT;
 import com.serotonin.m2m2.vo.DataPointVO;
@@ -82,10 +83,13 @@ public class RuntimeManagerRestController {
         }
 
         //Get the Data Source and Relinquish the point
-        DataSourceRT<?> dsRt = Common.runtimeManager.getRunningDataSource(rt.getDataSourceId());
-        if(dsRt == null) {
+        DataSourceRT<?> dsRt = null;
+        try {
+            dsRt = Common.runtimeManager.getRunningDataSource(rt.getDataSourceId());
+        } catch (RTException e) {
             throw new TranslatableIllegalStateException(new TranslatableMessage("rest.error.dataSourceNotEnabled", xid));
         }
+
         dsRt.relinquish(rt);
     }
 

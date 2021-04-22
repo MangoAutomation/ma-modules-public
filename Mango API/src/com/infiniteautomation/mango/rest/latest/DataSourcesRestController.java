@@ -45,6 +45,7 @@ import com.serotonin.db.pair.LongLongPair;
 import com.serotonin.json.type.JsonStreamedArray;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.rt.RTException;
 import com.serotonin.m2m2.rt.dataSource.DataSourceRT;
 import com.serotonin.m2m2.rt.dataSource.PollingDataSource;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
@@ -221,9 +222,15 @@ public class DataSourcesRestController {
             @AuthenticationPrincipal PermissionHolder user) {
         DataSourceVO vo = service.get(xid);
         RuntimeStatusModel model = new RuntimeStatusModel();
-        DataSourceRT<?> ds = Common.runtimeManager.getRunningDataSource(vo.getId());
 
-        if ((ds != null)&&(ds instanceof PollingDataSource)){
+        DataSourceRT<?> ds;
+        try {
+            ds = Common.runtimeManager.getRunningDataSource(vo.getId());
+        } catch (RTException e) {
+            return model;
+        }
+
+        if (ds instanceof PollingDataSource){
             List<LongLongPair> list = ((PollingDataSource<?>)ds).getLatestPollTimes();
             List<PollStatus> latestPolls = new ArrayList<>();
             for(LongLongPair poll : list){
