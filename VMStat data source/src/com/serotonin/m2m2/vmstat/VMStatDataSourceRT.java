@@ -160,8 +160,7 @@ public class VMStatDataSourceRT extends EventDataSource<VMStatDataSourceVO> impl
     }
 
     @Override
-    public void terminate() {
-        super.terminate();
+    public void terminateImpl() {
 
         terminated = true;
 

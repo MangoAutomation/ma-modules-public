@@ -18,34 +18,34 @@
  */
 package com.serotonin.m2m2.mbus;
 
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Objects;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.SetPointSource;
 import com.serotonin.m2m2.rt.dataSource.PollingDataSource;
-import java.io.IOException;
-import java.util.Arrays;
 
+import net.sf.mbus4j.MBusUtils;
+import net.sf.mbus4j.SerialPortConnection;
+import net.sf.mbus4j.dataframes.UserDataResponse;
+import net.sf.mbus4j.dataframes.datablocks.BcdValue;
 import net.sf.mbus4j.dataframes.datablocks.BigDecimalDataBlock;
+import net.sf.mbus4j.dataframes.datablocks.ByteDataBlock;
+import net.sf.mbus4j.dataframes.datablocks.DataBlock;
 import net.sf.mbus4j.dataframes.datablocks.IntegerDataBlock;
 import net.sf.mbus4j.dataframes.datablocks.LongDataBlock;
 import net.sf.mbus4j.dataframes.datablocks.RealDataBlock;
 import net.sf.mbus4j.dataframes.datablocks.ShortDataBlock;
 import net.sf.mbus4j.dataframes.datablocks.StringDataBlock;
 import net.sf.mbus4j.master.MBusMaster;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
-import net.sf.mbus4j.MBusUtils;
-import net.sf.mbus4j.SerialPortConnection;
-import net.sf.mbus4j.dataframes.UserDataResponse;
-import net.sf.mbus4j.dataframes.datablocks.BcdValue;
-import net.sf.mbus4j.dataframes.datablocks.ByteDataBlock;
-import net.sf.mbus4j.dataframes.datablocks.DataBlock;
 
 /**
  * TODO datatype NUMERIC_INT is missing TODO Starttime for timpepoints ???
@@ -61,16 +61,6 @@ public class MBusDataSourceRT extends PollingDataSource<MBusDataSourceVO> {
 
     public MBusDataSourceRT(MBusDataSourceVO vo) {
         super(vo);
-    }
-
-    @Override
-    public void initialize() {
-        super.initialize();
-    }
-
-    @Override
-    public void terminate() {
-        super.terminate();
     }
 
     @Override

@@ -36,6 +36,7 @@ import com.serotonin.m2m2.rt.dataImage.types.NumericValue;
 import com.serotonin.m2m2.rt.dataSource.EventDataSource;
 import com.serotonin.m2m2.util.timeout.TimeoutClient;
 import com.serotonin.m2m2.util.timeout.TimeoutTask;
+import com.serotonin.util.ILifecycleState;
 import com.serotonin.util.queue.ByteQueue;
 
 public class SerialDataSourceRT extends EventDataSource<SerialDataSourceVO> implements SerialPortProxyEventListener{
@@ -69,7 +70,7 @@ public class SerialDataSourceRT extends EventDataSource<SerialDataSourceVO> impl
         if (Common.serialPortManager.portOwned(vo.getCommPortId())){
             raiseEvent(DATA_SOURCE_EXCEPTION_EVENT, System.currentTimeMillis(), true, new TranslatableMessage("event.serial.portInUse",vo.getCommPortId()));
             return false;
-        }else if(isTerminated())
+        }else if(getLifecycleState() != ILifecycleState.RUNNING)
             return false;
         else{
             try{
@@ -122,8 +123,7 @@ public class SerialDataSourceRT extends EventDataSource<SerialDataSourceVO> impl
         super.initialize();
     }
     @Override
-    public void terminate() {
-        super.terminate();
+    public void terminateImpl() {
         if(this.port != null)
             try {
                 Common.serialPortManager.close(this.port);
@@ -232,7 +232,7 @@ public class SerialDataSourceRT extends EventDataSource<SerialDataSourceVO> impl
                     if(this.port != null)
                         Common.serialPortManager.close(this.port);
 
-                    if(isTerminated())
+                    if(getLifecycleState() != ILifecycleState.RUNNING)
                         break;
                     else if(this.connect()) {
                         setPointValueImplTransport(dataPoint, valueTime);

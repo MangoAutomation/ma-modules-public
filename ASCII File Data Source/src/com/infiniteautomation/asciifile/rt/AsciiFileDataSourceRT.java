@@ -109,9 +109,8 @@ public class AsciiFileDataSourceRT extends PollingDataSource<AsciiFileDataSource
     }
 
     @Override
-    public void terminate() {
+    public void terminateImpl() {
         try {
-            super.terminate();
             if (this.file != null) {
                 try {
                     this.fobs.destroy();
