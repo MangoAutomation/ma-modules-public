@@ -15,7 +15,6 @@ import com.infiniteautomation.mango.monitor.MonitoredValues;
 import com.infiniteautomation.mango.monitor.PollableMonitor;
 import com.infiniteautomation.mango.monitor.ValueMonitor;
 import com.infiniteautomation.mango.spring.service.DataPointService;
-import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.Common.Rollups;
@@ -65,16 +64,16 @@ public class InternalDataSourceRT extends PollingDataSource<InternalDataSourceVO
     @Override
     public void beginPolling() {
         long ts = Common.timer.currentTimeMillis();
-        //Ensure have all our points loaded
-        this.updateChangedPoints(ts);
+
         //Refresh our Monitored Values
-        for (DataPointRT dataPoint : dataPoints) {
+        forEachDataPoint(dataPoint -> {
             InternalPointLocatorRT locator = dataPoint.getPointLocator();
             ValueMonitor<?> m = monitoredValues.getMonitor(locator.getPointLocatorVO().getMonitorId());
             if (m instanceof PollableMonitor) {
                 ((PollableMonitor<?>) m).poll(ts);
             }
-        }
+        });
+
         super.beginPolling();
     }
 

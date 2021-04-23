@@ -208,7 +208,7 @@ public class VMStatDataSourceRT extends EventDataSource<VMStatDataSourceVO> impl
 
         pointListChangeLock.readLock().lock();
         try {
-            for (DataPointRT dp : dataPoints.values()) {
+            for (DataPointRT dp : dataPoints) {
                 VMStatPointLocatorVO locator = ((VMStatPointLocatorRT) dp.getPointLocator()).getVo();
 
                 Integer position = attributePositions.get(locator.getAttributeId());

@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -179,7 +180,7 @@ public class AsciiFileDataSourceRT extends PollingDataSource<AsciiFileDataSource
         fileEvent(dataPoints);
     }
 
-    private void fileEvent(List<DataPointRT> dataPoints) {
+    private void fileEvent(Collection<DataPointRT> dataPoints) {
         // Should never happen
         if (this.file == null) {
             raiseEvent(POINT_READ_EXCEPTION_EVENT, System.currentTimeMillis(), true,
