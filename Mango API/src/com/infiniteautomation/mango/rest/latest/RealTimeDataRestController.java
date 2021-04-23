@@ -100,9 +100,8 @@ public class RealTimeDataRestController {
             ASTNode query,
             Translations translations) {
         //First build all the models
-        List<DataPointRT> points = Common.runtimeManager.getRunningDataPoints();
         List<RealTimeDataPointValueModel> models = new ArrayList<>();
-        for(DataPointRT rt : points) {
+        for(DataPointRT rt : Common.runtimeManager.getRunningDataPoints()) {
             if(permissionService.hasPermission(user, rt.getVO().getReadPermission())) {
                 models.add(map.apply(rt, user));
             }
