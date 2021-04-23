@@ -59,6 +59,7 @@ public class SerialDataSourceTest extends MangoTestBase {
 
         vo = SerialDataSourceTestData.getStandardDataSourceVO();
         rt = vo.createDataSourceRT();
+        rt.initialize(false);
 
         testCases.put("Hello World!;", new SerialDataSourceTestCase(SerialDataSourceTestData.getMatchAllPoint(vo), "terminator", ";", 1, new String[]{"Hello World!;"}));
         testCases.put("8812;abcf;", new SerialDataSourceTestCase(SerialDataSourceTestData.getMatchAllPoint(vo), "terminator", ";", 2, new String[]{"8812;","abcf;"}));
@@ -95,6 +96,7 @@ public class SerialDataSourceTest extends MangoTestBase {
         vo.setUseTerminator(dataSourceUseTerminator);
         vo.setMessageTerminator(dataSourceMessageTerminator);
         SerialDataSourceRT rt = vo.createDataSourceRT();
+        rt.initialize(false);
 
         //Setup Data Point RTs
         //String pointIdentifier = "";
