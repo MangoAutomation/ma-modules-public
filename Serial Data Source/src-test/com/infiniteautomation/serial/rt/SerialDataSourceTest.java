@@ -45,6 +45,7 @@ public class SerialDataSourceTest extends MangoTestBase {
     protected TestSerialPortProxy proxy;
 
     protected SerialDataSourceVO vo;
+    protected SerialDataSourceRT ds;
     protected SerialDataSourceRT rt;
     protected long time; //Time during simulation
 
@@ -58,14 +59,15 @@ public class SerialDataSourceTest extends MangoTestBase {
         Common.serialPortManager = new SerialDataSourceSerialPortManager(proxy);
 
         vo = SerialDataSourceTestData.getStandardDataSourceVO();
+        ds = vo.createDataSourceRT();
         rt = vo.createDataSourceRT();
         rt.initialize(false);
 
-        testCases.put("Hello World!;", new SerialDataSourceTestCase(SerialDataSourceTestData.getMatchAllPoint(vo), "terminator", ";", 1, new String[]{"Hello World!;"}));
-        testCases.put("8812;abcf;", new SerialDataSourceTestCase(SerialDataSourceTestData.getMatchAllPoint(vo), "terminator", ";", 2, new String[]{"8812;","abcf;"}));
-        testCases.put("", new SerialDataSourceTestCase(SerialDataSourceTestData.getMatchAllPoint(vo), "terminator", ";", 0, new String[]{}));
-        testCases.put("testStr\n\nabs", new SerialDataSourceTestCase(SerialDataSourceTestData.getNewlineTerminated(vo), "terminator", "\n", 2, new String[]{"testStr", ""}));
-        testCases.put("ok;", new SerialDataSourceTestCase(SerialDataSourceTestData.getMatchAllPoint(vo), "terminator", ";", 1, new String[]{"ok;"}));
+        testCases.put("Hello World!;", new SerialDataSourceTestCase(SerialDataSourceTestData.getMatchAllPoint(ds), "terminator", ";", 1, new String[]{"Hello World!;"}));
+        testCases.put("8812;abcf;", new SerialDataSourceTestCase(SerialDataSourceTestData.getMatchAllPoint(ds), "terminator", ";", 2, new String[]{"8812;","abcf;"}));
+        testCases.put("", new SerialDataSourceTestCase(SerialDataSourceTestData.getMatchAllPoint(ds), "terminator", ";", 0, new String[]{}));
+        testCases.put("testStr\n\nabs", new SerialDataSourceTestCase(SerialDataSourceTestData.getNewlineTerminated(ds), "terminator", "\n", 2, new String[]{"testStr", ""}));
+        testCases.put("ok;", new SerialDataSourceTestCase(SerialDataSourceTestData.getMatchAllPoint(ds), "terminator", ";", 1, new String[]{"ok;"}));
 
         //Clean out the timer's tasks
         time = System.currentTimeMillis() - 1000000;
@@ -111,7 +113,7 @@ public class SerialDataSourceTest extends MangoTestBase {
                 "windDirection",
                 windDirectionRegex,
                 1,
-                "", vo);
+                "", ds);
         rt.addDataPoint(windDirection);
 
         DataPointRT windSpeed = SerialDataSourceTestData.getCustomPoint(
@@ -119,7 +121,7 @@ public class SerialDataSourceTest extends MangoTestBase {
                 "windSpeed",
                 windSpeedRegex,
                 1,
-                "", vo);
+                "", ds);
         rt.addDataPoint(windSpeed);
 
         DataPointRT ip1 = SerialDataSourceTestData.getCustomPoint(
@@ -127,7 +129,7 @@ public class SerialDataSourceTest extends MangoTestBase {
                 "ip1",
                 ip1Regex,
                 1,
-                "", vo);
+                "", ds);
         rt.addDataPoint(ip1);
 
         //Connect

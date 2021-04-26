@@ -1121,7 +1121,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
             this.vo = vo;
             this.initialValue = initial;
             DataPointWithEventDetectors dp = new DataPointWithEventDetectors(vo, new ArrayList<>());
-            this.rt = new DataPointRT(dp, vo.getPointLocator().createRuntime(), dsVo, null,
+            this.rt = new DataPointRT(dp, vo.getPointLocator().createRuntime(), dsVo.createDataSourceRT(), null,
                     Common.databaseProxy.newPointValueDao(), Common.databaseProxy.getPointValueCacheDao(),
                     timer);
             runtimeManager.points.add(this.rt);

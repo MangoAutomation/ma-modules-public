@@ -14,6 +14,7 @@ import com.infiniteautomation.serial.vo.SerialPointLocatorVO;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
+import com.serotonin.m2m2.rt.dataSource.DataSourceRT;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.dataPoint.DataPointWithEventDetectors;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
@@ -33,7 +34,7 @@ public class SerialDataSourceTestData {
     }
 
     // ========== POINT CREATION METHODS ===========
-    public static DataPointRT getMatchAllPoint(DataSourceVO ds) {
+    public static DataPointRT getMatchAllPoint(DataSourceRT<? extends DataSourceVO> ds) {
         DataPointVO vo = new DataPointVO();
         vo.setName("matchAll");
         vo.setXid("matchAll");
@@ -46,7 +47,7 @@ public class SerialDataSourceTestData {
         vo.setPointLocator(plVo);
         return new DataPointRT(new DataPointWithEventDetectors(vo, new ArrayList<>()), plVo.createRuntime(), ds, null, Common.databaseProxy.newPointValueDao(), Common.databaseProxy.getPointValueCacheDao(), null);
     }
-    public static DataPointRT getNewlineTerminated(DataSourceVO ds) {
+    public static DataPointRT getNewlineTerminated(DataSourceRT<? extends DataSourceVO> ds) {
         DataPointVO vo = new DataPointVO();
         vo.setName("newlineTerminated");
         vo.setXid("newlineTerminated");
@@ -59,7 +60,7 @@ public class SerialDataSourceTestData {
         vo.setPointLocator(plVo);
         return new DataPointRT(new DataPointWithEventDetectors(vo, new ArrayList<>()), plVo.createRuntime(), ds, null, Common.databaseProxy.newPointValueDao(), Common.databaseProxy.getPointValueCacheDao(), null);
     }
-    public static DataPointRT getCustomPoint(String name, String xid, String valueRegex, int valueIndex, String pointIdentifier, DataSourceVO ds) {
+    public static DataPointRT getCustomPoint(String name, String xid, String valueRegex, int valueIndex, String pointIdentifier, DataSourceRT<? extends DataSourceVO> ds) {
         DataPointVO vo = new DataPointVO();
         vo.setName(name);
         vo.setXid(xid);
