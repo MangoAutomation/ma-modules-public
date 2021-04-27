@@ -27,13 +27,9 @@ public class VirtualDataSourceRT extends PollingDataSource<VirtualDataSourceVO> 
     
     @Override
     protected void doPollNoSync(long time) {
+        // avoid obtaining lock if not needed
         if (vo.isPolling()) {
-            pointListChangeLock.readLock().lock();
-            try {
-                doPoll(time);
-            } finally {
-                pointListChangeLock.readLock().unlock();
-            }
+            super.doPollNoSync(time);
         }
     }
 
