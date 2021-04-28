@@ -66,11 +66,11 @@ public class VirtualDataSourceRT extends PollingDataSource<VirtualDataSourceVO> 
 
     @Override
     public void addDataPoint(DataPointRT dataPoint) {
+        super.addDataPoint(dataPoint);
+
         if (dataPoint.getPointValue() != null) {
             VirtualPointLocatorRT locator = dataPoint.getPointLocator();
             locator.setCurrentValue(dataPoint.getPointValue().getValue());
         }
-
-        super.addDataPoint(dataPoint);
     }
 }
