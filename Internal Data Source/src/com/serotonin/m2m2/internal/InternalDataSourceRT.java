@@ -66,7 +66,7 @@ public class InternalDataSourceRT extends PollingDataSource<InternalDataSourceVO
         long ts = Common.timer.currentTimeMillis();
 
         //Refresh our Monitored Values
-        forEachDataPoint(dataPoint -> {
+        forEachPoint(dataPoint -> {
             InternalPointLocatorRT locator = dataPoint.getPointLocator();
             ValueMonitor<?> m = monitoredValues.getMonitor(locator.getPointLocatorVO().getMonitorId());
             if (m instanceof PollableMonitor) {
