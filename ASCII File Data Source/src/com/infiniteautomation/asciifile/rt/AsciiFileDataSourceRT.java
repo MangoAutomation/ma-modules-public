@@ -110,7 +110,7 @@ public class AsciiFileDataSourceRT extends PollingDataSource<AsciiFileDataSource
     }
 
     @Override
-    public void terminateImpl() {
+    public void pollingTerminate() {
         try {
             if (this.file != null) {
                 try {
