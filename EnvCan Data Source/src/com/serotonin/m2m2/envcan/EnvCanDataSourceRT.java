@@ -50,8 +50,7 @@ public class EnvCanDataSourceRT extends PollingDataSource<EnvCanDataSourceVO> {
     }
 
     @Override
-    public void removeDataPoint(DataPointRT dataPoint) {
-        super.removeDataPoint(dataPoint);
+    public void dataPointRemoved(DataPointRT dataPoint) {
         returnToNormal(PARSE_EXCEPTION_EVENT, System.currentTimeMillis());
     }
 
