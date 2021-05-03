@@ -21,8 +21,9 @@ public class VirtualDataSourceRT extends PollingDataSource<VirtualDataSourceVO> 
     }
 
     @Override
-    public boolean inhibitIntervalLoggingInitialization() {
-        return vo.isPolling();
+    public boolean shouldInitializeIntervalLogging(DataPointRT point) {
+        // if we arent going to poll then initialize interval logging when data point is initialized
+        return !vo.isPolling();
     }
 
     @Override
