@@ -19,17 +19,21 @@ public class VirtualDataSourceRT extends PollingDataSource<VirtualDataSourceVO> 
         super(vo);
         delay = vo.getDelay();
     }
-    
+
+    @Override
+    public boolean inhibitIntervalLoggingInitialization() {
+        return vo.isPolling();
+    }
+
+    @Override
+    public void addDataPointImpl(DataPointRT dataPoint) {
+        addDataPointImpl(dataPoint, vo.isPolling());
+    }
+
     @Override
     public void beginPolling() {
-        super.beginPolling();
-    }
-    
-    @Override
-    protected void doPollNoSync(long time) {
-        // avoid obtaining lock if not needed
         if (vo.isPolling()) {
-            super.doPollNoSync(time);
+            super.beginPolling();
         }
     }
 
