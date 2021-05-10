@@ -32,6 +32,11 @@ public class VirtualDataSourceRT extends PollingDataSource<VirtualDataSourceVO> 
     }
 
     @Override
+    public void removeDataPointImpl(DataPointRT dataPoint) {
+        removeDataPointImpl(dataPoint, vo.isPolling());
+    }
+
+    @Override
     public void beginPolling() {
         if (vo.isPolling()) {
             super.beginPolling();
