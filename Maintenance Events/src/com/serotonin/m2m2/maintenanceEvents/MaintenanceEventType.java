@@ -126,6 +126,10 @@ public class MaintenanceEventType extends EventType {
 
     @Override
     public boolean hasPermission(PermissionHolder user, PermissionService service) {
+        if(service.hasEventsSuperadminViewPermission(user)) {
+            return true;
+        }
+
         MaintenanceEventsService maintenanceEventService = Common.getBean(MaintenanceEventsService.class);
         try {
             MaintenanceEventVO vo = maintenanceEventService.get(maintenanceId);
