@@ -7,6 +7,7 @@ package com.serotonin.m2m2.maintenanceEvents;
 import org.apache.commons.lang3.StringUtils;
 
 import com.infiniteautomation.mango.emport.ImportContext;
+import com.infiniteautomation.mango.permission.MangoPermission;
 import com.infiniteautomation.mango.spring.service.maintenanceEvents.MaintenanceEventsService;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.infiniteautomation.mango.util.exception.ValidationException;
@@ -61,6 +62,12 @@ public class MaintenanceEventEmportDefinition extends EmportDefinition {
         }
         try {
             importContext.getReader().readInto(vo, maintenanceEvent);
+
+            //Ensure we have a default permission since null is valid in Mango 3.x
+            if(vo.getTogglePermission() == null) {
+                vo.setTogglePermission(new MangoPermission());
+            }
+
             boolean isnew = vo.getId() == Common.NEW_ID;
             if(isnew) {
                 service.insert(vo);
