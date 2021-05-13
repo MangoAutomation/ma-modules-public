@@ -11,7 +11,7 @@ import com.infiniteautomation.mango.permission.MangoPermission;
 import com.infiniteautomation.mango.rest.latest.model.AbstractVoModel;
 import com.infiniteautomation.mango.rest.latest.model.event.AbstractEventTypeWithoutSourcesModel;
 import com.infiniteautomation.mango.rest.latest.model.permissions.MangoPermissionModel;
-import com.serotonin.m2m2.rt.event.type.EventType;
+import com.serotonin.m2m2.rt.event.type.EventTypeMatcher;
 import com.serotonin.m2m2.vo.event.AbstractEventHandlerVO;
 
 /**
@@ -91,9 +91,9 @@ public abstract class AbstractEventHandlerModel<T extends AbstractEventHandlerVO
         T vo = super.toVO();
         vo.setDisabled(disabled);
         if(eventTypes != null) {
-            List<EventType> types = new ArrayList<>();
+            List<EventTypeMatcher> types = new ArrayList<>();
             for(AbstractEventTypeWithoutSourcesModel<?> etm : eventTypes) {
-                types.add(etm.toVO());
+                types.add(new EventTypeMatcher(etm.toVO()));
             }
             vo.setEventTypes(types);
         }
