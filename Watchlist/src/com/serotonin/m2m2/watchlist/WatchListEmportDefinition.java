@@ -8,6 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.infiniteautomation.mango.emport.ImportContext;
+import com.infiniteautomation.mango.permission.MangoPermission;
 import com.infiniteautomation.mango.spring.dao.WatchListDao;
 import com.infiniteautomation.mango.spring.service.WatchListService;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
@@ -67,6 +68,15 @@ public class WatchListEmportDefinition extends EmportDefinition {
 
         try {
             importContext.getReader().readInto(vo, watchListJson);
+
+            //Ensure we have a default permission since null is valid in Mango 3.x
+            if(vo.getReadPermission() == null) {
+                vo.setReadPermission(new MangoPermission());
+            }
+            if(vo.getEditPermission() == null) {
+                vo.setEditPermission(new MangoPermission());
+            }
+
             boolean isnew = vo.getId() == Common.NEW_ID;
             if(isnew) {
                 service.insert(vo);
