@@ -36,7 +36,7 @@ import com.infiniteautomation.mango.permission.MangoPermission;
 import com.infiniteautomation.mango.rest.latest.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.latest.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.latest.model.StreamedVORqlQueryWithTotal;
-import com.infiniteautomation.mango.rest.latest.model.event.AbstractEventTypeWithoutSourcesModel;
+import com.infiniteautomation.mango.rest.latest.model.event.EventTypeMatcherModel;
 import com.infiniteautomation.mango.rest.latest.model.event.handlers.AbstractEventHandlerModel;
 import com.infiniteautomation.mango.rest.latest.model.javascript.MangoJavaScriptModel;
 import com.infiniteautomation.mango.rest.latest.model.javascript.MangoJavaScriptResultModel;
@@ -91,8 +91,8 @@ public class EventHandlersRestController {
 
         //Map the event types into the model
         this.map = (vo, user) -> {
-            List<AbstractEventTypeWithoutSourcesModel<?>> eventTypes = vo.getEventTypes().stream().map(type -> {
-                return (AbstractEventTypeWithoutSourcesModel<?>) modelMapper.map(type, AbstractEventTypeWithoutSourcesModel.class, user);
+            List<EventTypeMatcherModel> eventTypes = vo.getEventTypes().stream().map(type -> {
+                return modelMapper.map(type, EventTypeMatcherModel.class, user);
             }).collect(Collectors.toList());
             @SuppressWarnings("unchecked")
             AbstractEventHandlerModel<? extends AbstractEventHandlerVO> model = modelMapper.map(vo, AbstractEventHandlerModel.class, user);
