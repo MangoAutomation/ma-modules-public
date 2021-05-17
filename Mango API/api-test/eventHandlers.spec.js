@@ -113,7 +113,7 @@ describe('Event handlers', function() {
                 eventTypes: [
                     {
                         eventType: 'DATA_SOURCE',
-                        subType: null,
+                        subType: '',
                         referenceId1: testContext.ds1.id,
                         referenceId2: 1 //Poll Aborted
                     }
