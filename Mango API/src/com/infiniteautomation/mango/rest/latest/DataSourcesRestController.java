@@ -11,7 +11,9 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -36,6 +38,7 @@ import com.infiniteautomation.mango.rest.latest.model.datasource.AbstractDataSou
 import com.infiniteautomation.mango.rest.latest.model.datasource.DataSourceWithPointsExport;
 import com.infiniteautomation.mango.rest.latest.model.datasource.ReadOnlyDataSourceModel;
 import com.infiniteautomation.mango.rest.latest.model.datasource.RuntimeStatusModel;
+import com.infiniteautomation.mango.rest.latest.model.datasource.RuntimeStatusModel.ActiveEventTypeModel;
 import com.infiniteautomation.mango.rest.latest.model.datasource.RuntimeStatusModel.PollStatus;
 import com.infiniteautomation.mango.rest.latest.patch.PatchVORequestBody;
 import com.infiniteautomation.mango.spring.service.DataPointService;
@@ -229,6 +232,12 @@ public class DataSourcesRestController {
         } catch (RTException e) {
             return model;
         }
+
+        model.setState(ds.getLifecycleState());
+        model.setActiveEventTypes(ds.eventTypeStatus().entrySet().stream()
+                .filter(Entry::getValue)
+                .map(e -> new ActiveEventTypeModel(e.getKey().getDescription(), e.getKey().getAlarmLevel()))
+                .collect(Collectors.toList()));
 
         if (ds instanceof PollingDataSource){
             List<LongLongPair> list = ((PollingDataSource<?>)ds).getLatestPollTimes();
