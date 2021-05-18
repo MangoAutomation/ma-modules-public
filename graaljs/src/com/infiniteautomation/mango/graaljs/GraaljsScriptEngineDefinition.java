@@ -86,6 +86,10 @@ public class GraaljsScriptEngineDefinition extends ScriptEngineDefinition {
                     .allowAllImplementations(true)
                     .allowArrayAccess(true)
                     .allowListAccess(true)
+                    .allowIterableAccess(true)
+                    .allowIteratorAccess(true)
+                    .allowBufferAccess(true)
+                    .allowMapAccess(true)
                     .denyAccess(ClassLoader.class)
                     .denyAccess(Member.class) // includes Method, Field and Constructor
                     .denyAccess(AnnotatedElement.class) // includes Class
