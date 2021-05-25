@@ -13,6 +13,7 @@
 * Add endpoint to query event counts into bins of time ranges at POST /events/counts
 * Add id/xid fields to Dao websocket messages
 * Remove /logging/files and /logging/by-filename endpoints
+* Add human readable dates to events model
 
 *Version 3.7.0*
 * Upgraded to work with core version 3.7.x
