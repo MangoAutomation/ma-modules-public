@@ -8,6 +8,7 @@ import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.rt.event.ReturnCause;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -29,6 +30,9 @@ public class EventInstanceModel {
     private TranslatableMessage message;
     private TranslatableMessage rtnMessage;
     private List<UserCommentModel> comments;
+    private Date activeDate;
+    private Date acknowledgedDate;
+    private Date rtnDate;
 
     //TODO We also have access to comments and handlers if necessary/desired
 
@@ -67,6 +71,10 @@ public class EventInstanceModel {
         this.message = message;
         this.rtnMessage = rtnMessage;
         this.comments = comments;
+
+        this.activeDate = new Date(activeTimestamp);
+        this.acknowledgedDate = acknowledgedTimestamp == null ? null : new Date(acknowledgedTimestamp);
+        this.rtnDate = rtnTimestamp == null ? null : new Date(rtnTimestamp);
     }
 
     public int getId() {
@@ -91,6 +99,7 @@ public class EventInstanceModel {
 
     public void setActiveTimestamp(long activeTimestamp) {
         this.activeTimestamp = activeTimestamp;
+        this.activeDate = new Date(activeTimestamp);
     }
 
     public Integer getAcknowledgedByUserId() {
@@ -115,6 +124,7 @@ public class EventInstanceModel {
 
     public void setAcknowledgedTimestamp(Long acknowledgedTimestamp) {
         this.acknowledgedTimestamp = acknowledgedTimestamp;
+        this.acknowledgedDate = acknowledgedTimestamp == null ? null : new Date(acknowledgedTimestamp);
     }
 
     public TranslatableMessage getAlternateAckSource() {
@@ -139,6 +149,7 @@ public class EventInstanceModel {
 
     public void setRtnTimestamp(Long rtnTimestamp) {
         this.rtnTimestamp = rtnTimestamp;
+        this.rtnDate = rtnTimestamp == null ? null : new Date(rtnTimestamp);
     }
 
     public ReturnCause getRtnCause() {
@@ -187,5 +198,17 @@ public class EventInstanceModel {
 
     public void setComments(List<UserCommentModel> comments) {
         this.comments = comments;
+    }
+
+    public Date getActiveDate() {
+        return activeDate;
+    }
+
+    public Date getAcknowledgedDate() {
+        return acknowledgedDate;
+    }
+
+    public Date getRtnDate() {
+        return rtnDate;
     }
 }
