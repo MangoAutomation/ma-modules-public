@@ -108,14 +108,13 @@ public class MaintenanceEventType extends EventType {
     @Override
     public void jsonRead(JsonReader reader, com.serotonin.json.type.JsonObject jsonObject) throws JsonException {
         super.jsonRead(reader, jsonObject);
-
+        maintenanceId = 0;
         String xid = jsonObject.getString("XID");
-        if (xid == null)
-            throw new TranslatableJsonException("emport.error.eventType.missing.reference", "XID");
-        Integer id = MaintenanceEventDao.getInstance().getIdByXid(xid);
-        if (id == null)
-            throw new TranslatableJsonException("emport.error.eventType.invalid.reference", "XID", xid);
-        maintenanceId = id;
+        if (xid != null) {
+            Integer id = MaintenanceEventDao.getInstance().getIdByXid(xid);
+            if (id == null)
+                throw new TranslatableJsonException("emport.error.eventType.invalid.reference", "XID", xid);
+        }
     }
 
     @Override
