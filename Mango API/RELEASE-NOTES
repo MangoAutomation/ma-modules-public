@@ -15,6 +15,7 @@
 * Remove /logging/files and /logging/by-filename endpoints
 * Add human readable dates to events model
 * Add lifecycle state to DataSource and DataPoint models
+* Add new event type STATE_CHANGE to DAO notification WebSockets
 
 *Version 3.7.0*
 * Upgraded to work with core version 3.7.x
