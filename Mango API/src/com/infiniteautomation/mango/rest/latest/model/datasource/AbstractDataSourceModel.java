@@ -16,13 +16,17 @@ import com.infiniteautomation.mango.permission.MangoPermission;
 import com.infiniteautomation.mango.rest.latest.exception.GenericRestException;
 import com.infiniteautomation.mango.rest.latest.model.AbstractVoModel;
 import com.infiniteautomation.mango.rest.latest.model.permissions.MangoPermissionModel;
+import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.DataSourceDefinition;
 import com.serotonin.m2m2.module.ModuleRegistry;
+import com.serotonin.m2m2.rt.RTException;
+import com.serotonin.m2m2.rt.dataSource.DataSourceRT;
 import com.serotonin.m2m2.rt.event.type.DataSourceEventType;
 import com.serotonin.m2m2.util.ExportCodes;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.event.EventTypeVO;
+import com.serotonin.util.ILifecycleState;
 
 import io.swagger.annotations.ApiModelProperty;
 
@@ -122,6 +126,19 @@ public abstract class AbstractDataSourceModel<T extends DataSourceVO> extends Ab
         vo.setData(data);
 
         return vo;
+    }
+
+    /**
+     * Get the lifecycle state for the data source
+     * @return
+     */
+    public ILifecycleState getDataSourceLifecycleState() {
+        try {
+            DataSourceRT<?> rt = Common.runtimeManager.getRunningDataSource(getId());
+            return rt.getLifecycleState();
+        } catch (RTException e) {
+            return ILifecycleState.TERMINATED;
+        }
     }
 
     /**

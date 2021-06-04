@@ -14,6 +14,7 @@
 * Add id/xid fields to Dao websocket messages
 * Remove /logging/files and /logging/by-filename endpoints
 * Add human readable dates to events model
+* Add lifecycle state to DataSource and DataPoint models
 
 *Version 3.7.0*
 * Upgraded to work with core version 3.7.x
