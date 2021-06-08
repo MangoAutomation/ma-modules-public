@@ -18,6 +18,7 @@ public class CoreModuleModel extends ModuleModel {
     String distributor;
     @JsonView(AdminView.class)
     int upgradeVersionState;
+    String storeUrl;
 
     public CoreModuleModel() {
         super();
@@ -57,5 +58,13 @@ public class CoreModuleModel extends ModuleModel {
 
     public void setUpgradeVersionState(int upgradeVersionState) {
         this.upgradeVersionState = upgradeVersionState;
+    }
+
+    public String getStoreUrl() {
+        return storeUrl;
+    }
+
+    public void setStoreUrl(String storeUrl) {
+        this.storeUrl = storeUrl;
     }
 }
