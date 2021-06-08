@@ -312,7 +312,7 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
      * Get the lifecycle state for the data point
      * @return
      */
-    public ILifecycleState getDataPointLifecycleState() {
+    public ILifecycleState getLifecycleState() {
         DataPointRT rt = Common.runtimeManager.getDataPoint(getId());
         return rt != null ? rt.getLifecycleState() : ILifecycleState.TERMINATED;
     }

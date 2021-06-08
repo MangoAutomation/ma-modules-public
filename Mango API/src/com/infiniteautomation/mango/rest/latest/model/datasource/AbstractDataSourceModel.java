@@ -132,7 +132,7 @@ public abstract class AbstractDataSourceModel<T extends DataSourceVO> extends Ab
      * Get the lifecycle state for the data source
      * @return
      */
-    public ILifecycleState getDataSourceLifecycleState() {
+    public ILifecycleState getLifecycleState() {
         try {
             DataSourceRT<?> rt = Common.runtimeManager.getRunningDataSource(getId());
             return rt.getLifecycleState();
