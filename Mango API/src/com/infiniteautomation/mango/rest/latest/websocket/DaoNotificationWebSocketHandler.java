@@ -89,6 +89,9 @@ public abstract class DaoNotificationWebSocketHandler<T extends AbstractBasicVO>
             case UPDATE:
                 action = "update";
                 break;
+            case STATE_CHANGE:
+                action = "stateChange";
+                break;
         }
         this.notify(action, event.getVo(), event.getOriginalVo());
     }
