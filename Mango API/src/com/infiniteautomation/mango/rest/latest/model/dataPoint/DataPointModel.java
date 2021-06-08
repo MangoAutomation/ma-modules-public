@@ -20,7 +20,6 @@ import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataPointTagsDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
-import com.serotonin.m2m2.rt.RTException;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.util.JUnitUtil;
 import com.serotonin.m2m2.vo.DataPointVO;
@@ -314,12 +313,8 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
      * @return
      */
     public ILifecycleState getDataPointLifecycleState() {
-        try {
-            DataPointRT rt = Common.runtimeManager.getDataPoint(getId());
-            return rt != null ? rt.getLifecycleState() : ILifecycleState.TERMINATED;
-        } catch (RTException e) {
-            return ILifecycleState.TERMINATED;
-        }
+        DataPointRT rt = Common.runtimeManager.getDataPoint(getId());
+        return rt != null ? rt.getLifecycleState() : ILifecycleState.TERMINATED;
     }
 
     @Override
