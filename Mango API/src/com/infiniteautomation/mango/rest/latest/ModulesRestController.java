@@ -195,6 +195,7 @@ public class ModulesRestController {
         coreModel.setInstanceDescription(SystemSettingsDao.instance.getValue(SystemSettingsDao.INSTANCE_DESCRIPTION));
         coreModel.setDistributor(Common.envProps.getString("distributor"));
         coreModel.setUpgradeVersionState(SystemSettingsDao.instance.getIntValue(SystemSettingsDao.UPGRADE_VERSION_STATE));
+        coreModel.setStoreUrl(Common.envProps.getString("store.url"));
 
         MappingJacksonValue jacksonValue = new MappingJacksonValue(coreModel);
         if (permissionService.hasAdminRole(user)) {
@@ -219,6 +220,7 @@ public class ModulesRestController {
                 coreModel.setInstanceDescription(SystemSettingsDao.instance.getValue(SystemSettingsDao.INSTANCE_DESCRIPTION));
                 coreModel.setDistributor(Common.envProps.getString("distributor"));
                 coreModel.setUpgradeVersionState(SystemSettingsDao.instance.getIntValue(SystemSettingsDao.UPGRADE_VERSION_STATE));
+                coreModel.setStoreUrl(Common.envProps.getString("store.url"));
                 models.add(coreModel);
             }else {
                 models.add(new ModuleModel(module));
