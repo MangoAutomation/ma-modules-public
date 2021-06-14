@@ -76,11 +76,5 @@
             <version>1.0.0</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-jul</artifactId>
-            <version>${log4jVersion}</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 </project>
