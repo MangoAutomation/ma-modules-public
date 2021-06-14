@@ -9,8 +9,11 @@ import com.infiniteautomation.mango.rest.latest.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.latest.model.RestModelMapping;
 import com.infiniteautomation.mango.rest.latest.model.dataPoint.textRenderer.BaseTextRendererModel;
 import com.infiniteautomation.mango.util.exception.ValidationException;
+import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
+import com.serotonin.util.ILifecycleState;
 
 /**
  * @author Terry Packer
@@ -40,6 +43,9 @@ public class DataPointModelMapping implements RestModelMapping<DataPointVO, Data
         BaseTextRendererModel<?> textRenderer = mapper.map(vo.getTextRenderer(), BaseTextRendererModel.class, user);
         model.setTextRenderer(textRenderer);
 
+        DataPointRT rt = Common.runtimeManager.getDataPoint(vo.getId());
+        ILifecycleState state = rt != null ? rt.getLifecycleState() : ILifecycleState.TERMINATED;
+        model.setLifecycleState(state);
         return model;
     }
 

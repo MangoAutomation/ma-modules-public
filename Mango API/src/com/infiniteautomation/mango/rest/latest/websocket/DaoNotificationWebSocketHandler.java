@@ -5,6 +5,7 @@
 package com.infiniteautomation.mango.rest.latest.websocket;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.ApplicationEvent;
 import org.springframework.web.socket.WebSocketSession;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -25,13 +26,14 @@ public abstract class DaoNotificationWebSocketHandler<T extends AbstractBasicVO>
      * @param action add, update or delete
      * @param vo
      * @param originalVo
+     * @param event
      */
-    public void notify(String action, T vo, T originalVo) {
+    public void notify(String action, T vo, T originalVo, ApplicationEvent event) {
         for (WebSocketSession session : sessions) {
             PermissionHolder user = getUser(session);
             if (hasPermission(user, vo) && isSubscribed(session, action, vo, originalVo)) {
                 this.runAs.runAs(user, () -> {
-                    Object userMessage = createNotification(action, vo, originalVo, user);
+                    Object userMessage = createNotification(action, vo, originalVo, event, user);
                     if (userMessage != null) {
                         try {
                             ObjectWriter writer;
@@ -55,7 +57,7 @@ public abstract class DaoNotificationWebSocketHandler<T extends AbstractBasicVO>
 
     abstract protected boolean hasPermission(PermissionHolder user, T vo);
 
-    abstract protected Object createModel(T vo, PermissionHolder user);
+    abstract protected Object createModel(T vo, ApplicationEvent event, PermissionHolder user);
 
     protected Class<?> defaultView() {
         return null;
@@ -89,11 +91,8 @@ public abstract class DaoNotificationWebSocketHandler<T extends AbstractBasicVO>
             case UPDATE:
                 action = "update";
                 break;
-            case STATE_CHANGE:
-                action = "stateChange";
-                break;
         }
-        this.notify(action, event.getVo(), event.getOriginalVo());
+        this.notify(action, event.getVo(), event.getOriginalVo(), event);
     }
 
     protected void notify(WebSocketSession session, String jsonMessage) {
@@ -110,7 +109,7 @@ public abstract class DaoNotificationWebSocketHandler<T extends AbstractBasicVO>
         }
     }
 
-    protected Object createNotification(String action, T vo, T originalVo, PermissionHolder user) {
+    protected Object createNotification(String action, T vo, T originalVo, ApplicationEvent event, PermissionHolder user) {
         Integer id = (vo instanceof AbstractBasicVO) ? ((AbstractBasicVO)vo).getId() : null;
         String xid = (vo instanceof AbstractVO) ? ((AbstractVO)vo).getXid() : null;
         String originalXid = (originalVo instanceof AbstractVO) ? ((AbstractVO)originalVo).getXid() : null;
@@ -119,7 +118,7 @@ public abstract class DaoNotificationWebSocketHandler<T extends AbstractBasicVO>
         if(StringUtils.equals(action, "delete")) {
             payload = new DaoNotificationModel(action, id, xid, null, originalXid);
         }else {
-            Object model = createModel(vo, user);
+            Object model = createModel(vo, event, user);
             if (model == null) {
                 return null;
             }

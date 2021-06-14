@@ -4,6 +4,7 @@
 package com.infiniteautomation.mango.rest.latest.websocket.dao;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
@@ -40,7 +41,7 @@ public class PublisherWebSocketHandler extends DaoNotificationWebSocketHandler<P
     }
 
     @Override
-    protected Object createModel(PublisherVO<? extends PublishedPointVO> vo, PermissionHolder user) {
+    protected Object createModel(PublisherVO<? extends PublishedPointVO> vo, ApplicationEvent event, PermissionHolder user) {
         return modelMapper.map(vo, AbstractPublisherModel.class, user);
     }
 

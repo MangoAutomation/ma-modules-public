@@ -4,6 +4,7 @@
 package com.infiniteautomation.mango.rest.latest.websocket.dao;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
@@ -39,7 +40,7 @@ public class EventDetectorWebSocketHandler <T extends AbstractEventDetectorVO> e
     }
 
     @Override
-    protected Object createModel(T vo, PermissionHolder user) {
+    protected Object createModel(T vo, ApplicationEvent event, PermissionHolder user) {
         return modelMapper.map(vo, AbstractEventDetectorModel.class, user);
     }
 

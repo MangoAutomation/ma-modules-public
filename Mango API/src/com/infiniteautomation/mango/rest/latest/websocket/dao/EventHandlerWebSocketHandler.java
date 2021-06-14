@@ -8,6 +8,7 @@ import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
@@ -52,7 +53,7 @@ public class EventHandlerWebSocketHandler<T extends AbstractEventHandlerVO> exte
     }
 
     @Override
-    protected Object createModel(T vo, PermissionHolder user) {
+    protected Object createModel(T vo, ApplicationEvent event, PermissionHolder user) {
         return this.map.apply(vo, user);
     }
 

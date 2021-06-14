@@ -4,6 +4,7 @@
  */
 package com.infiniteautomation.mango.rest.latest.websocket;
 
+import org.springframework.context.ApplicationEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
@@ -34,7 +35,7 @@ public class JsonDataWebSocketHandlerV2 extends SubscriptionDaoWebSocketHandler<
     }
 
     @Override
-    protected Object createModel(JsonDataVO vo, PermissionHolder user) {
+    protected Object createModel(JsonDataVO vo, ApplicationEvent event, PermissionHolder user) {
         return new JsonDataModel(vo);
     }
 

@@ -54,6 +54,8 @@ public abstract class AbstractDataSourceModel<T extends DataSourceVO> extends Ab
     private MangoPermissionModel readPermission;
     private JsonNode data;
 
+    //
+    private ILifecycleState lifecycleState;
     public AbstractDataSourceModel() {
 
     }
@@ -106,6 +108,13 @@ public abstract class AbstractDataSourceModel<T extends DataSourceVO> extends Ab
         this.readPermission = new MangoPermissionModel(vo.getReadPermission());
 
         this.data = vo.getData();
+
+        try {
+            DataSourceRT<?> rt = Common.runtimeManager.getRunningDataSource(getId());
+            this.lifecycleState = rt.getLifecycleState();
+        } catch (RTException e) {
+            this.lifecycleState = ILifecycleState.TERMINATED;
+        }
     }
 
     @Override
@@ -133,12 +142,11 @@ public abstract class AbstractDataSourceModel<T extends DataSourceVO> extends Ab
      * @return
      */
     public ILifecycleState getLifecycleState() {
-        try {
-            DataSourceRT<?> rt = Common.runtimeManager.getRunningDataSource(getId());
-            return rt.getLifecycleState();
-        } catch (RTException e) {
-            return ILifecycleState.TERMINATED;
-        }
+        return lifecycleState;
+    }
+
+    public void setLifecycleState(ILifecycleState lifecycleState) {
+        this.lifecycleState = lifecycleState;
     }
 
     /**

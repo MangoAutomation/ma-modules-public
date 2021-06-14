@@ -7,6 +7,7 @@ package com.infiniteautomation.mango.rest.latest.websocket.dao;
 import java.util.function.BiFunction;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
@@ -45,7 +46,7 @@ public class EventInstanceWebSocketHandler extends DaoNotificationWebSocketHandl
     }
 
     @Override
-    protected Object createModel(EventInstanceVO vo, PermissionHolder user) {
+    protected Object createModel(EventInstanceVO vo, ApplicationEvent event, PermissionHolder user) {
         return map.apply(vo, user);
     }
 

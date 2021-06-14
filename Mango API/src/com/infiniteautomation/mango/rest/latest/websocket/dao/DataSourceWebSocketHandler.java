@@ -4,6 +4,7 @@
 package com.infiniteautomation.mango.rest.latest.websocket.dao;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
@@ -12,6 +13,7 @@ import com.infiniteautomation.mango.rest.latest.model.datasource.AbstractDataSou
 import com.infiniteautomation.mango.rest.latest.websocket.DaoNotificationWebSocketHandler;
 import com.infiniteautomation.mango.rest.latest.websocket.WebSocketMapping;
 import com.infiniteautomation.mango.spring.events.DaoEvent;
+import com.infiniteautomation.mango.spring.events.StateChangeEvent;
 import com.infiniteautomation.mango.spring.service.DataSourceService;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
@@ -39,8 +41,21 @@ public class DataSourceWebSocketHandler<T extends DataSourceVO> extends DaoNotif
     }
 
     @Override
-    protected Object createModel(T vo, PermissionHolder user) {
-        return modelMapper.map(vo, AbstractDataSourceModel.class, user);
+    protected Object createModel(T vo, ApplicationEvent event, PermissionHolder user) {
+        AbstractDataSourceModel model = modelMapper.map(vo, AbstractDataSourceModel.class, user);
+
+        if(event instanceof StateChangeEvent) {
+            //Override the state set by the mapping in case it had already changed
+            //  by the time it was set
+            model.setLifecycleState(((StateChangeEvent) event).getState());
+        }
+
+        return model;
+    }
+
+    @EventListener
+    private void handleStateChangeEvent(StateChangeEvent<T> event) {
+        this.notify(StateChangeEvent.STATE_CHANGE, event.getVo(), null, event);
     }
 
     @Override

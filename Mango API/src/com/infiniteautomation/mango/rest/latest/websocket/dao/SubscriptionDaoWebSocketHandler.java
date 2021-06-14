@@ -3,19 +3,25 @@
  */
 package com.infiniteautomation.mango.rest.latest.websocket.dao;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.infiniteautomation.mango.rest.latest.websocket.*;
-import com.serotonin.m2m2.vo.AbstractBasicVO;
-import com.serotonin.m2m2.vo.AbstractVO;
-import com.serotonin.m2m2.vo.permission.PermissionHolder;
-import org.springframework.web.socket.TextMessage;
-import org.springframework.web.socket.WebSocketSession;
-
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+
+import org.springframework.context.ApplicationEvent;
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketSession;
+
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.infiniteautomation.mango.rest.latest.websocket.DaoNotificationWebSocketHandler;
+import com.infiniteautomation.mango.rest.latest.websocket.WebSocketMessageType;
+import com.infiniteautomation.mango.rest.latest.websocket.WebSocketNotification;
+import com.infiniteautomation.mango.rest.latest.websocket.WebSocketRequest;
+import com.infiniteautomation.mango.rest.latest.websocket.WebSocketResponse;
+import com.serotonin.m2m2.vo.AbstractBasicVO;
+import com.serotonin.m2m2.vo.AbstractVO;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 /**
  * @author Jared Wiltshire
@@ -107,8 +113,8 @@ public abstract class SubscriptionDaoWebSocketHandler<T extends AbstractBasicVO>
     }
 
     @Override
-    protected Object createNotification(String type, T vo, T originalVo, PermissionHolder user) {
-        Object model = createModel(vo, user);
+    protected Object createNotification(String type, T vo, T originalVo, ApplicationEvent event, PermissionHolder user) {
+        Object model = createModel(vo, event, user);
         if (model == null) {
             return null;
         }

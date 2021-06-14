@@ -4,6 +4,7 @@
  */
 package com.infiniteautomation.mango.rest.latest.websocket.dao;
 
+import org.springframework.context.ApplicationEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
@@ -31,7 +32,7 @@ public class UserCommentWebSocketHandler extends DaoNotificationWebSocketHandler
     }
 
     @Override
-    protected Object createModel(UserCommentVO vo, PermissionHolder user) {
+    protected Object createModel(UserCommentVO vo, ApplicationEvent event, PermissionHolder user) {
         return new UserCommentModel(vo);
     }
 
