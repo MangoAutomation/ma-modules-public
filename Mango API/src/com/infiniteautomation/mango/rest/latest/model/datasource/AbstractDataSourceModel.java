@@ -149,6 +149,10 @@ public abstract class AbstractDataSourceModel<T extends DataSourceVO> extends Ab
         this.lifecycleState = lifecycleState;
     }
 
+    public TranslatableMessage getLifecycleStateTranslation() {
+        return lifecycleState.getMessage();
+    }
+
     /**
      * Get the description for the data source's connection
      * @return
