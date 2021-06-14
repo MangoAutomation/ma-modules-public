@@ -147,7 +147,11 @@ public class ScriptRestController {
 
         private ScriptEngineModel(ScriptEngineFactory factory) {
             this.engineName = factory.getEngineName();
-            this.engineVersion = factory.getEngineVersion();
+            try {
+                this.engineVersion = factory.getEngineVersion();
+            } catch (Exception e) {
+                // ignore, see https://github.com/oracle/graaljs/issues/462
+            }
             this.extensions = factory.getExtensions();
             this.languageName = factory.getLanguageName();
             this.languageVersion = factory.getLanguageVersion();
