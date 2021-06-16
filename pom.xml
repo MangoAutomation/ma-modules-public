@@ -36,7 +36,6 @@
 		<module>Log4J reset</module>
 		<module>Maintenance Events</module>
 		<module>Mango API</module>
-		<module>MBus</module>
 		<module>Serial Data Source</module>
 		<module>SQL console</module>
 		<module>Virtual Data Source</module>
