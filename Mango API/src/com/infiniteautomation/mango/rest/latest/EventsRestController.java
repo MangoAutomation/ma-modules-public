@@ -4,6 +4,7 @@
 package com.infiniteautomation.mango.rest.latest;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,10 +35,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.fasterxml.jackson.core.JsonGenerator;
 import com.infiniteautomation.mango.db.query.ConditionSortLimit;
+import com.infiniteautomation.mango.db.query.ConditionSortLimitWithTagKeys;
 import com.infiniteautomation.mango.db.tables.Events;
-import com.infiniteautomation.mango.rest.latest.exception.ServerErrorException;
 import com.infiniteautomation.mango.rest.latest.model.JSONStreamedArray;
 import com.infiniteautomation.mango.rest.latest.model.ListWithTotal;
 import com.infiniteautomation.mango.rest.latest.model.RestModelMapper;
@@ -305,36 +305,28 @@ public class EventsRestController {
     public StreamedArrayWithTotal countDataPointEvents(
             @RequestBody
             CountDataPointEventsQuery body,
-            HttpServletRequest request,
-            @AuthenticationPrincipal PermissionHolder user) {
+            ASTNode rql) {
 
-        ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
+        ConditionSortLimitWithTagKeys conditions = service.createEventCountsConditions(rql);
+        Long from = body.getFrom() != null ? body.getFrom().getTime() : null;
+        Long to = body.getTo() != null ? body.getTo().getTime() : null;
 
         return new StreamedArrayWithTotal() {
-            int count = 0;
-
             @Override
-            public StreamedArray getItems() {
-                return new JSONStreamedArray() {
-                    @Override
-                    public void writeArrayValues(JsonGenerator jgen) throws IOException {
-                        service.queryDataPointEventCountsByRQL(rql, body.getFrom() != null ? body.getFrom().getTime() : null, body.getTo() != null ? body.getTo().getTime() : null, (item) -> {
-                            try {
-                                jgen.writeObject(new AlarmPointTagCountModel(item));
-                                count++;
-                            } catch (IOException e) {
-                                throw new ServerErrorException(e);
-                            }
-                        });
+            public JSONStreamedArray getItems() {
+                return jsonGenerator -> service.queryDataPointEventCountsByRQL(conditions, from, to, item -> {
+                    try {
+                        jsonGenerator.writeObject(new AlarmPointTagCountModel(item));
+                    } catch (IOException e) {
+                        throw new UncheckedIOException(e);
                     }
-                };
+                });
             }
 
             @Override
             public int getTotal() {
-                return service.countDataPointEventCountsByRQL(rql, body.getFrom() != null ? body.getFrom().getTime() : null, body.getTo() != null ? body.getTo().getTime() : null);
+                return service.countDataPointEventCountsByRQL(conditions, from, to);
             }
-
         };
     }
 
