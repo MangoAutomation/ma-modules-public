@@ -34,20 +34,22 @@ describe('Event handlers', function() {
     });
 
     before('Create data sources', function() {
-        this.createPoint = (name) => {
-            return new DataPoint({
+        this.createPoint = (options) => {
+            const pointLocator = Object.assign({
+                startValue: '0',
+                modelType: 'PL.VIRTUAL',
+                dataType: 'BINARY',
+                changeType: 'NO_CHANGE',
+                settable: true
+            }, options.pointLocator);
+            delete options.pointLocator;
+
+            return new DataPoint(Object.assign({
                 enabled: true,
-                name: name,
-                deviceName: 'Data point test deviceName',
+                deviceName: 'Data point test',
                 dataSourceXid: this.ds1.xid,
-                pointLocator: {
-                    startValue: '0',
-                    modelType: 'PL.VIRTUAL',
-                    dataType: 'BINARY',
-                    changeType: 'NO_CHANGE',
-                    settable: true
-                }
-            });
+                pointLocator
+            }, options));
         };
 
         this.createHandler = (options) => {
@@ -99,10 +101,11 @@ describe('Event handlers', function() {
         });
 
         return Promise.all([this.ds1.save(), this.ds2.save()]).then(() => {
-            this.dp1 = this.createPoint('test point 1');
-            this.dp2 = this.createPoint('test point 2');
+            this.dp1 = this.createPoint({name: 'test point 1'});
+            this.dp2 = this.createPoint({name: 'test point 2'});
+            this.targetPoint = this.createPoint({name: 'Target alpha-numeric', pointLocator: {dataType: 'ALPHANUMERIC'}});
 
-            return Promise.all([this.dp1.save(), this.dp2.save()]);
+            return Promise.all([this.dp1.save(), this.dp2.save(), this.targetPoint.save()]);
         });
     });
 
@@ -565,6 +568,88 @@ describe('Event handlers', function() {
             assert.strictEqual(error.data.result.messages[3].property, 'scriptContext[0].id');
             //Invalid subject
             assert.strictEqual(error.data.result.messages[4].property, 'subject');
+        });
+    });
+
+
+    before('Add verifyHandlerTriggered', function() {
+        this.verifyHandlerTriggered = (eventHandler, eventType) => {
+            return saveHandler(eventHandler).then(() => {
+                return client.restRequest({
+                    path: '/rest/latest/testing/raise-event',
+                    method: 'POST',
+                    data: {
+                        event: eventType,
+                        context: {},
+                        level: 'INFORMATION',
+                        message: 'Test event'
+                    }
+                });
+            }).then(() => {
+                return client.restRequest({
+                    path: `/rest/latest/point-values/latest/${this.targetPoint.xid}`,
+                    params: {
+                        fields: 'VALUE',
+                        limit: 1,
+                        useCache: 'CACHE_ONLY'
+                    },
+                    method: 'GET'
+                }).then(response => {
+                    assert.strictEqual(response.data[0].value, eventHandler.activeValueToSet);
+                });
+            }).finally(() => {
+                return deleteHandler(eventHandler).catch(noop);
+            });
+        }
+    });
+
+    it('Verify handler triggered, specific referenceId1', function() {
+        const referenceId1 = Math.round(Math.random() * 10000);
+
+        const eventHandler = this.createHandler({
+            targetPointXid: this.targetPoint.xid,
+            activeValueToSet: uuid(),
+            inactiveAction: 'NONE',
+            eventTypes: [
+                {
+                    eventType: 'SYSTEM',
+                    subType: 'XXX_TESTING',
+                    referenceId1,
+                    referenceId2: 0
+                }
+            ]
+        });
+
+        return this.verifyHandlerTriggered(eventHandler, {
+            eventType: 'SYSTEM',
+            subType: 'XXX_TESTING',
+            referenceId1: referenceId1,
+            referenceId2: 0
+        });
+    });
+
+    it('Verify handler triggered, wildcard referenceId1', function() {
+        const referenceId1 = Math.round(Math.random() * 10000);
+
+        const eventHandler = this.createHandler({
+            targetPointXid: this.targetPoint.xid,
+            activeValueToSet: uuid(),
+            inactiveAction: 'NONE',
+            eventTypes: [
+                {
+                    eventType: 'SYSTEM',
+                    subType: 'XXX_TESTING',
+                    referenceId1: 0,
+                    referenceId2: 0
+                }
+            ]
+        });
+
+        return this.verifyHandlerTriggered(eventHandler, {
+            eventType: 'SYSTEM',
+            subType: 'XXX_TESTING',
+            referenceId1: referenceId1,
+            referenceId2: 0
         });
     });
 
