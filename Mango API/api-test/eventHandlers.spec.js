@@ -586,13 +586,14 @@ describe('Event handlers', function() {
                 return client.restRequest({
                     path: `/rest/latest/point-values/latest/${this.targetPoint.xid}`,
                     params: {
-                        fields: 'VALUE',
+                        fields: 'VALUE,TIMESTAMP',
                         limit: 1,
                         useCache: 'CACHE_ONLY'
                     },
                     method: 'GET'
                 }).then(response => {
                     assert.strictEqual(response.data[0].value, eventHandler.activeValueToSet);
+                    return response.data[0];
                 });
             });
         }
@@ -621,7 +622,7 @@ describe('Event handlers', function() {
                 subType: 'XXX_TESTING',
                 referenceId1: referenceId1,
                 referenceId2: 0
-            })
+            });
         }).finally(() => {
             return deleteHandler(eventHandler).catch(noop);
         });
@@ -722,13 +723,15 @@ describe('Event handlers', function() {
                 referenceId1: referenceId1_1,
                 referenceId2: 0
             })
-        }).then(() => {
+        }).then(value1 => {
             return this.verifyHandlerTriggered(eventHandler, {
                 eventType: 'SYSTEM',
                 subType: 'XXX_TESTING',
                 referenceId1: referenceId1_2,
                 referenceId2: 0
-            })
+            }).then(value2 => {
+                assert.isAbove(value2.timestamp, value1.timestamp);
+            });
         }).finally(() => {
             return deleteHandler(eventHandler).catch(noop);
         });
@@ -759,13 +762,15 @@ describe('Event handlers', function() {
                 referenceId1: referenceId1_1,
                 referenceId2: 0
             })
-        }).then(() => {
+        }).then(value1 => {
             return this.verifyHandlerTriggered(eventHandler, {
                 eventType: 'SYSTEM',
                 subType: 'XXX_TESTING',
                 referenceId1: referenceId1_2,
                 referenceId2: 0
-            })
+            }).then(value2 => {
+                assert.isAbove(value2.timestamp, value1.timestamp);
+            });
         }).finally(() => {
             return deleteHandler(eventHandler).catch(noop);
         });
