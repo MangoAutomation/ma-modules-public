@@ -571,20 +571,17 @@ describe('Event handlers', function() {
         });
     });
 
-
-    before('Add verifyHandlerTriggered', function() {
+    before('Add verifyHandlerTriggered method', function() {
         this.verifyHandlerTriggered = (eventHandler, eventType) => {
-            return saveHandler(eventHandler).then(() => {
-                return client.restRequest({
-                    path: '/rest/latest/testing/raise-event',
-                    method: 'POST',
-                    data: {
-                        event: eventType,
-                        context: {},
-                        level: 'INFORMATION',
-                        message: 'Test event'
-                    }
-                });
+            return client.restRequest({
+                path: '/rest/latest/testing/raise-event',
+                method: 'POST',
+                data: {
+                    event: eventType,
+                    context: {},
+                    level: 'INFORMATION',
+                    message: 'Test event'
+                }
             }).then(() => {
                 return client.restRequest({
                     path: `/rest/latest/point-values/latest/${this.targetPoint.xid}`,
@@ -597,8 +594,6 @@ describe('Event handlers', function() {
                 }).then(response => {
                     assert.strictEqual(response.data[0].value, eventHandler.activeValueToSet);
                 });
-            }).finally(() => {
-                return deleteHandler(eventHandler).catch(noop);
             });
         }
     });
@@ -614,17 +609,21 @@ describe('Event handlers', function() {
                 {
                     eventType: 'SYSTEM',
                     subType: 'XXX_TESTING',
-                    referenceId1,
+                    referenceId1: referenceId1,
                     referenceId2: 0
                 }
             ]
         });
 
-        return this.verifyHandlerTriggered(eventHandler, {
-            eventType: 'SYSTEM',
-            subType: 'XXX_TESTING',
-            referenceId1: referenceId1,
-            referenceId2: 0
+        return saveHandler(eventHandler).then(() => {
+            return this.verifyHandlerTriggered(eventHandler, {
+                eventType: 'SYSTEM',
+                subType: 'XXX_TESTING',
+                referenceId1: referenceId1,
+                referenceId2: 0
+            })
+        }).finally(() => {
+            return deleteHandler(eventHandler).catch(noop);
         });
     });
 
@@ -645,11 +644,130 @@ describe('Event handlers', function() {
             ]
         });
 
-        return this.verifyHandlerTriggered(eventHandler, {
-            eventType: 'SYSTEM',
-            subType: 'XXX_TESTING',
-            referenceId1: referenceId1,
-            referenceId2: 0
+        return saveHandler(eventHandler).then(() => {
+            return this.verifyHandlerTriggered(eventHandler, {
+                eventType: 'SYSTEM',
+                subType: 'XXX_TESTING',
+                referenceId1: referenceId1,
+                referenceId2: 0
+            });
+        }).finally(() => {
+            return deleteHandler(eventHandler).catch(noop);
+        });
+    });
+
+    it('Verify handler triggered, wildcard and specific referenceId1', function() {
+        const referenceId1 = Math.round(Math.random() * 10000);
+
+        const eventHandler = this.createHandler({
+            targetPointXid: this.targetPoint.xid,
+            activeValueToSet: uuid(),
+            inactiveAction: 'NONE',
+            eventTypes: [
+                {
+                    eventType: 'SYSTEM',
+                    subType: 'XXX_TESTING',
+                    referenceId1: referenceId1,
+                    referenceId2: 0
+                },
+                {
+                    eventType: 'SYSTEM',
+                    subType: 'XXX_TESTING',
+                    referenceId1: 0,
+                    referenceId2: 0
+                }
+            ]
+        });
+
+        return saveHandler(eventHandler).then(() => {
+            return this.verifyHandlerTriggered(eventHandler, {
+                eventType: 'SYSTEM',
+                subType: 'XXX_TESTING',
+                referenceId1: referenceId1,
+                referenceId2: 0
+            });
+        }).finally(() => {
+            return deleteHandler(eventHandler).catch(noop);
+        });
+    });
+
+    it('Verify handler triggered, trigger twice with specific referenceId1s', function() {
+        const referenceId1_1 = Math.round(Math.random() * 10000);
+        const referenceId1_2 = Math.round(Math.random() * 10000);
+
+        const eventHandler = this.createHandler({
+            targetPointXid: this.targetPoint.xid,
+            activeValueToSet: uuid(),
+            inactiveAction: 'NONE',
+            eventTypes: [
+                {
+                    eventType: 'SYSTEM',
+                    subType: 'XXX_TESTING',
+                    referenceId1: referenceId1_1,
+                    referenceId2: 0
+                },
+                {
+                    eventType: 'SYSTEM',
+                    subType: 'XXX_TESTING',
+                    referenceId1: referenceId1_2,
+                    referenceId2: 0
+                }
+            ]
+        });
+
+        return saveHandler(eventHandler).then(() => {
+            return this.verifyHandlerTriggered(eventHandler, {
+                eventType: 'SYSTEM',
+                subType: 'XXX_TESTING',
+                referenceId1: referenceId1_1,
+                referenceId2: 0
+            })
+        }).then(() => {
+            return this.verifyHandlerTriggered(eventHandler, {
+                eventType: 'SYSTEM',
+                subType: 'XXX_TESTING',
+                referenceId1: referenceId1_2,
+                referenceId2: 0
+            })
+        }).finally(() => {
+            return deleteHandler(eventHandler).catch(noop);
+        });
+    });
+
+    it('Verify handler triggered, trigger twice with wildcard referenceId1', function() {
+        const referenceId1_1 = Math.round(Math.random() * 10000);
+        const referenceId1_2 = Math.round(Math.random() * 10000);
+
+        const eventHandler = this.createHandler({
+            targetPointXid: this.targetPoint.xid,
+            activeValueToSet: uuid(),
+            inactiveAction: 'NONE',
+            eventTypes: [
+                {
+                    eventType: 'SYSTEM',
+                    subType: 'XXX_TESTING',
+                    referenceId1: 0,
+                    referenceId2: 0
+                }
+            ]
+        });
+
+        return saveHandler(eventHandler).then(() => {
+            return this.verifyHandlerTriggered(eventHandler, {
+                eventType: 'SYSTEM',
+                subType: 'XXX_TESTING',
+                referenceId1: referenceId1_1,
+                referenceId2: 0
+            })
+        }).then(() => {
+            return this.verifyHandlerTriggered(eventHandler, {
+                eventType: 'SYSTEM',
+                subType: 'XXX_TESTING',
+                referenceId1: referenceId1_2,
+                referenceId2: 0
+            })
+        }).finally(() => {
+            return deleteHandler(eventHandler).catch(noop);
         });
     });
 
