@@ -26,6 +26,7 @@ const {
 const client = createClient();
 const DataSource = client.DataSource;
 const DataPoint = client.DataPoint;
+const EventDetector = client.EventDetector;
 
 describe('Event handlers', function() {
 
@@ -54,7 +55,7 @@ describe('Event handlers', function() {
 
         this.createHandler = (options) => {
             return Object.assign({
-                xid: `DS_${uuid()}`,
+                xid: `EH_${uuid()}`,
                 name: "Test event handler",
                 disabled: false,
                 targetPointXid: this.dp1.xid,
@@ -104,8 +105,9 @@ describe('Event handlers', function() {
             this.dp1 = this.createPoint({name: 'test point 1'});
             this.dp2 = this.createPoint({name: 'test point 2'});
             this.targetPoint = this.createPoint({name: 'Target alpha-numeric', pointLocator: {dataType: 'ALPHANUMERIC'}});
+            this.detectorPoint = this.createPoint({name: 'Detector test point'});
 
-            return Promise.all([this.dp1.save(), this.dp2.save(), this.targetPoint.save()]);
+            return Promise.all([this.dp1.save(), this.dp2.save(), this.targetPoint.save(), this.detectorPoint.save()]);
         });
     });
 
@@ -776,4 +778,74 @@ describe('Event handlers', function() {
         });
     });
 
+    it('Handler XID is added to detector\'s handlerXids', function() {
+        const eventHandler = this.createHandler({
+            eventTypes: [
+                {
+                    eventType: 'DATA_POINT',
+                    subType: '',
+                    referenceId1: this.detectorPoint.id,
+                    referenceId2: 0
+                }
+            ]
+        });
+
+        const detector = EventDetector.createEventDetector(this.detectorPoint.id, 'BINARY_STATE');
+        return detector.save().then(savedDetector => {
+            assert.strictEqual(savedDetector, detector);
+            assert.isArray(detector.handlerXids);
+            assert.notInclude(detector.handlerXids, eventHandler.xid);
+        }).then(() => {
+            return saveHandler(eventHandler);
+        }).then(() => {
+            return detector.get();
+        }).then(() => {
+            assert.isArray(detector.handlerXids);
+            assert.include(detector.handlerXids, eventHandler.xid);
+        }).finally(() => {
+            return Promise.all([
+                detector.delete().catch(noop),
+                deleteHandler(eventHandler).catch(noop)
+            ]);
+        });
+    });
+
+    it('Handler XID only appears once in detector\'s handlerXids', function() {
+        const eventHandler = this.createHandler({
+            eventTypes: [
+                {
+                    eventType: 'DATA_POINT',
+                    subType: '',
+                    referenceId1: this.detectorPoint.id,
+                    referenceId2: 0
+                },
+                {
+                    eventType: 'DATA_POINT',
+                    subType: '',
+                    referenceId1: 0,
+                    referenceId2: 0
+                }
+            ]
+        });
+
+        const detector = EventDetector.createEventDetector(this.detectorPoint.id, 'BINARY_STATE');
+        return detector.save().then(savedDetector => {
+            assert.strictEqual(savedDetector, detector);
+            assert.isArray(detector.handlerXids);
+            assert.notInclude(detector.handlerXids, eventHandler.xid);
+        }).then(() => {
+            return saveHandler(eventHandler);
+        }).then(() => {
+            return detector.get();
+        }).then(() => {
+            assert.isArray(detector.handlerXids);
+            const matching = detector.handlerXids.filter(xid => xid === eventHandler.xid);
+            assert.strictEqual(matching.length, 1);
+        }).finally(() => {
+            return Promise.all([
+                detector.delete().catch(noop),
+                deleteHandler(eventHandler).catch(noop)
+            ]);
+        });
+    });
 });
