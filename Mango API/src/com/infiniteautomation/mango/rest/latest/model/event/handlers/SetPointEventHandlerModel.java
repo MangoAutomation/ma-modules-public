@@ -59,7 +59,7 @@ public class SetPointEventHandlerModel extends AbstractEventHandlerModel<SetPoin
     public SetPointEventHandlerModel() { }
 
     public SetPointEventHandlerModel(SetPointEventHandlerVO vo) {
-        fromVO(vo);
+        super(vo);
     }
 
     @Override
@@ -222,8 +222,8 @@ public class SetPointEventHandlerModel extends AbstractEventHandlerModel<SetPoin
     }
 
     @Override
-    public SetPointEventHandlerVO toVO() {
-        SetPointEventHandlerVO vo = super.toVO();
+    public void readInto(SetPointEventHandlerVO vo) {
+        super.readInto(vo);
         Integer targetId = DataPointDao.getInstance().getIdByXid(targetPointXid);
         if(targetId != null)
             vo.setTargetPointId(targetId);
@@ -261,7 +261,6 @@ public class SetPointEventHandlerModel extends AbstractEventHandlerModel<SetPoin
             }
             vo.setAdditionalContext(additionalContext);
         }
-        return vo;
     }
 
     @Override

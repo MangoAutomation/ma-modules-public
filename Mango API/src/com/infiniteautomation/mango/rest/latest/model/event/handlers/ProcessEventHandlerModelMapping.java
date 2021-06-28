@@ -1,11 +1,10 @@
-/**
- * Copyright (C) 2018  Infinite Automation Software. All rights reserved.
+/*
+ * Copyright (C) 2021 Radix IoT LLC. All rights reserved.
  */
 package com.infiniteautomation.mango.rest.latest.model.event.handlers;
 
 import org.springframework.stereotype.Component;
 
-import com.infiniteautomation.mango.rest.latest.model.RestModelJacksonMapping;
 import com.infiniteautomation.mango.rest.latest.model.RestModelMapper;
 import com.serotonin.m2m2.vo.event.ProcessEventHandlerVO;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
@@ -15,11 +14,11 @@ import com.serotonin.m2m2.vo.permission.PermissionHolder;
  *
  */
 @Component
-public class ProcessEventHandlerModelMapping implements RestModelJacksonMapping<ProcessEventHandlerVO, ProcessEventHandlerModel> {
+public class ProcessEventHandlerModelMapping implements AbstractEventHandlerModelMapping<ProcessEventHandlerVO> {
 
     @Override
-    public ProcessEventHandlerModel map(Object o, PermissionHolder user, RestModelMapper mapper) {
-        return new ProcessEventHandlerModel((ProcessEventHandlerVO)o);
+    public ProcessEventHandlerModel mapHandler(ProcessEventHandlerVO vo, PermissionHolder user, RestModelMapper mapper) {
+        return new ProcessEventHandlerModel(vo);
     }
 
     @Override

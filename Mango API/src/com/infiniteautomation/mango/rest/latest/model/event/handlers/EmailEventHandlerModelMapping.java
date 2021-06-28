@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2018  Infinite Automation Software. All rights reserved.
+/*
+ * Copyright (C) 2021 Radix IoT LLC. All rights reserved.
  */
 package com.infiniteautomation.mango.rest.latest.model.event.handlers;
 
@@ -8,7 +8,6 @@ import java.util.List;
 
 import org.springframework.stereotype.Component;
 
-import com.infiniteautomation.mango.rest.latest.model.RestModelJacksonMapping;
 import com.infiniteautomation.mango.rest.latest.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.latest.model.mailingList.EmailRecipientModel;
 import com.serotonin.m2m2.vo.event.EmailEventHandlerVO;
@@ -20,11 +19,10 @@ import com.serotonin.m2m2.vo.permission.PermissionHolder;
  *
  */
 @Component
-public class EmailEventHandlerModelMapping implements RestModelJacksonMapping<EmailEventHandlerVO, EmailEventHandlerModel> {
+public class EmailEventHandlerModelMapping implements AbstractEventHandlerModelMapping<EmailEventHandlerVO> {
 
     @Override
-    public EmailEventHandlerModel map(Object o, PermissionHolder user, RestModelMapper mapper) {
-        EmailEventHandlerVO vo = (EmailEventHandlerVO)o;
+    public EmailEventHandlerModel mapHandler(EmailEventHandlerVO vo, PermissionHolder user, RestModelMapper mapper) {
         EmailEventHandlerModel model = new EmailEventHandlerModel(vo);
 
         if(vo.getActiveRecipients() != null) {

@@ -27,7 +27,7 @@ public class ProcessEventHandlerModel extends AbstractEventHandlerModel<ProcessE
     public ProcessEventHandlerModel() { }
 
     public ProcessEventHandlerModel(ProcessEventHandlerVO vo) {
-        fromVO(vo);
+        super(vo);
     }
     
     @Override
@@ -100,8 +100,8 @@ public class ProcessEventHandlerModel extends AbstractEventHandlerModel<ProcessE
     }
 
     @Override
-    public ProcessEventHandlerVO toVO() {
-        ProcessEventHandlerVO vo = super.toVO();
+    public void readInto(ProcessEventHandlerVO vo) {
+        super.readInto(vo);
         vo.setActiveProcessCommand(activeProcessCommand);
         if(activeProcessTimeout != null)
             vo.setActiveProcessTimeout(activeProcessTimeout);
@@ -109,18 +109,16 @@ public class ProcessEventHandlerModel extends AbstractEventHandlerModel<ProcessE
         if(inactiveProcessTimeout != null)
             vo.setInactiveProcessTimeout(inactiveProcessTimeout);
         vo.setInterpolateCommands(interpolateCommands);
-        return vo;
     }
     
     @Override
     public void fromVO(ProcessEventHandlerVO vo) {
         super.fromVO(vo);
-        ProcessEventHandlerVO handler = (ProcessEventHandlerVO)vo;
-        this.activeProcessCommand = handler.getActiveProcessCommand();
-        this.activeProcessTimeout = handler.getActiveProcessTimeout();
-        this.inactiveProcessCommand = handler.getInactiveProcessCommand();
-        this.inactiveProcessTimeout = handler.getInactiveProcessTimeout();
-        this.interpolateCommands = handler.isInterpolateCommands();
+        this.activeProcessCommand = vo.getActiveProcessCommand();
+        this.activeProcessTimeout = vo.getActiveProcessTimeout();
+        this.inactiveProcessCommand = vo.getInactiveProcessCommand();
+        this.inactiveProcessTimeout = vo.getInactiveProcessTimeout();
+        this.interpolateCommands = vo.isInterpolateCommands();
     }
     
     @Override

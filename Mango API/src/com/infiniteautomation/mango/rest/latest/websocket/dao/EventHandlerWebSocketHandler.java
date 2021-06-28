@@ -1,11 +1,7 @@
-/**
- * Copyright (C) 2018 Infinite Automation Software. All rights reserved.
+/*
+ * Copyright (C) 2021 Radix IoT LLC. All rights reserved.
  */
 package com.infiniteautomation.mango.rest.latest.websocket.dao;
-
-import java.util.List;
-import java.util.function.BiFunction;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEvent;
@@ -13,7 +9,6 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import com.infiniteautomation.mango.rest.latest.model.RestModelMapper;
-import com.infiniteautomation.mango.rest.latest.model.event.EventTypeMatcherModel;
 import com.infiniteautomation.mango.rest.latest.model.event.handlers.AbstractEventHandlerModel;
 import com.infiniteautomation.mango.rest.latest.websocket.DaoNotificationWebSocketHandler;
 import com.infiniteautomation.mango.rest.latest.websocket.WebSocketMapping;
@@ -30,21 +25,12 @@ import com.serotonin.m2m2.vo.permission.PermissionHolder;
 public class EventHandlerWebSocketHandler<T extends AbstractEventHandlerVO> extends DaoNotificationWebSocketHandler<T> {
 
     private final EventHandlerService service;
-    private final BiFunction<T, PermissionHolder, AbstractEventHandlerModel<T>> map;
+    private final RestModelMapper modelMapper;
 
     @Autowired
     public EventHandlerWebSocketHandler(EventHandlerService service, RestModelMapper modelMapper) {
         this.service = service;
-        //Map the event types into the model
-        this.map = (vo, user) -> {
-            List<EventTypeMatcherModel> eventTypes = vo.getEventTypes().stream().map(type -> {
-                return modelMapper.map(type, EventTypeMatcherModel.class, user);
-            }).collect(Collectors.toList());
-            @SuppressWarnings("unchecked")
-            AbstractEventHandlerModel<T> model = modelMapper.map(vo, AbstractEventHandlerModel.class, user);
-            model.setEventTypes(eventTypes);
-            return model;
-        };
+        this.modelMapper = modelMapper;
     }
 
     @Override
@@ -54,9 +40,10 @@ public class EventHandlerWebSocketHandler<T extends AbstractEventHandlerVO> exte
 
     @Override
     protected Object createModel(T vo, ApplicationEvent event, PermissionHolder user) {
-        return this.map.apply(vo, user);
+        return modelMapper.map(vo, AbstractEventHandlerModel.class, user);
     }
 
+    @SuppressWarnings("SpringEventListenerInspection")
     @Override
     @EventListener
     protected void handleDaoEvent(DaoEvent<? extends T> event) {

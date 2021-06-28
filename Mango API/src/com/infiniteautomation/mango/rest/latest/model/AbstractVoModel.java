@@ -67,10 +67,14 @@ public abstract class AbstractVoModel<VO extends AbstractVO> {
      */
     public VO toVO() throws ValidationException {
         VO vo = newVO();
+        readInto(vo);
+        return vo;
+    }
+
+    public void readInto(VO vo) {
         vo.setId(id == null ? Common.NEW_ID : id);
         vo.setXid(xid);
         vo.setName(name);
-        return vo;
     }
 
     /**

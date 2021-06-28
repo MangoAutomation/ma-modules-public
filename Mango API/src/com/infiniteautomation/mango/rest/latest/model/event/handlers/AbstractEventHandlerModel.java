@@ -1,17 +1,16 @@
-/**
- * Copyright (C) 2018  Infinite Automation Software. All rights reserved.
+/*
+ * Copyright (C) 2021 Radix IoT LLC. All rights reserved.
  */
 package com.infiniteautomation.mango.rest.latest.model.event.handlers;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.infiniteautomation.mango.permission.MangoPermission;
 import com.infiniteautomation.mango.rest.latest.model.AbstractVoModel;
 import com.infiniteautomation.mango.rest.latest.model.event.EventTypeMatcherModel;
 import com.infiniteautomation.mango.rest.latest.model.permissions.MangoPermissionModel;
-import com.serotonin.m2m2.rt.event.type.EventTypeMatcher;
 import com.serotonin.m2m2.vo.event.AbstractEventHandlerVO;
 
 /**
@@ -29,6 +28,10 @@ public abstract class AbstractEventHandlerModel<T extends AbstractEventHandlerVO
     protected MangoPermissionModel editPermission;
 
     public AbstractEventHandlerModel() { }
+
+    public AbstractEventHandlerModel(T vo) {
+        fromVO(vo);
+    }
 
     /**
      * The type info for the model
@@ -84,22 +87,21 @@ public abstract class AbstractEventHandlerModel<T extends AbstractEventHandlerVO
         this.disabled = vo.isDisabled();
         this.readPermission = new MangoPermissionModel(vo.getReadPermission());
         this.editPermission = new MangoPermissionModel(vo.getEditPermission());
+        this.eventTypes = vo.getEventTypes().stream()
+                .map(EventTypeMatcherModel::new)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public T toVO() {
-        T vo = super.toVO();
+    public void readInto(T vo) {
+        super.readInto(vo);
         vo.setDisabled(disabled);
-        if(eventTypes != null) {
-            List<EventTypeMatcher> types = new ArrayList<>();
-            for(EventTypeMatcherModel etm : eventTypes) {
-                types.add(etm.toVO());
-            }
-            vo.setEventTypes(types);
-        }
         vo.setReadPermission(readPermission != null ? readPermission.getPermission() : new MangoPermission());
         vo.setEditPermission(editPermission != null ? editPermission.getPermission() : new MangoPermission());
-
-        return vo;
+        if (eventTypes != null) {
+            vo.setEventTypes(eventTypes.stream()
+                    .map(EventTypeMatcherModel::toVO)
+                    .collect(Collectors.toList()));
+        }
     }
 }

@@ -33,7 +33,7 @@ public class ScriptEventHandlerModel extends AbstractEventHandlerModel<ScriptEve
     }
 
     public ScriptEventHandlerModel(ScriptEventHandlerVO vo) {
-        fromVO(vo);
+        super(vo);
     }
 
     @Override
@@ -42,8 +42,8 @@ public class ScriptEventHandlerModel extends AbstractEventHandlerModel<ScriptEve
     }
 
     @Override
-    public ScriptEventHandlerVO toVO() {
-        ScriptEventHandlerVO vo = super.toVO();
+    public void readInto(ScriptEventHandlerVO vo) {
+        super.readInto(vo);
         vo.setScript(this.script);
         vo.setEngineName(this.engineName);
 
@@ -56,8 +56,6 @@ public class ScriptEventHandlerModel extends AbstractEventHandlerModel<ScriptEve
             }
         }).filter(r -> r != null).collect(Collectors.toSet());
         vo.setScriptRoles(roleXids);
-
-        return vo;
     }
 
     @Override

@@ -60,7 +60,7 @@ public class EmailEventHandlerModel extends AbstractEventHandlerModel<EmailEvent
     public EmailEventHandlerModel() { }
 
     public EmailEventHandlerModel(EmailEventHandlerVO vo) {
-        fromVO(vo);
+        super(vo);
     }
 
     @Override
@@ -307,8 +307,8 @@ public class EmailEventHandlerModel extends AbstractEventHandlerModel<EmailEvent
     }
 
     @Override
-    public EmailEventHandlerVO toVO() {
-        EmailEventHandlerVO vo = super.toVO();
+    public void readInto(EmailEventHandlerVO vo) {
+        super.readInto(vo);
         if(activeRecipients != null) {
             List<MailingListRecipient> beans = new ArrayList<>();
             for(EmailRecipientModel model : activeRecipients)
@@ -360,8 +360,6 @@ public class EmailEventHandlerModel extends AbstractEventHandlerModel<EmailEvent
         }
 
         vo.setSubject(EmailEventHandlerVO.SUBJECT_INCLUDE_CODES.getId(subject));
-
-        return vo;
     }
 
     @Override
