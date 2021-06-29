@@ -11,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermission;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
@@ -54,10 +55,14 @@ import com.infiniteautomation.mango.webapp.session.MangoSessionDataStore;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.LicenseViolatedException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
+import com.serotonin.m2m2.rt.maint.work.WorkItem;
+import com.serotonin.m2m2.util.timeout.TimeoutClient;
+import com.serotonin.m2m2.util.timeout.TimeoutTask;
 import com.serotonin.m2m2.vo.MangoSessionDataVO;
 import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.web.mvc.spring.security.MangoSessionRegistry;
+import com.serotonin.timer.RejectedTaskReason;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -497,5 +502,72 @@ public class TestingRestController {
         }
 
         return new ResponseEntity<>(null, HttpStatus.OK);
+    }
+
+    @ApiOperation(value = "Execute a real time timer task that will consume all Mango's memory")
+    @RequestMapping(method = RequestMethod.GET, value = {"/real-time-timer/schedule/oom"})
+    public void TimerTaskOom() {
+        new TimeoutTask(100, new TimeoutClient() {
+            @Override
+            public void scheduleTimeout(long fireTime) {
+                List<byte[]> allMyMemory = new ArrayList<>();
+                while(true) {
+                    byte[] b = new byte[1048567];
+                    allMyMemory.add(b);
+                }
+            }
+
+            @Override
+            public String getThreadName() {
+                return "Mango Real Time Timer Memory Consumer";
+            }
+        });
+    }
+
+    @ApiOperation(value = "Execute a work item at the supplied priority that will consume all Mango's memory [HIGH, MEDIUM, LOW]")
+    @RequestMapping(method = RequestMethod.GET, value = {"/work-items/{priority}/schedule/oom"})
+    public void workItemOom(
+            @PathVariable String priority
+    ) {
+
+        int priorityValue;
+        switch(priority) {
+            case "HIGH":
+                priorityValue = WorkItem.PRIORITY_HIGH;
+            break;
+            case "MEDIUM":
+                priorityValue = WorkItem.PRIORITY_MEDIUM;
+                break;
+            default:
+            case "LOW":
+                priorityValue = WorkItem.PRIORITY_LOW;
+        }
+
+        WorkItem item = new WorkItem() {
+            @Override
+            public void execute() {
+                List<byte[]> allMyMemory = new ArrayList<>();
+                while(true) {
+                    byte[] b = new byte[1048567];
+                    allMyMemory.add(b);
+                }
+            }
+
+            @Override
+            public int getPriority() {
+                return priorityValue;
+            }
+
+            @Override
+            public String getDescription() {
+                return "Mango memory eater";
+            }
+
+            @Override
+            public void rejected(RejectedTaskReason reason) {
+
+            }
+        };
+        Common.backgroundProcessing.addWorkItem(item);
     }
 }
