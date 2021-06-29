@@ -1,6 +1,5 @@
-/**
- * Copyright (C) 2015 Infinite Automation Systems. All rights reserved.
- * http://infiniteautomation.com/
+/*
+ * Copyright (C) 2021 Radix IoT LLC. All rights reserved.
  */
 package com.infiniteautomation.mango.rest.latest.websocket;
 

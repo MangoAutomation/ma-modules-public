@@ -1,9 +1,8 @@
 package com.infiniteautomation.mango.rest.latest.websocket;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import org.springframework.beans.factory.annotation.Autowired;
-/**
- * Copyright (C) 2016 Infinite Automation Software. All rights reserved.
- * @author Terry Packer
+/*
+ * Copyright (C) 2021 Radix IoT LLC. All rights reserved.
  */
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.TextMessage;
