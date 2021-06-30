@@ -19,6 +19,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import javax.management.MBeanServer;
 import javax.servlet.http.HttpServletRequest;
@@ -50,6 +52,8 @@ import com.infiniteautomation.mango.rest.latest.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.latest.model.event.RaiseEventModel;
 import com.infiniteautomation.mango.rest.latest.model.session.MangoSessionDataModel;
 import com.infiniteautomation.mango.spring.ConditionalOnProperty;
+import com.infiniteautomation.mango.spring.components.executors.MangoExecutors;
+import com.infiniteautomation.mango.spring.service.TestingService;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.infiniteautomation.mango.webapp.session.MangoSessionDataStore;
 import com.serotonin.m2m2.Common;
@@ -86,14 +90,20 @@ public class TestingRestController {
     private final MangoSessionRegistry sessionRegistry;
     private final MangoSessionDataStore sessionDataStore;
     private final RestModelMapper modelMapper;
+    private final MangoExecutors executors;
+    private final TestingService service;
 
     @Autowired
     public TestingRestController(final MangoSessionRegistry sessionRegistry,
                                  final MangoSessionDataStore sessionDataDao,
-                                 final RestModelMapper modelMapper) {
+                                 final RestModelMapper modelMapper,
+                                 final MangoExecutors executors,
+                                 final TestingService service) {
         this.sessionRegistry = sessionRegistry;
         this.sessionDataStore = sessionDataDao;
         this.modelMapper = modelMapper;
+        this.executors = executors;
+        this.service = service;
     }
 
     @RequestMapping(method = {RequestMethod.GET}, value = "/location")
@@ -510,11 +520,7 @@ public class TestingRestController {
         new TimeoutTask(100, new TimeoutClient() {
             @Override
             public void scheduleTimeout(long fireTime) {
-                List<byte[]> allMyMemory = new ArrayList<>();
-                while(true) {
-                    byte[] b = new byte[1048567];
-                    allMyMemory.add(b);
-                }
+                consumeAllMemory();
             }
 
             @Override
@@ -546,11 +552,7 @@ public class TestingRestController {
         WorkItem item = new WorkItem() {
             @Override
             public void execute() {
-                List<byte[]> allMyMemory = new ArrayList<>();
-                while(true) {
-                    byte[] b = new byte[1048567];
-                    allMyMemory.add(b);
-                }
+                consumeAllMemory();
             }
 
             @Override
@@ -569,5 +571,51 @@ public class TestingRestController {
             }
         };
         Common.backgroundProcessing.addWorkItem(item);
+    }
+
+    @ApiOperation(value = "Fire a Spring event that will consume all Mango's memory")
+    @RequestMapping(method = RequestMethod.GET, value = {"/spring/event/oom"})
+    public void SpringEventOom() {
+        this.service.generateRunnableEvent(() -> consumeAllMemory());
+    }
+
+    @ApiOperation(value = "Execute a task in MangoExecutors.executor that will consume all Mango's memory")
+    @RequestMapping(method = RequestMethod.GET, value = {"/executors/executor/oom"})
+    public void MangoExecutorsExecutorOom() {
+        this.executors.getExecutor().execute(() -> consumeAllMemory());
+    }
+
+    @ApiOperation(value = "Schedule a task in MangoExecutors.scheduledExecutor that will consume all Mango's memory")
+    @RequestMapping(method = RequestMethod.GET, value = {"/executors/scheduledExecutor/oom"})
+    public void MangoExecutorsScheduledExecutorOom() {
+        ScheduledFuture<?> future = this.executors.getScheduledExecutor().schedule(() -> consumeAllMemory(), 1 , TimeUnit.SECONDS);
+        try {
+            future.get();
+        }catch(Exception e) {
+            log.error(e.getMessage(), e);
+        }
+    }
+
+    @ApiOperation(value = "Schedule a task in MangoExecutors.superadminExecutor that will consume all Mango's memory")
+    @RequestMapping(method = RequestMethod.GET, value = {"/executors/superadminExecutor/oom"})
+    public void MangoExecutorsSuperadminExecutorOom() {
+        this.executors.getSuperadminExecutor().execute(() -> consumeAllMemory());
+    }
+
+    @ApiOperation(value = "Schedule a task in MangoExecutors.superadminScheduledExecutor that will consume all Mango's memory")
+    @RequestMapping(method = RequestMethod.GET, value = {"/executors/superadminScheduledExecutor/oom"})
+    public void MangoExecutorsSuperadminScheduledExecutorOom() {
+        this.executors.getSuperadminScheduledExecutor().schedule(() -> consumeAllMemory(), 1 , TimeUnit.SECONDS);
+    }
+
+    /**
+     * Fill a list with arrays until we run out of memory
+     */
+    private void consumeAllMemory() {
+        List<byte[]> allMyMemory = new ArrayList<>();
+        while(true) {
+            byte[] b = new byte[1048567];
+            allMyMemory.add(b);
+        }
     }
 }
