@@ -30,6 +30,7 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+import org.springframework.web.util.NestedServletException;
 
 import com.infiniteautomation.mango.db.query.RQLToCondition.RQLVisitException;
 import com.infiniteautomation.mango.io.messaging.MessageSendException;
@@ -38,6 +39,7 @@ import com.infiniteautomation.mango.rest.latest.advice.MangoRequestBodyAdvice;
 import com.infiniteautomation.mango.rest.latest.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.latest.views.AdminView;
 import com.infiniteautomation.mango.spring.components.EmailAddressVerificationService.EmailAddressInUseException;
+import com.infiniteautomation.mango.spring.components.pageresolver.PageResolver;
 import com.infiniteautomation.mango.spring.script.MangoScriptException;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.exception.FeatureDisabledException;
@@ -47,7 +49,6 @@ import com.infiniteautomation.mango.util.exception.TranslatableExceptionI;
 import com.infiniteautomation.mango.util.exception.TranslatableIllegalStateException;
 import com.infiniteautomation.mango.util.exception.TranslatableRuntimeException;
 import com.infiniteautomation.mango.util.exception.ValidationException;
-import com.infiniteautomation.mango.spring.components.pageresolver.PageResolver;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableException;
@@ -228,6 +229,26 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<Object> handleMangoScriptException(HttpServletRequest request, HttpServletResponse response, MangoScriptException ex, WebRequest req) {
         ScriptRestException body = new ScriptRestException(ex);
         return handleExceptionInternal(ex, body, new HttpHeaders(), body.getStatus(), req);
+    }
+
+    /**
+     * Spring exception handlers don't deal with Throwable exceptions and will wrap all Throwable exceptions in
+     *   NestedServletException which we can extract and have special handling for.
+     * @param ex
+     * @return
+     */
+    @ExceptionHandler(NestedServletException.class)
+    public ResponseEntity<Object> handleNested(HttpServletRequest request, HttpServletResponse response, NestedServletException ex, WebRequest req) {
+        Throwable cause = ex.getCause();
+        if (cause instanceof OutOfMemoryError) {
+            response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
+            log.fatal("Out Of Memory exception in thread " + Thread.currentThread().getName() + " Mango will now terminate.", ex);
+            System.exit(1);
+            //There is nothing we can send back
+            return null;
+        } else {
+            return handleExceptionInternal(ex, ex, new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, req);
+        }
     }
 
     @ExceptionHandler({

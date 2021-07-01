@@ -608,6 +608,12 @@ public class TestingRestController {
         this.executors.getSuperadminScheduledExecutor().schedule(() -> consumeAllMemory(), 1 , TimeUnit.SECONDS);
     }
 
+    @ApiOperation(value = "Make a REST call that will consume all Mango's memory")
+    @RequestMapping(method = RequestMethod.GET, value = {"/oom"})
+    public void restOom() {
+        consumeAllMemory();
+    }
+
     /**
      * Fill a list with arrays until we run out of memory
      */
