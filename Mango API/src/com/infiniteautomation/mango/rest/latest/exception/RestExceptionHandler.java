@@ -50,6 +50,7 @@ import com.infiniteautomation.mango.util.exception.TranslatableIllegalStateExcep
 import com.infiniteautomation.mango.util.exception.TranslatableRuntimeException;
 import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.TerminationReason;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableException;
 import com.serotonin.m2m2.vo.permission.PermissionException;
@@ -243,7 +244,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         if (cause instanceof OutOfMemoryError) {
             response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
             log.fatal("Out Of Memory exception in thread " + Thread.currentThread().getName() + " Mango will now terminate.", ex);
-            System.exit(1);
+            System.exit(TerminationReason.OUT_OF_MEMORY_ERROR.getExitStatus());
             //There is nothing we can send back
             return null;
         } else {
