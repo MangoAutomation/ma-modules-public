@@ -181,7 +181,7 @@ public class UserRestController {
         if (currentUser != null && existing.getId() == currentUser.getId() && !(authentication instanceof UsernamePasswordAuthenticationToken))
             throw new PermissionException(new TranslatableMessage("rest.error.usernamePasswordOnly"), user);
 
-        User update = service.update(existing, model.toVO());
+        User update = service.update(existing.getId(), model.toVO());
         sessionRegistry.userUpdated(request, update);
         URI location = builder.path("/users/{username}").buildAndExpand(update.getUsername()).toUri();
         HttpHeaders headers = new HttpHeaders();
@@ -214,7 +214,7 @@ public class UserRestController {
         if (currentUser != null && existing.getId() == currentUser.getId() && !(authentication instanceof UsernamePasswordAuthenticationToken))
             throw new PermissionException(new TranslatableMessage("rest.error.usernamePasswordOnly"), user);
 
-        User update = service.update(existing, model.toVO());
+        User update = service.update(existing.getId(), model.toVO());
 
         sessionRegistry.userUpdated(request, update);
         URI location = builder.path("/users/{username}").buildAndExpand(update.getUsername()).toUri();
