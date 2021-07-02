@@ -188,7 +188,7 @@ public class InternalLifecycle extends LifecycleDefinition {
                 InternalDataSourceVO existing = (InternalDataSourceVO) ds.copy();
                 if (!safe) {
                     vo.setEnabled(true);
-                    Common.getBean(DataSourceService.class).update(existing, vo);
+                    Common.getBean(DataSourceService.class).update(existing.getId(), vo);
                 }
             }catch(ValidationException e) {
                 for(ProcessMessage message : e.getValidationResult().getMessages()){

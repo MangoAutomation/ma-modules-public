@@ -67,7 +67,7 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
     }
 
     @Override
-    public MaintenanceEventVO update(MaintenanceEventVO existing, MaintenanceEventVO vo) throws PermissionException, ValidationException {
+    protected MaintenanceEventVO update(MaintenanceEventVO existing, MaintenanceEventVO vo) throws PermissionException, ValidationException {
         PermissionHolder user = Common.getUser();
 
         ensureEditPermission(user, existing);
@@ -91,7 +91,7 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
      * @throws PermissionException
      */
     @Override
-    public MaintenanceEventVO delete(MaintenanceEventVO vo)
+    protected MaintenanceEventVO delete(MaintenanceEventVO vo)
             throws PermissionException, NotFoundException {
         PermissionHolder user = Common.getUser();
 

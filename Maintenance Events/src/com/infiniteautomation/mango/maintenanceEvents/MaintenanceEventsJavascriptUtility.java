@@ -72,7 +72,7 @@ public class MaintenanceEventsJavascriptUtility extends ScriptUtility {
 
     public MaintenanceEventVO update(MaintenanceEventVO existing, MaintenanceEventVO vo) throws NotFoundException, PermissionException, ValidationException {
         return this.runAs.runAs(permissions, () -> {
-            return meService.update(existing, vo);
+            return meService.update(existing.getId(), vo);
         });
     }
 
