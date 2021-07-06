@@ -399,7 +399,7 @@ public class ServerRestController extends AbstractMangoRestController {
         return portNames;
     }
 
-    @ApiOperation(value = "Get the CORS headers as set in env.properties")
+    @ApiOperation(value = "Get the CORS headers as set in configuration file")
     @RequestMapping(method = {RequestMethod.GET}, value = "/cors-settings")
     @PreAuthorize("isAdmin()")
     public CorsSettings getCorsHeaders() {

@@ -26,7 +26,7 @@ import com.infiniteautomation.mango.rest.latest.websocket.WebSocketMapping;
  *
  * Web Socket Configuration
  *
- * CORS allowed origins in env.properties are set here
+ * CORS allowed origins from config file are set here
  * WebSocketHandlers module definitions are registered here
  *
  * @author Terry Packer
