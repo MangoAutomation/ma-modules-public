@@ -1,6 +1,5 @@
-/**
- * @copyright 2020 {@link http://infiniteautomation.com|Infinite Automation Systems, Inc.} All rights reserved.
- * @author Pier Puccini
+/*
+ * Copyright (C) 2021 Radix IoT LLC. All rights reserved.
  */
 
 maSerialDsEditorFactory.$inject = ['$http'];
