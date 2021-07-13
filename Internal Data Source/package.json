@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "@infinite-automation/internal",
-  "version": "4.0.1-SNAPSHOT",
+  "version": "4.1.0-SNAPSHOT",
   "description": "Data source that reads internal Mango data",
   "main": "web/angular/internal.js",
   "dependencies": {},
