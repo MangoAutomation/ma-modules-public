@@ -3,14 +3,14 @@
     <parent>
         <artifactId>ma-modules-public</artifactId>
         <groupId>com.infiniteautomation.mango</groupId>
-        <version>4.0.0-SNAPSHOT</version>
+        <version>4.0.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>vmstat-ds</artifactId>
     <name>vmstat</name>
     <description>Data source that reads linux vmstat command data</description>
-    <version>4.0.0-SNAPSHOT</version>
+    <version>4.0.0</version>
     <build>
         <plugins>
             <plugin>
@@ -33,7 +33,7 @@
     	<dependency>
 	        <groupId>com.infiniteautomation.mango</groupId>
 	        <artifactId>mango-api</artifactId>
-	        <version>4.0.0-SNAPSHOT</version>
+	        <version>4.0.0</version>
 	        <scope>provided</scope>
 	    </dependency>
 	 </dependencies>
