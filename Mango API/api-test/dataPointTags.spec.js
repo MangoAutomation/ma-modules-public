@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-const {createClient, login, uuid, noop, delay, config} = require('@infinite-automation/mango-module-tools/test-helper/testHelper');
+const {createClient, uuid, noop, delay, config} = require('@infinite-automation/mango-module-tools/test-helper/testHelper');
 
 describe('Data point tags', function() {
-    
+
+    const defaultRole = 'tag-role-' + uuid();
+
     before('Create admin client', function() {
         this.clients = {};
         this.clients.admin = createClient();
@@ -27,14 +29,25 @@ describe('Data point tags', function() {
     before('Create non-admin user', function() {
         const username = uuid();
         this.testUserPassword = uuid();
-        this.testUser = new this.clients.admin.User({
-            username,
-            email: `${username}@example.com`,
-            name: `${username}`,
-            roles: [],
-            password: this.testUserPassword
+
+        return this.clients.admin.restRequest({
+            path: '/rest/latest/roles',
+            method: 'POST',
+            data: {
+                xid: defaultRole,
+                name: 'Tag test role',
+                inherited: []
+            }
+        }).then(response => {
+            this.testUser = new this.clients.admin.User({
+                username,
+                email: `${username}@example.com`,
+                name: `${username}`,
+                roles: [defaultRole],
+                password: this.testUserPassword
+            });
+            return this.testUser.save();
         });
-        return this.testUser.save();
     });
     
     before('Create non-admin client', function() {
@@ -56,9 +69,9 @@ describe('Data point tags', function() {
                     changeType : 'NO_CHANGE',
                 },
                 tags: tags,
-                readPermission: [['user']],
-                setPermission: [['user']],
-                editPermission: [['user']]
+                readPermission: [[defaultRole]],
+                setPermission: [],
+                editPermission: [[defaultRole]]
             });
         };
         
@@ -70,7 +83,7 @@ describe('Data point tags', function() {
             pollPeriod: { periods: 5, type: 'SECONDS' },
             purgeSettings: { override: false, frequency: { periods: 1, type: 'YEARS' } },
             alarmLevels: { POLL_ABORTED: 'URGENT' },
-            editPermission: [['user']]
+            editPermission: [[defaultRole]]
         });
 
         return this.ds.save();
@@ -79,9 +92,16 @@ describe('Data point tags', function() {
     after('Delete the DS', function() {
         return this.ds.delete();
     });
-    
+
     after('Delete the test user', function() {
         return this.testUser.delete().catch(noop);
+    });
+
+    after('Delete the test role', function() {
+        return this.clients.admin.restRequest({
+            path: '/rest/latest/roles/' + encodeURIComponent(defaultRole),
+            method: 'DELETE'
+        });
     });
 
     ['admin', 'nonAdmin'].forEach(clientName => {
