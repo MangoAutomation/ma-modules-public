@@ -1,3 +1,6 @@
+*Version 4.1.0*
+* Upgraded for Mango 4.1.0
+
 *Version 4.0.0*
 * Upgraded to work with core version 4.0.x
 * Fix string test tool to work
