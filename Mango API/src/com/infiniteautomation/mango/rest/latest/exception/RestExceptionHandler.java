@@ -11,6 +11,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jetty.io.EofException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.NestedRuntimeException;
@@ -63,7 +65,7 @@ import com.serotonin.m2m2.web.mvc.spring.security.authentication.MangoPasswordAu
 @ControllerAdvice(basePackages = {"com.infiniteautomation.mango.rest.latest"})
 public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
-    private final Log log = LogFactory.getLog(RestExceptionHandler.class);
+    private final Logger log = LoggerFactory.getLogger(RestExceptionHandler.class);
 
     final RequestMatcher browserHtmlRequestMatcher;
     final RestModelMapper mapper;
@@ -243,7 +245,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         Throwable cause = ex.getCause();
         if (cause instanceof OutOfMemoryError) {
             response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
-            log.fatal("Out Of Memory exception in thread " + Thread.currentThread().getName() + " Mango will now terminate.", ex);
+            log.error("Out Of Memory exception in thread " + Thread.currentThread().getName() + " Mango will now terminate.", ex);
             System.exit(TerminationReason.OUT_OF_MEMORY_ERROR.getExitStatus());
             //There is nothing we can send back
             return null;

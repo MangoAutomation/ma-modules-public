@@ -12,6 +12,8 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
 
 import com.infiniteautomation.mango.rest.latest.util.ExceptionMapper;
@@ -27,7 +29,7 @@ import com.serotonin.m2m2.vo.permission.PermissionHolder;
  */
 public abstract class TemporaryResourceManager<T, E> implements ExceptionMapper<E> {
 
-    protected Log log = LogFactory.getLog(TemporaryResourceManager.class);
+    protected Logger log = LoggerFactory.getLogger(TemporaryResourceManager.class);
     protected final Environment environment;
 
     @FunctionalInterface

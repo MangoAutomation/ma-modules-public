@@ -15,13 +15,18 @@ import java.util.stream.Stream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
+import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.infiniteautomation.mango.rest.latest.model.ArrayWithTotal;
 import com.infiniteautomation.mango.rest.latest.model.FilteredStreamWithTotal;
@@ -53,7 +58,7 @@ import net.jazdw.rql.parser.ASTNode;
  */
 public class EventsWebSocketHandler extends MangoWebSocketHandler implements UserEventListener {
 
-    private final static Log LOG = LogFactory.getLog(EventsWebSocketHandler.class);
+    private final static Logger LOG = LoggerFactory.getLogger(EventsWebSocketHandler.class);
 
     public static final String SUBSCRIPTION_ATTRIBUTE = "EventNotificationSubscription";
     public static final String REQUEST_TYPE_SUBSCRIPTION = "SUBSCRIPTION";
@@ -61,12 +66,12 @@ public class EventsWebSocketHandler extends MangoWebSocketHandler implements Use
     public static final String REQUEST_TYPE_ALL_ACTIVE_EVENTS = "ALL_ACTIVE_EVENTS";
     public static final String REQUEST_TYPE_ACTIVE_EVENTS_QUERY = "ACTIVE_EVENTS_QUERY";
 
-    @JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.PROPERTY, property="requestType")
+    @JsonTypeInfo(use= Id.NAME, include= As.PROPERTY, property="requestType")
     @JsonSubTypes({
-        @JsonSubTypes.Type(name = REQUEST_TYPE_SUBSCRIPTION, value = EventsSubscriptionRequest.class),
-        @JsonSubTypes.Type(name = REQUEST_TYPE_DATA_POINT_SUMMARY, value = EventsDataPointSummaryRequest.class),
-        @JsonSubTypes.Type(name = REQUEST_TYPE_ALL_ACTIVE_EVENTS, value = AllActiveEventsRequest.class),
-        @JsonSubTypes.Type(name = REQUEST_TYPE_ACTIVE_EVENTS_QUERY, value = ActiveEventsQuery.class)
+        @Type(name = REQUEST_TYPE_SUBSCRIPTION, value = EventsSubscriptionRequest.class),
+        @Type(name = REQUEST_TYPE_DATA_POINT_SUMMARY, value = EventsDataPointSummaryRequest.class),
+        @Type(name = REQUEST_TYPE_ALL_ACTIVE_EVENTS, value = AllActiveEventsRequest.class),
+        @Type(name = REQUEST_TYPE_ACTIVE_EVENTS_QUERY, value = ActiveEventsQuery.class)
     })
     public static abstract class EventsWebsocketRequest extends WebSocketRequest implements Validatable {
     }

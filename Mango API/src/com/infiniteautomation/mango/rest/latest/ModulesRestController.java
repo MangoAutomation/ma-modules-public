@@ -38,6 +38,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
@@ -65,8 +67,10 @@ import com.infiniteautomation.mango.rest.latest.exception.ServerErrorException;
 import com.infiniteautomation.mango.rest.latest.exception.ValidationFailedRestException;
 import com.infiniteautomation.mango.rest.latest.model.CredentialsModel;
 import com.infiniteautomation.mango.rest.latest.model.modules.AngularJSModuleDefinitionGroupModel;
+import com.infiniteautomation.mango.rest.latest.model.modules.AngularJSModuleDefinitionGroupModel.ModuleInfo;
 import com.infiniteautomation.mango.rest.latest.model.modules.CoreModuleModel;
 import com.infiniteautomation.mango.rest.latest.model.modules.ModuleModel;
+import com.infiniteautomation.mango.rest.latest.model.modules.ModuleModel.AdminView;
 import com.infiniteautomation.mango.rest.latest.model.modules.ModuleUpgradeModel;
 import com.infiniteautomation.mango.rest.latest.model.modules.ModuleUpgradesModel;
 import com.infiniteautomation.mango.rest.latest.model.modules.UpdateLicensePayloadModel;
@@ -118,7 +122,7 @@ import io.swagger.annotations.ApiParam;
 @RestController
 @RequestMapping("/modules")
 public class ModulesRestController {
-    private final Log LOG = LogFactory.getLog(ModulesRestController.class);
+    private final Logger LOG = LoggerFactory.getLogger(ModulesRestController.class);
     private static final String WEB_MODULE_PREFIX = Constants.DIR_WEB + "/" + Constants.DIR_MODULES + "/" + ModuleUtils.Constants.MODULE_PREFIX;
 
     private final Environment env;
@@ -167,7 +171,7 @@ public class ModulesRestController {
                     .build()
                     .toUriString();
 
-            AngularJSModuleDefinitionGroupModel.ModuleInfo info = new AngularJSModuleDefinitionGroupModel.ModuleInfo();
+            ModuleInfo info = new ModuleInfo();
             info.setUrl(uri.toString());
             info.setVersion(version);
             info.setName(module.getName());
@@ -198,7 +202,7 @@ public class ModulesRestController {
 
         MappingJacksonValue jacksonValue = new MappingJacksonValue(coreModel);
         if (permissionService.hasAdminRole(user)) {
-            jacksonValue.setSerializationView(ModuleModel.AdminView.class);
+            jacksonValue.setSerializationView(AdminView.class);
         } else {
             jacksonValue.setSerializationView(Object.class);
         }

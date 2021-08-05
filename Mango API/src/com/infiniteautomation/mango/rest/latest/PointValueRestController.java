@@ -20,6 +20,8 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -113,7 +115,7 @@ import io.swagger.annotations.ApiParam;
 @RequestMapping("/point-values")
 public class PointValueRestController extends AbstractMangoRestController {
 
-    private static Log LOG = LogFactory.getLog(PointValueRestController.class);
+    private static Logger LOG = LoggerFactory.getLogger(PointValueRestController.class);
 
     private final PointValueDao dao = Common.databaseProxy.newPointValueDao();
     private final MangoTaskTemporaryResourceManager<PurgePointValuesResponseModel> resourceManager;

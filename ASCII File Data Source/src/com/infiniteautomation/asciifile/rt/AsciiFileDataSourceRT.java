@@ -19,6 +19,8 @@ import org.apache.commons.io.monitor.FileAlterationObserver;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.infiniteautomation.asciifile.AsciiFileSystemSettingsDefinition;
 import com.infiniteautomation.asciifile.vo.AsciiFileDataSourceVO;
@@ -42,7 +44,7 @@ import com.serotonin.m2m2.vo.systemSettings.SystemSettingsListener;
  */
 
 public class AsciiFileDataSourceRT extends PollingDataSource<AsciiFileDataSourceVO> implements FileAlterationListener, SystemSettingsListener {
-    private static final Log LOG = LogFactory.getLog(AsciiFileDataSourceRT.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AsciiFileDataSourceRT.class);
 
     public static final int POINT_READ_EXCEPTION_EVENT = 1;
     public static final int POINT_WRITE_EXCEPTION_EVENT = 2;

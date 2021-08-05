@@ -5,6 +5,8 @@ package com.infiniteautomation.mango.rest.latest.websocket;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.PingMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -18,7 +20,7 @@ import org.springframework.web.socket.WebSocketSession;
  */
 public class MangoPingPongTracker implements Runnable {
 
-    private final Log log = LogFactory.getLog(this.getClass());
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
     private final WebSocketSession session;
 
     protected MangoPingPongTracker(WebSocketSession session) {

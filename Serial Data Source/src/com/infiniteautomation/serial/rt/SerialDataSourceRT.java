@@ -9,8 +9,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.infiniteautomation.mango.io.serial.SerialPortException;
 import com.infiniteautomation.mango.io.serial.SerialPortProxy;
@@ -40,7 +40,7 @@ import com.serotonin.util.ILifecycleState;
 import com.serotonin.util.queue.ByteQueue;
 
 public class SerialDataSourceRT extends EventDataSource<SerialDataSourceVO> implements SerialPortProxyEventListener{
-    private final Log LOG = LogFactory.getLog(SerialDataSourceRT.class);
+    private final Logger LOG = LoggerFactory.getLogger(SerialDataSourceRT.class);
     public static final int POINT_READ_EXCEPTION_EVENT = 1;
     public static final int POINT_WRITE_EXCEPTION_EVENT = 2;
     public static final int DATA_SOURCE_EXCEPTION_EVENT = 3;
@@ -627,7 +627,7 @@ public class SerialDataSourceRT extends EventDataSource<SerialDataSourceVO> impl
      * @param callback
      * @param log
      */
-    public static void matchPointValue(String msg, String messageRegex, int pointIdentifierIndex, SerialPointLocatorVO plVo, boolean isHex, Log log, MatchCallback callback) throws Exception{
+    public static void matchPointValue(String msg, String messageRegex, int pointIdentifierIndex, SerialPointLocatorVO plVo, boolean isHex, Logger log, MatchCallback callback) throws Exception{
         Pattern messagePattern = Pattern.compile(messageRegex);
         Matcher messageMatcher = messagePattern.matcher(msg);
         if(messageMatcher.find()){

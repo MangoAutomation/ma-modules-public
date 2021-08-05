@@ -16,6 +16,8 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jooq.Field;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -72,7 +74,7 @@ import net.jazdw.rql.parser.ASTNode;
 @RequestMapping("/watch-lists")
 public class WatchListRestController {
 
-    private static Log LOG = LogFactory.getLog(WatchListRestController.class);
+    private static Logger LOG = LoggerFactory.getLogger(WatchListRestController.class);
 
     private final WatchListService service;
     private final WatchListModelMapping mapping;

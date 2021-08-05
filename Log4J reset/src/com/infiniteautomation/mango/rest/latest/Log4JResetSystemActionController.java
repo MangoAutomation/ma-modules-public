@@ -7,6 +7,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -36,7 +38,7 @@ import io.swagger.annotations.ApiOperation;
 public class Log4JResetSystemActionController {
 
     private static final String RESOURCE_TYPE = "log4JUtil";
-    private static final Log LOG = LogFactory.getLog(Log4JResetSystemActionController.class);
+    private static final Logger LOG = LoggerFactory.getLogger(Log4JResetSystemActionController.class);
     private final SystemActionTemporaryResourceManager manager;
 
     @Autowired
@@ -79,7 +81,7 @@ public class Log4JResetSystemActionController {
                         break;
                     case TEST_FATAL:
                         output = "Log4JReset module test fatal message";
-                        LOG.fatal(output);
+                        LOG.error(output);
                         break;
                     default:
                         throw new ShouldNeverHappenException("Uknonwn command " + requestBody.getAction());

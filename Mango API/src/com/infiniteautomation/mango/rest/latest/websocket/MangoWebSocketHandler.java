@@ -10,6 +10,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,6 +23,7 @@ import org.springframework.web.socket.PongMessage;
 import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.adapter.jetty.JettyWebSocketSession;
+import org.springframework.web.socket.handler.ConcurrentWebSocketSessionDecorator;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -48,7 +51,7 @@ public abstract class MangoWebSocketHandler extends TextWebSocketHandler {
     // default to any authenticated user
     private static final MangoPermission DEFAULT_PERMISSION = MangoPermission.requireAnyRole(PermissionHolder.USER_ROLE);
 
-    protected final Log log = LogFactory.getLog(this.getClass());
+    protected final Logger log = LoggerFactory.getLogger(this.getClass());
 
     /**
      * Timeout in ms to wait for Pong response before terminating connection
@@ -129,7 +132,7 @@ public abstract class MangoWebSocketHandler extends TextWebSocketHandler {
 
     /**
      * WebSocketSession.sendMessage() is blocking and will throw exceptions on concurrent sends, this method uses the aysnc RemoteEndpoint.sendStringByFuture() method instead
-     * <p>TODO use {@link org.springframework.web.socket.handler.ConcurrentWebSocketSessionDecorator} instead of Jetty API</p>
+     * <p>TODO use {@link ConcurrentWebSocketSessionDecorator} instead of Jetty API</p>
      *
      * @param session
      * @param message

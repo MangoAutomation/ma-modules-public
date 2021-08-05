@@ -5,6 +5,8 @@ package com.serotonin.m2m2.virtual.rt;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
@@ -14,7 +16,7 @@ import com.serotonin.m2m2.rt.dataImage.types.NumericValue;
 import com.serotonin.m2m2.virtual.vo.AnalogAttractorChangeVO;
 
 public class AnalogAttractorChangeRT extends ChangeTypeRT {
-    private static Log log = LogFactory.getLog(AnalogAttractorChangeRT.class);
+    private static Logger log = LoggerFactory.getLogger(AnalogAttractorChangeRT.class);
 
     private final AnalogAttractorChangeVO vo;
 

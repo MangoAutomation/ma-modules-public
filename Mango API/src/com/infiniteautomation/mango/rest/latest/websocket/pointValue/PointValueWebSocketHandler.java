@@ -133,7 +133,7 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
             try {
                 this.sendErrorMessage(session, MangoWebSocketErrorType.SERVER_ERROR, new TranslatableMessage("rest.error.serverError", e.getMessage()));
             } catch (Exception e1) {
-                log.error(e);
+                log.error("An error occurred", e);
             }
         }
 
@@ -212,7 +212,7 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
             } catch (WebSocketSendException e) {
                 log.warn("Error sending websocket message", e);
             } catch (Exception e) {
-                log.error(e);
+                log.error("An error occurred", e);
             }
         }
 
@@ -232,7 +232,7 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
             } catch (WebSocketSendException e) {
                 log.warn("Error sending websocket message", e);
             } catch (Exception e) {
-                log.error(e);
+                log.error("An error occurred", e);
             }
         }
 
@@ -249,7 +249,7 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
             } catch (WebSocketSendException e) {
                 log.warn("Error sending websocket message", e);
             } catch (Exception e) {
-                log.error(e);
+                log.error("An error occurred", e);
             }
         }
 
@@ -266,7 +266,7 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
             } catch (WebSocketSendException e) {
                 log.warn("Error sending websocket message", e);
             } catch (Exception e) {
-                log.error(e);
+                log.error("An error occurred", e);
             }
         }
 
@@ -283,7 +283,7 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
             } catch (WebSocketSendException e) {
                 log.warn("Error sending websocket message", e);
             } catch (Exception e) {
-                log.error(e);
+                log.error("An error occurred", e);
             }
         }
 
@@ -300,7 +300,7 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
             } catch (WebSocketSendException e) {
                 log.warn("Error sending websocket message", e);
             } catch (Exception e) {
-                log.error(e);
+                log.error("An error occurred", e);
             }
         }
 
@@ -317,7 +317,7 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
             } catch (WebSocketSendException e) {
                 log.warn("Error sending websocket message", e);
             } catch (Exception e) {
-                log.error(e);
+                log.error("An error occurred", e);
             }
         }
 
@@ -335,7 +335,7 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
             } catch (WebSocketSendException e) {
                 log.warn("Error sending websocket message", e);
             } catch (Exception e) {
-                log.error(e);
+                log.error("An error occurred", e);
             }
         }
 
@@ -368,7 +368,7 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
             } catch (WebSocketSendException e) {
                 log.warn("Error sending websocket message", e);
             } catch (Exception e) {
-                log.error(e);
+                log.error("An error occurred", e);
             }
         }
 

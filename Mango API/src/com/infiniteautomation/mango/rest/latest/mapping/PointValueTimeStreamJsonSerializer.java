@@ -7,6 +7,8 @@ import java.io.IOException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -24,7 +26,7 @@ import com.infiniteautomation.mango.rest.latest.model.pointValue.query.LatestQue
  * @author Terry Packer
  */
 public class PointValueTimeStreamJsonSerializer<T, INFO extends LatestQueryInfo> extends JsonSerializer<PointValueTimeStream<T, INFO>> {
-    private static final Log LOG = LogFactory.getLog(PointValueTimeStreamJsonSerializer.class);
+    private static final Logger LOG = LoggerFactory.getLogger(PointValueTimeStreamJsonSerializer.class);
 
     @Override
     public void serialize(PointValueTimeStream<T, INFO> value, JsonGenerator jgen,

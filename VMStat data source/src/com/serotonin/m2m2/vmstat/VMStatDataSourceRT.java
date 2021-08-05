@@ -11,12 +11,16 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataSource.EventDataSource;
+import com.serotonin.m2m2.vmstat.VMStatDataSourceVO.OutputScale;
+import com.serotonin.m2m2.vmstat.VMStatPointLocatorVO.Attributes;
 
 /**
  * @author Matthew Lohbihler
@@ -25,7 +29,7 @@ public class VMStatDataSourceRT extends EventDataSource<VMStatDataSourceVO> impl
     public static final int DATA_SOURCE_EXCEPTION_EVENT = 1;
     public static final int PARSE_EXCEPTION_EVENT = 2;
 
-    private final Log log = LogFactory.getLog(VMStatDataSourceRT.class);
+    private final Logger log = LoggerFactory.getLogger(VMStatDataSourceRT.class);
     private Process vmstatProcess;
     private BufferedReader in;
     private Map<Integer, Integer> attributePositions;
@@ -75,16 +79,16 @@ public class VMStatDataSourceRT extends EventDataSource<VMStatDataSourceVO> impl
         }
 
         switch (vo.getOutputScale()) {
-        case VMStatDataSourceVO.OutputScale.LOWER_K:
+        case OutputScale.LOWER_K:
             command += "-S k ";
             break;
-        case VMStatDataSourceVO.OutputScale.UPPER_K:
+        case OutputScale.UPPER_K:
             command += "-S K ";
             break;
-        case VMStatDataSourceVO.OutputScale.LOWER_M:
+        case OutputScale.LOWER_M:
             command += "-S m ";
             break;
-        case VMStatDataSourceVO.OutputScale.UPPER_M:
+        case OutputScale.UPPER_M:
             command += "-S M ";
             break;
         }
@@ -108,39 +112,39 @@ public class VMStatDataSourceRT extends EventDataSource<VMStatDataSourceVO> impl
             for (int i = 0; i < headerParts.length; i++) {
                 int attributeId = -1;
                 if ("r".equals(headerParts[i]))
-                    attributeId = VMStatPointLocatorVO.Attributes.PROCS_R;
+                    attributeId = Attributes.PROCS_R;
                 else if ("b".equals(headerParts[i]))
-                    attributeId = VMStatPointLocatorVO.Attributes.PROCS_B;
+                    attributeId = Attributes.PROCS_B;
                 else if ("swpd".equals(headerParts[i]))
-                    attributeId = VMStatPointLocatorVO.Attributes.MEMORY_SWPD;
+                    attributeId = Attributes.MEMORY_SWPD;
                 else if ("free".equals(headerParts[i]))
-                    attributeId = VMStatPointLocatorVO.Attributes.MEMORY_FREE;
+                    attributeId = Attributes.MEMORY_FREE;
                 else if ("buff".equals(headerParts[i]))
-                    attributeId = VMStatPointLocatorVO.Attributes.MEMORY_BUFF;
+                    attributeId = Attributes.MEMORY_BUFF;
                 else if ("cache".equals(headerParts[i]))
-                    attributeId = VMStatPointLocatorVO.Attributes.MEMORY_CACHE;
+                    attributeId = Attributes.MEMORY_CACHE;
                 else if ("si".equals(headerParts[i]))
-                    attributeId = VMStatPointLocatorVO.Attributes.SWAP_SI;
+                    attributeId = Attributes.SWAP_SI;
                 else if ("so".equals(headerParts[i]))
-                    attributeId = VMStatPointLocatorVO.Attributes.SWAP_SO;
+                    attributeId = Attributes.SWAP_SO;
                 else if ("bi".equals(headerParts[i]))
-                    attributeId = VMStatPointLocatorVO.Attributes.IO_BI;
+                    attributeId = Attributes.IO_BI;
                 else if ("bo".equals(headerParts[i]))
-                    attributeId = VMStatPointLocatorVO.Attributes.IO_BO;
+                    attributeId = Attributes.IO_BO;
                 else if ("in".equals(headerParts[i]))
-                    attributeId = VMStatPointLocatorVO.Attributes.SYSTEM_IN;
+                    attributeId = Attributes.SYSTEM_IN;
                 else if ("cs".equals(headerParts[i]))
-                    attributeId = VMStatPointLocatorVO.Attributes.SYSTEM_CS;
+                    attributeId = Attributes.SYSTEM_CS;
                 else if ("us".equals(headerParts[i]))
-                    attributeId = VMStatPointLocatorVO.Attributes.CPU_US;
+                    attributeId = Attributes.CPU_US;
                 else if ("sy".equals(headerParts[i]))
-                    attributeId = VMStatPointLocatorVO.Attributes.CPU_SY;
+                    attributeId = Attributes.CPU_SY;
                 else if ("id".equals(headerParts[i]))
-                    attributeId = VMStatPointLocatorVO.Attributes.CPU_ID;
+                    attributeId = Attributes.CPU_ID;
                 else if ("wa".equals(headerParts[i]))
-                    attributeId = VMStatPointLocatorVO.Attributes.CPU_WA;
+                    attributeId = Attributes.CPU_WA;
                 else if ("st".equals(headerParts[i]))
-                    attributeId = VMStatPointLocatorVO.Attributes.CPU_ST;
+                    attributeId = Attributes.CPU_ST;
 
                 if (attributeId != -1)
                     attributePositions.put(attributeId, i);

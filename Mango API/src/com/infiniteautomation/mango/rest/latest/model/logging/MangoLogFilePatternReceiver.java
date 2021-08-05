@@ -11,24 +11,29 @@ import java.io.Reader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.StringTokenizer;
 import java.util.function.Predicate;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import com.serotonin.m2m2.i18n.Translations;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.logging.log4j.Level;
 import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.infiniteautomation.mango.db.query.pojo.ObjectComparator;
 import com.infiniteautomation.mango.db.query.pojo.RQLFilter;
 import com.infiniteautomation.mango.db.query.pojo.RQLFilterJavaBean;
 import com.serotonin.ShouldNeverHappenException;
+import com.serotonin.m2m2.i18n.Translations;
 
 import net.jazdw.rql.parser.ASTNode;
 
@@ -43,7 +48,7 @@ import net.jazdw.rql.parser.ASTNode;
  */
 public class MangoLogFilePatternReceiver {
 
-    private static final Log LOG = LogFactory.getLog(MangoLogFilePatternReceiver.class);
+    private static final Logger LOG = LoggerFactory.getLogger(MangoLogFilePatternReceiver.class);
 
     private final Long limit;
     private long count; // Number we have matched
@@ -314,7 +319,7 @@ public class MangoLogFilePatternReceiver {
     }
 
     /**
-     * Mutator. Specify a pattern from {@link java.text.SimpleDateFormat}
+     * Mutator. Specify a pattern from {@link SimpleDateFormat}
      *
      * @param timestampFormat
      */
@@ -1017,7 +1022,7 @@ public class MangoLogFilePatternReceiver {
         return "MangoApi";
     }
 
-    protected Log getLogger() {
-        return LOG;
+    protected Logger getLogger() {
+        return  LOG;
     }
 }

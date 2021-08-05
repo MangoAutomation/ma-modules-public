@@ -9,6 +9,8 @@ import java.io.ObjectOutputStream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.json.JsonException;
@@ -29,12 +31,12 @@ import com.serotonin.m2m2.rt.dataSource.PointLocatorRT;
 import com.serotonin.m2m2.virtual.VirtualDataSourceDefinition;
 import com.serotonin.m2m2.virtual.rt.ChangeTypeRT;
 import com.serotonin.m2m2.virtual.rt.VirtualPointLocatorRT;
+import com.serotonin.m2m2.virtual.vo.ChangeTypeVO.Types;
 import com.serotonin.m2m2.vo.dataSource.AbstractPointLocatorVO;
 
 public class VirtualPointLocatorVO extends AbstractPointLocatorVO<VirtualPointLocatorVO> implements
 JsonSerializable {
-    private static final Log LOG = LogFactory
-            .getLog(VirtualPointLocatorVO.class);
+    private static final Logger LOG = LoggerFactory.getLogger(VirtualPointLocatorVO.class);
 
     @Override
     public TranslatableMessage getConfigurationDescription() {
@@ -45,25 +47,25 @@ JsonSerializable {
     }
 
     public ChangeTypeVO getChangeType() {
-        if (changeTypeId == ChangeTypeVO.Types.ALTERNATE_BOOLEAN)
+        if (changeTypeId == Types.ALTERNATE_BOOLEAN)
             return alternateBooleanChange;
-        if (changeTypeId == ChangeTypeVO.Types.BROWNIAN)
+        if (changeTypeId == Types.BROWNIAN)
             return brownianChange;
-        if (changeTypeId == ChangeTypeVO.Types.INCREMENT_ANALOG)
+        if (changeTypeId == Types.INCREMENT_ANALOG)
             return incrementAnalogChange;
-        if (changeTypeId == ChangeTypeVO.Types.INCREMENT_MULTISTATE)
+        if (changeTypeId == Types.INCREMENT_MULTISTATE)
             return incrementMultistateChange;
-        if (changeTypeId == ChangeTypeVO.Types.NO_CHANGE)
+        if (changeTypeId == Types.NO_CHANGE)
             return noChange;
-        if (changeTypeId == ChangeTypeVO.Types.RANDOM_ANALOG)
+        if (changeTypeId == Types.RANDOM_ANALOG)
             return randomAnalogChange;
-        if (changeTypeId == ChangeTypeVO.Types.RANDOM_BOOLEAN)
+        if (changeTypeId == Types.RANDOM_BOOLEAN)
             return randomBooleanChange;
-        if (changeTypeId == ChangeTypeVO.Types.RANDOM_MULTISTATE)
+        if (changeTypeId == Types.RANDOM_MULTISTATE)
             return randomMultistateChange;
-        if (changeTypeId == ChangeTypeVO.Types.ANALOG_ATTRACTOR)
+        if (changeTypeId == Types.ANALOG_ATTRACTOR)
             return analogAttractorChange;
-        if (changeTypeId == ChangeTypeVO.Types.SINUSOIDAL)
+        if (changeTypeId == Types.SINUSOIDAL)
             return sinusoidalChange;
         LOG.error("Failed to resolve changeTypeId " + changeTypeId
                 + " for virtual point locator");
@@ -104,7 +106,7 @@ JsonSerializable {
     }
 
     private int dataTypeId = DataTypes.BINARY;
-    private int changeTypeId = ChangeTypeVO.Types.ALTERNATE_BOOLEAN;
+    private int changeTypeId = Types.ALTERNATE_BOOLEAN;
     @JsonProperty
     private boolean settable;
     private AlternateBooleanChangeVO alternateBooleanChange = new AlternateBooleanChangeVO();

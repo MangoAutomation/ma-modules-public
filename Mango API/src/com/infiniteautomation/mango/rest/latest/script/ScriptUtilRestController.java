@@ -3,6 +3,8 @@ package com.infiniteautomation.mango.rest.latest.script;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -39,7 +41,7 @@ import io.swagger.annotations.ApiOperation;
 @RequestMapping("/script")
 public class ScriptUtilRestController {
 
-    private static final Log LOG = LogFactory.getLog(ScriptUtilRestController.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ScriptUtilRestController.class);
 
     private final MangoJavaScriptService service;
     private final PermissionService permissionService;

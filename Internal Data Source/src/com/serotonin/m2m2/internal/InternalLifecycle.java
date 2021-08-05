@@ -12,6 +12,8 @@ import javax.measure.unit.NonSI;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.github.zafarkhaja.semver.Version;
 import com.infiniteautomation.mango.monitor.ValueMonitor;
@@ -38,6 +40,7 @@ import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.rt.maint.UpgradeCheck;
 import com.serotonin.m2m2.view.text.AnalogRenderer;
 import com.serotonin.m2m2.vo.DataPointVO;
+import com.serotonin.m2m2.vo.DataPointVO.IntervalLoggingTypes;
 import com.serotonin.m2m2.vo.DataPointVO.LoggingTypes;
 import com.serotonin.m2m2.vo.dataPoint.DataPointWithEventDetectors;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
@@ -50,7 +53,7 @@ import com.serotonin.provider.Providers;
  */
 public class InternalLifecycle extends LifecycleDefinition {
 
-    private static Log LOG = LogFactory.getLog(InternalLifecycle.class);
+    private static Logger LOG = LoggerFactory.getLogger(InternalLifecycle.class);
 
     @Override
     public void postInitialize(Version previousVersion, Version current) {
@@ -257,9 +260,9 @@ public class InternalLifecycle extends LifecycleDefinition {
                                 dp.setUnit(NonSI.HOUR);
                                 //This value changes often, log interval instance
                                 dp.setLoggingType(LoggingTypes.INTERVAL);
-                                dp.setIntervalLoggingPeriodType(Common.TimePeriods.MINUTES);
+                                dp.setIntervalLoggingPeriodType(TimePeriods.MINUTES);
                                 dp.setIntervalLoggingPeriod(5);
-                                dp.setIntervalLoggingType(DataPointVO.IntervalLoggingTypes.INSTANT);
+                                dp.setIntervalLoggingType(IntervalLoggingTypes.INSTANT);
                                 dp.setTextRenderer(new AnalogRenderer("0.0", " hrs", false));
                                 break;
                             default:
