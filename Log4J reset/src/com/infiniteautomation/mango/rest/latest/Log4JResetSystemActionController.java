@@ -3,8 +3,6 @@
  */
 package com.infiniteautomation.mango.rest.latest;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.slf4j.Logger;
