@@ -216,7 +216,7 @@ public class WatchListVO extends AbstractVO {
                 dao.insert(editRole);
                 Set<Set<Role>> editRoles = new HashSet<>(this.editPermission.getRoles());
                 editRoles.add(Collections.singleton(editRole.getRole()));
-                this.editPermission = new MangoPermission(this.editPermission.getId(), editRoles);
+                this.editPermission = new MangoPermission(editRoles);
 
                 //Create a role for this user to be able to read this item
                 String readName = new TranslatableMessage("watchList.watchListReadRolePrefix", name).translate(user.getTranslations());
@@ -224,7 +224,7 @@ public class WatchListVO extends AbstractVO {
                 dao.insert(readRole);
                 Set<Set<Role>> readRoles = new HashSet<>(this.readPermission.getRoles());
                 readRoles.add(Collections.singleton(readRole.getRole()));
-                this.readPermission = new MangoPermission(this.readPermission.getId(), readRoles);
+                this.readPermission = new MangoPermission(readRoles);
 
                 //Update the user to have this role
                 UserDao userDao = Common.getBean(UserDao.class);

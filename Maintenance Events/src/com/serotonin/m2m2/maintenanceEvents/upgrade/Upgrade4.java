@@ -3,10 +3,6 @@
  */
 package com.serotonin.m2m2.maintenanceEvents.upgrade;
 
-import static com.infiniteautomation.mango.db.tables.MintermsRoles.MINTERMS_ROLES;
-import static com.infiniteautomation.mango.db.tables.PermissionsMinterms.PERMISSIONS_MINTERMS;
-import static com.infiniteautomation.mango.db.tables.Permissions.PERMISSIONS;
-
 import java.io.OutputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -35,6 +31,10 @@ import com.serotonin.m2m2.db.upgrade.DBUpgrade;
 import com.serotonin.m2m2.db.upgrade.PermissionMigration;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventType;
 import com.serotonin.m2m2.vo.role.Role;
+
+import static com.infiniteautomation.mango.db.tables.MintermsRoles.MINTERMS_ROLES;
+import static com.infiniteautomation.mango.db.tables.Permissions.PERMISSIONS;
+import static com.infiniteautomation.mango.db.tables.PermissionsMinterms.PERMISSIONS_MINTERMS;
 
 /**
  *
@@ -206,8 +206,8 @@ public class Upgrade4 extends DBUpgrade implements PermissionMigration {
                             mintermId = rs.getInt(minterIdIndex);
                         }
                     }
-                    MangoPermission permission = new MangoPermission(id, roleSet);
-                    return permission;
+                    MangoPermission permission = new MangoPermission(roleSet);
+                    return permission.withId(id);
                 }else {
                     return new MangoPermission(id);
                 }
