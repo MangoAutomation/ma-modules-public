@@ -168,7 +168,7 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
      * @param vo
      */
     public void ensureTogglePermission(MaintenanceEventVO vo, PermissionHolder user) {
-        // TODO Mango 4.0 review
+        //TODO Review use and potentially use DAO Permission JOIN
         if (!(permissionService.hasPermission(user, dataSourcePermissionDefinition.getPermission()) || permissionService.hasPermission(user, vo.getTogglePermission()))) {
             throw new PermissionException(new TranslatableMessage("maintenanceEvents.permission.unableToToggleEvent"), user);
         }
@@ -205,7 +205,7 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
 
         @Override
         public void accept(DataPointVO point) {
-            // TODO Mango 4.0 review
+            //TODO Review use and potentially use DAO Permission JOIN
             if(!hasPermission.getValue()) {
                 //short circuit the logic if we already failed
                 return;
@@ -250,7 +250,7 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
 
         @Override
         public void accept(DataSourceVO source) {
-            // TODO Mango 4.0 review
+            //TODO Review use and potentially use DAO Permission JOIN
             if(!hasPermission.getValue()) {
                 //short circuit the logic if we already failed
                 return;

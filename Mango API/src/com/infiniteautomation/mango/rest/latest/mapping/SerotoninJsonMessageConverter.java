@@ -25,7 +25,7 @@ import com.serotonin.m2m2.web.MediaTypes;
  *
  * Convert Incoming Serotonin JSON to Mango VOs (experimental)
  *
- * TODO Mango 4.0 the read internal method will not work properly
+ * TODO the read internal method will not work properly
  * @author Terry Packer
  */
 public class SerotoninJsonMessageConverter extends AbstractHttpMessageConverter<Object>{

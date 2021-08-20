@@ -3,6 +3,7 @@
  */
 package com.infiniteautomation.mango.rest.latest.model.user;
 
+import io.swagger.annotations.ApiModelProperty;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -22,10 +23,8 @@ import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.role.Role;
 
-import io.swagger.annotations.ApiModelProperty;
-
 /**
- *
+ * TODO this model would benefit from using the model mapping and unmapping
  * @author Terry Packer
  */
 public class UserModel extends AbstractVoModel<User> {
@@ -272,7 +271,7 @@ public class UserModel extends AbstractVoModel<User> {
             roles.add(role.getXid());
         }
 
-        //TODO Mango 4.0 move this into the model mapper and use map/unmap anywhere
+        //TODO move this into the model mapper and use map/unmap anywhere
         // a user model is needed
         PermissionService permissionService = Common.getBean(PermissionService.class);
         this.inheritedRoles = new HashSet<>();
@@ -309,7 +308,7 @@ public class UserModel extends AbstractVoModel<User> {
         user.setMuted(muted);
         user.setReceiveOwnAuditEvents(receiveOwnAuditEvents);
         if(roles != null) {
-            //TODO Mango 4.0 move this into the model mapper and use map/unmap anywhere
+            //TODO move this into the model mapper and use map/unmap anywhere
             // a user model is needed
             user.setRoles(Common.getBean(PermissionService.class).explodeLegacyPermissionGroupsToRoles(roles));
         }

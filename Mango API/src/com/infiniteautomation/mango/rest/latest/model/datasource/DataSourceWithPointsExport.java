@@ -7,6 +7,7 @@ package com.infiniteautomation.mango.rest.latest.model.datasource;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import net.jazdw.rql.parser.ASTNode;
 
 import org.springframework.http.HttpStatus;
 
@@ -25,8 +26,6 @@ import com.serotonin.json.spi.JsonPropertyOrder;
 import com.serotonin.json.type.JsonStreamedArray;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
-
-import net.jazdw.rql.parser.ASTNode;
 
 /**
  * Container to order the data source query before the points and stream the result.
@@ -84,7 +83,7 @@ public class DataSourceWithPointsExport {
                     dataSourceIds.add(item.getId());
                     count++;
                 } catch (IOException | JsonException e) {
-                    //TODO Mango 4.0 this can mangle the response, perhaps handle in exception handler to reset stream
+                    //TODO this can mangle the response, perhaps handle in exception handler to reset stream
                     //  also a nice way to cancel this query would be good as it will just keep throwing
                     // the exception if we don't cancel it.
                     throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, e);

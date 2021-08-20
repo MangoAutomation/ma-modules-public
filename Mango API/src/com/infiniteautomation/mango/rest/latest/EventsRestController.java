@@ -3,6 +3,9 @@
  */
 package com.infiniteautomation.mango.rest.latest;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URI;
@@ -17,8 +20,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
 import javax.servlet.http.HttpServletRequest;
+import net.jazdw.rql.parser.ASTNode;
 
 import org.jooq.Field;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,11 +69,6 @@ import com.serotonin.m2m2.rt.event.type.EventType.EventTypeNames;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.EventInstanceVO;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
-
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import net.jazdw.rql.parser.ASTNode;
 
 /**
  * @author Terry Packer
@@ -283,7 +281,7 @@ public class EventsRestController {
             @RequestBody List<Date> periodBoundaries,
             ASTNode rql) {
 
-        // TODO Mango 4.0 clean up, add model, move restrictions to service
+        // TODO Clean up, add model, move restrictions to service
         Assert.isTrue(periodBoundaries.size() >= 2, "periodBoundaries must have at least 2 elements");
         List<Date> sorted = new ArrayList<>(periodBoundaries);
         Collections.sort(sorted);

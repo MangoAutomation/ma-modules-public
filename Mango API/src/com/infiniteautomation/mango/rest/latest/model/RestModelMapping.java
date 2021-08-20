@@ -61,7 +61,7 @@ public interface RestModelMapping<F, T> {
     T map(Object from, PermissionHolder user, RestModelMapper mapper);
 
     /**
-     * TODO Mango 4.0 remove default and require an implementation
+     * TODO Remove default and require an implementation for all model mappings
      * Unmap a model by creating a new object
      * @param from
      * @param user
@@ -74,7 +74,7 @@ public interface RestModelMapping<F, T> {
     }
 
     /**
-     * TODO Mango 4.0 remove default and require an implementation
+     * TODO Remove default and require an implementation
      * Unmap a model into an existing object
      * @param from
      * @param into

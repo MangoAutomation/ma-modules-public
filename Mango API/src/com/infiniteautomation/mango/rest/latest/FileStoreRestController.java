@@ -3,6 +3,9 @@
  */
 package com.infiniteautomation.mango.rest.latest;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -16,10 +19,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import springfox.documentation.annotations.ApiIgnore;
 
 import org.apache.commons.fileupload.FileItem;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,11 +56,6 @@ import com.infiniteautomation.mango.spring.service.FileStoreService;
 import com.infiniteautomation.mango.spring.service.FileStoreService.FileStorePath;
 import com.infiniteautomation.mango.webapp.FileStoreFilter;
 import com.serotonin.m2m2.web.mvc.spring.security.permissions.AnonymousAccess;
-
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import springfox.documentation.annotations.ApiIgnore;
 
 /**
  * Manage files from stores defined by FileStoreDefinition(s)
@@ -165,7 +163,7 @@ public class FileStoreRestController extends AbstractMangoRestController {
         return new ResponseEntity<>(null, HttpStatus.OK);
     }
 
-    // TODO Mango 4.0 remove this method, require user to specify list or download
+    // TODO Remove this method, require user to specify list or download
     @ApiOperation(value = "List a directory or download a file from a store")
     @RequestMapping(method = RequestMethod.GET, value = "/{name}/**")
     public ResponseEntity<?> download(

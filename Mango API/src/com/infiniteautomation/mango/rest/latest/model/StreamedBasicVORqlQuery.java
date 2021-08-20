@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import net.jazdw.rql.parser.ASTNode;
 
 import org.jooq.Field;
 import org.jooq.Record;
@@ -21,8 +22,6 @@ import com.infiniteautomation.mango.rest.latest.exception.GenericRestException;
 import com.infiniteautomation.mango.spring.service.AbstractBasicVOService;
 import com.serotonin.m2m2.db.dao.AbstractBasicDao;
 import com.serotonin.m2m2.vo.AbstractBasicVO;
-
-import net.jazdw.rql.parser.ASTNode;
 
 /**
  *
@@ -96,7 +95,7 @@ public class StreamedBasicVORqlQuery <T extends AbstractBasicVO, R extends Recor
                         try {
                             jgen.writeObject(item);
                         } catch (IOException e) {
-                            //TODO Mango 4.0 this can mangle the response, perhaps handle in exception handler to reset stream
+                            //TODO this can mangle the response, perhaps handle in exception handler to reset stream
                             //  also a nice way to cancel this query would be good as it will just keep throwing
                             // the exception if we don't cancel it.
                             throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, e);
@@ -112,7 +111,7 @@ public class StreamedBasicVORqlQuery <T extends AbstractBasicVO, R extends Recor
                 try {
                     jgen.writeObject(item);
                 } catch (IOException e) {
-                    //TODO Mango 4.0 this can mangle the response, perhaps handle in exception handler to reset stream
+                    //TODO this can mangle the response, perhaps handle in exception handler to reset stream
                     //  also a nice way to cancel this query would be good as it will just keep throwing
                     // the exception if we don't cancel it.
                     throw new GenericRestException(HttpStatus.INTERNAL_SERVER_ERROR, e);

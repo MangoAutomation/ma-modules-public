@@ -28,7 +28,10 @@ import com.serotonin.util.ILifecycleState;
 
 
 /**
- * Data point REST model v2
+ * Data point REST model
+ *
+ * TODO This should be converted to use the model mapping, consider
+ *   how this model can be partially updated when saving
  *
  * @author Jared Wiltshire
  *
@@ -159,19 +162,19 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
         if (deviceName != null) {
             point.setDeviceName(deviceName);
         }
-        //TODO Mango 4.0 Use ModelMapper.unmap
+        //TODO Use ModelMapper.unmap
         if (readPermission != null) {
             point.setReadPermission(readPermission.getPermission());
         }
-        //TODO Mango 4.0 Use ModelMapper.unmap
+        //TODO Use ModelMapper.unmap
         if (editPermission != null) {
             point.setEditPermission(editPermission.getPermission());
         }
-        //TODO Mango 4.0 Use ModelMapper.unmap
+        //TODO Use ModelMapper.unmap
         if (setPermission != null) {
             point.setSetPermission(setPermission.getPermission());
         }
-        //TODO Mango 4.0 Use ModelMapper.unmap
+        //TODO Use ModelMapper.unmap
         if(StringUtils.isNotEmpty(dataSourceXid)) {
             DataSourceVO ds = DataSourceDao.getInstance().getByXid(dataSourceXid);
             if(ds!= null) {
@@ -181,7 +184,7 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
                 point.setDataSourceTypeName(ds.getDefinition().getDataSourceTypeName());
             }
         }
-        //TODO Mango 4.0 Use ModelMapper.unmap
+        //TODO Use ModelMapper.unmap
         if(point.getDataSourceId() <= 0 && dataSourceId != null && dataSourceId > 0) {
             point.setDataSourceId(dataSourceId);
         }
@@ -203,7 +206,7 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
             try {
                 point.setUnit(JUnitUtil.parseLocal(unit));
             } catch(IllegalArgumentException e) {
-                //TODO  Mango 4.0 unmap
+                //TODO unmap
                 ProcessResult result = new ProcessResult();
                 result.addContextualMessage("unit", "validate.unitInvalid", e.getMessage());
                 throw new ValidationException(result);
@@ -216,7 +219,7 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
             try {
                 point.setIntegralUnit(JUnitUtil.parseLocal(integralUnit));
             } catch(IllegalArgumentException e) {
-                //TODO  Mango 4.0 unmap
+                //TODO unmap
                 ProcessResult result = new ProcessResult();
                 result.addContextualMessage("integralUnit", "validate.unitInvalid", e.getMessage());
                 throw new ValidationException(result);
@@ -229,7 +232,7 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
             try {
                 point.setRenderedUnit(JUnitUtil.parseLocal(renderedUnit));
             } catch(IllegalArgumentException e) {
-                //TODO  Mango 4.0 unmap
+                //TODO unmap
                 ProcessResult result = new ProcessResult();
                 result.addContextualMessage("renderedUnit", "validate.unitInvalid", e.getMessage());
                 throw new ValidationException(result);
@@ -261,7 +264,7 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
                 point.setTags(mergedTags);
             }
         }else {
-            //TODO Mango 4.0 unmap
+            //TODO unmap
             if(id != null && id > 0) {
                 point.setTags(DataPointTagsDao.getInstance().getTagsForDataPointId(id));
             }else if(xid != null) {
