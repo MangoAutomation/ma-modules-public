@@ -1,3 +1,6 @@
+*Version 4.2.0*
+* Internal point properties help updated to reflect the ForkJoinPool common pool size
+
 *Version 4.1.0*
 * Upgraded for Mango 4.1.0
 
