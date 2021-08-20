@@ -7,7 +7,7 @@ const {createClient, uuid, noop, config} = require('@infinite-automation/mango-m
 /*
 NOTE: This file is not named .spec.js on purpose, we dont want to run this on the nightly build.
 Results for 500k data points (3.5m tags), on MySQL 5.7
-Tags were generated using https://github.com/infiniteautomation/script-examples/blob/main/create-tag-config.js
+Tags were generated using https://github.com/MangoAutomation/script-examples/blob/main/create-tag-config.js
 
 New tag query implementation, left join on dataPointTags per tag -
   Tag query performance

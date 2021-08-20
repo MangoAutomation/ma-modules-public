@@ -15,7 +15,7 @@
   "license": "UNLICENSED",
   "repository": {
     "type": "git",
-    "url": "https://github.com/infiniteautomation/ma-modules-public.git"
+    "url": "https://github.com/MangoAutomation/ma-modules-public.git"
   },
   "com_infiniteautomation": {
     "moduleName": "envcands"

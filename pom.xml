@@ -14,12 +14,12 @@
 	<name>Mango Public Modules</name>
 	<issueManagement>
 		<system>github</system>
-		<url>https://github.com/infiniteautomation/ma-modules-public/issues</url>
+		<url>https://github.com/MangoAutomation/ma-modules-public/issues</url>
 	</issueManagement>
 	<scm>
-		<connection>scm:git:https://github.com/infiniteautomation/ma-modules-public.git</connection>
-		<developerConnection>scm:git:https://github.com/infiniteautomation/ma-modules-public.git</developerConnection>
-		<url>https://github.com/infiniteautomation/ma-modules-public</url>
+		<connection>scm:git:https://github.com/MangoAutomation/ma-modules-public.git</connection>
+		<developerConnection>scm:git:https://github.com/MangoAutomation/ma-modules-public.git</developerConnection>
+		<url>https://github.com/MangoAutomation/ma-modules-public</url>
 		<tag>HEAD</tag>
 	</scm>
 	<modules>
