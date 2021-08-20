@@ -8,117 +8,111 @@ Copyright (C) 2021 Radix IoT LLC. All rights reserved.
 </p>
 
 <ul>
-  <li>Point values to be written - the number of point values queued up waiting to be dumped to the database</li>
-  <li>Point value write threads - the number of threads concurrently write point values from the queue</li>
-  <li>High priority work items currently running - the number of currently executing high priority tasks</li>
-  <li>Medium priority work items - the number of queued Medium priority work items</li>
-  <li>Currently scheduled high priority work items - the number of High priority tasks that are scheduled to run in the future</li>
-  <li>Maximum thread stack height - the largest thread stack for all threads within Mango</li>
-  <li>Active thread count - the total number of active threads</li>
-  <li>Active database connections - only useful if using JDBC Pooling, the active connections in the pool</li>
-  <li>Idle database connections - only useful if using JDBC Pooling, the idle connections in the pool</li>
-  <li>Writes per second during database batches - the number of point values going into the database per second if there are values queued</li>
-  <li>JVM free memory - the amount of memory left before the heap will attempt to grow.</li>
-  <li>JVM used memory - the current amount of memory being used by the JVM.</li>
-  <li>JVM max memory - the maximum amount of memory that the heap can potentially acquire.</li>
-  <li>JVM available processors - the number of CPU cores that the JVM can access.</li>
+  <li><strong>Active database connections</strong> - Active connections in the pool and is only useful if using JDBC Pooling</li>
+  <li><strong>Active user sessions</strong></li>
+  <li><strong>Available upgrades</strong></li>
+  <li><strong>Backdate poster running</strong> - (NoSQL Batch Write) State of the backdate poster, 1 running, 0 not running</li>
+  <li><strong>Backdates queued</strong> - (NoSQL Batch Write) Number of back-dated items waiting to be written</li>
+  <li><strong>Calendar rule sets</strong> - (count)</li>
+  <li><strong>Currently scheduled high priority tasks</strong> - Number of high priority tasks that are scheduled to run in the future</li>
+  <li><strong>Data points</strong> - (count)</li>
+  <li><strong>Data sources</strong> - (count)</li>
+  <li><strong>Event detectors</strong> - (count)</li>
+  <li><strong>Event handlers</strong> - (count)</li>
+  <li><strong>Excel report templates</strong> - (count)</li>
+  <li><strong>Excel reports</strong> - (count)</li>
+  <li><strong>Filestore partition total space (GB)</strong></li>
+  <li><strong>Filestore partition usable space (GB)</strong></li>
+  <li><strong>Filestore partition used space (GB)</strong></li>
+  <li><strong>Global scripts</strong> - (count)</li>
+  <li><strong>HTTP server idle threads</strong></li>
+  <li><strong>HTTP server queue size</strong></li>
+  <li><strong>HTTP server threads</strong></li>
+  <li><strong>High priority tasks queued</strong> - Number of queued high priority tasks that will be executed when a free thread from the high priority pool is available</li>
+  <li><strong>High priority work items currently running</strong> - Number of currently executing high priority tasks</li>
+  <li><strong>Idle database connections</strong> - Idle connections in the pool and is only useful if using JDBC Pooling</li>
+  <li><strong>JSON data entries</strong> - (count)</li>
+  <li><strong>JVM available processors</strong> - Number of CPU cores that the JVM can access</li>
+  <li><strong>JVM classes loaded</strong></li>
+  <li><strong>JVM classes total loaded</strong></li>
+  <li><strong>JVM classes unloaded</strong></li>
+  <li><strong>JVM daemon thread count</strong></li>
+  <li><strong>JVM free memory (MB)</strong> - Amount of memory left before the heap will attempt to grow</li>
+  <li><strong>JVM maximum available memory (MB)</strong> - Maximum amount of memory that the heap can potentially acquire</li>
+  <li><strong>JVM peak thread count</strong></li>
+  <li><strong>JVM thread count</strong></li>
+  <li><strong>JVM total threads started</strong></li>
+  <li><strong>JVM uptime (seconds)</strong></li>
+  <li><strong>JVM used memory (MB)</strong> - Current amount of memory being used by the JVM</li>
+  <li><strong>Low priority tasks currently running</strong> - Number of currently executing low priority tasks</li>
+  <li><strong>Low priority tasks queued</strong>- Number of queued low priority tasks that will be executed when a free thread from the low priority pool is available</li>
+  <li><strong>Mailing lists</strong> - (count)</li>
+  <li><strong>Maintenance events</strong> - (count)</li>
+  <li><strong>Mango partition total space (GB)</strong></li>
+  <li><strong>Mango partition usable space (GB)</strong></li>
+  <li><strong>Mango partition used space (GB)</strong></li>
+  <li><strong>Mango process CPU load</strong> - (%)</li>
+  <li><strong>Mango process Virtual Memory Size</strong> - Number of memory bytes that the Mango process can access, including memory that is swapped out and memory that is from shared libraries</li>
+  <li><strong>Mango process bytes read</strong> - Number of bytes the process has read from disk</li>
+  <li><strong>Mango process bytes written</strong>  - Number of bytes the Mango process has written to disk</li>
+  <li><strong>Mango process kernel cpu time</strong> - Number of milliseconds the Mango process has executed in kernel/system mode</li>
+  <li><strong>Mango process major (hard) faults</strong> - Number of major (hard) faults the Mango process has made which have required loading a memory page from disk. Windows does not distinguish major and minor faults at the process level, so this value is 0 and major faults are included in minor (soft) faults</li>
+  <li><strong>Mango process minor (soft) faults</strong> - Number of minor (soft) faults the Mango process has made which have not required loading a memory page from disk. On Windows, this includes the total of major and minor faults</li>
+  <li><strong>Mango process open files</strong> - Number of open file handles (or network connections) that belongs to the Mango process, -1 if unknown or not supported</li>
+  <li><strong>Mango process resident set size (RSS)</strong> - Number of memory bytes is allocated to Mango process and is in RAM. It does not include memory that is swapped out. It does include memory from shared libraries as long as the pages from those libraries are actually in memory. It does include all stack and heap memory</li>
+  <li><strong>Mango process user cpu time</strong> - Number of milliseconds the Mango process has executed in user mode</li>
+  <li><strong>Medium priority tasks currently running</strong> - Number of currently executing medium priority tasks</li>
+  <li><strong>Medium priority tasks queued</strong> - Number of queued medium priority tasks that will be executed when a free thread from the medium priority pool is available. The queue for this pool has no bounds and can grow indefinitely</li>
+  <li><strong>NoSQL database size (GB)</strong></li>
+  <li><strong>NoSQL partition total space (GB)</strong></li>
+  <li><strong>NoSQL partition usable space (GB)</strong></li>
+  <li><strong>NoSQL partition used space (GB)</strong></li>
+  <li><strong>OS load average (1 minute)</strong> - (%) Not available for Windows</li>
+  <li><strong>Point value write threads</strong> - Number of threads concurrently write point values from the queue</li>
+  <li><strong>Point values to be written</strong> - Number of point values queued up waiting to be dumped to the database</li>
+  <li><strong>Publishers</strong> - (count)</li>
+  <li><strong>Roles</strong> - (count)</li>
+  <li><strong>SQL database partition total space (GB)</strong></li>
+  <li><strong>SQL database partition usable space (GB)</strong></li>
+  <li><strong>SQL database partition used space (GB)</strong></li>
+  <li><strong>SQL database size (GB)</strong></li>
+  <li><strong>Schedules</strong> - (count)</li>
+  <li><strong>System CPU load</strong> - (%)</li>
+  <li><strong>System uptime (Hrs)</strong></li>
+  <li><strong>Total backdates</strong> - (NoSQL Batch Write) Total number of back-dated items</li>
+  <li><strong>User file stores</strong> - (count)</li>
+  <li><strong>Users</strong> - (count)</li>
+  <li><strong>Watchlist count</strong></li>
+  <li><strong>Writes per second during database batches</strong> - Number of point values going into the database per second if there are values queued</li>
 </ul>
 
-
-
-<h3>Point values to be written</h3>
-<p>
- This value represents the number of point values queued up waiting to be dumped to the database by the Batch Write Behind sub-system.
-</p>
-
-<h3>Point value write threads</h3>
-<p>
- This value represents the number of threads concurrently writing point values from the queue.
-</p>
-
-<h3>High priority work items currently running</h3>
-<p>
-This value represents the number of <b>currently executing</b> high priority tasks.
-The following is a list of some high priority work items that Mango has:
-</p>
+<h3>Monitored metrics for each data source</h3>
 <ul>
-  <li>Database batch write behind - writing point values from the queue</li>
-  <li>Process Work Item - Event handlers that run a process use this</li>
-  <li>Set Point Work Item - Setting a point value from outside of the data source runtime, for example a Point Link uses this.</li>
-  <li>HttpImageRetriever - This data source uses a work item to retrieve the images.</li>
-  <li>BACnet Device Poller - BACnet data source device polling</li>
+  <li><strong>Last poll duration</strong> - (miliseconds)</li>
+  <li><strong>Poll success percentage</strong></li>
+  <li><strong>Previous sequential successful polls</strong></li>
+</ul>
+
+<h3>High priority work items</h3>
+<ul>
+  <li><code>Database batch write behind</code> - Writing point values from the queue</li>
+  <li><code>Process Work Item</code> - Event handlers that run a process use this</li>
+  <li><code>Set Point Work Item</code> - Setting a point value from outside of the data source runtime</li>
+  <li><code>HttpImageRetriever</code> - This data source uses a work item to retrieve the images</li>
+  <li><code>BACnet Device Poller</code> - BACnet data source device polling</li>
 </ul>
 
 <h3>Medium priority work items</h3>
-<p>
-This value represents the number of queued Medium priority work items that will be executed when a free thread from the medium priority pool is available.  
-The queue for this pool has no bounds and can grow indefinitely.  The following is a list of some medium priority work items that Mango has:
-</p>
 <ul>
-<li>Event Notify Work Item - When a data point is saved or updated anything in Mango that needs to know is notified in a separate thread.</li>
-<li>Backups - Backups happen from this pool.</li>
+  <li><code>Event Notify Work Item</code> - When a data point is saved or updated anything in Mango that needs to know is notified in a separate thread</li>
+  <li><code>Backups</code> - Backups happen from this pool</li>
 </ul>
 
-<h4>Low priority work items</h4>
-<p>Low priority work items run in a separate pool that is not monitored for size. The following is a list of low priority tasks:</p>
+<h3>Low priority work items</h3>
 <ul>
-<li>Reports</li>
-<li>Excel Reports</li>
-<li>Email</li>
-<li>Event Notify Work Item - Anything listening for events/alarms</li>
-<li>
+  <li><code>Reports</code></li>
+  <li><code>Excel Reports</code></li>
+  <li><code>Email</code></li>
+  <li><code>Event Notify Work Item</code> - Anything listening for events/alarms</li>
 </ul>
-
-<h3>Currently scheduled high priority work items</h3>
-<p>
-This value represents the number of High priority tasks that are scheduled to run in the future.
-</p>
-
-<h3>Maximum thread stack height</h3>
-<p>
-This value represents the largest thread stack of any thread within Mango.
-</p>
-
-<h3>Active thread count</h3>
-<p>
-This value represents the total number of active threads.
-</p>
-
-<h3>Active database connections</h3>
-<p>
-This value represents the active connections in the pool and is only useful if using JDBC Pooling.
-</p>
-
-
-<h3>Idle database connections</h3>
-<p>
-This value represents the idle connections in the pool and is only useful if using JDBC Pooling.
-</p>
-
-
-<h3>Writes per second during database batches</h3>
-<p>
-This value represents the number of point values going into the database per second if there are values queued.
-</p>
-
-<h3>JVM free memory</h3>
-<p>
-This value represents the amount of memory left before the heap will attempt to grow.
-</p>
-
-<h3>JVM used memory</h3>
-<p>
-This value represents the current amount of memory being used by the JVM.
-</p>
-
-<h3>JVM max memory</h3>
-<p>
-This value represents the maximum amount of memory that the heap can potentially acquire.
-</p>
-
-
-<h3>JVM available processors</h3>
-<p>
-This value represents the number of CPU cores that the JVM can access.
-</p>
 </div>
