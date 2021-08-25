@@ -1,5 +1,6 @@
 *Version 4.2.0*
 * Upgraded for Mango 4.2.0
+* Fix bug where non-admin users would not receive WebSocket notification for users they had permission to read
 
 *Version 4.1.0*
 * Upgraded for Mango 4.1.0
