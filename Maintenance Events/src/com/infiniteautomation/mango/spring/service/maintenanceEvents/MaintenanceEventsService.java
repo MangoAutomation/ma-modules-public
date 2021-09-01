@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import com.infiniteautomation.mango.spring.service.AbstractVOService;
 import com.infiniteautomation.mango.spring.service.PermissionService;
+import com.infiniteautomation.mango.spring.service.ServiceDependencies;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.infiniteautomation.mango.util.exception.TranslatableIllegalStateException;
 import com.infiniteautomation.mango.util.exception.ValidationException;
@@ -42,9 +43,10 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
     private final DataSourcePermissionDefinition dataSourcePermissionDefinition;
 
     @Autowired
-    public MaintenanceEventsService(MaintenanceEventDao dao, PermissionService permissionService,
-                                    DataSourcePermissionDefinition dataSourcePermissionDefinition) {
-        super(dao, permissionService);
+    public MaintenanceEventsService(MaintenanceEventDao dao,
+                                    ServiceDependencies dependencies,
+                                    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataSourcePermissionDefinition dataSourcePermissionDefinition) {
+        super(dao, dependencies);
         this.dataSourcePermissionDefinition = dataSourcePermissionDefinition;
     }
 

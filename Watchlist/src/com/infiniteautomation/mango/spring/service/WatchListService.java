@@ -20,7 +20,6 @@ import com.infiniteautomation.mango.spring.dao.WatchListDao;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.PermissionDefinition;
@@ -46,19 +45,17 @@ public class WatchListService extends AbstractVOService<WatchListVO, WatchListDa
     private final DataPointService dataPointService;
     private final EventInstanceService eventService;
     private final WatchListCreatePermission createPermission;
-    private final DataPointDao dataPointDao;
 
     @Autowired
     public WatchListService(WatchListDao dao,
-                            PermissionService permissionService,
+                            ServiceDependencies dependencies,
                             DataPointService dataPointService,
                             EventInstanceService eventService,
-                            WatchListCreatePermission createPermission, DataPointDao dataPointDao) {
-        super(dao, permissionService);
+                            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") WatchListCreatePermission createPermission) {
+        super(dao, dependencies);
         this.dataPointService = dataPointService;
         this.eventService = eventService;
         this.createPermission = createPermission;
-        this.dataPointDao = dataPointDao;
     }
 
     @Override
