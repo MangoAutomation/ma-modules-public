@@ -27,9 +27,10 @@ public class ScriptEventHandlerModel extends AbstractEventHandlerModel<ScriptEve
 
     String script;
     String engineName;
-    Set<String> scriptRoles = Collections.emptySet();
+    Set<String> scriptRoles;
 
     public ScriptEventHandlerModel() {
+        scriptRoles = Collections.emptySet();
     }
 
     public ScriptEventHandlerModel(ScriptEventHandlerVO vo) {
