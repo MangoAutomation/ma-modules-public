@@ -298,7 +298,7 @@ public class EventTypesRestController {
 
                 for(DataPointVO vo : uniquePointsMap.values()) {
                     //Shortcut to check permissions via event type
-                    if(permissionService.hasPermission(user, vo.getReadPermission())) {
+                    if(dataPointService.hasReadPermission(user,vo)) {
                         DataPointEventTypeModel model = new DataPointEventTypeModel(new DataPointEventType(vo.getDataSourceId(), vo.getId(), 0, null), modelMapper.map(vo, DataPointModel.class, user));
                         types.add(new EventTypeVOModel<DataPointEventType, DataPointModel,AbstractPointEventDetectorModel<?>>(model, new TranslatableMessage("event.eventsFor", vo.getName()), false, true, true));
                     }

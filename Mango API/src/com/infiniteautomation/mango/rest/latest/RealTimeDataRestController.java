@@ -19,6 +19,7 @@ import com.infiniteautomation.mango.rest.latest.model.FilteredStreamWithTotal;
 import com.infiniteautomation.mango.rest.latest.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.latest.model.StreamWithTotal;
 import com.infiniteautomation.mango.rest.latest.model.realtime.RealTimeDataPointValueModel;
+import com.infiniteautomation.mango.spring.service.DataPointService;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.Translations;
@@ -102,7 +103,7 @@ public class RealTimeDataRestController {
         //First build all the models
         List<RealTimeDataPointValueModel> models = new ArrayList<>();
         for(DataPointRT rt : Common.runtimeManager.getRunningDataPoints()) {
-            if(permissionService.hasPermission(user, rt.getVO().getReadPermission())) {
+            if(Common.getBean(DataPointService.class).hasReadPermission(user,rt.getVO())) {
                 models.add(map.apply(rt, user));
             }
         }

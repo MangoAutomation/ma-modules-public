@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.infiniteautomation.mango.spring.service.AbstractVOService;
+import com.infiniteautomation.mango.spring.service.DataPointService;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.spring.service.ServiceDependencies;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
@@ -213,7 +214,7 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
                 return;
             }else {
                 if(read) {
-                    if(!permissionService.hasPermission(user, point.getReadPermission())) {
+                    if(!Common.getBean(DataPointService.class).hasReadPermission(user,point)) {
                         hasPermission.setFalse();
                     }
                 }else {

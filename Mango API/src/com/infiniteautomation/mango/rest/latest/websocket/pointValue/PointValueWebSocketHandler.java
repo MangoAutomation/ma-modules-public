@@ -21,6 +21,7 @@ import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueTimeM
 import com.infiniteautomation.mango.rest.latest.websocket.MangoWebSocketErrorType;
 import com.infiniteautomation.mango.rest.latest.websocket.MangoWebSocketHandler;
 import com.infiniteautomation.mango.rest.latest.websocket.WebSocketSendException;
+import com.infiniteautomation.mango.spring.service.DataPointService;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.Functions;
 import com.serotonin.m2m2.Common;
@@ -95,10 +96,12 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
             }
 
             //Check permissions
-            if (!permissionService.hasPermission(user, vo.getReadPermission())) {
-                this.sendErrorMessage(session, MangoWebSocketErrorType.PERMISSION_DENIED,
-                        new TranslatableMessage("permission.exception.readDataPoint", user.getPermissionHolderName()));
-                return;
+            if(!Common.getBean(DataPointService.class).hasReadPermission(user,vo)) {
+                if (!permissionService.hasPermission(user, vo.getReadPermission())) {
+                    this.sendErrorMessage(session, MangoWebSocketErrorType.PERMISSION_DENIED,
+                            new TranslatableMessage("permission.exception.readDataPoint", user.getPermissionHolderName()));
+                    return;
+                }
             }
 
             Set<PointValueEventType> eventsTypes = model.getEventTypes();
