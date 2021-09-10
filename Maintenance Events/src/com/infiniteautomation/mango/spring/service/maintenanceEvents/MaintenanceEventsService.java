@@ -43,12 +43,16 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
 
     private final DataSourcePermissionDefinition dataSourcePermissionDefinition;
 
+    private final DataPointService dataPointService;
+
     @Autowired
     public MaintenanceEventsService(MaintenanceEventDao dao,
                                     ServiceDependencies dependencies,
-                                    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataSourcePermissionDefinition dataSourcePermissionDefinition) {
+                                    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataSourcePermissionDefinition dataSourcePermissionDefinition,
+                                    DataPointService dataPointService) {
         super(dao, dependencies);
         this.dataSourcePermissionDefinition = dataSourcePermissionDefinition;
+        this.dataPointService = dataPointService;
     }
 
     @Override
@@ -190,6 +194,8 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
         final boolean read;
         final PermissionHolder user;
         final PermissionService permissionService;
+        final DataPointService dataPointService;
+
 
         public boolean hasPermission() {
             return hasPermission.booleanValue();
@@ -198,12 +204,15 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
         /**
          *
          * @param read = true to check read permission, false = check edit permission
+         * @param dataPointService
          */
         public DataPointPermissionsCheckCallback(PermissionHolder user, boolean read,
-                PermissionService permissionService) {
+                                                 PermissionService permissionService,
+                                                 DataPointService dataPointService) {
             this.user = user;
             this.read = read;
             this.permissionService = permissionService;
+            this.dataPointService = dataPointService;
         }
 
         @Override
@@ -214,7 +223,7 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
                 return;
             }else {
                 if(read) {
-                    if(!Common.getBean(DataPointService.class).hasReadPermission(user,point)) {
+                    if(dataPointService.hasReadPermission(user,point)) {
                         hasPermission.setFalse();
                     }
                 }else {
@@ -284,7 +293,7 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
             return true;
         } else{
             if(vo.getDataPoints().size() > 0) {
-                DataPointPermissionsCheckCallback callback = new DataPointPermissionsCheckCallback(user, false, this.permissionService);
+                DataPointPermissionsCheckCallback callback = new DataPointPermissionsCheckCallback(user, false, this.permissionService, dataPointService);
                 dao.getPoints(vo.getId(), callback);
                 if(!callback.hasPermission.booleanValue())
                     return false;
@@ -307,7 +316,7 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
             return true;
         }else {
             if(vo.getDataPoints().size() > 0) {
-                DataPointPermissionsCheckCallback callback = new DataPointPermissionsCheckCallback(user, true, this.permissionService);
+                DataPointPermissionsCheckCallback callback = new DataPointPermissionsCheckCallback(user, true, this.permissionService, dataPointService);
                 dao.getPoints(vo.getId(), callback);
                 if(!callback.hasPermission.booleanValue())
                     return false;

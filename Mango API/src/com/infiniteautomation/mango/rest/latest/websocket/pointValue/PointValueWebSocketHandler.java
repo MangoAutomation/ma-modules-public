@@ -24,6 +24,7 @@ import com.infiniteautomation.mango.rest.latest.websocket.WebSocketSendException
 import com.infiniteautomation.mango.spring.service.DataPointService;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.Functions;
+import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.DataPointDao;
@@ -32,6 +33,7 @@ import com.serotonin.m2m2.rt.dataImage.DataPointListener;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.vo.DataPointVO;
+import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 /**
@@ -47,12 +49,15 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
     private WebSocketSession session;
     private final PermissionService permissionService;
     private final DataPointDao dataPointDao;
+    private DataPointService datapointService;
 
     @Autowired
-    public PointValueWebSocketHandler(PermissionService permissionService, DataPointDao dataPointDao) {
+    public PointValueWebSocketHandler(PermissionService permissionService, DataPointDao dataPointDao,
+                                      DataPointService datapointService) {
         super();
         this.permissionService = permissionService;
         this.dataPointDao = dataPointDao;
+        this.datapointService = datapointService;
     }
 
     @Override
@@ -88,21 +93,33 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
             PointValueRegistrationModel model = this.jacksonMapper.readValue(message.getPayload(), PointValueRegistrationModel.class);
 
             // Handle message.getPayload() here
-            DataPointVO vo = dataPointDao.getByXid(model.getDataPointXid());
-            if (vo == null) {
-                this.sendErrorMessage(session,MangoWebSocketErrorType.SERVER_ERROR,
-                        new TranslatableMessage("rest.error.pointNotFound", model.getDataPointXid()));
-                return;
-            }
 
-            //Check permissions
-            if(!Common.getBean(DataPointService.class).hasReadPermission(user,vo)) {
-                if (!permissionService.hasPermission(user, vo.getReadPermission())) {
-                    this.sendErrorMessage(session, MangoWebSocketErrorType.PERMISSION_DENIED,
-                            new TranslatableMessage("permission.exception.readDataPoint", user.getPermissionHolderName()));
+            DataPointVO vo;
+
+            try {
+                vo = datapointService.get(model.getDataPointXid()); //This will check for not found and permissions
+                //  ... do logic with vo here
+                if (vo == null) {
+                    this.sendErrorMessage(session, MangoWebSocketErrorType.SERVER_ERROR,
+                            new TranslatableMessage("rest.error.pointNotFound", model.getDataPointXid()));
                     return;
                 }
+                //Check permissions
+                datapointService.hasReadPermission(user, vo);
+
+            } catch(NotFoundException e) {
+                //send not found message back
+                this.sendErrorMessage(session, MangoWebSocketErrorType.SERVER_ERROR,
+                        new TranslatableMessage("rest.error.pointNotFound", model.getDataPointXid()));
+                return;
+            } catch(PermissionException e) {
+                //Send permission denied message here
+                this.sendErrorMessage(session, MangoWebSocketErrorType.PERMISSION_DENIED,
+                        new TranslatableMessage("permission.exception.readDataPoint", user.getPermissionHolderName()));
+                return;
+
             }
+
 
             Set<PointValueEventType> eventsTypes = model.getEventTypes();
             int dataPointId = vo.getId();

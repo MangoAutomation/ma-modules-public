@@ -49,11 +49,14 @@ public class RealTimeDataRestController {
 
     private final PermissionService permissionService;
     private final BiFunction<DataPointRT, PermissionHolder, RealTimeDataPointValueModel> map;
+    private final DataPointService dataPointService;
 
 
     @Autowired
-    public RealTimeDataRestController(PermissionService permissionService, RestModelMapper modelMapper){
+    public RealTimeDataRestController(PermissionService permissionService, RestModelMapper modelMapper,
+                                      DataPointService dataPointService){
         this.permissionService = permissionService;
+        this.dataPointService = dataPointService;
         this.map = (rt, user) -> {
             RealTimeDataPointValueModel model = new RealTimeDataPointValueModel();
 
@@ -103,7 +106,7 @@ public class RealTimeDataRestController {
         //First build all the models
         List<RealTimeDataPointValueModel> models = new ArrayList<>();
         for(DataPointRT rt : Common.runtimeManager.getRunningDataPoints()) {
-            if(Common.getBean(DataPointService.class).hasReadPermission(user,rt.getVO())) {
+            if(dataPointService.hasReadPermission(user,rt.getVO())) {
                 models.add(map.apply(rt, user));
             }
         }

@@ -42,6 +42,7 @@ import com.infiniteautomation.mango.rest.latest.model.StreamedSeroJsonVORqlQuery
 import com.infiniteautomation.mango.rest.latest.model.StreamedVORqlQueryWithTotal;
 import com.infiniteautomation.mango.rest.latest.model.event.EventInstanceModel;
 import com.infiniteautomation.mango.rest.latest.patch.PatchVORequestBody;
+import com.infiniteautomation.mango.spring.service.DataPointService;
 import com.infiniteautomation.mango.spring.service.EventInstanceService;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.spring.service.maintenanceEvents.MaintenanceEventsService;
@@ -80,18 +81,21 @@ public class MaintenanceEventsRestController {
     private final MaintenanceEventsService service;
     private final PermissionService permissionService;
     private final DataSourcePermissionDefinition dataSourcePermissionDefinition;
+    private DataPointService dataPointService;
 
     @Autowired
     public MaintenanceEventsRestController(MaintenanceEventsService service,
                                            MaintenanceEventDao dao,
                                            RestModelMapper modelMapper,
                                            EventInstanceService eventService, PermissionService permissionService,
-                                           DataSourcePermissionDefinition dataSourcePermissionDefinition) {
+                                           DataSourcePermissionDefinition dataSourcePermissionDefinition,
+                                           DataPointService dataPointService) {
         this.service = service;
         this.dao = dao;
         this.eventService = eventService;
         this.permissionService = permissionService;
         this.dataSourcePermissionDefinition = dataSourcePermissionDefinition;
+        this.dataPointService = dataPointService;
         this.eventTableValueConverters = new HashMap<>();
         this.eventTableFieldMap = new EventTableRqlMappings(Events.EVENTS);
 
@@ -237,7 +241,7 @@ public class MaintenanceEventsRestController {
         } else {
             return new StreamedVORqlQueryWithTotal<>(service, rql, null, null, null, item -> {
                 if(item.getDataPoints().size() > 0) {
-                    DataPointPermissionsCheckCallback callback = new DataPointPermissionsCheckCallback(user, true, permissionService);
+                    DataPointPermissionsCheckCallback callback = new DataPointPermissionsCheckCallback(user, true, permissionService, dataPointService);
                     dao.getPoints(item.getId(), callback);
                     if(!callback.hasPermission())
                         return false;
@@ -266,7 +270,7 @@ public class MaintenanceEventsRestController {
         } else {
             export.put("maintenanceEvents", new StreamedSeroJsonVORqlQuery<>(service, rql, null, null, null, item -> {
                 if(item.getDataPoints().size() > 0) {
-                    DataPointPermissionsCheckCallback callback = new DataPointPermissionsCheckCallback(user, true, permissionService);
+                    DataPointPermissionsCheckCallback callback = new DataPointPermissionsCheckCallback(user, true, permissionService, dataPointService);
                     dao.getPoints(item.getId(), callback);
                     if(!callback.hasPermission())
                         return false;
