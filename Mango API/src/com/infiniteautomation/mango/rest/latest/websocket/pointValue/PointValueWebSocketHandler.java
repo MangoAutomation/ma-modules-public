@@ -91,22 +91,11 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
         try {
             PermissionHolder user = getUser(session);
             PointValueRegistrationModel model = this.jacksonMapper.readValue(message.getPayload(), PointValueRegistrationModel.class);
-
-            // Handle message.getPayload() here
-
             DataPointVO vo;
 
             try {
-                vo = datapointService.get(model.getDataPointXid()); //This will check for not found and permissions
-                //  ... do logic with vo here
-                if (vo == null) {
-                    this.sendErrorMessage(session, MangoWebSocketErrorType.SERVER_ERROR,
-                            new TranslatableMessage("rest.error.pointNotFound", model.getDataPointXid()));
-                    return;
-                }
-                //Check permissions
-                datapointService.hasReadPermission(user, vo);
-
+                //This will check for not found and permissions
+                vo = datapointService.get(model.getDataPointXid());
             } catch(NotFoundException e) {
                 //send not found message back
                 this.sendErrorMessage(session, MangoWebSocketErrorType.SERVER_ERROR,
@@ -119,7 +108,6 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
                 return;
 
             }
-
 
             Set<PointValueEventType> eventsTypes = model.getEventTypes();
             int dataPointId = vo.getId();
