@@ -223,7 +223,7 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
                 return;
             }else {
                 if(read) {
-                    if(dataPointService.hasReadPermission(user,point)) {
+                    if(!dataPointService.hasReadPermission(user,point)) {
                         hasPermission.setFalse();
                     }
                 }else {
