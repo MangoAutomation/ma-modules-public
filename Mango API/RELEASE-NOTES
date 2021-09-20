@@ -1,3 +1,6 @@
+*Version 4.3.0*
+* Upgraded for Mango 4.3.0
+
 *Version 4.2.1*
 * Fix bug where Script Event Handler model was not retuning the script roles.
 * Using the DataPointService to know if the user has head permission to vew all data points.
