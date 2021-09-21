@@ -110,6 +110,6 @@ public class RuntimeManagerRestController {
         if(rt == null){
             throw new TranslatableIllegalStateException(new TranslatableMessage("rest.error.pointNotEnabled", xid));
         }
-        rt.resetValues();
+        rt.invalidateCache();
     }
 }
