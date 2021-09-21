@@ -121,7 +121,6 @@ public class PasswordResetController {
 
     @ApiOperation(value = "Creates a password reset token and link for the given user")
     @RequestMapping(method = RequestMethod.POST, value = "/create")
-    @PreAuthorize("isAdmin() and isPasswordAuthenticated()")
     public CreateTokenResponse createTokenForUser(
             @RequestBody
             CreateTokenRequest requestBody) throws UnknownHostException {
