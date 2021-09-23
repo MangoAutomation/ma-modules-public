@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.infiniteautomation.mango.rest.latest.model.user.UserModel;
 import com.infiniteautomation.mango.spring.components.pageresolver.LoginUriInfo;
 import com.infiniteautomation.mango.spring.components.pageresolver.PageResolver;
-import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.dao.InstalledModulesDao;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.mvc.spring.security.oauth2.OAuth2Information;
 import com.serotonin.m2m2.web.mvc.spring.security.permissions.AnonymousAccess;
@@ -49,11 +49,13 @@ public class LoginRestController {
     public static final String LOGIN_LAST_UPGRADE_HEADER = "X-Mango-Last-Upgrade";
     private final PageResolver pageResolver;
     private final OAuth2Information oAuth2Information;
+    private final InstalledModulesDao installedModulesDao;
 
     @Autowired
-    public LoginRestController(PageResolver pageResolver, OAuth2Information oAuth2Information) {
+    public LoginRestController(PageResolver pageResolver, OAuth2Information oAuth2Information, InstalledModulesDao installedModulesDao) {
         this.pageResolver = pageResolver;
         this.oAuth2Information = oAuth2Information;
+        this.installedModulesDao = installedModulesDao;
     }
 
     /**
@@ -82,7 +84,7 @@ public class LoginRestController {
         } else {
             LoginUriInfo info = pageResolver.getDefaultUriInfo(request, response, user);
             response.setHeader(LOGIN_DEFAULT_URI_HEADER, info.getUri());
-            response.setHeader(LOGIN_LAST_UPGRADE_HEADER, Integer.toString(Common.getLastUpgradeTime()));
+            response.setHeader(LOGIN_LAST_UPGRADE_HEADER, Long.toString(installedModulesDao.lastUpgradeTime().toEpochMilli() / 1000));
             if(info.isRequired())
                 response.setHeader(LOGIN_DEFAULT_URI_REQUIRED_HEADER, Boolean.TRUE.toString());
             return new ResponseEntity<>(new UserModel(user), HttpStatus.OK);
@@ -120,7 +122,7 @@ public class LoginRestController {
         } else {
             LoginUriInfo info = pageResolver.getDefaultUriInfo(request, response, user);
             response.setHeader(LOGIN_DEFAULT_URI_HEADER, info.getUri());
-            response.setHeader(LOGIN_LAST_UPGRADE_HEADER, Integer.toString(Common.getLastUpgradeTime()));
+            response.setHeader(LOGIN_LAST_UPGRADE_HEADER, Long.toString(installedModulesDao.lastUpgradeTime().toEpochMilli() / 1000));
             if(info.isRequired())
                 response.setHeader(LOGIN_DEFAULT_URI_REQUIRED_HEADER, Boolean.TRUE.toString());
             return new ResponseEntity<>(new UserModel(user), HttpStatus.OK);
@@ -155,7 +157,7 @@ public class LoginRestController {
         } else {
             LoginUriInfo info = pageResolver.getDefaultUriInfo(request, response, user);
             response.setHeader(LOGIN_DEFAULT_URI_HEADER, info.getUri());
-            response.setHeader(LOGIN_LAST_UPGRADE_HEADER, Integer.toString(Common.getLastUpgradeTime()));
+            response.setHeader(LOGIN_LAST_UPGRADE_HEADER, Long.toString(installedModulesDao.lastUpgradeTime().toEpochMilli() / 1000));
             if(info.isRequired())
                 response.setHeader(LOGIN_DEFAULT_URI_REQUIRED_HEADER, Boolean.TRUE.toString());
             return new ResponseEntity<>(new UserModel(user), HttpStatus.OK);

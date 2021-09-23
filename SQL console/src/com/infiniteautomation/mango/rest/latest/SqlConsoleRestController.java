@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.serotonin.db.spring.ExtendedJdbcTemplate;
-import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.db.DatabaseProxy;
 import com.serotonin.m2m2.db.dao.SqlConsole;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.web.MediaTypes;
@@ -41,10 +41,12 @@ import io.swagger.annotations.ApiParam;
 public class SqlConsoleRestController {
 
     private final SqlConsole sqlConsole;
+    private final DatabaseProxy databaseProxy;
 
     @Autowired
-    public SqlConsoleRestController(SqlConsole sqlConsole) {
+    public SqlConsoleRestController(SqlConsole sqlConsole, DatabaseProxy databaseProxy) {
         this.sqlConsole = sqlConsole;
+        this.databaseProxy = databaseProxy;
     }
 
     @ApiOperation(
@@ -57,7 +59,7 @@ public class SqlConsoleRestController {
             @ApiParam(value="User", required=true)
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
-        return ResponseEntity.ok(sqlConsole.query(Common.databaseProxy.getTableListQuery(), getSerializedDataMessage(user)));
+        return ResponseEntity.ok(sqlConsole.query(databaseProxy.getTableListQuery(), getSerializedDataMessage(user)));
     }
 
     @ApiOperation(
@@ -113,7 +115,7 @@ public class SqlConsoleRestController {
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
         ExtendedJdbcTemplate ejt = new ExtendedJdbcTemplate();
-        ejt.setDataSource(Common.databaseProxy.getDataSource());
+        ejt.setDataSource(databaseProxy.getDataSource());
         return ResponseEntity.ok(ejt.update(update));
     }
 
