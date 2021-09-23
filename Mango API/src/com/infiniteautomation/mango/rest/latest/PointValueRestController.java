@@ -113,20 +113,19 @@ import io.swagger.annotations.ApiParam;
 @RequestMapping("/point-values")
 public class PointValueRestController extends AbstractMangoRestController {
 
-    private static Logger LOG = LoggerFactory.getLogger(PointValueRestController.class);
+    private final Logger log = LoggerFactory.getLogger(PointValueRestController.class);
 
-    private final PointValueDao dao = Common.databaseProxy.newPointValueDao();
+    private final PointValueDao dao;
     private final MangoTaskTemporaryResourceManager<PurgePointValuesResponseModel> resourceManager;
-    private final PermissionService permissionService;
     private final DataPointService dataPointService;
     private final DataSourceService dataSourceService;
 
     @Autowired
-    public PointValueRestController(TemporaryResourceWebSocketHandler websocket,
+    public PointValueRestController(PointValueDao dao, TemporaryResourceWebSocketHandler websocket,
                                     PermissionService permissionService, DataPointService dataPointService, DataSourceService dataSourceService, Environment environment) {
+        this.dao = dao;
         this.dataSourceService = dataSourceService;
         this.resourceManager = new MangoTaskTemporaryResourceManager<>(permissionService, websocket, environment);
-        this.permissionService = permissionService;
         this.dataPointService = dataPointService;
     }
 
@@ -976,7 +975,7 @@ public class PointValueRestController extends AbstractMangoRestController {
 
                 @Override
                 public void raiseRecursionFailureEvent() {
-                    LOG.error("Recursive failure while setting point via REST");
+                    log.error("Recursive failure while setting point via REST");
                 }
 
             };
@@ -996,7 +995,7 @@ public class PointValueRestController extends AbstractMangoRestController {
             throw new GenericRestException(HttpStatus.NOT_ACCEPTABLE, new TranslatableMessage(
                     "common.default", "[" + xid + "]" + e.getMessage()));
         } catch (Exception e) {
-            LOG.error(e.getMessage(), e);
+            log.error(e.getMessage(), e);
             throw new ServerErrorException(e);
         }
     }

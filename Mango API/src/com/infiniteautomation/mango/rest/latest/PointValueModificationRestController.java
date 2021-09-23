@@ -83,7 +83,7 @@ public class PointValueModificationRestController {
             @AuthenticationPrincipal PermissionHolder user) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                PointValueDao pointValueDao = Common.databaseProxy.newPointValueDao();
+                PointValueDao pointValueDao = Common.getBean(PointValueDao.class);
                 Map<String, PointValueTimeImport> results = new LinkedHashMap<>();
                 stream.forEach((pvt) -> {
 
@@ -243,7 +243,7 @@ public class PointValueModificationRestController {
             @AuthenticationPrincipal PermissionHolder user) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                PointValueDao pointValueDao = Common.databaseProxy.newPointValueDao();
+                PointValueDao pointValueDao = Common.getBean(PointValueDao.class);
                 Map<String, PointValueTimeDelete> results = new HashMap<>();
 
                 stream.forEach((pvt) ->{

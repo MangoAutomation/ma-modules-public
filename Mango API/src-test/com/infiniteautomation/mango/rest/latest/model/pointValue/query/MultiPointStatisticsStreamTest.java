@@ -35,6 +35,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.infiniteautomation.mango.db.query.QueryCancelledException;
+import com.infiniteautomation.mango.pointvaluecache.PointValueCache;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueField;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueTimeJsonWriter;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueTimeStream.StreamContentType;
@@ -55,6 +56,7 @@ import com.serotonin.m2m2.MockMangoLifecycle;
 import com.serotonin.m2m2.MockRuntimeManager;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
+import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.Module;
 import com.serotonin.m2m2.rt.dataImage.AnnotatedPointValueTime;
@@ -1065,7 +1067,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
      * @throws IOException
      */
     protected JsonNode generateOutput(ZonedDateTimeStatisticsQueryInfo info, Map<Integer, DataPointVO> voMap) throws QueryCancelledException, IOException {
-        MultiPointStatisticsStream stream = new MultiPointStatisticsStream(info, voMap, Common.databaseProxy.newPointValueDao());
+        MultiPointStatisticsStream stream = new MultiPointStatisticsStream(info, voMap, Common.getBean(PointValueDao.class));
 
         JsonFactory factory = new JsonFactory();
         ByteArrayOutputStream output = new ByteArrayOutputStream();
@@ -1122,7 +1124,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
             this.initialValue = initial;
             DataPointWithEventDetectors dp = new DataPointWithEventDetectors(vo, new ArrayList<>());
             this.rt = new DataPointRT(dp, vo.getPointLocator().createRuntime(), dsVo.createDataSourceRT(), null,
-                    Common.databaseProxy.newPointValueDao(), Common.databaseProxy.getPointValueCacheDao(),
+                    Common.getBean(PointValueDao.class), Common.getBean(PointValueCache.class),
                     timer);
             runtimeManager.points.add(this.rt);
             this.nextValue = nextValue;
