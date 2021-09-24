@@ -44,7 +44,7 @@ import io.swagger.annotations.ApiParam;
 @RequestMapping("/system-settings")
 public class SystemSettingsRestController {
 
-    private SystemSettingsDao dao = SystemSettingsDao.instance;
+    private SystemSettingsDao dao = SystemSettingsDao.getInstance();
     private final PermissionService permissionService;
 
     @Autowired
@@ -67,22 +67,22 @@ public class SystemSettingsRestController {
         Object value = null;
         switch(type){
             case BOOLEAN:
-                value = SystemSettingsDao.instance.getBooleanValue(key);
+                value = SystemSettingsDao.getInstance().getBooleanValue(key);
                 break;
             case INTEGER:
-                value = SystemSettingsDao.instance.getIntValue(key);
+                value = SystemSettingsDao.getInstance().getIntValue(key);
                 break;
             case JSON:
-                value = SystemSettingsDao.instance.getAsJson(key);
+                value = SystemSettingsDao.getInstance().getAsJson(key);
                 break;
             case STRING:
             default:
                 //First get the value as a String
-                value = SystemSettingsDao.instance.getValue(key);
+                value = SystemSettingsDao.getInstance().getValue(key);
                 try{
                     //Can it potentially be converted to an export code?
                     Integer i = Integer.parseInt((String) value);
-                    value = SystemSettingsDao.instance.convertToCodeFromValue(key, i);
+                    value = SystemSettingsDao.getInstance().convertToCodeFromValue(key, i);
                     //Was it able to be converted?
                     if(value == null)
                         value = i.toString();

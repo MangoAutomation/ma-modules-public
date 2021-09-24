@@ -277,7 +277,7 @@ public class EventHandlersRestController {
         emailModel.put("renderedPointValues", new ArrayList<RenderedPointValueTime>());
         emailModel.put("renderedHtmlPointValues", new ArrayList<RenderedPointValueTime>());
         emailModel.put("img", new UsedImagesDirective());
-        emailModel.put("instanceDescription", SystemSettingsDao.instance.getValue(SystemSettingsDao.INSTANCE_DESCRIPTION));
+        emailModel.put("instanceDescription", SystemSettingsDao.getInstance().getValue(SystemSettingsDao.INSTANCE_DESCRIPTION));
 
         //Get the Work Items
         List<WorkItemInfo> highPriorityWorkItems = Common.backgroundProcessing.getHighPriorityServiceItems();

@@ -71,7 +71,7 @@ public class AsciiFileDataSourceRestController {
             throw new BadRequestException(new TranslatableMessage("dsEdit.file.ioexceptionCanonical", path));
         }
 
-        String restrictedPaths = SystemSettingsDao.instance.getValue(AsciiFileSystemSettingsDefinition.RESTRICTED_PATH);
+        String restrictedPaths = SystemSettingsDao.getInstance().getValue(AsciiFileSystemSettingsDefinition.RESTRICTED_PATH);
         if(!StringUtils.isEmpty(restrictedPaths))
             for(String p : restrictedPaths.split(";"))
                 if(path.startsWith(p)) {

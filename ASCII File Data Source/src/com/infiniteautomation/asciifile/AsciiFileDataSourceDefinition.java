@@ -55,7 +55,7 @@ public class AsciiFileDataSourceDefinition extends PollingDataSourceDefinition<A
                 response.addContextualMessage("filePath", "dsEdit.file.ioexceptionCanonical", vo.getFilePath());
                 return;
             }
-            String restrictedPaths = SystemSettingsDao.instance.getValue(AsciiFileSystemSettingsDefinition.RESTRICTED_PATH);
+            String restrictedPaths = SystemSettingsDao.getInstance().getValue(AsciiFileSystemSettingsDefinition.RESTRICTED_PATH);
             if(!StringUtils.isEmpty(restrictedPaths))
                 for(String rPath : restrictedPaths.split(";")) {
                     if(vo.getFilePath().startsWith(rPath))

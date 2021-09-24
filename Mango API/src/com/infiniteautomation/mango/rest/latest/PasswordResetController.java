@@ -173,7 +173,7 @@ public class PasswordResetController {
 
         @Override
         public void validate(ProcessResult response) {
-            SystemSettingsDao.instance.validate(systemSettings, response, Common.getUser());
+            SystemSettingsDao.getInstance().validate(systemSettings, response, Common.getUser());
         }
 
         @Override

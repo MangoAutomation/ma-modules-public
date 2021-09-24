@@ -193,9 +193,9 @@ public class ModulesRestController {
 
         CoreModuleModel coreModel = new CoreModuleModel(ModuleRegistry.getModule(ModuleRegistry.CORE_MODULE_NAME));
         coreModel.setGuid(Providers.get(ICoreLicense.class).getGuid());
-        coreModel.setInstanceDescription(SystemSettingsDao.instance.getValue(SystemSettingsDao.INSTANCE_DESCRIPTION));
+        coreModel.setInstanceDescription(SystemSettingsDao.getInstance().getValue(SystemSettingsDao.INSTANCE_DESCRIPTION));
         coreModel.setDistributor(Common.envProps.getString("distributor"));
-        coreModel.setUpgradeVersionState(SystemSettingsDao.instance.getIntValue(SystemSettingsDao.UPGRADE_VERSION_STATE));
+        coreModel.setUpgradeVersionState(SystemSettingsDao.getInstance().getIntValue(SystemSettingsDao.UPGRADE_VERSION_STATE));
         coreModel.setStoreUrl(Common.envProps.getString("store.url"));
 
         MappingJacksonValue jacksonValue = new MappingJacksonValue(coreModel);
@@ -218,9 +218,9 @@ public class ModulesRestController {
             if(module instanceof CoreModule) {
                 CoreModuleModel coreModel = new CoreModuleModel(ModuleRegistry.getModule(ModuleRegistry.CORE_MODULE_NAME));
                 coreModel.setGuid(Providers.get(ICoreLicense.class).getGuid());
-                coreModel.setInstanceDescription(SystemSettingsDao.instance.getValue(SystemSettingsDao.INSTANCE_DESCRIPTION));
+                coreModel.setInstanceDescription(SystemSettingsDao.getInstance().getValue(SystemSettingsDao.INSTANCE_DESCRIPTION));
                 coreModel.setDistributor(Common.envProps.getString("distributor"));
-                coreModel.setUpgradeVersionState(SystemSettingsDao.instance.getIntValue(SystemSettingsDao.UPGRADE_VERSION_STATE));
+                coreModel.setUpgradeVersionState(SystemSettingsDao.getInstance().getIntValue(SystemSettingsDao.UPGRADE_VERSION_STATE));
                 coreModel.setStoreUrl(Common.envProps.getString("store.url"));
                 models.add(coreModel);
             }else {
@@ -498,7 +498,7 @@ public class ModulesRestController {
                 jsonModules.put(module.getName(), module.getVersion().toString());
 
         String storeUrl = Common.envProps.getString("store.url");
-        int upgradeVersionState = SystemSettingsDao.instance.getIntValue(SystemSettingsDao.UPGRADE_VERSION_STATE);
+        int upgradeVersionState = SystemSettingsDao.getInstance().getIntValue(SystemSettingsDao.UPGRADE_VERSION_STATE);
         int currentVersionState = UpgradeVersionState.DEVELOPMENT;
         Properties props = new Properties();
         File propFile = Common.MA_HOME_PATH.resolve("release.properties").toFile();
@@ -526,7 +526,7 @@ public class ModulesRestController {
 
         return new ResponseEntity<>(new UpdateLicensePayloadModel(
                 Providers.get(ICoreLicense.class).getGuid(),
-                SystemSettingsDao.instance.getValue(SystemSettingsDao.INSTANCE_DESCRIPTION),
+                SystemSettingsDao.getInstance().getValue(SystemSettingsDao.INSTANCE_DESCRIPTION),
                 Common.envProps.getString("distributor"),
                 jsonModules, storeUrl, upgradeVersionState, currentVersionState),
                 responseHeaders, HttpStatus.OK);
@@ -569,9 +569,9 @@ public class ModulesRestController {
                 // wait for the
                 // background processes to finish though.
                 BackupWorkItem.queueBackup(
-                        SystemSettingsDao.instance.getValue(SystemSettingsDao.BACKUP_FILE_LOCATION));
+                        SystemSettingsDao.getInstance().getValue(SystemSettingsDao.BACKUP_FILE_LOCATION));
                 DatabaseBackupWorkItem.queueBackup(SystemSettingsDao
-                        .instance.getValue(SystemSettingsDao.DATABASE_BACKUP_FILE_LOCATION));
+                        .getInstance().getValue(SystemSettingsDao.DATABASE_BACKUP_FILE_LOCATION));
             }
 
             List<MultipartFile> files = new ArrayList<>();

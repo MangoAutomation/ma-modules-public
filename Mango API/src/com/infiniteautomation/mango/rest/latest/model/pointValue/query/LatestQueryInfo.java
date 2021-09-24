@@ -73,7 +73,7 @@ public class LatestQueryInfo {
         if (from != null)
             this.from = from.withZoneSameInstant(zoneId);
         else {
-            long current = Common.timer.currentTimeMillis() + SystemSettingsDao.instance.getFutureDateLimit();
+            long current = Common.timer.currentTimeMillis() + SystemSettingsDao.getInstance().getFutureDateLimit();
             this.from = ZonedDateTime.ofInstant(Instant.ofEpochMilli(current), zoneId);
         }
 

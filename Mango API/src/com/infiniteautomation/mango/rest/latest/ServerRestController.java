@@ -333,7 +333,7 @@ public class ServerRestController extends AbstractMangoRestController {
     public ResponseEntity<Map<String, String>> getMangoInfo(@AuthenticationPrincipal PermissionHolder user){
         Map<String, String> mangoInfo = new HashMap<>();
 
-        mangoInfo.put(SystemSettingsDao.INSTANCE_DESCRIPTION, SystemSettingsDao.instance.getValue(SystemSettingsDao.INSTANCE_DESCRIPTION));
+        mangoInfo.put(SystemSettingsDao.INSTANCE_DESCRIPTION, SystemSettingsDao.getInstance().getValue(SystemSettingsDao.INSTANCE_DESCRIPTION));
         mangoInfo.put("guid", Providers.get(ICoreLicense.class).getGuid());
         mangoInfo.put("coreVersion", Common.getVersion().toString());
         mangoInfo.put("coreVersionNormalized", Common.getVersion().getNormalVersion());
@@ -358,9 +358,9 @@ public class ServerRestController extends AbstractMangoRestController {
         //Check to see if the versions match, if so this request is invalid as it has already been confirmed
 
         if (agree) {
-            SystemSettingsDao.instance.setIntValue(SystemSettingsDao.LICENSE_AGREEMENT_VERSION, Common.getLicenseAgreementVersion());
+            SystemSettingsDao.getInstance().setIntValue(SystemSettingsDao.LICENSE_AGREEMENT_VERSION, Common.getLicenseAgreementVersion());
         } else {
-            if (Common.getLicenseAgreementVersion() == SystemSettingsDao.instance.getIntValue(SystemSettingsDao.LICENSE_AGREEMENT_VERSION))
+            if (Common.getLicenseAgreementVersion() == SystemSettingsDao.getInstance().getIntValue(SystemSettingsDao.LICENSE_AGREEMENT_VERSION))
                 throw new BadRequestException(new TranslatableMessage("systemSettings.licenseAlreadyAgreed"));
 
             //Start shutdown timer
@@ -373,7 +373,7 @@ public class ServerRestController extends AbstractMangoRestController {
     @RequestMapping(method = {RequestMethod.GET}, value = "/license-agreement-version")
     public Integer getLicenseAgreement(
             @AuthenticationPrincipal PermissionHolder user){
-        return SystemSettingsDao.instance.getIntValue(SystemSettingsDao.LICENSE_AGREEMENT_VERSION);
+        return SystemSettingsDao.getInstance().getIntValue(SystemSettingsDao.LICENSE_AGREEMENT_VERSION);
     }
 
     @ApiOperation(value = "Send a client error / stack trace to the backend for logging")
