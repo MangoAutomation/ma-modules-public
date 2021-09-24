@@ -3,6 +3,10 @@
  */
 package com.serotonin.m2m2.maintenanceEvents.upgrade;
 
+import static com.infiniteautomation.mango.db.tables.MintermsRoles.MINTERMS_ROLES;
+import static com.infiniteautomation.mango.db.tables.Permissions.PERMISSIONS;
+import static com.infiniteautomation.mango.db.tables.PermissionsMinterms.PERMISSIONS_MINTERMS;
+
 import java.io.OutputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -31,10 +35,6 @@ import com.serotonin.m2m2.db.upgrade.DBUpgrade;
 import com.serotonin.m2m2.db.upgrade.PermissionMigration;
 import com.serotonin.m2m2.maintenanceEvents.MaintenanceEventType;
 import com.serotonin.m2m2.vo.role.Role;
-
-import static com.infiniteautomation.mango.db.tables.MintermsRoles.MINTERMS_ROLES;
-import static com.infiniteautomation.mango.db.tables.Permissions.PERMISSIONS;
-import static com.infiniteautomation.mango.db.tables.PermissionsMinterms.PERMISSIONS_MINTERMS;
 
 /**
  *
@@ -76,7 +76,7 @@ public class Upgrade4 extends DBUpgrade implements PermissionMigration {
                     //Build the permission for this event
                     Set<Role> allRequired = new HashSet<>();
 
-                    List<Integer> dataPointIds = queryForList(SELECT_POINT_IDS, new Object[] {k}, Integer.class);
+                    List<Integer> dataPointIds = ejt.queryForList(SELECT_POINT_IDS, new Object[] {k}, Integer.class);
                     for(Integer dpId : dataPointIds) {
                         MangoPermission dataPointPermission = dataPointPermissionMap.computeIfAbsent(dpId, (pointId) -> {
                             Integer id = ejt.queryForInt("SELECT readPermissionId from dataPoints where id=?", new Object[] {pointId}, Common.NEW_ID);
@@ -97,7 +97,7 @@ public class Upgrade4 extends DBUpgrade implements PermissionMigration {
                         dataPointPermission.getRoles().stream().forEach(minterm -> allRequired.addAll(minterm));
                     }
 
-                    List<Integer> dataSourceIds = queryForList(SELECT_DATA_SOURCE_IDS, new Object[] {k}, Integer.class);
+                    List<Integer> dataSourceIds = ejt.queryForList(SELECT_DATA_SOURCE_IDS, new Object[] {k}, Integer.class);
                     for(Integer dsId : dataSourceIds) {
                         MangoPermission dataSourcePermission = dataSourcePermissionMap.computeIfAbsent(dsId, (sourceId) -> {
                             Integer id = ejt.queryForInt("SELECT readPermissionId from dataSources where id=?", new Object[] {sourceId}, Common.NEW_ID);
@@ -178,7 +178,7 @@ public class Upgrade4 extends DBUpgrade implements PermissionMigration {
         List<Object> arguments = select.getBindValues();
         Object[] argumentsArray = arguments.toArray(new Object[arguments.size()]);
 
-        return this.query(sql, argumentsArray, new ResultSetExtractor<MangoPermission>() {
+        return ejt.query(sql, argumentsArray, new ResultSetExtractor<MangoPermission>() {
 
             private int roleIdIndex = 1;
             private int roleXidIndex = 2;
