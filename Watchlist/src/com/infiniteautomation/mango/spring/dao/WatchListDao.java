@@ -13,8 +13,6 @@ import java.util.function.Consumer;
 import org.jooq.Field;
 import org.jooq.Record;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.stereotype.Repository;
 
@@ -25,11 +23,9 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.infiniteautomation.mango.db.tables.DataPoints;
 import com.infiniteautomation.mango.permission.MangoPermission;
-import com.infiniteautomation.mango.spring.MangoRuntimeContextConfiguration;
-import com.infiniteautomation.mango.spring.service.PermissionService;
+import com.infiniteautomation.mango.spring.DaoDependencies;
 import com.infiniteautomation.mango.util.LazyInitializer;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.Common;
@@ -61,12 +57,9 @@ public class WatchListDao extends AbstractVoDao<WatchListVO, WatchListsRecord, W
 
     @Autowired
     private WatchListDao(DataPointDao dataPointDao,
-                         @Qualifier(MangoRuntimeContextConfiguration.DAO_OBJECT_MAPPER_NAME) ObjectMapper mapper,
-                         ApplicationEventPublisher publisher,
-                         PermissionService permissionService) {
-        super(AuditEvent.TYPE_NAME, WatchLists.WATCH_LISTS,
-                new TranslatableMessage("internal.monitor.WATCHLIST_COUNT"),
-                mapper, publisher, permissionService);
+                         DaoDependencies dependencies) {
+        super(dependencies, AuditEvent.TYPE_NAME, WatchLists.WATCH_LISTS,
+                new TranslatableMessage("internal.monitor.WATCHLIST_COUNT"));
         this.dataPointDao = dataPointDao;
         this.dataPoints = DataPoints.DATA_POINTS;
         this.watchListPoints = WatchListPoints.WATCH_LIST_POINTS;

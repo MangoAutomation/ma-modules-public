@@ -13,18 +13,14 @@ import org.jooq.Record1;
 import org.jooq.Select;
 import org.jooq.impl.DSL;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.stereotype.Repository;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.infiniteautomation.mango.db.tables.DataPoints;
 import com.infiniteautomation.mango.db.tables.DataSources;
 import com.infiniteautomation.mango.permission.MangoPermission;
-import com.infiniteautomation.mango.spring.MangoRuntimeContextConfiguration;
-import com.infiniteautomation.mango.spring.service.PermissionService;
+import com.infiniteautomation.mango.spring.DaoDependencies;
 import com.infiniteautomation.mango.util.LazyInitSupplier;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.Common;
@@ -61,12 +57,9 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
     @Autowired
     private MaintenanceEventDao(
             DataPointDao dataPointDao, DataSourceDao dataSourceDao,
-            @Qualifier(MangoRuntimeContextConfiguration.DAO_OBJECT_MAPPER_NAME) ObjectMapper mapper,
-            ApplicationEventPublisher publisher,
-            PermissionService permissionService) {
-        super(AuditEvent.TYPE_NAME,
-                MaintenanceEvents.MAINTENANCE_EVENTS, new TranslatableMessage("header.maintenanceEvents"),
-                mapper, publisher, permissionService);
+            DaoDependencies dependencies) {
+        super(dependencies, AuditEvent.TYPE_NAME,
+                MaintenanceEvents.MAINTENANCE_EVENTS, new TranslatableMessage("header.maintenanceEvents"));
         this.dataPointDao = dataPointDao;
         this.dataSourceDao = dataSourceDao;
 
