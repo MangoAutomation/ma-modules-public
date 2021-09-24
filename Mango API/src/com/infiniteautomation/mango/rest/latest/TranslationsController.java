@@ -142,6 +142,7 @@ public class TranslationsController {
     @RequestMapping(method = RequestMethod.POST, value = "/clear-cache")
     public void clearCache() {
         Translations.clearCache();
+        Common.clearTranslations();
     }
 
     /**
