@@ -12,30 +12,26 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.sql.DataSource;
-
-import org.jooq.DSLContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.StatementCallback;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.PlatformTransactionManager;
 
 import com.infiniteautomation.mango.rest.latest.SqlQueryResult;
-import com.serotonin.db.DaoUtils;
 import com.serotonin.db.spring.ExtendedJdbcTemplate;
-import com.serotonin.m2m2.db.DatabaseType;
 import com.serotonin.util.SerializationHelper;
 
 @Component
-public class SqlConsole extends DaoUtils {
+public class SqlConsole {
+
+    private final ExtendedJdbcTemplate jdbcTemplate;
 
     @Autowired
-    public SqlConsole(DataSource dataSource, PlatformTransactionManager transactionManager, DatabaseType databaseType, DSLContext context, ExtendedJdbcTemplate jdbcTemplate) {
-        super(dataSource, transactionManager, databaseType, context, jdbcTemplate);
+    public SqlConsole(ExtendedJdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     public SqlQueryResult query(String sqlString, String serializedDataMsg) {
-        return this.ejt.execute((StatementCallback<SqlQueryResult>) stmt -> {
+        return jdbcTemplate.execute((StatementCallback<SqlQueryResult>) stmt -> {
             ResultSet rs = stmt.executeQuery(sqlString);
 
             ResultSetMetaData meta = rs.getMetaData();
