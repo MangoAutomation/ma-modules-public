@@ -22,6 +22,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 import com.infiniteautomation.mango.rest.latest.SqlQueryResult;
 import com.serotonin.db.DaoUtils;
+import com.serotonin.db.spring.ExtendedJdbcTemplate;
 import com.serotonin.m2m2.db.DatabaseType;
 import com.serotonin.util.SerializationHelper;
 
@@ -29,8 +30,8 @@ import com.serotonin.util.SerializationHelper;
 public class SqlConsole extends DaoUtils {
 
     @Autowired
-    public SqlConsole(DataSource dataSource, PlatformTransactionManager transactionManager, DatabaseType databaseType, DSLContext context) {
-        super(dataSource, transactionManager, databaseType, context);
+    public SqlConsole(DataSource dataSource, PlatformTransactionManager transactionManager, DatabaseType databaseType, DSLContext context, ExtendedJdbcTemplate jdbcTemplate) {
+        super(dataSource, transactionManager, databaseType, context, jdbcTemplate);
     }
 
     public SqlQueryResult query(String sqlString, String serializedDataMsg) {

@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.serotonin.db.spring.ExtendedJdbcTemplate;
 import com.serotonin.m2m2.db.DatabaseProxy;
 import com.serotonin.m2m2.db.dao.SqlConsole;
 import com.serotonin.m2m2.vo.User;
@@ -114,9 +113,8 @@ public class SqlConsoleRestController {
             @ApiParam(value="User", required=true)
             @AuthenticationPrincipal User user,
             UriComponentsBuilder builder) {
-        ExtendedJdbcTemplate ejt = new ExtendedJdbcTemplate();
-        ejt.setDataSource(databaseProxy.getDataSource());
-        return ResponseEntity.ok(ejt.update(update));
+
+        return ResponseEntity.ok(databaseProxy.getJdbcTemplate().update(update));
     }
 
     /**
