@@ -14,7 +14,7 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
-import org.jooq.Configuration;
+import org.jooq.DSLContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.StatementCallback;
 import org.springframework.stereotype.Component;
@@ -29,8 +29,8 @@ import com.serotonin.util.SerializationHelper;
 public class SqlConsole extends DaoUtils {
 
     @Autowired
-    public SqlConsole(DataSource dataSource, PlatformTransactionManager transactionManager, DatabaseType databaseType, Configuration configuration) {
-        super(dataSource, transactionManager, databaseType, configuration);
+    public SqlConsole(DataSource dataSource, PlatformTransactionManager transactionManager, DatabaseType databaseType, DSLContext context) {
+        super(dataSource, transactionManager, databaseType, context);
     }
 
     public SqlQueryResult query(String sqlString, String serializedDataMsg) {
