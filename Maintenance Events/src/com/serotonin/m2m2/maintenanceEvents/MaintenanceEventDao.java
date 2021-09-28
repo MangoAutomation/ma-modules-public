@@ -115,8 +115,8 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
 
     @Override
     public void loadRelationalData(MaintenanceEventVO vo) {
-        vo.setDataPoints(queryForList("SELECT dataPointId FROM maintenanceEventDataPoints WHERE maintenanceEventId=?", new Object[] {vo.getId()}, Integer.class));
-        vo.setDataSources(queryForList("SELECT dataSourceId FROM maintenanceEventDataSources WHERE maintenanceEventId=?", new Object[] {vo.getId()}, Integer.class));
+        vo.setDataPoints(ejt.queryForList("SELECT dataPointId FROM maintenanceEventDataPoints WHERE maintenanceEventId=?", Integer.class, vo.getId()));
+        vo.setDataSources(ejt.queryForList("SELECT dataSourceId FROM maintenanceEventDataSources WHERE maintenanceEventId=?", Integer.class, vo.getId()));
         //Populate permissions
         vo.setTogglePermission(permissionService.get(vo.getTogglePermission().getId()));
     }
