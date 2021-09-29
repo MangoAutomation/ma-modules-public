@@ -12,12 +12,12 @@ import angular from 'angular';
  * @description Displays a form to create/edit maintenance events
  */
 
-
- const $inject = Object.freeze(['$rootScope', '$scope', 'maDialogHelper', 'maDataSource', 'maPoint', 'maMaintenanceEvent']);
+const $inject = Object.freeze(['$rootScope', '$scope', 'maDialogHelper', 'maDataSource', 'maPoint', 'maMaintenanceEvent']);
 class MaintenanceEventsSetupController {
     static get $inject() { return $inject; }
+
     static get $$ngIsClass() { return true; }
-    
+
     constructor($rootScope, $scope, maDialogHelper, maDataSource, maPoint, maMaintenanceEvent) {
         this.$rootScope = $rootScope;
         this.$scope = $scope;
@@ -29,7 +29,7 @@ class MaintenanceEventsSetupController {
         this.dataSources = [];
         this.dataPoints = [];
     }
-    
+
     $onInit() {
         this.ngModelCtrl.$render = () => this.render();
     }
@@ -37,29 +37,33 @@ class MaintenanceEventsSetupController {
     $onChanges(changes) {
         if (changes.selectedItem && this.selectedItem && this.selectedEvent) {
             this.validationMessages = null;
-            this.getDataSourcesByIds(this.selectedEvent.dataSources);
-            this.getDataPointsByIds(this.selectedEvent.dataPoints);
 
-            this.selectedEvent.getByXid().then(response => {
-                const items = response.data.items;
-                if (items.length) {
-                    this.activeEvent = items[items.length - 1].active;
-                    return this.activeEvent;
-                }
-            });
+            if (this.selectedEvent.isNew()) {
+                this.dataSources = [];
+                this.dataPoints = [];
+                this.activeEvent = false;
+            } else {
+                this.getDataSourcesByIds(this.selectedEvent.dataSources);
+                this.getDataPointsByIds(this.selectedEvent.dataPoints);
+
+                this.selectedEvent.getByXid().then((response) => {
+                    const { items } = response.data;
+                    if (items.length) {
+                        this.activeEvent = items[items.length - 1].active;
+                    }
+                });
+            }
         }
-        
     }
-    
+
     getDataSourcesByIds(ids) {
         if (!ids || ids.length === 0) {
             this.dataSources = [];
             return;
         }
 
-        let rqlQuery = 'in(xid,' + ids.join(',') +')';
-
-        this.maDataSource.query({rqlQuery}).$promise.then(dataSources => {
+        const rqlQuery = `in(xid,${ids.join(',')})`;
+        this.maDataSource.query({ rqlQuery }).$promise.then((dataSources) => {
             this.dataSources = dataSources;
         });
     }
@@ -70,13 +74,12 @@ class MaintenanceEventsSetupController {
             return;
         }
 
-        let rqlQuery = 'in(xid,' + ids.join(',') +')';
-
-        this.maPoint.query({rqlQuery}).$promise.then(points => {
+        const rqlQuery = `in(xid,${ids.join(',')})`;
+        this.maPoint.query({ rqlQuery }).$promise.then((points) => {
             this.dataPoints = points;
         });
     }
-    
+
     setViewValue() {
         this.ngModelCtrl.$setViewValue(this.selectedEvent);
     }
@@ -86,21 +89,21 @@ class MaintenanceEventsSetupController {
     }
 
     toggleEvent() {
-        this.selectedEvent.toggleActive().then(active => {
+        this.selectedEvent.toggleActive().then((active) => {
             this.activeEvent = active;
         });
     }
 
     addDataSource() {
-        if (this.dataSources.filter(t => t.xid === this.selectedDataSource.xid).length === 0) {
-            this.dataSources.push(this.selectedDataSource); 
+        if (this.dataSources.filter((t) => t.xid === this.selectedDataSource.xid).length === 0) {
+            this.dataSources.push(this.selectedDataSource);
         }
         this.selectedDataSource = null;
     }
 
     addDataPoint() {
-        if (this.dataPoints.filter(t => t.xid === this.selectedDataPoint.xid).length === 0) {
-            this.dataPoints.push(this.selectedDataPoint); 
+        if (this.dataPoints.filter((t) => t.xid === this.selectedDataPoint.xid).length === 0) {
+            this.dataPoints.push(this.selectedDataPoint);
         }
         this.selectedDataPoint = null;
     }
@@ -111,8 +114,7 @@ class MaintenanceEventsSetupController {
 
         this.selectedEvent.save().then(() => {
             this.updateItem();
-            this.maDialogHelper.toastOptions({textTr: ['maintenanceEvents.meSaved']});
-
+            this.maDialogHelper.toastOptions({ textTr: ['maintenanceEvents.meSaved'] });
         }, (error) => {
             this.validationMessages = error.data.result.messages;
 
@@ -124,55 +126,45 @@ class MaintenanceEventsSetupController {
         });
     }
 
-    delete() {
+    delete(event) {
         this.maDialogHelper.confirm(event, ['maintenanceEvents.confirmDelete']).then(() => {
-            this.selectedEvent.delete().then(() => {      
-
+            this.selectedEvent.delete().then(() => {
                 this.dataSources = [];
                 this.dataPoints = [];
                 this.deleteItem();
-                this.maDialogHelper.toastOptions({textTr: ['maintenanceEvents.meDeleted']});
-
+                this.maDialogHelper.toastOptions({ textTr: ['maintenanceEvents.meDeleted'] });
             }, (error) => {
-
                 this.maDialogHelper.toastOptions({
                     textTr: ['maintenanceEvents.meNotDeleted'],
                     classes: 'md-warn',
                     hideDelay: 5000
                 });
-
             });
-        }, angular.noop);  
+        }, angular.noop);
     }
 
     getValidationMessage(property) {
         if (this.validationMessages) {
-            return this.validationMessages.filter(item => item.property === property)[0];
+            return this.validationMessages.filter((item) => item.property === property)[0];
         }
     }
 
-    getXids (dataArray) {
-        let ids = [];
-
-        dataArray.map(item => {
-            ids.push(item.xid);
-        });
-
-        return ids;
+    getXids(dataArray) {
+        return dataArray.map((item) => item.xid);
     }
 
     updateItem() {
         if (typeof this.itemUpdated === 'function') {
             const copyOfItem = this.selectedEvent.copy();
-            this.itemUpdated({$item: copyOfItem});
+            this.itemUpdated({ $item: copyOfItem });
         }
     }
 
     deleteItem() {
         if (typeof this.itemDeleted === 'function') {
             const copyOfItem = this.selectedEvent.copy();
-            this.itemDeleted({$item: copyOfItem});
-        } 
+            this.itemDeleted({ $item: copyOfItem });
+        }
     }
 }
 
