@@ -78,8 +78,8 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
     }
 
     @Override
-    public void row(IdPointValueTime value, int index) throws QueryCancelledException{
-        processRow(value, index, false, false, false);
+    public void row(IdPointValueTime value) {
+        processRow(value, false, false, false);
     }
 
     @Override
@@ -104,10 +104,10 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
     /**
      * Common row processing logic
      */
-    protected void processRow(IdPointValueTime value, int index, boolean firstBookend, boolean lastBookend, boolean cached) throws QueryCancelledException {
+    protected void processRow(IdPointValueTime value, boolean firstBookend, boolean lastBookend, boolean cached) throws QueryCancelledException {
         try {
             if(info.isUseCache() != PointValueTimeCacheControl.NONE && !cached)
-                if(!processValueThroughCache(value, index, firstBookend, lastBookend))
+                if(!processValueThroughCache(value, firstBookend, lastBookend))
                     return;
 
             //Don't limit bookends and don't virtually limit non-cached requests
@@ -164,7 +164,7 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
      *   this should be called before processing this value
      * @return true to continue to process the incoming value, false if it was a bookend that was replaced via the cache
      */
-    protected boolean processValueThroughCache(IdPointValueTime value, int index, boolean firstBookend, boolean lastBookend) throws QueryCancelledException {
+    protected boolean processValueThroughCache(IdPointValueTime value, boolean firstBookend, boolean lastBookend) throws QueryCancelledException {
         List<IdPointValueTime> pointCache = this.cache.get(value.getSeriesId());
         if(pointCache != null) {
             ListIterator<IdPointValueTime> it = pointCache.listIterator();
@@ -172,11 +172,11 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
                 IdPointValueTime pvt = it.next();
                 if(pvt.getTime() > value.getTime()) {
                     //Can't be a bookend
-                    processRow(pvt, index, false, false, true);
+                    processRow(pvt, false, false, true);
                     it.remove();
                 }else if(pvt.getTime() == value.getTime()) {
                     //Could be a bookend
-                    processRow(pvt, index, firstBookend, lastBookend, true);
+                    processRow(pvt, firstBookend, lastBookend, true);
                     it.remove();
                     if(pointCache.size() == 0)
                         this.cache.remove(value.getSeriesId());
@@ -261,13 +261,11 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
     protected void processCacheOnly() throws QueryCancelledException {
         //Performance enhancement to return data within cache only
         Iterator<Integer> it = voMap.keySet().iterator();
-        int index = 0;
         while(it.hasNext()) {
             List<IdPointValueTime> values = cache.get(it.next());
             int limitCount = 0;
             for(IdPointValueTime value : values) {
-                processRow(value, index, false, false, true);
-                index++;
+                processRow(value, false, false, true);
                 limitCount++;
                 if(info.getLimit() != null && limitCount >= info.getLimit())
                     break;

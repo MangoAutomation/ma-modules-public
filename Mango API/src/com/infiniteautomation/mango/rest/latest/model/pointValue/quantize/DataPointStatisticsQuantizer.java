@@ -34,26 +34,26 @@ public abstract class DataPointStatisticsQuantizer<T extends StatisticsGenerator
 
     public void fastForward(long time) throws QueryCancelledException {
         if(!open) {
-            this.quantizer.firstValue(null, 0, true);
+            this.quantizer.firstValue(null, true);
             this.open = true;
         }
         this.quantizer.fastForward(time);
     }
 
     @Override
-    public void firstValue(IdPointValueTime value, int index, boolean bookend) throws QueryCancelledException {
-        quantizer.firstValue(value, index, bookend);
+    public void firstValue(IdPointValueTime value, boolean bookend) {
+        quantizer.firstValue(value, bookend);
         open = true;
     }
 
     @Override
-    public void row(IdPointValueTime value, int index) throws QueryCancelledException {
-        quantizer.row(value, index);
+    public void row(IdPointValueTime value) {
+        quantizer.row(value);
     }
 
     @Override
-    public void lastValue(IdPointValueTime value, int index, boolean bookend) throws QueryCancelledException {
-        quantizer.lastValue(value, index, bookend);
+    public void lastValue(IdPointValueTime value, boolean bookend) {
+        quantizer.lastValue(value, bookend);
     }
 
     @Override

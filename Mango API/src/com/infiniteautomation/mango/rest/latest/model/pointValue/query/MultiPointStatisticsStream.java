@@ -45,13 +45,13 @@ public class MultiPointStatisticsStream extends MultiPointTimeRangeDatabaseStrea
     }
 
     @Override
-    protected void processRow(IdPointValueTime value, int index, boolean firstBookend,
+    protected void processRow(IdPointValueTime value, boolean firstBookend,
             boolean lastBookend, boolean cached) throws QueryCancelledException {
 
         try {
             final DataPointVO vo = voMap.get(value.getSeriesId());
             if(info.isUseCache() != PointValueTimeCacheControl.NONE && !cached)
-                if(!processValueThroughCache(value, index, firstBookend, lastBookend))
+                if(!processValueThroughCache(value, firstBookend, lastBookend))
                     return;
             StatisticsGenerator generator = statsMap.compute(value.getSeriesId(), (k, v) -> {
                 if(v == null) {

@@ -162,43 +162,43 @@ public class MultiDataPointDefaultRollupStatisticsQuantizerStream <T, INFO exten
     }
 
     @Override
-    public void firstValue(IdPointValueTime value, int index, boolean bookend) throws QueryCancelledException {
+    public void firstValue(IdPointValueTime value, boolean bookend) {
         try {
             if(!useSimplify) {
-                super.firstValue(value, index, bookend);
+                super.firstValue(value, bookend);
                 return;
             }
             DataPointStatisticsQuantizer<?> quantizer = this.quantizerMap.get(value.getSeriesId());
             updateQuantizers(value);
-            quantizer.firstValue(value, index, bookend);
+            quantizer.firstValue(value, bookend);
         }catch(IOException e) {
             throw new QueryCancelledException(e);
         }
     }
 
     @Override
-    public void row(IdPointValueTime value, int index) throws QueryCancelledException {
+    public void row(IdPointValueTime value) {
         try {
             if(!useSimplify) {
-                super.row(value, index);
+                super.row(value);
                 return;
             }
             updateQuantizers(value);
             DataPointStatisticsQuantizer<?> quantizer = this.quantizerMap.get(value.getSeriesId());
-            quantizer.row(value, index);
+            quantizer.row(value);
         }catch(IOException e) {
             throw new QueryCancelledException(e);
         }
     }
 
     @Override
-    public void lastValue(IdPointValueTime value, int index, boolean bookend) throws QueryCancelledException {
+    public void lastValue(IdPointValueTime value, boolean bookend) {
         if(!useSimplify) {
-            super.lastValue(value, index, bookend);
+            super.lastValue(value, bookend);
             return;
         }
         DataPointStatisticsQuantizer<?> quantizer = this.quantizerMap.get(value.getSeriesId());
-        quantizer.lastValue(value, index, bookend);
+        quantizer.lastValue(value, bookend);
     }
 
     @Override
