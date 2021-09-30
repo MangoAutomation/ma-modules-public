@@ -68,7 +68,13 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
             processCacheOnly();
             return;
         }
-        this.dao.getLatestPointValues(new ArrayList<DataPointVO>(voMap.values()), info.getFromMillis(), !info.isSingleArray(), info.getLimit(), this);
+
+        if (info.isSingleArray()) {
+            this.dao.getLatestPointValuesCombined(new ArrayList<>(voMap.values()), info.getFromMillis(), info.getLimit(), this);
+        } else {
+            this.dao.getLatestPointValuesPerPoint(new ArrayList<>(voMap.values()), info.getFromMillis(), info.getLimit(), this);
+        }
+
     }
 
     @Override
@@ -97,10 +103,6 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
 
     /**
      * Common row processing logic
-     * @param value
-     * @param index
-     * @param bookend
-     * @throws IOException
      */
     protected void processRow(IdPointValueTime value, int index, boolean firstBookend, boolean lastBookend, boolean cached) throws QueryCancelledException {
         try {
@@ -160,10 +162,7 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
      * Write out any cached values that would be equal to or between the time of the incomming
      *   point value and the next one to be returned by the query.
      *   this should be called before processing this value
-     * @param value
-     * @param bookend
      * @return true to continue to process the incoming value, false if it was a bookend that was replaced via the cache
-     * @throws IOException
      */
     protected boolean processValueThroughCache(IdPointValueTime value, int index, boolean firstBookend, boolean lastBookend) throws QueryCancelledException {
         List<IdPointValueTime> pointCache = this.cache.get(value.getSeriesId());
@@ -224,9 +223,6 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
     }
     /**
      * Build the cache based on our Query Info
-     * @param voMap
-     * @param limit
-     * @return
      */
     protected Map<Integer, List<IdPointValueTime>> buildCache() {
         Map<Integer, List<IdPointValueTime>> map = new HashMap<>();
