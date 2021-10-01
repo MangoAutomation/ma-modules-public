@@ -45,7 +45,7 @@ public class MultiPointTimeRangeDatabaseStream<T, INFO extends ZonedDateTimeRang
         if(info.isBookend())
             this.dao.wideBookendQuery(new ArrayList<DataPointVO>(voMap.values()), info.getFromMillis(), info.getToMillis(), !info.isSingleArray(), info.getLimit(), this);
         else
-            this.dao.getPointValuesBetween(new ArrayList<DataPointVO>(voMap.values()), info.getFromMillis(), info.getToMillis(), !info.isSingleArray(), info.getLimit(), this);
+            this.dao.getPointValuesBetweenPerPoint(new ArrayList<DataPointVO>(voMap.values()), info.getFromMillis(), info.getToMillis(), info.getLimit(), this);
     }
 
     @Override
