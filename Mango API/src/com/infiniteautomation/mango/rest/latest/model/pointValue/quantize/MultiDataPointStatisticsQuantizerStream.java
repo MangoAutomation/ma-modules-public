@@ -63,7 +63,7 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
     }
 
     @Override
-    public void row(IdPointValueTime value) {
+    public void accept(IdPointValueTime value) {
         try {
             updateQuantizers(value);
 
@@ -82,7 +82,7 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
                             //No values in this sample period
                             q.fastForward(lastTime);
                         }else {
-                            q.row(row.value);
+                            q.accept(row.value);
                         }
                     }
                     currentValueTimeMap.put(value.getSeriesId(), new IdPointValueTimeRow(value));
@@ -94,7 +94,7 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
                 lastTime = value.getTime();
             }else {
                 DataPointStatisticsQuantizer<?> quantizer = this.quantizerMap.get(value.getSeriesId());
-                quantizer.row(value);
+                quantizer.accept(value);
             }
         }catch(IOException e) {
             throw new QueryCancelledException(e);
@@ -107,7 +107,7 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
             DataPointStatisticsQuantizer<?> quantizer = this.quantizerMap.get(value.getSeriesId());
             IdPointValueTimeRow row = this.currentValueTimeMap.remove(value.getSeriesId());
             if(row != null) {
-                quantizer.row(row.value);
+                quantizer.accept(row.value);
             }
             quantizer.lastValue(value, bookend);
             //This will definitely be the last time we see this point

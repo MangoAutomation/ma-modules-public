@@ -5,7 +5,7 @@ package com.infiniteautomation.mango.rest.latest.model.pointValue.quantize;
 
 import java.io.IOException;
 
-import com.infiniteautomation.mango.db.query.BookendQueryCallback;
+import com.infiniteautomation.mango.db.query.WideCallback;
 import com.infiniteautomation.mango.db.query.QueryCancelledException;
 import com.infiniteautomation.mango.quantize.AbstractPointValueTimeQuantizer;
 import com.infiniteautomation.mango.quantize.StatisticsGeneratorQuantizerCallback;
@@ -17,7 +17,7 @@ import com.serotonin.m2m2.vo.DataPointVO;
  *
  * @author Terry Packer
  */
-public abstract class DataPointStatisticsQuantizer<T extends StatisticsGenerator> implements StatisticsGeneratorQuantizerCallback<T>, BookendQueryCallback<IdPointValueTime>{
+public abstract class DataPointStatisticsQuantizer<T extends StatisticsGenerator> implements StatisticsGeneratorQuantizerCallback<T>, WideCallback<IdPointValueTime> {
 
     protected final ChildStatisticsGeneratorCallback callback;
     protected AbstractPointValueTimeQuantizer<T> quantizer;
@@ -47,8 +47,8 @@ public abstract class DataPointStatisticsQuantizer<T extends StatisticsGenerator
     }
 
     @Override
-    public void row(IdPointValueTime value) {
-        quantizer.row(value);
+    public void accept(IdPointValueTime value) {
+        quantizer.accept(value);
     }
 
     @Override

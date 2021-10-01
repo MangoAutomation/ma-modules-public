@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import com.infiniteautomation.mango.db.query.BookendQueryCallback;
+import com.infiniteautomation.mango.db.query.WideCallback;
 import com.infiniteautomation.mango.db.query.QueryCancelledException;
 import com.infiniteautomation.mango.quantize.BucketCalculator;
 import com.infiniteautomation.mango.quantize.BucketsBucketCalculator;
@@ -28,7 +28,7 @@ import com.serotonin.m2m2.vo.DataPointVO;
  *
  * @author Terry Packer
  */
-public abstract class AbstractMultiDataPointStatisticsQuantizerStream <T, INFO extends ZonedDateTimeRangeQueryInfo> extends PointValueTimeDatabaseStream<T, INFO> implements ChildStatisticsGeneratorCallback, BookendQueryCallback<IdPointValueTime>{
+public abstract class AbstractMultiDataPointStatisticsQuantizerStream <T, INFO extends ZonedDateTimeRangeQueryInfo> extends PointValueTimeDatabaseStream<T, INFO> implements ChildStatisticsGeneratorCallback, WideCallback<IdPointValueTime> {
 
     protected final Map<Integer, DataPointStatisticsQuantizer<?>> quantizerMap;
     protected int count;

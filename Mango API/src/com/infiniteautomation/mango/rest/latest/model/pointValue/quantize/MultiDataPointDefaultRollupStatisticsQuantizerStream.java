@@ -177,15 +177,15 @@ public class MultiDataPointDefaultRollupStatisticsQuantizerStream <T, INFO exten
     }
 
     @Override
-    public void row(IdPointValueTime value) {
+    public void accept(IdPointValueTime value) {
         try {
             if(!useSimplify) {
-                super.row(value);
+                super.accept(value);
                 return;
             }
             updateQuantizers(value);
             DataPointStatisticsQuantizer<?> quantizer = this.quantizerMap.get(value.getSeriesId());
-            quantizer.row(value);
+            quantizer.accept(value);
         }catch(IOException e) {
             throw new QueryCancelledException(e);
         }

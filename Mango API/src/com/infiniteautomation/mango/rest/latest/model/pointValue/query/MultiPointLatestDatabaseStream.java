@@ -78,7 +78,7 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
     }
 
     @Override
-    public void row(IdPointValueTime value) {
+    public void accept(IdPointValueTime value) {
         processRow(value, false, false, false);
     }
 
