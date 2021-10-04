@@ -15,6 +15,7 @@ import java.util.Map;
 import com.infiniteautomation.mango.db.query.QueryCancelledException;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueTimeWriter;
 import com.serotonin.m2m2.db.dao.PointValueDao;
+import com.serotonin.m2m2.db.dao.PointValueDao.TimeOrder;
 import com.serotonin.m2m2.rt.dataImage.AnnotatedIdPointValueTime;
 import com.serotonin.m2m2.rt.dataImage.IAnnotated;
 import com.serotonin.m2m2.rt.dataImage.IdPointValueTime;
@@ -53,9 +54,9 @@ public class MultiPointTimeRangeDatabaseStream<T, INFO extends ZonedDateTimeRang
         }
         else {
             if (info.isSingleArray()) {
-                this.dao.getPointValuesBetweenCombined(new ArrayList<DataPointVO>(voMap.values()), info.getFromMillis(), info.getToMillis(), info.getLimit(), this);
+                this.dao.getPointValuesCombined(new ArrayList<>(voMap.values()), info.getFromMillis(), info.getToMillis(), info.getLimit(), TimeOrder.ASCENDING, this);
             } else {
-                this.dao.getPointValuesBetweenPerPoint(new ArrayList<DataPointVO>(voMap.values()), info.getFromMillis(), info.getToMillis(), info.getLimit(), this);
+                this.dao.getPointValuesPerPoint(new ArrayList<>(voMap.values()), info.getFromMillis(), info.getToMillis(), info.getLimit(), TimeOrder.ASCENDING, this);
             }
         }
     }

@@ -21,6 +21,7 @@ import com.infiniteautomation.mango.rest.latest.model.pointValue.LimitCounter;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueTimeWriter;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.db.dao.PointValueDao;
+import com.serotonin.m2m2.db.dao.PointValueDao.TimeOrder;
 import com.serotonin.m2m2.rt.dataImage.AnnotatedIdPointValueTime;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.IAnnotated;
@@ -70,9 +71,9 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
         }
 
         if (info.isSingleArray()) {
-            this.dao.getLatestPointValuesCombined(new ArrayList<>(voMap.values()), info.getFromMillis(), info.getLimit(), this);
+            this.dao.getPointValuesCombined(new ArrayList<>(voMap.values()), null, info.getFromMillis(), info.getLimit(), TimeOrder.DESCENDING, this);
         } else {
-            this.dao.getLatestPointValuesPerPoint(new ArrayList<>(voMap.values()), info.getFromMillis(), info.getLimit(), this);
+            this.dao.getPointValuesPerPoint(new ArrayList<>(voMap.values()), null, info.getFromMillis(), info.getLimit(), TimeOrder.DESCENDING, this);
         }
 
     }
