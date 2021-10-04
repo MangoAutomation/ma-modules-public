@@ -5,6 +5,7 @@ package com.infiniteautomation.mango.rest.latest.model.pointValue.query;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -42,8 +43,14 @@ public class MultiPointTimeRangeDatabaseStream<T, INFO extends ZonedDateTimeRang
         }
 
         //Do we need bookends?
-        if(info.isBookend())
-            this.dao.wideBookendQuery(new ArrayList<DataPointVO>(voMap.values()), info.getFromMillis(), info.getToMillis(), !info.isSingleArray(), info.getLimit(), this);
+        if(info.isBookend()) {
+            Collection<? extends DataPointVO> vos = new ArrayList<DataPointVO>(voMap.values());
+            if (info.isSingleArray()) {
+                this.dao.wideBookendQueryCombined(vos, info.getFromMillis(), info.getToMillis(), info.getLimit(), this);
+            } else {
+                this.dao.wideBookendQueryPerPoint(vos, info.getFromMillis(), info.getToMillis(), info.getLimit(), this);
+            }
+        }
         else {
             if (info.isSingleArray()) {
                 this.dao.getPointValuesBetweenCombined(new ArrayList<DataPointVO>(voMap.values()), info.getFromMillis(), info.getToMillis(), info.getLimit(), this);

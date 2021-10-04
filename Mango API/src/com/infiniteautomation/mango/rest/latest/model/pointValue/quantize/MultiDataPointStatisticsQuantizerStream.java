@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -123,7 +124,12 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
     @Override
     public void streamData(PointValueTimeWriter writer) throws QueryCancelledException, IOException {
         createQuantizerMap();
-        dao.wideBookendQuery(new ArrayList<DataPointVO>(voMap.values()), info.getFromMillis(), info.getToMillis(), !info.isSingleArray(), null, this);
+        Collection<? extends DataPointVO> vos = new ArrayList<>(voMap.values());
+        if (info.isSingleArray()) {
+            dao.wideBookendQueryCombined(vos, info.getFromMillis(), info.getToMillis(), null, this);
+        } else {
+            dao.wideBookendQueryPerPoint(vos, info.getFromMillis(), info.getToMillis(), null, this);
+        }
     }
 
     protected void writePeriodStats(List<DataPointValueTime> generators) throws QueryCancelledException {

@@ -5,6 +5,7 @@ package com.infiniteautomation.mango.rest.latest.model.pointValue.quantize;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -55,7 +56,12 @@ public class MultiDataPointDefaultRollupStatisticsQuantizerStream <T, INFO exten
             return;
         }
         createQuantizerMap();
-        dao.wideBookendQuery(new ArrayList<DataPointVO>(voMap.values()), info.getFromMillis(), info.getToMillis(), !info.isSingleArray(), null, this);
+        Collection<? extends DataPointVO> vos = new ArrayList<>(voMap.values());
+        if (info.isSingleArray()) {
+            dao.wideBookendQueryCombined(vos, info.getFromMillis(), info.getToMillis(), null, this);
+        } else {
+            dao.wideBookendQueryPerPoint(vos, info.getFromMillis(), info.getToMillis(), null, this);
+        }
 
         //Fast forward to end to fill any gaps at the end
         for(DataPointStatisticsQuantizer<?> quant : this.quantizerMap.values()) {
