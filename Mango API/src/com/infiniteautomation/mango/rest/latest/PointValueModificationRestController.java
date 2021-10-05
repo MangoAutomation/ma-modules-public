@@ -276,7 +276,8 @@ public class PointValueModificationRestController {
 
         public void deleteValue(ZonedDateTime timestamp) {
             if(valid && timestamp != null) {
-                totalProcessed += Common.runtimeManager.purgeDataPointValue(vo, timestamp.toInstant().toEpochMilli(), dao);
+                Common.runtimeManager.purgeDataPointValue(vo, timestamp.toInstant().toEpochMilli())
+                        .ifPresent(aLong -> totalProcessed += aLong);
             }else {
                 totalSkipped++;
             }

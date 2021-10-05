@@ -14,6 +14,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.TimeZone;
 
 import javax.servlet.http.HttpServletRequest;
@@ -1085,7 +1086,9 @@ public class PointValueRestController extends AbstractMangoRestController {
         else
             to = ZonedDateTime.ofInstant(Instant.ofEpochMilli(current), zoneId);
 
-        return ResponseEntity.ok(Common.runtimeManager.purgeDataPointValuesBetween(vo, from.toInstant().toEpochMilli(), to.toInstant().toEpochMilli()));
+        Optional<Long> result = Common.runtimeManager.purgeDataPointValuesBetween(vo,
+                from.toInstant().toEpochMilli(), to.toInstant().toEpochMilli());
+        return ResponseEntity.ok().body(result.orElse(null));
     }
 
     @ApiOperation(
@@ -1181,12 +1184,12 @@ public class PointValueRestController extends AbstractMangoRestController {
 
                             //Do purge based on settings
                             if(model.isPurgeAll())
-                                Common.runtimeManager.purgeDataPointValuesWithoutCount(dp);
+                                Common.runtimeManager.purgeDataPointValues(dp);
                             else if(model.isUseTimeRange())
                                 Common.runtimeManager.purgeDataPointValuesBetween(dp, model.getTimeRange().getFrom().getTime(), model.getTimeRange().getTo().getTime());
                             else {
                                 long before = DateUtils.minus(Common.timer.currentTimeMillis(), TimePeriodType.convertFrom(model.getDuration().getType()), model.getDuration().getPeriods());
-                                Common.runtimeManager.purgeDataPointValuesWithoutCount(dp, before);
+                                Common.runtimeManager.purgeDataPointValues(dp, before);
                             }
                             result.getSuccessfullyPurged().add(xid);
                         }catch(NotFoundException e) {
