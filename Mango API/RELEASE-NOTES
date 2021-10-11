@@ -1,5 +1,6 @@
 *Version 4.3.0*
 * Upgraded for Mango 4.3.0
+* Fix bug where PermissionHolder was throwing a NPE when using oAuth
 
 *Version 4.2.2*
 * Allow non-admin users to create reset-password token for users they had permission to edit

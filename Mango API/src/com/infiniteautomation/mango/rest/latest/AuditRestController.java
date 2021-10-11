@@ -29,7 +29,6 @@ import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.event.AlarmLevels;
 import com.serotonin.m2m2.rt.event.type.AuditEventType;
-import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.audit.AuditEventInstanceVO;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
@@ -94,12 +93,12 @@ public class AuditRestController {
     })
     @RequestMapping(method = RequestMethod.GET)
     public StreamedArrayWithTotal queryRQL(
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             HttpServletRequest request) {
 
         permissionService.ensureAdminRole(user);
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
-        return doQuery(rql, user);
+        return new StreamedBasicVORqlQueryWithTotal<>(service, rql, null, null, valueConverterMap, vo -> map.apply(vo, user));
     }
 
     @ApiOperation(
@@ -108,7 +107,7 @@ public class AuditRestController {
             )
     @RequestMapping(method = RequestMethod.GET, value = "list-event-types")
     public List<EventTypeInfo> listEventTypes(
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             HttpServletRequest request) {
 
         permissionService.ensureAdminRole(user);
@@ -121,16 +120,6 @@ public class AuditRestController {
             info.alarmLevel = vo.getAlarmLevel();
             return info;
         }).collect(Collectors.toList());
-    }
-
-    protected StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
-        if (permissionService.hasAdminRole(user)) {
-            return new StreamedBasicVORqlQueryWithTotal<>(service, rql, null, null, valueConverterMap, vo -> map.apply(vo, user));
-        } else {
-            // Add some conditions to restrict based on user permissions
-            rql = RQLUtils.addAndRestriction(rql, new ASTNode("eq", "id", user.getId()));
-            return new StreamedBasicVORqlQueryWithTotal<>(service, rql, null, null, valueConverterMap, vo -> service.hasReadPermission(user, vo), vo -> map.apply(vo, user));
-        }
     }
 
     class EventTypeInfo {
