@@ -14,19 +14,70 @@
  * limitations under the License.
  */
 
-const {createClient, login} = require('@infinite-automation/mango-module-tools/test-helper/testHelper');
+const {createClient, login, uuid, config} = require('@infinite-automation/mango-module-tools/test-helper/testHelper');
 const client = createClient();
+const User = client.User;
+const jwtUrl = '/rest/latest/auth-tokens';
 
 describe('Audit endpoint tests', function(){
     before('Login', function() { return login.call(this, client); });
 
+    before('Create a no roles test user to test audit', function() {
+        const username = uuid();
+        this.testUserPassword = uuid();
+        this.testUser = new User({
+            username,
+            email: `${username}@example.com`,
+            name: `${username}`,
+            roles: [],
+            password: this.testUserPassword
+        });
+        return this.testUser.save();
+    });
+
+    after('Delete the test user', function() {
+        return this.testUser.delete();
+    });
+
+    before('Helper functions', function() {
+        this.createToken = function(body = {}, clt = client) {
+            return clt.restRequest({
+                path: `${jwtUrl}/create`,
+                method: 'POST',
+                data: body
+            }).then(response => {
+                return response.data.token;
+            });
+        };
+
+        this.noCookieConfig = {
+            enableCookies: false
+        };
+    });
+
     it('Gets entire audit table', () => {
+
       return client.restRequest({
           path: '/rest/latest/audit',
           method: 'GET'
       }).then(response => {
         assert.isAbove(response.data.items.length, 0);
       });
+    });
+
+    it('No admin role user attempts to get entire audit table', function()  {
+        return this.createToken({username: this.testUser.username}).then(token => {
+            const jwtClient = createClient(this.noCookieConfig);
+            jwtClient.setBearerAuthentication(token);
+            return jwtClient;
+        }).then(jwtClient => jwtClient.restRequest({
+            path: '/rest/latest/audit',
+            method: 'GET'
+        }).then(response => {
+            throw new Error('We should not get a result');
+        }, error => {
+            assert.strictEqual(error.status, 403);
+        }))
     });
 
     it('Performs simple audit query', () => {
