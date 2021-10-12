@@ -28,7 +28,6 @@ describe('System Action Endpoints', function() {
       }).then(response => {
         var actions = [
           'purgeUsingSettings',
-          'purgeAllPointValues',
           'purgeAllEvents',
           'backupConfiguration',
           'sqlBackup',
@@ -53,24 +52,6 @@ describe('System Action Endpoints', function() {
       }).then(response => {
 
         return delay(5000).then(() => {
-          return client.restRequest({
-            path: response.headers.location,
-            method: 'GET'
-          }).then(response => {
-            assert.equal(response.data.results.finished, true);
-          });
-        });
-      });
-    });
-
-    it('Kick off purgeAllPointValues', () => {
-
-      return client.restRequest({
-          path: '/rest/latest/actions/trigger/purgeAllPointValues',
-          method: 'PUT'
-      }).then(response => {
-
-        return delay(3000).then(() => {
           return client.restRequest({
             path: response.headers.location,
             method: 'GET'
@@ -188,15 +169,6 @@ describe('System Action Endpoints', function() {
       });
     });
 
-/*    it('Kick off purgeAllPointValues action', () => {
-      return client.restRequest({
-          path: '/rest/latest/actions/trigger/purgeAllPointValues',
-          method: 'PUT',
-      }).then(response => {
-        console.log(response);
-      });
-    });
-*/
     function delay(time) {
         return new Promise((resolve) => {
             setTimeout(resolve, time);
