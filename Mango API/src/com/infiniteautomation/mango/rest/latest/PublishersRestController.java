@@ -3,14 +3,19 @@
  */
 package com.infiniteautomation.mango.rest.latest;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
-
 import javax.servlet.http.HttpServletRequest;
+import net.jazdw.rql.parser.ASTNode;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -29,20 +34,18 @@ import com.infiniteautomation.mango.rest.latest.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.latest.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.latest.model.StreamedSeroJsonVORqlQuery;
 import com.infiniteautomation.mango.rest.latest.model.StreamedVORqlQueryWithTotal;
+import com.infiniteautomation.mango.rest.latest.model.publisher.AbstractPublishedPointModel;
 import com.infiniteautomation.mango.rest.latest.model.publisher.AbstractPublisherModel;
 import com.infiniteautomation.mango.rest.latest.patch.PatchVORequestBody;
 import com.infiniteautomation.mango.spring.service.PermissionService;
+import com.infiniteautomation.mango.spring.service.PublishedPointService;
 import com.infiniteautomation.mango.spring.service.PublisherService;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.json.type.JsonStreamedArray;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
+import com.serotonin.m2m2.vo.publish.PublishedPointVO;
 import com.serotonin.m2m2.vo.publish.PublisherVO;
 import com.serotonin.m2m2.web.MediaTypes;
-
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import net.jazdw.rql.parser.ASTNode;
 
 /**
  * @author Terry Packer
@@ -54,16 +57,21 @@ import net.jazdw.rql.parser.ASTNode;
 public class PublishersRestController {
 
     private final PublisherService service;
-    private final BiFunction<PublisherVO<?>, PermissionHolder, AbstractPublisherModel<?,?>> map;
+    private final PublishedPointService publishedPointService;
+    private final BiFunction<PublisherVO, PermissionHolder, AbstractPublisherModel<?,?>> map;
     private final PermissionService permissionService;
 
     @Autowired
-    public PublishersRestController(final PublisherService service, final RestModelMapper modelMapper, PermissionService permissionService) {
+    public PublishersRestController(final PublisherService service,
+                                    final RestModelMapper modelMapper,
+                                    PermissionService permissionService,
+                                    PublishedPointService publishedPointService) {
         this.service = service;
         this.map = (vo, user) -> {
             return modelMapper.map(vo, AbstractPublisherModel.class, user);
         };
         this.permissionService = permissionService;
+        this.publishedPointService = publishedPointService;
     }
 
 
@@ -108,7 +116,7 @@ public class PublishersRestController {
         return map.apply(service.get(id), user);
     }
 
-    @ApiOperation(value = "Save publisher")
+    @ApiOperation(value = "Save publisher, if points are supplied in model they will replace all existing points")
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<AbstractPublisherModel<?,?>> save(
             @RequestBody(required=true) AbstractPublisherModel<?, ?> model,
@@ -116,14 +124,15 @@ public class PublishersRestController {
             UriComponentsBuilder builder,
             HttpServletRequest request) {
 
-        PublisherVO<?> vo = this.service.insert(model.toVO());
+        PublisherVO vo = this.service.insert(model.toVO());
+        maybeReplacePoints(vo, model.getPoints());
         URI location = builder.path("/publishers/{xid}").buildAndExpand(new Object[]{vo.getXid()}).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
         return new ResponseEntity<>(map.apply(vo, user), headers, HttpStatus.CREATED);
     }
 
-    @ApiOperation(value = "Update publisher")
+    @ApiOperation(value = "Update publisher, if points are supplied in model they will replace all existing points")
     @RequestMapping(method = RequestMethod.PUT, value = "/{xid}")
     public ResponseEntity<AbstractPublisherModel<?,?>> update(
             @PathVariable String xid,
@@ -132,7 +141,8 @@ public class PublishersRestController {
             UriComponentsBuilder builder,
             HttpServletRequest request) {
 
-        PublisherVO<?> vo = this.service.update(xid, model.toVO());
+        PublisherVO vo = this.service.update(xid, model.toVO());
+        maybeReplacePoints(vo, model.getPoints());
         URI location = builder.path("/publishers/{xid}").buildAndExpand(new Object[]{vo.getXid()}).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
@@ -140,7 +150,7 @@ public class PublishersRestController {
     }
 
     @ApiOperation(
-            value = "Partially update a publisher",
+            value = "Partially update a publisher, if points are supplied in model they will replace all existing points",
             notes = "Requires edit permission"
             )
     @RequestMapping(method = RequestMethod.PATCH, value = "/{xid}")
@@ -155,8 +165,8 @@ public class PublishersRestController {
             @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
 
-        PublisherVO<?> vo = service.update(xid, model.toVO());
-
+        PublisherVO vo = service.update(xid, model.toVO());
+        maybeReplacePoints(vo, model.getPoints());
         URI location = builder.path("/publishers/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
@@ -203,7 +213,7 @@ public class PublishersRestController {
             @PathVariable String xid,
             @AuthenticationPrincipal PermissionHolder user) {
 
-        PublisherVO<?> vo = service.get(xid);
+        PublisherVO vo = service.get(xid);
         Map<String,Object> export = new LinkedHashMap<>();
         export.put("publishers", Collections.singletonList(vo));
         return export;
@@ -239,4 +249,18 @@ public class PublishersRestController {
         }
     }
 
+    /**
+     * If points are not null they will replace any points on this publisher
+     * @param publisherVO
+     * @param points
+     */
+    private void maybeReplacePoints(PublisherVO publisherVO, List<? extends AbstractPublishedPointModel<?>> points) {
+        if(points != null) {
+            List<PublishedPointVO> pointVos = new ArrayList<>();
+            for(AbstractPublishedPointModel<?> pm : points) {
+                pointVos.add(pm.toVO());
+            }
+            publishedPointService.replacePoints(publisherVO, pointVos);
+        }
+    }
 }

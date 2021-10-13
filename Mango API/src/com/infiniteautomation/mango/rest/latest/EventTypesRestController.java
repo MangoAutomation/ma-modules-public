@@ -3,10 +3,14 @@
  */
 package com.infiniteautomation.mango.rest.latest;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import net.jazdw.rql.parser.ASTNode;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,11 +60,6 @@ import com.serotonin.m2m2.vo.event.detector.AbstractPointEventDetectorVO;
 import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.vo.publish.PublisherVO;
-
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import net.jazdw.rql.parser.ASTNode;
 
 /**
  * @author Terry Packer
@@ -328,7 +327,7 @@ public class EventTypesRestController {
                 if(!permissionService.hasAdminRole(user))
                     break;
 
-                for(PublisherVO<?> vo : publisherDao.getAll()) {
+                for(PublisherVO vo : publisherDao.getAll()) {
                     AbstractPublisherModel<?,?> publisherModel = modelMapper.map(vo, AbstractPublisherModel.class, user);
                     PublisherEventTypeModel model = new PublisherEventTypeModel(new PublisherEventType(vo.getId(), 0), publisherModel);
                     types.add(new EventTypeVOModel<PublisherEventType, AbstractPublisherModel<?,?>, String>(model, new TranslatableMessage("event.eventsFor", vo.getName()), false, true, true));
@@ -432,7 +431,7 @@ public class EventTypesRestController {
                 if(!permissionService.hasAdminRole(user))
                     throw new PermissionException(new TranslatableMessage("permission.exception.doesNotHaveRequiredPermission", user), user);
 
-                PublisherVO<?> pub = publisherDao.get(referenceId1);
+                PublisherVO pub = publisherDao.get(referenceId1);
                 if(pub == null)
                     throw new NotFoundException();
 
