@@ -4,6 +4,7 @@
 package com.serotonin.m2m2.maintenanceEvents;
 
 import java.util.function.Consumer;
+import java.util.List;
 
 import org.jooq.BatchBindStep;
 import org.jooq.Record;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Repository;
 
 import com.infiniteautomation.mango.db.tables.DataPoints;
 import com.infiniteautomation.mango.db.tables.DataSources;
+import com.infiniteautomation.mango.db.tables.EventHandlersMapping;
 import com.infiniteautomation.mango.permission.MangoPermission;
 import com.infiniteautomation.mango.spring.DaoDependencies;
 import com.infiniteautomation.mango.util.LazyInitSupplier;
@@ -49,6 +51,7 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
     private final DataSources dataSources;
     private final MaintenanceEventDataPoints mePoints;
     private final MaintenanceEventDataSources meSources;
+    private final EventHandlersMapping eventHandlersMapping;
 
     @Autowired
     private MaintenanceEventDao(
@@ -63,6 +66,7 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
         this.dataSources = DataSources.DATA_SOURCES;
         this.mePoints = MaintenanceEventDataPoints.MAINTENANCE_EVENT_DATA_POINTS;
         this.meSources = MaintenanceEventDataSources.MAINTENANCE_EVENT_DATA_SOURCES;
+        this.eventHandlersMapping = EventHandlersMapping.EVENT_HANDLERS_MAPPING;
     }
 
     /**
@@ -74,16 +78,11 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
     }
 
     @Override
-    public boolean delete(MaintenanceEventVO vo) {
-        if (vo != null) {
-            return getTransactionTemplate().execute(status -> {
-                ejt.update("delete from eventHandlersMapping where eventTypeName=? and eventTypeRef1=?", new Object[] {
-                        MaintenanceEventType.TYPE_NAME, vo.getId()});
-                return MaintenanceEventDao.super.delete(vo);
-            });
-        }else {
-            return false;
-        }
+    public void deleteRelationalData(MaintenanceEventVO vo) {
+        create.deleteFrom(eventHandlersMapping)
+                .where(eventHandlersMapping.eventTypeName.eq(MaintenanceEventType.TYPE_NAME))
+                .and(eventHandlersMapping.eventTypeRef1.eq(vo.getId()))
+                .execute();
     }
 
     @Override
@@ -100,20 +99,27 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
             create.deleteFrom(mePoints).where(mePoints.maintenanceEventId.equal(vo.getId()));
         }
 
-        BatchBindStep batchSources = create.batch(
-                DSL.insertInto(meSources)
-                        .columns(meSources.maintenanceEventId, meSources.dataSourceId)
-                        .values((Integer) null, null));
+        List<Integer> dataSources = vo.getDataSources();
+        if (dataSources.size() > 0) {
+            BatchBindStep batchSources = create.batch(
+                    create.insertInto(meSources)
+                            .columns(meSources.maintenanceEventId, meSources.dataSourceId)
+                            .values((Integer) null, null)
+            );
+            for(Integer dataSourceId : dataSources) batchSources.bind(vo.getId(), dataSourceId);
+            batchSources.execute();
+        }
 
-        BatchBindStep batchPoints = create.batch(
-                DSL.insertInto(mePoints)
-                        .columns(mePoints.maintenanceEventId, mePoints.dataPointId)
-                        .values((Integer) null, null));
-
-        for(Integer dataSourceId : vo.getDataSources()) batchSources.bind(vo.getId(), dataSourceId);
-        for(Integer dataPointId : vo.getDataPoints()) batchPoints.bind(vo.getId(), dataPointId);
-        batchSources.execute();
-        batchPoints.execute();
+        List<Integer> dataPoints = vo.getDataPoints();
+        if (dataPoints.size() > 0) {
+            BatchBindStep batchPoints = create.batch(
+                    DSL.insertInto(mePoints)
+                            .columns(mePoints.maintenanceEventId, mePoints.dataPointId)
+                            .values((Integer) null, null)
+            );
+            for(Integer dataPointId : dataPoints) batchPoints.bind(vo.getId(), dataPointId);
+            batchPoints.execute();
+        }
 
         if (existing != null && !existing.getTogglePermission().equals(vo.getTogglePermission())) {
             permissionService.deletePermissions(existing.getTogglePermission());
