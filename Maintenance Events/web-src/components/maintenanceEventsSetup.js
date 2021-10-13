@@ -86,6 +86,12 @@ class MaintenanceEventsSetupController {
 
     render() {
         this.selectedEvent = this.ngModelCtrl.$viewValue;
+
+        this.validationMessages = [];
+        if (this.form) {
+            this.form.$setPristine();
+            this.form.$setUntouched();
+        }
     }
 
     toggleEvent() {
@@ -114,6 +120,7 @@ class MaintenanceEventsSetupController {
 
         this.selectedEvent.save().then(() => {
             this.updateItem();
+            this.render();
             this.maDialogHelper.toastOptions({ textTr: ['maintenanceEvents.meSaved'] });
         }, (error) => {
             this.validationMessages = error.data.result.messages;
