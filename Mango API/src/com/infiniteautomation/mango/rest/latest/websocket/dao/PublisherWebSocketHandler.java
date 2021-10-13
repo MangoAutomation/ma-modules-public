@@ -15,7 +15,6 @@ import com.infiniteautomation.mango.rest.latest.websocket.WebSocketMapping;
 import com.infiniteautomation.mango.spring.events.DaoEvent;
 import com.infiniteautomation.mango.spring.service.PublisherService;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
-import com.serotonin.m2m2.vo.publish.PublishedPointVO;
 import com.serotonin.m2m2.vo.publish.PublisherVO;
 
 /**
@@ -24,7 +23,7 @@ import com.serotonin.m2m2.vo.publish.PublisherVO;
  */
 @Component("PublisherWebSocketHandlerV2")
 @WebSocketMapping("/websocket/publishers")
-public class PublisherWebSocketHandler extends DaoNotificationWebSocketHandler<PublisherVO<? extends PublishedPointVO>>{
+public class PublisherWebSocketHandler extends DaoNotificationWebSocketHandler<PublisherVO>{
 
     private final PublisherService service;
     private final RestModelMapper modelMapper;
@@ -36,18 +35,18 @@ public class PublisherWebSocketHandler extends DaoNotificationWebSocketHandler<P
     }
 
     @Override
-    protected boolean hasPermission(PermissionHolder user, PublisherVO<? extends PublishedPointVO> vo) {
+    protected boolean hasPermission(PermissionHolder user, PublisherVO vo) {
         return service.hasReadPermission(user, vo);
     }
 
     @Override
-    protected Object createModel(PublisherVO<? extends PublishedPointVO> vo, ApplicationEvent event, PermissionHolder user) {
+    protected Object createModel(PublisherVO vo, ApplicationEvent event, PermissionHolder user) {
         return modelMapper.map(vo, AbstractPublisherModel.class, user);
     }
 
     @Override
     @EventListener
-    protected void handleDaoEvent(DaoEvent<? extends PublisherVO<? extends PublishedPointVO>> event) {
+    protected void handleDaoEvent(DaoEvent<? extends PublisherVO> event) {
         this.notify(event);
     }
 }

@@ -3,6 +3,7 @@
  */
 package com.infiniteautomation.mango.rest.latest.model.publisher;
 
+import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,14 +28,12 @@ import com.serotonin.m2m2.vo.event.EventTypeVO;
 import com.serotonin.m2m2.vo.publish.PublishedPointVO;
 import com.serotonin.m2m2.vo.publish.PublisherVO;
 
-import io.swagger.annotations.ApiModelProperty;
-
 /**
  * @author Terry Packer
  *
  */
 @JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.EXISTING_PROPERTY, property=AbstractPublisherModel.MODEL_TYPE)
-public abstract class AbstractPublisherModel<POINT extends PublishedPointVO, PUBLISHER extends PublisherVO<POINT>> extends AbstractVoModel<PUBLISHER> {
+public abstract class AbstractPublisherModel<POINT extends PublishedPointVO, PUBLISHER extends PublisherVO> extends AbstractVoModel<PUBLISHER> {
 
     public static final String MODEL_TYPE = "modelType";
 
@@ -113,18 +112,6 @@ public abstract class AbstractPublisherModel<POINT extends PublishedPointVO, PUB
             this.eventAlarmLevels.add(model);
         }
 
-        this.points = new ArrayList<>();
-        for(POINT point : vo.getPoints()) {
-            //If a data point was deleted while this publisher was in the database
-            // we need to ignore it here
-            AbstractPublishedPointModel<POINT> model = modelPoint(point);
-            if(model.getDataPointXid() != null) {
-                this.points.add(model);
-            }else {
-                LOG.warn("Publisher missing data point with id {}, discarding point when rendering model", point.getDataPointId());
-            }
-        }
-
         this.publishType = PublisherVO.PUBLISH_TYPE_CODES.getCode(vo.getPublishType());
         this.cacheWarningSize = vo.getCacheWarningSize();
         this.cacheDiscardSize = vo.getCacheDiscardSize();
@@ -142,14 +129,6 @@ public abstract class AbstractPublisherModel<POINT extends PublishedPointVO, PUB
             for(EventTypeAlarmLevelModel eval : eventAlarmLevels) {
                 vo.setAlarmLevel(eval.getEventType(), eval.getLevel());
             }
-        }
-
-        if(points != null) {
-            List<POINT> pointVos = new ArrayList<>();
-            for(AbstractPublishedPointModel<POINT> pm : points) {
-                pointVos.add(pm.toVO());
-            }
-            vo.setPoints(pointVos);
         }
 
         vo.setPublishType(PublisherVO.PUBLISH_TYPE_CODES.getId(publishType));
