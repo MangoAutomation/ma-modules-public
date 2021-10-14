@@ -16,6 +16,7 @@ import java.util.function.BiFunction;
 import javax.servlet.http.HttpServletRequest;
 import net.jazdw.rql.parser.ASTNode;
 
+import org.jooq.Field;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -29,6 +30,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.infiniteautomation.mango.db.tables.DataPoints;
+import com.infiniteautomation.mango.db.tables.Publishers;
 import com.infiniteautomation.mango.rest.latest.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.latest.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.latest.model.StreamedSeroJsonVORqlQuery;
@@ -57,6 +60,7 @@ public class PublishedPointsRestController {
     private final PublishedPointService service;
     private final BiFunction<PublishedPointVO, PermissionHolder, AbstractPublishedPointModel<?>> map;
     private final PermissionService permissionService;
+    private final Map<String, Field<?>> fieldMap;
 
     @Autowired
     public PublishedPointsRestController(final PublishedPointService service, final RestModelMapper modelMapper, PermissionService permissionService) {
@@ -65,6 +69,13 @@ public class PublishedPointsRestController {
             return modelMapper.map(vo, AbstractPublishedPointModel.class, user);
         };
         this.permissionService = permissionService;
+        //Setup any exposed special query aliases to map model fields to db columns
+        Publishers publishers = Publishers.PUBLISHERS;
+        DataPoints dataPoints = DataPoints.DATA_POINTS;
+        this.fieldMap = new HashMap<>();
+        this.fieldMap.put("publisherXid", publishers.xid);
+        this.fieldMap.put("dataPointXid", dataPoints.xid);
+        this.fieldMap.put("publisherType", publishers.publisherType);
     }
 
     @ApiOperation(
@@ -80,7 +91,7 @@ public class PublishedPointsRestController {
             UriComponentsBuilder builder) {
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
         permissionService.ensureAdminRole(user);
-        return new StreamedVORqlQueryWithTotal<>(service, rql, null, null, null, vo -> map.apply(vo, user));
+        return new StreamedVORqlQueryWithTotal<>(service, rql, null, fieldMap, null, vo -> map.apply(vo, user));
     }
 
     @ApiOperation(
