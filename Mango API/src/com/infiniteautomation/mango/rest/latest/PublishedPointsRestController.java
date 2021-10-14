@@ -191,7 +191,7 @@ public class PublishedPointsRestController {
             @RequestParam(required=false, defaultValue="false") boolean restart,
 
             @AuthenticationPrincipal PermissionHolder user) {
-        service.restart(xid, enabled, restart);
+        service.setPublishedPointState(xid, enabled, restart);
     }
 
 
