@@ -40,6 +40,7 @@ import com.infiniteautomation.mango.rest.latest.model.publisher.AbstractPublishe
 import com.infiniteautomation.mango.rest.latest.patch.PatchVORequestBody;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.spring.service.PublishedPointService;
+import com.infiniteautomation.mango.util.ConfigurationExportData;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.json.type.JsonStreamedArray;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
@@ -229,7 +230,7 @@ public class PublishedPointsRestController {
         permissionService.ensureAdminRole(user);
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
         Map<String, JsonStreamedArray> export = new HashMap<>();
-        export.put("publishedPoints", new StreamedSeroJsonVORqlQuery<>(service, rql, null, null, null));
+        export.put(ConfigurationExportData.PUBLISHED_POINTS, new StreamedSeroJsonVORqlQuery<>(service, rql, null, null, null));
         return export;
     }
 }
