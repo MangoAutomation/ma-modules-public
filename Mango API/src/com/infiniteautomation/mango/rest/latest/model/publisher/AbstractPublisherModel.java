@@ -52,6 +52,7 @@ public abstract class AbstractPublisherModel<POINT extends PublishedPointVO, PUB
 
     protected boolean enabled;
     protected List<EventTypeAlarmLevelModel> eventAlarmLevels;
+    //TODO REST v4 remove points from this model and publisher REST controller
     protected List<AbstractPublishedPointModel<POINT>> points = new ArrayList<>();
     protected String publishType;
     protected int cacheWarningSize;

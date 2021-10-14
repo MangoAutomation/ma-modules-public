@@ -48,6 +48,9 @@ import com.serotonin.m2m2.vo.publish.PublisherVO;
 import com.serotonin.m2m2.web.MediaTypes;
 
 /**
+ * This controller currently supports a publisher model with or without points in it.  If the incoming model
+ * contains points, they will replace all points on the publisher.  Outgoing models only contain points when requested.
+ *
  * @author Terry Packer
  *
  */
@@ -59,6 +62,7 @@ public class PublishersRestController {
     private final PublisherService service;
     private final PublishedPointService publishedPointService;
     private final BiFunction<PublisherVO, PermissionHolder, AbstractPublisherModel<?,?>> map;
+    private final BiFunction<PublisherVO, PermissionHolder, AbstractPublisherModel<?,?>> mapWithoutPoints;
     private final PermissionService permissionService;
 
     @Autowired
@@ -68,6 +72,16 @@ public class PublishersRestController {
                                     PublishedPointService publishedPointService) {
         this.service = service;
         this.map = (vo, user) -> {
+            AbstractPublisherModel model = modelMapper.map(vo, AbstractPublisherModel.class, user);
+            List<AbstractPublishedPointModel> points = new ArrayList<>();
+            model.setPoints(points);
+            for(PublishedPointVO point : publishedPointService.getPublishedPoints(vo.getId())) {
+                points.add(modelMapper.map(point, AbstractPublishedPointModel.class, user));
+            }
+            return model;
+        };
+
+        this.mapWithoutPoints = (vo, user) -> {
             return modelMapper.map(vo, AbstractPublisherModel.class, user);
         };
         this.permissionService = permissionService;
@@ -76,7 +90,7 @@ public class PublishersRestController {
 
 
     @ApiOperation(
-            value = "Query Publishers Sources",
+            value = "Query Publishers",
             notes = "RQL Formatted Query",
             responseContainer="List"
             )
@@ -87,7 +101,22 @@ public class PublishersRestController {
             @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
-        return doQuery(rql, user);
+        return doQuery(rql, user, this.map);
+    }
+
+    @ApiOperation(
+            value = "Query Publishers and return without points",
+            notes = "RQL Formatted Query",
+            responseContainer="List"
+    )
+    @RequestMapping(method = RequestMethod.GET, value="/without-points")
+    public StreamedArrayWithTotal queryWithoutPoints(
+            HttpServletRequest request,
+            @ApiParam(value="User", required=true)
+            @AuthenticationPrincipal PermissionHolder user,
+            UriComponentsBuilder builder) {
+        ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
+        return doQuery(rql, user, this.mapWithoutPoints);
     }
 
     @ApiOperation(
@@ -241,7 +270,7 @@ public class PublishersRestController {
      * @param user
      * @return
      */
-    private StreamedArrayWithTotal doQuery(ASTNode rql, PermissionHolder user) {
+    private StreamedArrayWithTotal doQuery(ASTNode rql, PermissionHolder user, BiFunction<PublisherVO, PermissionHolder, AbstractPublisherModel<?,?>> map) {
         if (permissionService.hasAdminRole(user)) {
             return new StreamedVORqlQueryWithTotal<>(service, rql, null, null, null, vo -> map.apply(vo, user));
         } else {
@@ -260,7 +289,7 @@ public class PublishersRestController {
             for(AbstractPublishedPointModel<?> pm : points) {
                 pointVos.add(pm.toVO());
             }
-            publishedPointService.replacePoints(publisherVO, pointVos);
+            publishedPointService.replacePoints(publisherVO.getId(), pointVos);
         }
     }
 }
