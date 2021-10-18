@@ -6,6 +6,10 @@ package com.infiniteautomation.mango.spring.service;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -88,23 +92,78 @@ public class MaintenanceEventsServiceTest extends AbstractVOServiceWithPermissio
         assertEquals(expected.getId(), actual.getId());
         assertEquals(expected.getXid(), actual.getXid());
         assertEquals(expected.getName(), actual.getName());
+
+        List<Integer> actualPoints = actual.getDataPoints();
+        List<Integer> expectedPoints = expected.getDataPoints();
+        assertEquals(expectedPoints.size(), actualPoints.size());
+        for (int i = 0; i < expectedPoints.size(); i++) {
+            assertEquals(expectedPoints.get(i), actualPoints.get(i));
+        }
+
+        List<String> actualPointXids = new ArrayList<>();
+        List<String> expectedPointXids = new ArrayList<>();
+        dao.getPointXids(actual.getId(), actualPointXids::add);
+        dao.getPointXids(expected.getId(), expectedPointXids::add);
+        assertEquals(expectedPointXids.size(), actualPointXids.size());
+        for (int i = 0; i < expectedPointXids.size(); i++) {
+            assertEquals(expectedPointXids.get(i), actualPointXids.get(i));
+        }
+
+        List<Integer> actualDataSources = actual.getDataSources();
+        List<Integer> expectedDataSources = expected.getDataSources();
+        assertEquals(expectedDataSources.size(), actualDataSources.size());
+        for (int i = 0; i < expectedDataSources.size(); i++) {
+            assertEquals(expectedDataSources.get(i), actualDataSources.get(i));
+        }
+
+        List<String> actualDataSourceXids = new ArrayList<>();
+        List<String> expectedDataSourceXids = new ArrayList<>();
+        dao.getSourceXids(actual.getId(), actualDataSourceXids::add);
+        dao.getSourceXids(expected.getId(), expectedDataSourceXids::add);
+        assertEquals(expectedDataSourceXids.size(), actualDataSourceXids.size());
+        for (int i = 0; i < expectedDataSourceXids.size(); i++) {
+            assertEquals(expectedDataSourceXids.get(i), actualDataSourceXids.get(i));
+        }
     }
 
     @Override
     MaintenanceEventVO newVO(User owner) {
         MaintenanceEventVO vo = new MaintenanceEventVO();
-        vo.setName("testing name");
+        vo.setName(UUID.randomUUID().toString());
+
+        List<Integer> dataPointIds = new ArrayList<>();
         for(IDataPoint point : createMockDataPoints(5)) {
-            vo.getDataPoints().add(point.getId());
+            dataPointIds.add(point.getId());
         }
+        vo.setDataPoints(dataPointIds);
+
+        List<Integer> dataSourceIds = new ArrayList<>();
+        for(int i = 0; i < 5; i++) {
+            Integer dataSourceId =  createMockDataSource().getId();
+            dataSourceIds.add(dataSourceId);
+        }
+        vo.setDataSources(dataSourceIds);
         return vo;
     }
 
     @Override
     MaintenanceEventVO updateVO(MaintenanceEventVO existing) {
-        MaintenanceEventVO vo = (MaintenanceEventVO)existing.copy();
-        vo.setName("testing");
-        return vo;
+        MaintenanceEventVO copy = (MaintenanceEventVO) existing.copy();
+        copy.setName("new name");
+
+        List<Integer> dataPointIds = new ArrayList<>();
+        for(IDataPoint point : createMockDataPoints(10)) {
+            dataPointIds.add(point.getId());
+        }
+        copy.setDataPoints(dataPointIds);
+
+        List<Integer> dataSourceIds = new ArrayList<>();
+        for(int i = 0; i < 10; i++) {
+            Integer dataSourceId =  createMockDataSource().getId();
+            dataSourceIds.add(dataSourceId);
+        }
+        copy.setDataSources(dataSourceIds);
+        return copy;
     }
 
     @Override
