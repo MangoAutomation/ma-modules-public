@@ -95,8 +95,8 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
     public void saveRelationalData(MaintenanceEventVO existing, MaintenanceEventVO vo) {
         if (existing != null) {
             //Delete and insert
-            create.deleteFrom(meSources).where(meSources.maintenanceEventId.equal(vo.getId()));
-            create.deleteFrom(mePoints).where(mePoints.maintenanceEventId.equal(vo.getId()));
+            create.deleteFrom(meSources).where(meSources.maintenanceEventId.equal(vo.getId())).execute();
+            create.deleteFrom(mePoints).where(mePoints.maintenanceEventId.equal(vo.getId())).execute();
         }
 
         List<Integer> dataSources = vo.getDataSources();
