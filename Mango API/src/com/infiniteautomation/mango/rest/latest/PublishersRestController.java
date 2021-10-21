@@ -140,14 +140,22 @@ public class PublishersRestController {
     public AbstractPublisherModel<?,?> getById(
             @ApiParam(value = "ID of publisher", required = true, allowMultiple = false)
             @PathVariable int id,
+            @ApiParam(value = "Include published points in returned model", required = false, allowMultiple = false)
+            @RequestParam(value = "includePoints", required = false, defaultValue="true") boolean includePoints,
             @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
-        return map.apply(service.get(id), user);
+        if(includePoints) {
+            return map.apply(service.get(id), user);
+        }else {
+            return mapWithoutPoints.apply(service.get(id), user);
+        }
     }
 
     @ApiOperation(value = "Save publisher, if points are supplied in model they will replace all existing points")
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<AbstractPublisherModel<?,?>> save(
+            @ApiParam(value = "Include published points in returned model", required = false, allowMultiple = false)
+            @RequestParam(value = "includePoints", required = false, defaultValue="true") boolean includePoints,
             @RequestBody(required=true) AbstractPublisherModel<?, ?> model,
             @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder,
@@ -158,13 +166,19 @@ public class PublishersRestController {
         URI location = builder.path("/publishers/{xid}").buildAndExpand(new Object[]{vo.getXid()}).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
-        return new ResponseEntity<>(map.apply(vo, user), headers, HttpStatus.CREATED);
+        if(includePoints) {
+            return new ResponseEntity<>(map.apply(vo, user), headers, HttpStatus.CREATED);
+        }else {
+            return new ResponseEntity<>(mapWithoutPoints.apply(vo, user), headers, HttpStatus.CREATED);
+        }
     }
 
     @ApiOperation(value = "Update publisher, if points are supplied in model they will replace all existing points")
     @RequestMapping(method = RequestMethod.PUT, value = "/{xid}")
     public ResponseEntity<AbstractPublisherModel<?,?>> update(
             @PathVariable String xid,
+            @ApiParam(value = "Include published points in returned model", required = false, allowMultiple = false)
+            @RequestParam(value = "includePoints", required = false, defaultValue="true") boolean includePoints,
             @RequestBody(required=true) AbstractPublisherModel<?, ?> model,
             @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder,
@@ -175,7 +189,11 @@ public class PublishersRestController {
         URI location = builder.path("/publishers/{xid}").buildAndExpand(new Object[]{vo.getXid()}).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
-        return new ResponseEntity<>(map.apply(vo, user), headers, HttpStatus.OK);
+        if(includePoints) {
+            return new ResponseEntity<>(map.apply(vo, user), headers, HttpStatus.OK);
+        }else {
+            return new ResponseEntity<>(mapWithoutPoints.apply(vo, user), headers, HttpStatus.OK);
+        }
     }
 
     @ApiOperation(
@@ -185,7 +203,8 @@ public class PublishersRestController {
     @RequestMapping(method = RequestMethod.PATCH, value = "/{xid}")
     public ResponseEntity<AbstractPublisherModel<?,?>> partialUpdate(
             @PathVariable String xid,
-
+            @ApiParam(value = "Include published points in returned model", required = false, allowMultiple = false)
+            @RequestParam(value = "includePoints", required = false, defaultValue="true") boolean includePoints,
             @ApiParam(value = "Updated data source", required = true)
             @PatchVORequestBody(
                     service=PublisherService.class,
@@ -200,7 +219,11 @@ public class PublishersRestController {
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
 
-        return new ResponseEntity<>(map.apply(vo, user), headers, HttpStatus.OK);
+        if(includePoints) {
+            return new ResponseEntity<>(map.apply(vo, user), headers, HttpStatus.OK);
+        }else {
+            return new ResponseEntity<>(mapWithoutPoints.apply(vo, user), headers, HttpStatus.OK);
+        }
     }
 
     @ApiOperation(
@@ -212,9 +235,15 @@ public class PublishersRestController {
     public AbstractPublisherModel<?,?> delete(
             @ApiParam(value = "XID of publisher to delete", required = true, allowMultiple = false)
             @PathVariable String xid,
+            @ApiParam(value = "Include published points in returned model", required = false, allowMultiple = false)
+            @RequestParam(value = "includePoints", required = false, defaultValue="true") boolean includePoints,
             @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
-        return map.apply(service.delete(xid), user);
+        if(includePoints) {
+            return map.apply(service.delete(xid), user);
+        }else {
+            return mapWithoutPoints.apply(service.delete(xid), user);
+        }
     }
 
     @ApiOperation(value = "Enable/disable/restart a publisher")
