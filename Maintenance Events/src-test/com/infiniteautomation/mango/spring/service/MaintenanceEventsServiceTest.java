@@ -132,17 +132,11 @@ public class MaintenanceEventsServiceTest extends AbstractVOServiceWithPermissio
         vo.setName(UUID.randomUUID().toString());
 
         List<Integer> dataPointIds = new ArrayList<>();
-        for(IDataPoint point : createMockDataPoints(5)) {
+        for (IDataPoint point : createMockDataPoints(5)) {
             dataPointIds.add(point.getId());
         }
         vo.setDataPoints(dataPointIds);
 
-        List<Integer> dataSourceIds = new ArrayList<>();
-        for(int i = 0; i < 5; i++) {
-            Integer dataSourceId =  createMockDataSource().getId();
-            dataSourceIds.add(dataSourceId);
-        }
-        vo.setDataSources(dataSourceIds);
         return vo;
     }
 
@@ -152,17 +146,11 @@ public class MaintenanceEventsServiceTest extends AbstractVOServiceWithPermissio
         copy.setName("new name");
 
         List<Integer> dataPointIds = new ArrayList<>();
-        for(IDataPoint point : createMockDataPoints(10)) {
+        for (IDataPoint point : createMockDataPoints(10)) {
             dataPointIds.add(point.getId());
         }
         copy.setDataPoints(dataPointIds);
 
-        List<Integer> dataSourceIds = new ArrayList<>();
-        for(int i = 0; i < 10; i++) {
-            Integer dataSourceId =  createMockDataSource().getId();
-            dataSourceIds.add(dataSourceId);
-        }
-        copy.setDataSources(dataSourceIds);
         return copy;
     }
 
