@@ -20,6 +20,7 @@ import com.serotonin.json.spi.JsonSerializable;
 import com.serotonin.json.type.JsonObject;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
+import com.serotonin.m2m2.db.dao.PointValueDaoSQL;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.dataSource.AbstractPointLocatorVO;
@@ -32,8 +33,8 @@ import com.serotonin.util.SerializationHelper;
 public class InternalPointLocatorVO extends AbstractPointLocatorVO<InternalPointLocatorVO> implements JsonSerializable {
 
     public static String[] MONITOR_NAMES = { "", //
-            "com.serotonin.m2m2.db.dao.PointValueDao$BatchWriteBehind.ENTRIES_MONITOR", //
-            "com.serotonin.m2m2.db.dao.PointValueDao$BatchWriteBehind.INSTANCES_MONITOR", //
+            PointValueDaoSQL.ENTRIES_MONITOR_ID, //
+            PointValueDaoSQL.INSTANCES_MONITOR_ID, //
             "com.serotonin.m2m2.rt.maint.WorkItemMonitor.highPriorityServiceQueueSize", //
             "com.serotonin.m2m2.rt.maint.WorkItemMonitor.mediumPriorityServiceQueueSize", //
             "com.serotonin.m2m2.rt.maint.WorkItemMonitor.scheduledTimerTaskCount", //
@@ -41,7 +42,7 @@ public class InternalPointLocatorVO extends AbstractPointLocatorVO<InternalPoint
             "com.serotonin.m2m2.rt.maint.WorkItemMonitor.threadCount", //
             "com.serotonin.m2m2.rt.maint.WorkItemMonitor.dbActiveConnections", //
             "com.serotonin.m2m2.rt.maint.WorkItemMonitor.dbIdleConnections", //
-            "com.serotonin.m2m2.db.dao.PointValueDao$BatchWriteBehind.BATCH_WRITE_SPEED_MONITOR", //
+            PointValueDaoSQL.BATCH_WRITE_SPEED_MONITOR_ID, //
             "java.lang.Runtime.freeMemory",
             "java.lang.Runtime.usedMemory",
             "java.lang.Runtime.maxMemory",
