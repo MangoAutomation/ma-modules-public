@@ -108,14 +108,14 @@ public class WatchListDao extends AbstractVoDao<WatchListVO, WatchListsRecord, W
 
     @Override
     public void saveRelationalData(WatchListVO existing, WatchListVO vo) {
-        if(existing != null) {
+        if (existing != null) {
             create.deleteFrom(watchListPoints).where(watchListPoints.watchListId.eq(vo.getId())).execute();
         }
-        if(vo.getType() == WatchListType.STATIC) {
+        if (vo.getType() == WatchListType.STATIC && vo.getPointList().size() > 0) {
             BatchBindStep b = create.batch(
                     DSL.insertInto(watchListPoints)
-                    .columns(watchListPoints.watchListId, watchListPoints.dataPointId, watchListPoints.sortOrder)
-                    .values((Integer) null, null, null));
+                            .columns(watchListPoints.watchListId, watchListPoints.dataPointId, watchListPoints.sortOrder)
+                            .values((Integer) null, null, null));
 
             int sortOrder = 0;
             for(IDataPoint point : vo.getPointList()) {
@@ -123,7 +123,7 @@ public class WatchListDao extends AbstractVoDao<WatchListVO, WatchListsRecord, W
             }
             b.execute();
         }
-        if(existing != null) {
+        if (existing != null) {
             if(!existing.getReadPermission().equals(vo.getReadPermission())) {
                 permissionService.deletePermissions(existing.getReadPermission());
             }
