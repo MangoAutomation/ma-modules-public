@@ -3,11 +3,14 @@
  */
 package com.infiniteautomation.mango.rest.latest;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
-
 import javax.servlet.http.HttpServletRequest;
+import net.jazdw.rql.parser.ASTNode;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -33,15 +36,9 @@ import com.infiniteautomation.mango.rest.latest.patch.PatchVORequestBody;
 import com.infiniteautomation.mango.spring.service.MailingListService;
 import com.infiniteautomation.mango.util.RQLUtils;
 import com.serotonin.json.type.JsonStreamedArray;
-import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.mailingList.MailingList;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.web.MediaTypes;
-
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import net.jazdw.rql.parser.ASTNode;
 
 /**
  * @author Terry Packer
@@ -190,7 +187,7 @@ public class MailingListRestController {
             @ApiParam(value="User", required=true)
             @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
-        service.ensureValid(mapping.unmap(model, user, mapper), user);
+        service.ensureValid(mapping.unmap(model, user, mapper));
     }
 
     @ApiOperation(

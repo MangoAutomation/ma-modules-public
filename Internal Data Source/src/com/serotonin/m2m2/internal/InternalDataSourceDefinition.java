@@ -13,7 +13,6 @@ import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.module.PollingDataSourceDefinition;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
-import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 public class InternalDataSourceDefinition extends PollingDataSourceDefinition<InternalDataSourceVO> {
 
@@ -35,8 +34,8 @@ public class InternalDataSourceDefinition extends PollingDataSourceDefinition<In
     }
 
     @Override
-    public void validate(ProcessResult response, InternalDataSourceVO vo, PermissionHolder holder) {
-        super.validate(response, vo, holder);
+    public void validate(ProcessResult response, InternalDataSourceVO vo) {
+        super.validate(response, vo);
         if (!StringUtils.isEmpty(vo.getCreatePointsPattern())) {
             try {
                 Pattern.compile(vo.getCreatePointsPattern());
@@ -47,8 +46,7 @@ public class InternalDataSourceDefinition extends PollingDataSourceDefinition<In
     }
 
     @Override
-    public void validate(ProcessResult response, DataPointVO dpvo, DataSourceVO dsvo,
-            PermissionHolder user) {
+    public void validate(ProcessResult response, DataPointVO dpvo, DataSourceVO dsvo) {
         if (!(dsvo instanceof InternalDataSourceVO))
             response.addContextualMessage("dataSourceId", "dpEdit.validate.invalidDataSourceType");
         InternalPointLocatorVO pl = dpvo.getPointLocator();

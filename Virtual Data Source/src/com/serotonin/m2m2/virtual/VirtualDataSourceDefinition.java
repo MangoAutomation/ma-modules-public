@@ -15,7 +15,6 @@ import com.serotonin.m2m2.virtual.vo.VirtualDataSourceVO;
 import com.serotonin.m2m2.virtual.vo.VirtualPointLocatorVO;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
-import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 public class VirtualDataSourceDefinition extends PollingDataSourceDefinition<VirtualDataSourceVO> {
 
@@ -37,12 +36,12 @@ public class VirtualDataSourceDefinition extends PollingDataSourceDefinition<Vir
     }
 
     @Override
-    public void validate(ProcessResult response, VirtualDataSourceVO ds, PermissionHolder user) {
-        super.validate(response, ds, user);
+    public void validate(ProcessResult response, VirtualDataSourceVO ds) {
+        super.validate(response, ds);
     }
 
     @Override
-    public void validate(ProcessResult response, DataPointVO dpvo, DataSourceVO dsvo, PermissionHolder user) {
+    public void validate(ProcessResult response, DataPointVO dpvo, DataSourceVO dsvo) {
         if (!(dsvo instanceof VirtualDataSourceVO))
             response.addContextualMessage("dataSourceId", "dpEdit.validate.invalidDataSourceType");
 

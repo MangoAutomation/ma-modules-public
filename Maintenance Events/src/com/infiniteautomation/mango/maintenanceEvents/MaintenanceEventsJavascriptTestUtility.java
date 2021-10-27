@@ -55,25 +55,30 @@ public class MaintenanceEventsJavascriptTestUtility extends MaintenanceEventsJav
     @Override
     public MaintenanceEventVO insert(MaintenanceEventVO vo)
             throws NotFoundException, PermissionException, ValidationException {
-        //Ensure they can create an event
-        permissionService.ensurePermission(permissions, dataSourcePermissionDefinition.getPermission());
 
-        //Generate an Xid if necessary
-        if(StringUtils.isEmpty(vo.getXid()))
-            vo.setXid(MaintenanceEventDao.getInstance().generateUniqueXid());
+        return this.runAs.runAs(permissions, () -> {
+            //Ensure they can create an event
+            permissionService.ensurePermission(permissions, dataSourcePermissionDefinition.getPermission());
 
-        meService.ensureValid(vo, permissions);
-        return vo;
+            //Generate an Xid if necessary
+            if (StringUtils.isEmpty(vo.getXid()))
+                vo.setXid(MaintenanceEventDao.getInstance().generateUniqueXid());
+
+            meService.ensureValid(vo);
+            return vo;
+        });
     }
 
     @Override
     public MaintenanceEventVO update(MaintenanceEventVO existing, MaintenanceEventVO vo)
             throws NotFoundException, PermissionException, ValidationException {
-        meService.ensureEditPermission(permissions, existing);
-        //Don't change ID ever
-        vo.setId(existing.getId());
-        meService.ensureValid(vo, permissions);
-        return vo;
+        return this.runAs.runAs(permissions, () -> {
+            meService.ensureEditPermission(permissions, existing);
+            //Don't change ID ever
+            vo.setId(existing.getId());
+            meService.ensureValid(vo);
+            return vo;
+        });
     }
 
     @Override
@@ -84,7 +89,7 @@ public class MaintenanceEventsJavascriptTestUtility extends MaintenanceEventsJav
             meService.ensureEditPermission(permissions, existing);
             //Don't change ID ever
             vo.setId(existing.getId());
-            meService.ensureValid(vo, permissions);
+            meService.ensureValid(vo);
             return vo;
         });
     }

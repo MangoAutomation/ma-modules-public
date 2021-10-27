@@ -4,7 +4,6 @@ import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.module.PollingDataSourceDefinition;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
-import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 public class EnvCanDataSourceDefinition extends PollingDataSourceDefinition<EnvCanDataSourceVO> {
     public static final String DATA_SOURCE_TYPE = "EnvCan";
@@ -25,15 +24,14 @@ public class EnvCanDataSourceDefinition extends PollingDataSourceDefinition<EnvC
     }
 
     @Override
-    public void validate(ProcessResult response, EnvCanDataSourceVO ds, PermissionHolder user) {
-        super.validate(response, ds, user);
+    public void validate(ProcessResult response, EnvCanDataSourceVO ds) {
+        super.validate(response, ds);
         if (ds.getStationId() < 1)
             response.addContextualMessage("stationId", "validate.greaterThanZero", ds.getStationId());
     }
 
     @Override
-    public void validate(ProcessResult response, DataPointVO dpvo, DataSourceVO dsvo,
-            PermissionHolder user) {
+    public void validate(ProcessResult response, DataPointVO dpvo, DataSourceVO dsvo) {
         if (!(dsvo instanceof EnvCanDataSourceVO))
             response.addContextualMessage("dataSourceId", "dpEdit.validate.invalidDataSourceType");
 

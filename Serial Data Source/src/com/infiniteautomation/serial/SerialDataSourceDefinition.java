@@ -12,7 +12,6 @@ import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.module.DataSourceDefinition;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
-import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 public class SerialDataSourceDefinition extends DataSourceDefinition<SerialDataSourceVO> {
 
@@ -34,7 +33,7 @@ public class SerialDataSourceDefinition extends DataSourceDefinition<SerialDataS
     }
 
     @Override
-    public void validate(ProcessResult response, SerialDataSourceVO ds, PermissionHolder user) {
+    public void validate(ProcessResult response, SerialDataSourceVO ds) {
         if (StringUtils.isBlank(ds.getCommPortId()))
             response.addContextualMessage("commPortId", "validate.required");
         if (ds.getBaudRate() <= 0)
@@ -83,7 +82,7 @@ public class SerialDataSourceDefinition extends DataSourceDefinition<SerialDataS
     }
 
     @Override
-    public void validate(ProcessResult response, DataPointVO dpvo, DataSourceVO dsvo, PermissionHolder user) {
+    public void validate(ProcessResult response, DataPointVO dpvo, DataSourceVO dsvo) {
         if (!(dsvo instanceof SerialDataSourceVO))
             response.addContextualMessage("dataSourceId", "dpEdit.validate.invalidDataSourceType");
 

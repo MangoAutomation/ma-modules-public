@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import net.jazdw.rql.parser.ASTNode;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -32,8 +33,6 @@ import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.watchlist.WatchListCreatePermission;
 import com.serotonin.m2m2.watchlist.WatchListVO;
 import com.serotonin.m2m2.watchlist.WatchListVO.WatchListType;
-
-import net.jazdw.rql.parser.ASTNode;
 
 /**
  *
@@ -74,9 +73,10 @@ public class WatchListService extends AbstractVOService<WatchListVO, WatchListDa
     }
 
     @Override
-    public ProcessResult validate(WatchListVO vo, PermissionHolder user) {
-        ProcessResult response = commonValidation(vo, user);
+    public ProcessResult validate(WatchListVO vo) {
+        ProcessResult response = commonValidation(vo);
 
+        PermissionHolder user = Common.getUser();
         permissionService.validatePermission(response, "readPermission", user, vo.getReadPermission());
         permissionService.validatePermission(response, "editPermission", user, vo.getEditPermission());
         return response;
@@ -84,17 +84,18 @@ public class WatchListService extends AbstractVOService<WatchListVO, WatchListDa
     }
 
     @Override
-    public ProcessResult validate(WatchListVO existing, WatchListVO vo, PermissionHolder savingUser) {
-        ProcessResult response = commonValidation(vo, savingUser);
+    public ProcessResult validate(WatchListVO existing, WatchListVO vo) {
+        ProcessResult response = commonValidation(vo);
 
+        PermissionHolder savingUser = Common.getUser();
         permissionService.validatePermission(response, "readPermission", savingUser, existing.getReadPermission(), vo.getReadPermission());
         permissionService.validatePermission(response, "editPermission", savingUser, existing.getEditPermission(), vo.getEditPermission());
 
         return response;
     }
 
-    protected ProcessResult commonValidation(WatchListVO vo, PermissionHolder user) {
-        ProcessResult response = super.validate(vo, user);
+    protected ProcessResult commonValidation(WatchListVO vo) {
+        ProcessResult response = super.validate(vo);
         if (vo.getType() == null) {
             String values = Arrays.asList(WatchListType.values()).toString();
             response.addContextualMessage("type", "validate.invalidValueWithAcceptable", vo.getType(), values);

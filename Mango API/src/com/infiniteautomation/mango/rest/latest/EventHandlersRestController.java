@@ -3,6 +3,9 @@
  */
 package com.infiniteautomation.mango.rest.latest;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
@@ -10,8 +13,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-
 import javax.servlet.http.HttpServletRequest;
+import net.jazdw.rql.parser.ASTNode;
 
 import org.apache.poi.EncryptedDocumentException;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
@@ -58,11 +61,6 @@ import com.serotonin.m2m2.rt.event.type.EventType;
 import com.serotonin.m2m2.rt.script.EventInstanceWrapper;
 import com.serotonin.m2m2.vo.event.AbstractEventHandlerVO;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
-
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import net.jazdw.rql.parser.ASTNode;
 
 /**
  * @author Terry Packer
@@ -233,7 +231,7 @@ public class EventHandlersRestController {
             @ApiParam(value="User", required=true)
             @AuthenticationPrincipal PermissionHolder user) {
 
-        service.ensureValid(modelMapper.unMap(model, AbstractEventHandlerVO.class, user), user);
+        service.ensureValid(modelMapper.unMap(model, AbstractEventHandlerVO.class, user));
     }
 
     @ApiOperation(

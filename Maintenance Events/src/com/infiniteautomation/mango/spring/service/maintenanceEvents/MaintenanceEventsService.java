@@ -68,7 +68,7 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
         if(StringUtils.isEmpty(vo.getXid()))
             vo.setXid(dao.generateUniqueXid());
 
-        ensureValid(vo, user);
+        ensureValid(vo);
         RTMDefinition.instance.saveMaintenanceEvent(vo);
         return vo;
     }
@@ -79,7 +79,7 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
 
         ensureEditPermission(user, existing);
         vo.setId(existing.getId());
-        ensureValid(existing, vo, user);
+        ensureValid(existing, vo);
         RTMDefinition.instance.saveMaintenanceEvent(vo);
         return vo;
     }
@@ -333,21 +333,23 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
     }
 
     @Override
-    public ProcessResult validate(MaintenanceEventVO vo, PermissionHolder user) {
-        ProcessResult result = commonValidation(vo, user);
+    public ProcessResult validate(MaintenanceEventVO vo) {
+        ProcessResult result = commonValidation(vo);
+        PermissionHolder user = Common.getUser();
         permissionService.validatePermission(result, "togglePermission", user, vo.getTogglePermission());
         return result;
     }
 
     @Override
-    public ProcessResult validate(MaintenanceEventVO existing, MaintenanceEventVO vo, PermissionHolder user) {
-        ProcessResult result = commonValidation(vo, user);
+    public ProcessResult validate(MaintenanceEventVO existing, MaintenanceEventVO vo) {
+        ProcessResult result = commonValidation(vo);
+        PermissionHolder user = Common.getUser();
         permissionService.validatePermission(result, "togglePermission", user, existing.getTogglePermission(), vo.getTogglePermission());
         return result;
     }
 
-    public ProcessResult commonValidation(MaintenanceEventVO vo, PermissionHolder user) {
-        ProcessResult response = super.validate(vo, user);
+    public ProcessResult commonValidation(MaintenanceEventVO vo) {
+        ProcessResult response = super.validate(vo);
 
         if((vo.getDataSources().size() < 1) &&(vo.getDataPoints().size() < 1)) {
             response.addContextualMessage("dataSources", "validate.invalidValue");

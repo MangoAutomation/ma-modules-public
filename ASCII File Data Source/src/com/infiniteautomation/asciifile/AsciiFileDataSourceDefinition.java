@@ -15,7 +15,6 @@ import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.module.PollingDataSourceDefinition;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
-import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 /**
  * @author Phillip Dunlap
@@ -41,9 +40,8 @@ public class AsciiFileDataSourceDefinition extends PollingDataSourceDefinition<A
     }
 
     @Override
-    public void validate(ProcessResult response, AsciiFileDataSourceVO vo,
-            PermissionHolder holder) {
-        super.validate(response, vo, holder);
+    public void validate(ProcessResult response, AsciiFileDataSourceVO vo) {
+        super.validate(response, vo);
         //TODO: ensure the path syntax is reasonable
         if (isBlank(vo.getFilePath()))
             response.addContextualMessage("filePath", "validate.required");
@@ -65,8 +63,7 @@ public class AsciiFileDataSourceDefinition extends PollingDataSourceDefinition<A
     }
 
     @Override
-    public void validate(ProcessResult response, DataPointVO dpvo, DataSourceVO dsvo,
-            PermissionHolder user) {
+    public void validate(ProcessResult response, DataPointVO dpvo, DataSourceVO dsvo) {
         if(!(dsvo instanceof AsciiFileDataSourceVO))
             response.addContextualMessage("dataSourceId", "dpEdit.validate.invalidDataSourceType");
 
