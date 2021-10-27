@@ -3,22 +3,20 @@
  */
 package com.serotonin.m2m2.maintenanceEvents;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.function.Consumer;
+import java.util.List;
 
+import org.jooq.BatchBindStep;
 import org.jooq.Record;
 import org.jooq.Record1;
 import org.jooq.Select;
 import org.jooq.impl.DSL;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.BatchPreparedStatementSetter;
-import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.stereotype.Repository;
 
 import com.infiniteautomation.mango.db.tables.DataPoints;
 import com.infiniteautomation.mango.db.tables.DataSources;
+import com.infiniteautomation.mango.db.tables.EventHandlersMapping;
 import com.infiniteautomation.mango.permission.MangoPermission;
 import com.infiniteautomation.mango.spring.DaoDependencies;
 import com.infiniteautomation.mango.util.LazyInitSupplier;
@@ -53,6 +51,7 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
     private final DataSources dataSources;
     private final MaintenanceEventDataPoints mePoints;
     private final MaintenanceEventDataSources meSources;
+    private final EventHandlersMapping eventHandlersMapping;
 
     @Autowired
     private MaintenanceEventDao(
@@ -67,6 +66,7 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
         this.dataSources = DataSources.DATA_SOURCES;
         this.mePoints = MaintenanceEventDataPoints.MAINTENANCE_EVENT_DATA_POINTS;
         this.meSources = MaintenanceEventDataSources.MAINTENANCE_EVENT_DATA_SOURCES;
+        this.eventHandlersMapping = EventHandlersMapping.EVENT_HANDLERS_MAPPING;
     }
 
     /**
@@ -78,16 +78,11 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
     }
 
     @Override
-    public boolean delete(MaintenanceEventVO vo) {
-        if (vo != null) {
-            return getTransactionTemplate().execute(status -> {
-                ejt.update("delete from eventHandlersMapping where eventTypeName=? and eventTypeRef1=?", new Object[] {
-                        MaintenanceEventType.TYPE_NAME, vo.getId()});
-                return MaintenanceEventDao.super.delete(vo);
-            });
-        }else {
-            return false;
-        }
+    public void deleteRelationalData(MaintenanceEventVO vo) {
+        create.deleteFrom(eventHandlersMapping)
+                .where(eventHandlersMapping.eventTypeName.eq(MaintenanceEventType.TYPE_NAME))
+                .and(eventHandlersMapping.eventTypeRef1.eq(vo.getId()))
+                .execute();
     }
 
     @Override
@@ -98,25 +93,51 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
 
     @Override
     public void saveRelationalData(MaintenanceEventVO existing, MaintenanceEventVO vo) {
-        if(existing == null) {
-            ejt.batchUpdate(INSERT_DATA_SOURCE_IDS, new InsertDataSources(vo));
-            ejt.batchUpdate(INSERT_DATA_POINT_IDS, new InsertDataPoints(vo));
-        }else {
+        if (existing != null) {
             //Delete and insert
-            ejt.update(DELETE_DATA_SOURCE_IDS, new Object[] {vo.getId()});
-            ejt.batchUpdate(INSERT_DATA_SOURCE_IDS, new InsertDataSources(vo));
-            ejt.update(DELETE_DATA_POINT_IDS, new Object[] {vo.getId()});
-            ejt.batchUpdate(INSERT_DATA_POINT_IDS, new InsertDataPoints(vo));
-            if(!existing.getTogglePermission().equals(vo.getTogglePermission())) {
-                permissionService.deletePermissions(existing.getTogglePermission());
-            }
+            create.deleteFrom(meSources).where(meSources.maintenanceEventId.equal(vo.getId())).execute();
+            create.deleteFrom(mePoints).where(mePoints.maintenanceEventId.equal(vo.getId())).execute();
+        }
+
+        List<Integer> dataSources = vo.getDataSources();
+        if (dataSources.size() > 0) {
+            BatchBindStep batchSources = create.batch(
+                    create.insertInto(meSources)
+                            .columns(meSources.maintenanceEventId, meSources.dataSourceId)
+                            .values((Integer) null, null)
+            );
+            for(Integer dataSourceId : dataSources) batchSources.bind(vo.getId(), dataSourceId);
+            batchSources.execute();
+        }
+
+        List<Integer> dataPoints = vo.getDataPoints();
+        if (dataPoints.size() > 0) {
+            BatchBindStep batchPoints = create.batch(
+                    DSL.insertInto(mePoints)
+                            .columns(mePoints.maintenanceEventId, mePoints.dataPointId)
+                            .values((Integer) null, null)
+            );
+            for(Integer dataPointId : dataPoints) batchPoints.bind(vo.getId(), dataPointId);
+            batchPoints.execute();
+        }
+
+        if (existing != null && !existing.getTogglePermission().equals(vo.getTogglePermission())) {
+            permissionService.deletePermissions(existing.getTogglePermission());
         }
     }
 
     @Override
     public void loadRelationalData(MaintenanceEventVO vo) {
-        vo.setDataPoints(ejt.queryForList("SELECT dataPointId FROM maintenanceEventDataPoints WHERE maintenanceEventId=?", Integer.class, vo.getId()));
-        vo.setDataSources(ejt.queryForList("SELECT dataSourceId FROM maintenanceEventDataSources WHERE maintenanceEventId=?", Integer.class, vo.getId()));
+        vo.setDataPoints(
+            this.create.select().from(mePoints)
+                .where(mePoints.maintenanceEventId.equal(vo.getId()))
+                .fetch(mePoints.dataPointId, Integer.class)
+        );
+        vo.setDataSources(
+            this.create.select().from(meSources)
+                    .where(meSources.maintenanceEventId.equal(vo.getId()))
+                    .fetch(meSources.dataSourceId, Integer.class)
+        );
         //Populate permissions
         vo.setTogglePermission(permissionService.get(vo.getTogglePermission().getId()));
     }
@@ -147,16 +168,11 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
      * @param maintenanceEventId
      * @param callback
      */
-    public void getPointXids(int maintenanceEventId, final Consumer<String> callback){
-        this.ejt.query("SELECT xid from dataPoints AS dp JOIN maintenanceEventDataPoints mep ON mep.dataPointId = dp.id WHERE mep.maintenanceEventId=?", new Object[]{maintenanceEventId}, new RowCallbackHandler(){
-            private int row = 0;
-
-            @Override
-            public void processRow(ResultSet rs) throws SQLException {
-                callback.accept(rs.getString(1));
-                row++;
-            }
-
+    public void getPointXids(int maintenanceEventId, final Consumer<String> callback) {
+        dataPointDao.getJoinedSelectQuery()
+                .join(mePoints).on(mePoints.dataPointId.equal(dataPoints.id))
+                .where(mePoints.maintenanceEventId.equal(maintenanceEventId)).forEach(record -> {
+            callback.accept(record.get(dataPointDao.getXidField()));
         });
     }
 
@@ -180,16 +196,11 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
      * @param maintenanceEventId
      * @param callback
      */
-    public void getSourceXids(int maintenanceEventId, final Consumer<String> callback){
-        this.ejt.query("SELECT xid from dataSources AS ds JOIN maintenanceEventDataSources med ON med.dataSourceId = ds.id WHERE med.maintenanceEventId=?", new Object[]{maintenanceEventId}, new RowCallbackHandler(){
-            private int row = 0;
-
-            @Override
-            public void processRow(ResultSet rs) throws SQLException {
-                callback.accept(rs.getString(1));
-                row++;
-            }
-
+    public void getSourceXids(int maintenanceEventId, final Consumer<String> callback) {
+        dataSourceDao.getJoinedSelectQuery()
+                .join(meSources).on(meSources.dataSourceId.equal(dataSources.id))
+                .where(meSources.maintenanceEventId.equal(maintenanceEventId)).forEach(record -> {
+            callback.accept(record.get(dataSourceDao.getXidField()));
         });
     }
 
@@ -255,50 +266,6 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
         getJoinedSelectQuery()
                 .where(table.id.in(idsForSource))
                 .forEach(record -> callback.accept(mapRecord(record)));
-    }
-
-    private static final String INSERT_DATA_SOURCE_IDS = "INSERT INTO maintenanceEventDataSources (maintenanceEventId, dataSourceId) VALUES (?,?)";
-    private static final String DELETE_DATA_SOURCE_IDS = "DELETE FROM maintenanceEventDataSources WHERE maintenanceEventId=?";
-
-    private static final String INSERT_DATA_POINT_IDS = "INSERT INTO maintenanceEventDataPoints (maintenanceEventId, dataPointId) VALUES (?,?)";
-    private static final String DELETE_DATA_POINT_IDS = "DELETE FROM maintenanceEventDataPoints WHERE maintenanceEventId=?";
-
-    private static class InsertDataSources implements BatchPreparedStatementSetter {
-        MaintenanceEventVO vo;
-
-        InsertDataSources(MaintenanceEventVO vo) {
-            this.vo = vo;
-        }
-
-        @Override
-        public int getBatchSize() {
-            return vo.getDataSources().size();
-        }
-
-        @Override
-        public void setValues(PreparedStatement ps, int i) throws SQLException {
-            ps.setInt(1, vo.getId());
-            ps.setInt(2, vo.getDataSources().get(i));
-        }
-    }
-
-    private static class InsertDataPoints implements BatchPreparedStatementSetter {
-        MaintenanceEventVO vo;
-
-        InsertDataPoints(MaintenanceEventVO vo) {
-            this.vo = vo;
-        }
-
-        @Override
-        public int getBatchSize() {
-            return vo.getDataPoints().size();
-        }
-
-        @Override
-        public void setValues(PreparedStatement ps, int i) throws SQLException {
-            ps.setInt(1, vo.getId());
-            ps.setInt(2, vo.getDataPoints().get(i));
-        }
     }
 
     @Override

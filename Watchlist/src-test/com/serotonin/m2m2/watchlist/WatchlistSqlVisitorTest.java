@@ -8,9 +8,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.BeforeClass;
@@ -36,7 +34,6 @@ import net.jazdw.rql.parser.RQLParser;
  */
 public class WatchlistSqlVisitorTest extends MangoTestBase {
 
-    protected Map<String,String> modelMap = new HashMap<String,String>();
     protected WatchListService service;
 
     @BeforeClass

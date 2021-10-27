@@ -7,6 +7,7 @@ package com.infiniteautomation.mango.spring.service;
 import static org.junit.Assert.assertEquals;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -16,6 +17,7 @@ import org.junit.Test;
 import com.infiniteautomation.mango.permission.MangoPermission;
 import com.infiniteautomation.mango.spring.dao.WatchListDao;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.vo.IDataPoint;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
@@ -68,11 +70,19 @@ public class WatchListServiceTest extends AbstractVOServiceWithPermissionsTest<W
         assertEquals(expected.getName(), actual.getName());
 
         assertEquals(expected.getType(), actual.getType());
+        if (expected.getType() == WatchListType.STATIC) {
+            List<IDataPoint> actualPoints = actual.getPointList();
+            List<IDataPoint> expectedPoints = expected.getPointList();
+            assertEquals(expectedPoints.size(), actualPoints.size());
+            for (int i = 0; i < expectedPoints.size(); i++) {
+                assertEquals(expectedPoints.get(i).getId(), actualPoints.get(i).getId());
+            }
+        }
+
         assertEquals(expected.getData().size(), actual.getData().size());
         expected.getData().keySet().forEach(key -> {
             assertEquals(expected.getData().get(key), (actual.getData().get(key)));
         });
-
     }
 
     @Override
@@ -93,6 +103,9 @@ public class WatchListServiceTest extends AbstractVOServiceWithPermissionsTest<W
     WatchListVO updateVO(WatchListVO existing) {
         WatchListVO copy = (WatchListVO) existing.copy();
         copy.setName(UUID.randomUUID().toString());
+        copy.setPointList(createMockDataPoints(10, false,
+                MangoPermission.requireAnyRole(editUser.getRoles()),
+                MangoPermission.requireAnyRole(editUser.getRoles())));
         Map<String, Object> randomData = new HashMap<>();
         randomData.put(UUID.randomUUID().toString(), UUID.randomUUID().toString());
         copy.setData(randomData);

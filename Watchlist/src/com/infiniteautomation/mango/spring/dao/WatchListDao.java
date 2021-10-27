@@ -3,17 +3,16 @@
  */
 package com.infiniteautomation.mango.spring.dao;
 
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.Consumer;
 
+import org.jooq.BatchBindStep;
 import org.jooq.Field;
 import org.jooq.Record;
+import org.jooq.impl.DSL;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.stereotype.Repository;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -109,13 +108,22 @@ public class WatchListDao extends AbstractVoDao<WatchListVO, WatchListsRecord, W
 
     @Override
     public void saveRelationalData(WatchListVO existing, WatchListVO vo) {
-        if(existing != null) {
-            ejt.update("DELETE FROM watchListPoints WHERE watchListId=?", vo.getId());
+        if (existing != null) {
+            create.deleteFrom(watchListPoints).where(watchListPoints.watchListId.eq(vo.getId())).execute();
         }
-        if(vo.getType() == WatchListType.STATIC) {
-            ejt.batchUpdate("INSERT INTO watchListPoints VALUES (?,?,?)", new InsertPoints(vo));
+        if (vo.getType() == WatchListType.STATIC && vo.getPointList().size() > 0) {
+            BatchBindStep b = create.batch(
+                    DSL.insertInto(watchListPoints)
+                            .columns(watchListPoints.watchListId, watchListPoints.dataPointId, watchListPoints.sortOrder)
+                            .values((Integer) null, null, null));
+
+            int sortOrder = 0;
+            for(IDataPoint point : vo.getPointList()) {
+                b.bind(vo.getId(), point.getId(), sortOrder++);
+            }
+            b.execute();
         }
-        if(existing != null) {
+        if (existing != null) {
             if(!existing.getReadPermission().equals(vo.getReadPermission())) {
                 permissionService.deletePermissions(existing.getReadPermission());
             }
@@ -145,6 +153,7 @@ public class WatchListDao extends AbstractVoDao<WatchListVO, WatchListsRecord, W
                     .from(dataPoints)
                     .join(watchListPoints)
                     .on(dataPoints.id.equal(watchListPoints.dataPointId))
+                    .where(watchListPoints.watchListId.eq(vo.getId()))
                     .orderBy(watchListPoints.sortOrder)
                     .fetch(dataPointDao::mapDataPointSummary);
 
@@ -156,26 +165,6 @@ public class WatchListDao extends AbstractVoDao<WatchListVO, WatchListsRecord, W
     public void deletePostRelationalData(WatchListVO vo) {
         //Clean permissions
         permissionService.deletePermissions(vo.getReadPermission(), vo.getEditPermission());
-    }
-
-    private static class InsertPoints implements BatchPreparedStatementSetter {
-        WatchListVO vo;
-
-        InsertPoints(WatchListVO vo) {
-            this.vo = vo;
-        }
-
-        @Override
-        public int getBatchSize() {
-            return vo.getPointList().size();
-        }
-
-        @Override
-        public void setValues(PreparedStatement ps, int i) throws SQLException {
-            ps.setInt(1, vo.getId());
-            ps.setInt(2, vo.getPointList().get(i).getId());
-            ps.setInt(3, i);
-        }
     }
 
     @Override
