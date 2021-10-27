@@ -316,6 +316,7 @@ public class PublishersRestController {
         if(points != null) {
             List<PublishedPointVO> pointVos = new ArrayList<>();
             for(AbstractPublishedPointModel<?> pm : points) {
+                pm.setPublisherXid(publisherVO.getXid());
                 pointVos.add(pm.toVO());
             }
             publishedPointService.replacePoints(publisherVO.getId(), pointVos);
