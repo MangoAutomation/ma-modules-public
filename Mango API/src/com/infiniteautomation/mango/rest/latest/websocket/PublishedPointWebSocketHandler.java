@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import com.infiniteautomation.mango.rest.latest.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.latest.model.publisher.AbstractPublishedPointModel;
 import com.infiniteautomation.mango.spring.events.DaoEvent;
+import com.infiniteautomation.mango.spring.events.StateChangeEvent;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.vo.publish.PublishedPointVO;
@@ -43,6 +44,11 @@ public class PublishedPointWebSocketHandler extends DaoNotificationWebSocketHand
     protected Object createModel(PublishedPointVO vo, ApplicationEvent event, PermissionHolder user) {
         AbstractPublishedPointModel model = mapper.map(vo, AbstractPublishedPointModel.class, user);
         return model;
+    }
+
+    @EventListener
+    private void handleStateChangeEvent(StateChangeEvent<PublishedPointVO> event) {
+        this.notify(StateChangeEvent.STATE_CHANGE, event.getVo(), null, event);
     }
 
     @Override
