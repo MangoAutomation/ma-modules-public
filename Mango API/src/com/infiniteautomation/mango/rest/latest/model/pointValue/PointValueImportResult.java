@@ -164,7 +164,7 @@ public class PointValueImportResult {
                     pvt = new AnnotatedPointValueTime(value, timestamp, new TranslatableMessage("common.default", model.getAnnotation()));
                 }
                 if(rt == null) {
-                    dao.savePointValueAsync(vo, pvt, null);
+                    dao.savePointValueAsync(vo, pvt);
                 }else {
                     rt.savePointValueDirectToCache(pvt, null, true, true, fireEvents);
                 }

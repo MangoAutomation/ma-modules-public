@@ -219,7 +219,7 @@ public class PointValueModificationRestController {
                     pvt = new AnnotatedPointValueTime(dataValue, timestamp, new TranslatableMessage("common.default", annotation));
                 }
                 if(rt == null) {
-                    dao.savePointValueAsync(vo, pvt, null);
+                    dao.savePointValueAsync(vo, pvt);
                     //Try for next value to see if the point is enabled now
                     rt = Common.runtimeManager.getDataPoint(vo.getId());
                 }else {
