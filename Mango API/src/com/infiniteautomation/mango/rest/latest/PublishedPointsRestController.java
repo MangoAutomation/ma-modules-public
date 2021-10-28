@@ -60,6 +60,7 @@ public class PublishedPointsRestController {
 
     private final PublishedPointService service;
     private final BiFunction<PublishedPointVO, PermissionHolder, AbstractPublishedPointModel<?>> map;
+    private final BiFunction<AbstractPublishedPointModel<?>, PermissionHolder, PublishedPointVO> unmap;
     private final PermissionService permissionService;
     private final Map<String, Field<?>> fieldMap;
 
@@ -69,6 +70,10 @@ public class PublishedPointsRestController {
         this.map = (vo, user) -> {
             return modelMapper.map(vo, AbstractPublishedPointModel.class, user);
         };
+        this.unmap = (model, user) -> {
+            return modelMapper.unMap(model, PublishedPointVO.class, user);
+        };
+
         this.permissionService = permissionService;
         //Setup any exposed special query aliases to map model fields to db columns
         Publishers publishers = Publishers.PUBLISHERS;
@@ -129,7 +134,7 @@ public class PublishedPointsRestController {
             UriComponentsBuilder builder,
             HttpServletRequest request) {
 
-        PublishedPointVO vo = this.service.insert(model.toVO());
+        PublishedPointVO vo = this.service.insert(unmap.apply(model, user));
         URI location = builder.path("/published-points/{xid}").buildAndExpand(new Object[]{vo.getXid()}).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
@@ -145,7 +150,7 @@ public class PublishedPointsRestController {
             UriComponentsBuilder builder,
             HttpServletRequest request) {
 
-        PublishedPointVO vo = this.service.update(xid, model.toVO());
+        PublishedPointVO vo = this.service.update(xid, unmap.apply(model, user));
         URI location = builder.path("/published-points/{xid}").buildAndExpand(new Object[]{vo.getXid()}).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
@@ -168,7 +173,7 @@ public class PublishedPointsRestController {
             @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
 
-        PublishedPointVO vo = service.update(xid, model.toVO());
+        PublishedPointVO vo = service.update(xid, unmap.apply(model, user));
 
         URI location = builder.path("/published-points/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();

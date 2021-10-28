@@ -68,13 +68,6 @@ public abstract class AbstractPublisherModel<POINT extends PublishedPointVO, PUB
      */
     public abstract String getModelType();
 
-    /**
-     * Model a point
-     * @param point
-     * @return
-     */
-    public abstract AbstractPublishedPointModel<POINT> modelPoint(POINT point);
-
     @SuppressWarnings("unchecked")
     @Override
     protected PUBLISHER newVO() {
