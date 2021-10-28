@@ -62,7 +62,7 @@ import com.serotonin.db.pair.StringStringPair;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.ICoreLicense;
 import com.serotonin.m2m2.IMangoLifecycle;
-import com.serotonin.m2m2.db.dao.DataPointDao;
+import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.email.MangoEmailContent;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -110,14 +110,19 @@ public class ServerRestController extends AbstractMangoRestController {
 
     private List<TimezoneModel> allTimezones;
     private TimezoneModel defaultServerTimezone;
+    private final PointValueDao pointValueDao;
+    private final SystemSettingsDao systemSettingsDao;
 
     @Autowired
     public ServerRestController(UsersService userService, MailingListService mailingListService,
-            PermissionService permissionService, MangoSessionRegistry sessionRegistry) {
+                                PermissionService permissionService, MangoSessionRegistry sessionRegistry,
+                                PointValueDao pointValueDao, SystemSettingsDao systemSettingsDao) {
         this.userService = userService;
         this.mailingListService = mailingListService;
         this.sessionRegistry = sessionRegistry;
         this.permissionService = permissionService;
+        this.pointValueDao = pointValueDao;
+        this.systemSettingsDao = systemSettingsDao;
 
         this.allTimezones = TimezoneUtility.getTimeZoneIdsWithOffset();
         this.defaultServerTimezone = new TimezoneModel("",
@@ -321,8 +326,8 @@ public class ServerRestController extends AbstractMangoRestController {
     @ApiResponses({
         @ApiResponse(code = 500, message = "Internal error", response = ResponseEntity.class)})
     @RequestMapping(method = {RequestMethod.GET}, value = "/point-history-counts")
-    public ResponseEntity<List<PointHistoryCount>> getPointHistoryCounts() {
-        return ResponseEntity.ok(DataPointDao.getInstance().getTopPointHistoryCounts());
+    public ResponseEntity<List<PointHistoryCount>> getPointHistoryCounts(@RequestParam(defaultValue = "100") int limit) {
+        return ResponseEntity.ok(pointValueDao.topPointHistoryCounts(limit));
     }
 
     @ApiOperation(value = "Get general Mango installation info",
@@ -333,7 +338,7 @@ public class ServerRestController extends AbstractMangoRestController {
     public ResponseEntity<Map<String, String>> getMangoInfo(@AuthenticationPrincipal PermissionHolder user){
         Map<String, String> mangoInfo = new HashMap<>();
 
-        mangoInfo.put(SystemSettingsDao.INSTANCE_DESCRIPTION, SystemSettingsDao.getInstance().getValue(SystemSettingsDao.INSTANCE_DESCRIPTION));
+        mangoInfo.put(SystemSettingsDao.INSTANCE_DESCRIPTION, systemSettingsDao.getValue(SystemSettingsDao.INSTANCE_DESCRIPTION));
         mangoInfo.put("guid", Providers.get(ICoreLicense.class).getGuid());
         mangoInfo.put("coreVersion", Common.getVersion().toString());
         mangoInfo.put("coreVersionNormalized", Common.getVersion().getNormalVersion());
@@ -358,9 +363,9 @@ public class ServerRestController extends AbstractMangoRestController {
         //Check to see if the versions match, if so this request is invalid as it has already been confirmed
 
         if (agree) {
-            SystemSettingsDao.getInstance().setIntValue(SystemSettingsDao.LICENSE_AGREEMENT_VERSION, Common.getLicenseAgreementVersion());
+            systemSettingsDao.setIntValue(SystemSettingsDao.LICENSE_AGREEMENT_VERSION, Common.getLicenseAgreementVersion());
         } else {
-            if (Common.getLicenseAgreementVersion() == SystemSettingsDao.getInstance().getIntValue(SystemSettingsDao.LICENSE_AGREEMENT_VERSION))
+            if (Common.getLicenseAgreementVersion() == systemSettingsDao.getIntValue(SystemSettingsDao.LICENSE_AGREEMENT_VERSION))
                 throw new BadRequestException(new TranslatableMessage("systemSettings.licenseAlreadyAgreed"));
 
             //Start shutdown timer
@@ -373,7 +378,7 @@ public class ServerRestController extends AbstractMangoRestController {
     @RequestMapping(method = {RequestMethod.GET}, value = "/license-agreement-version")
     public Integer getLicenseAgreement(
             @AuthenticationPrincipal PermissionHolder user){
-        return SystemSettingsDao.getInstance().getIntValue(SystemSettingsDao.LICENSE_AGREEMENT_VERSION);
+        return systemSettingsDao.getIntValue(SystemSettingsDao.LICENSE_AGREEMENT_VERSION);
     }
 
     @ApiOperation(value = "Send a client error / stack trace to the backend for logging")
