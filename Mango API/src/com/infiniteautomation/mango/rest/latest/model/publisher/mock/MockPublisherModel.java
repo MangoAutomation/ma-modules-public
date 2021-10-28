@@ -4,13 +4,12 @@
 
 package com.infiniteautomation.mango.rest.latest.model.publisher.mock;
 
-import com.infiniteautomation.mango.rest.latest.model.publisher.AbstractPublishedPointModel;
+import io.swagger.annotations.ApiModel;
+
 import com.infiniteautomation.mango.rest.latest.model.publisher.AbstractPublisherModel;
 import com.serotonin.m2m2.vo.publish.mock.MockPublishedPointVO;
 import com.serotonin.m2m2.vo.publish.mock.MockPublisherDefinition;
 import com.serotonin.m2m2.vo.publish.mock.MockPublisherVO;
-
-import io.swagger.annotations.ApiModel;
 
 /**
  *
@@ -30,12 +29,6 @@ public class MockPublisherModel extends AbstractPublisherModel<MockPublishedPoin
     @Override
     public String getModelType() {
         return MockPublisherDefinition.TYPE_NAME;
-    }
-
-    @Override
-    public AbstractPublishedPointModel<MockPublishedPointVO> modelPoint(
-            MockPublishedPointVO point) {
-        return new MockPublishedPointModel(point);
     }
 
 }

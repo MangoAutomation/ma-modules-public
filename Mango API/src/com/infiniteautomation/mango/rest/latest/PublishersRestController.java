@@ -17,6 +17,7 @@ import java.util.function.BiFunction;
 import javax.servlet.http.HttpServletRequest;
 import net.jazdw.rql.parser.ASTNode;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -63,13 +64,15 @@ public class PublishersRestController {
     private final PublishedPointService publishedPointService;
     private final BiFunction<PublisherVO, PermissionHolder, AbstractPublisherModel<?,?>> map;
     private final BiFunction<PublisherVO, PermissionHolder, AbstractPublisherModel<?,?>> mapWithoutPoints;
+    private final BiFunction<AbstractPublishedPointModel<?>, PermissionHolder, PublishedPointVO> unmapPoint;
     private final PermissionService permissionService;
 
     @Autowired
     public PublishersRestController(final PublisherService service,
                                     final RestModelMapper modelMapper,
                                     PermissionService permissionService,
-                                    PublishedPointService publishedPointService) {
+                                    PublishedPointService publishedPointService
+                                    ) {
         this.service = service;
         this.map = (vo, user) -> {
             AbstractPublisherModel model = modelMapper.map(vo, AbstractPublisherModel.class, user);
@@ -84,6 +87,11 @@ public class PublishersRestController {
         this.mapWithoutPoints = (vo, user) -> {
             return modelMapper.map(vo, AbstractPublisherModel.class, user);
         };
+
+        this.unmapPoint = (model, user) -> {
+            return modelMapper.unMap(model, PublishedPointVO.class, user);
+        };
+
         this.permissionService = permissionService;
         this.publishedPointService = publishedPointService;
     }
@@ -162,7 +170,7 @@ public class PublishersRestController {
             HttpServletRequest request) {
 
         PublisherVO vo = this.service.insert(model.toVO());
-        maybeReplacePoints(vo, model.getPoints());
+        maybeReplacePoints(vo, model.getPoints(), user);
         URI location = builder.path("/publishers/{xid}").buildAndExpand(new Object[]{vo.getXid()}).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
@@ -185,7 +193,7 @@ public class PublishersRestController {
             HttpServletRequest request) {
 
         PublisherVO vo = this.service.update(xid, model.toVO());
-        maybeReplacePoints(vo, model.getPoints());
+        maybeReplacePoints(vo, model.getPoints(), user);
         URI location = builder.path("/publishers/{xid}").buildAndExpand(new Object[]{vo.getXid()}).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
@@ -214,7 +222,7 @@ public class PublishersRestController {
             UriComponentsBuilder builder) {
 
         PublisherVO vo = service.update(xid, model.toVO());
-        maybeReplacePoints(vo, model.getPoints());
+        maybeReplacePoints(vo, model.getPoints(), user);
         URI location = builder.path("/publishers/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
@@ -312,12 +320,21 @@ public class PublishersRestController {
      * @param publisherVO
      * @param points
      */
-    private void maybeReplacePoints(PublisherVO publisherVO, List<? extends AbstractPublishedPointModel<?>> points) {
+    private void maybeReplacePoints(PublisherVO publisherVO, List<? extends AbstractPublishedPointModel<?>> points, PermissionHolder user) {
         if(points != null) {
             List<PublishedPointVO> pointVos = new ArrayList<>();
+            int i =0;
             for(AbstractPublishedPointModel<?> pm : points) {
+                //Ensure publisher xid is set
                 pm.setPublisherXid(publisherVO.getXid());
-                pointVos.add(pm.toVO());
+                //Ensure xid is set
+                if(StringUtils.isEmpty(pm.getXid())) {
+                    pm.setXid(publishedPointService.generateUniqueXid());
+                }
+                pm.setName(publisherVO.getName() + " point " + i);
+                pm.setEnabled(true);
+                pointVos.add(unmapPoint.apply(pm, user));
+                i++;
             }
             publishedPointService.replacePoints(publisherVO.getId(), pointVos);
         }
