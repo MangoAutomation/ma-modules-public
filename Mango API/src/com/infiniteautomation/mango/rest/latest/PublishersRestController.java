@@ -242,22 +242,16 @@ public class PublishersRestController {
 
     @ApiOperation(
             value = "Delete a publisher",
-            notes = "",
+            notes = "Points are never returned as they don't exist after deleting a publisher",
             response=AbstractPublisherModel.class
             )
     @RequestMapping(method = RequestMethod.DELETE, value="/{xid}")
     public AbstractPublisherModel<?,?> delete(
             @ApiParam(value = "XID of publisher to delete", required = true, allowMultiple = false)
             @PathVariable String xid,
-            @ApiParam(value = "Include published points in returned model", required = false, allowMultiple = false)
-            @RequestParam(value = "includePoints", required = false, defaultValue="true") boolean includePoints,
             @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
-        if(includePoints) {
-            return map.apply(service.delete(xid), user);
-        }else {
             return mapWithoutPoints.apply(service.delete(xid), user);
-        }
     }
 
     @ApiOperation(value = "Enable/disable/restart a publisher")
