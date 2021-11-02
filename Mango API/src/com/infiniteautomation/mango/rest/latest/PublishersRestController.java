@@ -135,9 +135,15 @@ public class PublishersRestController {
     public AbstractPublisherModel<?,?> get(
             @ApiParam(value = "XID of publisher", required = true, allowMultiple = false)
             @PathVariable String xid,
+            @ApiParam(value = "Include published points in returned model", required = false, allowMultiple = false)
+            @RequestParam(value = "includePoints", required = false, defaultValue="true") boolean includePoints,
             @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
-        return map.apply(service.get(xid), user);
+        if(includePoints) {
+            return map.apply(service.get(xid), user);
+        }else {
+            return mapWithoutPoints.apply(service.get(xid), user);
+        }
     }
 
     @ApiOperation(
