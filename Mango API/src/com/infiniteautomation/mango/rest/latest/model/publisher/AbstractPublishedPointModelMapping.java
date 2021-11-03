@@ -49,7 +49,8 @@ public abstract class AbstractPublishedPointModelMapping<VO extends PublishedPoi
 
         Integer publisherId = publisherDao.getIdByXid(model.publisherXid);
         Integer dataPointId = dataPointDao.getIdByXid(model.dataPointXid);
-        VO vo = definition.createPublishedPointVO(publisherId, dataPointId);
+        VO vo = definition.createPublishedPointVO(publisherId == null ? Common.NEW_ID : publisherId,
+                dataPointId == null ? Common.NEW_ID : dataPointId);
         //Fill in the module defined properties
         setVoProperties(vo, model, user, mapper);
 
