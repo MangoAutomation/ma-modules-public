@@ -151,15 +151,24 @@ describe('Publishers without point service', function() {
         return client.restRequest({
             path: `/rest/latest/publishers-without-points/${this.pub.xid}`,
             method: 'DELETE'
-        }).then(response => {
-            assert.isNotNull(response.data);
-        }).then(() =>{
+        }).then((response) => {
+          return client.restRequest({
+            path: `/rest/latest/publishers-without-points/${this.pub.xid}`,
+            method: 'GET'
+          });
+        }).then((response) => {
+            throw new Error('Should not have found publisher');
+        }).catch((response) => {
+            if(typeof response.response === 'undefined')
+                throw response;
+            assert.equal(response.response.statusCode, 404);
+        }).then(() => {
             return Promise.all([this.ds.delete()]);
         });
     });
 
 
-    it('Get the publishers without points', function() {
+    it('Query the publishers without points', function() {
         let testPublisherXid = this.pub.xid;
         return client.restRequest({
             path: `/rest/latest/publishers-without-points`,
@@ -177,19 +186,51 @@ describe('Publishers without point service', function() {
         });
     });
 
-    it('Get the published without points by xid', function() {
+    it('Get the publisher without points by xid', function() {
         let testPublisherXid = this.pub.xid;
         return client.restRequest({
             path: `/rest/latest/publishers-without-points/${testPublisherXid}`,
             method: 'GET'
         }).then(response => {
             assert.strictEqual(response.data.xid, testPublisherXid);
-
         });
     });
 
-    it('Disables the published without points by xid', function() {
-        this.timeout(5000);
+    it('Modify the publisher without points by xid', function() {
+        let testPublisherXid = this.pub.xid;
+        let newName = 'New publisher name';
+        let newXid = uuid();
+        let publishAttributeChanges = true;
+        //TODO modify every property of PublisherVO
+        return client.restRequest({
+            path: `/rest/latest/publishers-without-points/${testPublisherXid}`,
+            method: 'GET'
+        }).then((response) => {
+            let testPublisher = response.data;
+            testPublisher.name = newName;
+            testPublisher.xid = newXid;
+            testPublisher.publishAttributeChanges = publishAttributeChanges;
+            return client.restRequest({
+                path: `/rest/latest/publishers-without-points/${testPublisherXid}`,
+                method: 'PUT',
+                data: testPublisher
+            });
+        }).then((response) => {
+            return client.restRequest({
+                path: `/rest/latest/publishers-without-points/${newXid}`,
+                method: 'GET'
+            }).then((response) => {
+                assert.strictEqual(response.data.enabled, this.pub.enabled);
+                assert.strictEqual(response.data.name, newName);
+                assert.strictEqual(response.data.xid, newXid);
+                assert.strictEqual(response.data.publishAttributeChanges, publishAttributeChanges);
+                //We know the XID changed successfully so set the publisher xid so we can delete it after
+                this.pub.xid = response.data.xid;
+            });
+        });
+    });
+
+    it('Disables the publisher without points by xid', function() {
         let testPublisherXid = this.pub.xid;
         return client.restRequest({
             path: `/rest/latest/publishers-without-points/${testPublisherXid}`,
@@ -209,7 +250,7 @@ describe('Publishers without point service', function() {
         });
     });
 
-
+    //TODO TEST DELETE /rest/latest/publishers-without-points/{XID} to ensure the publisher is deleted
 });
 
 
