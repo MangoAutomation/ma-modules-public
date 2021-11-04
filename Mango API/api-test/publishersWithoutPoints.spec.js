@@ -249,8 +249,6 @@ describe('Publishers without point service', function() {
             });
         });
     });
-
-    //TODO TEST DELETE /rest/latest/publishers-without-points/{XID} to ensure the publisher is deleted
 });
 
 
