@@ -47,7 +47,6 @@ import com.infiniteautomation.mango.rest.latest.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.latest.model.StreamedArrayWithTotal;
 import com.infiniteautomation.mango.rest.latest.model.StreamedSeroJsonVORqlQuery;
 import com.infiniteautomation.mango.rest.latest.model.StreamedVORqlQueryWithTotal;
-import com.infiniteautomation.mango.rest.latest.model.dataPoint.DataPointModel;
 import com.infiniteautomation.mango.rest.latest.model.publisher.AbstractPublishedPointModel;
 import com.infiniteautomation.mango.rest.latest.patch.PatchVORequestBody;
 import com.infiniteautomation.mango.rest.latest.temporaryResource.MangoTaskTemporaryResourceManager;
@@ -314,7 +313,7 @@ public class PublishedPointsRestController {
             value = "Get a list of current bulk published point operations",
             notes = "User can only get their own bulk published point operations unless they are an admin")
     @RequestMapping(method = RequestMethod.GET, value="/bulk")
-    public MappingJacksonValue getBulkDataPointOperations(
+    public MappingJacksonValue getBulkOperations(
             ASTNode query,
             Translations translations) {
 
@@ -330,7 +329,7 @@ public class PublishedPointsRestController {
     @ApiOperation(value = "Update a bulk published point operation using its id", notes = "Only allowed operation is to change the status to CANCELLED. " +
             "User can only update their own bulk operations unless they are an admin.")
     @RequestMapping(method = RequestMethod.PUT, value="/bulk/{id}")
-    public TemporaryResource<PublishedPointBulkResponse, AbstractRestException> updateBulkDataPointOperation(
+    public TemporaryResource<PublishedPointBulkResponse, AbstractRestException> updateBulkOperation(
             @ApiParam(value = "Temporary resource id", required = true, allowMultiple = false)
             @PathVariable String id,
 
@@ -349,7 +348,7 @@ public class PublishedPointsRestController {
 
     @ApiOperation(value = "Get the status of a bulk published point operation using its id", notes = "User can only get their own bulk operations unless they are an admin")
     @RequestMapping(method = RequestMethod.GET, value="/bulk/{id}")
-    public TemporaryResource<PublishedPointBulkResponse, AbstractRestException> getBulkDataPointTagOperation(
+    public TemporaryResource<PublishedPointBulkResponse, AbstractRestException> getBulkOperation(
             @ApiParam(value = "Temporary resource id", required = true, allowMultiple = false)
             @PathVariable String id) {
 
@@ -361,7 +360,7 @@ public class PublishedPointsRestController {
             notes = "Will only remove a bulk operation if it is complete. " +
                     "User can only remove their own bulk operations unless they are an admin.")
     @RequestMapping(method = RequestMethod.DELETE, value="/bulk/{id}")
-    public void removeBulkDataPointTagOperation(
+    public void removeBulkOperation(
             @ApiParam(value = "Temporary resource id", required = true, allowMultiple = false)
             @PathVariable String id) {
 
