@@ -15,6 +15,7 @@
  */
 
 const {createClient, login, defer, uuid, delay} = require('@infinite-automation/mango-module-tools/test-helper/testHelper');
+const {response} = require("../node/yarn/dist/lib/cli");
 const client = createClient();
 const DataSource = client.DataSource;
 const DataPoint = client.DataPoint;
@@ -140,7 +141,36 @@ describe('Published point service', function() {
     });
 
     afterEach('Deletes the new mock data source and its points and the published points', function() {
-        return Promise.all([this.ds.delete(), this.pub.delete()]);
+
+        return client.restRequest({
+            path: `/rest/latest/published-points/${this.pub.xid}`,
+            method: 'DELETE'
+        }).then((response) => {
+            return client.restRequest({
+                path: `/rest/latest/published-points/${this.pub.xid}`,
+                method: 'GET'
+            });
+        }).then((response) => {
+            throw new Error('Should not have found publisher');
+        }).catch((response) => {
+            if(typeof response.response === 'undefined')
+                throw response;
+            assert.equal(response.response.statusCode, 404);
+        }).then(() => {
+            return Promise.all([this.ds.delete()]);
+        });
+    });
+
+    it('Queries for the new published point', function() {
+
+      return client.restRequest({
+                path: `/rest/latest/published-points/${testPublishedPointXid1}`,
+                method: 'GET'
+      }).then(response => {
+          assert.strictEqual(response.data.xid, this.testPublishedPoint1.xid);
+          assert.strictEqual(response.data.name, this.testPublishedPoint1.name);
+          assert.strictEqual(response.data.enabled, this.testPublishedPoint1.enabled);
+      });
     });
 
     it('Enables the published point', function() {
@@ -200,6 +230,43 @@ describe('Published point service', function() {
         });
     });
 
+    it('Can change the published point name', function() {
+
+        let newName = "Name Changed"
+        return client.restRequest({
+            path: `/rest/latest/published-points/${testPublishedPointXid2}`,
+            method: 'GET'
+        }).then(response => {
+            response.data.name = newName;
+            return client.restRequest({
+                path: `/rest/latest/published-points/${response.data.xid}`,
+                method: 'PUT',
+                data: response.data
+            });
+        }).then(response => {
+            return client.restRequest({
+                path: `/rest/latest/published-points/${testPublishedPointXid2}`,
+                method: 'GET'
+            }).then(response => {
+                assert.strictEqual(response.data.name, newName);
+                assert.isFalse(response.data.enabled);
+            });
+        });
+    });
+
+    it('Lists all published points', function() {
+        return client.restRequest({
+            path: `/rest/latest/published-points`,
+            method: 'GET'
+        }).then(response => {
+            assert.isArray(response.data.items);
+            assert.isNumber(response.data.items.length);
+            assert.isAtLeast(response.data.total, response.data.items.length);
+        });
+
+    });
+
+
     it('Gets websocket notifications for published point create', function() {
         this.timeout(5000);
         
@@ -240,7 +307,6 @@ describe('Published point service', function() {
                 }
             });
 
-            //TODO Fix DaoNotificationWebSocketHandler so we can remove this delay, only required for cold start
             return socketOpenDeferred.promise.then(() => delay(1000));
         }).then(() => {
             const testPoint3 = newDataPoint(testPoint3Xid, this.ds.xid);
