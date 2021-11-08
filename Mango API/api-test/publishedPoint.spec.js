@@ -140,24 +140,39 @@ describe('Published point service', function() {
         });
     });
 
+
     afterEach('Deletes the new mock data source and its points and the published points', function() {
+        return Promise.all([this.ds.delete(), this.pub.delete()]);
+    });
+
+    it('Delete the new published point', function() {
 
         return client.restRequest({
-            path: `/rest/latest/published-points/${this.pub.xid}`,
-            method: 'DELETE'
-        }).then((response) => {
+            path: `/rest/latest/published-points/${testPublishedPointXid1}`,
+            method: 'GET'
+        }).then(response => {
+            assert.strictEqual(response.data.xid, this.testPublishedPoint1.xid);
+            assert.strictEqual(response.data.name, this.testPublishedPoint1.name);
+            assert.strictEqual(response.data.enabled, this.testPublishedPoint1.enabled);
+
             return client.restRequest({
-                path: `/rest/latest/published-points/${this.pub.xid}`,
-                method: 'GET'
-            });
-        }).then((response) => {
-            throw new Error('Should not have found publisher');
-        }).catch((response) => {
-            if(typeof response.response === 'undefined')
-                throw response;
-            assert.equal(response.response.statusCode, 404);
-        }).then(() => {
-            return Promise.all([this.ds.delete()]);
+                path: `/rest/latest/published-points/${response.xid}`,
+                method: 'DELETE'
+            }).then((response) => {
+                return client.restRequest({
+                    path: `/rest/latest/published-points/${response.xid}`,
+                    method: 'GET'
+                });
+            }).then((response) => {
+                throw new Error('Should not have found publisher');
+
+            }).catch((response) => {
+                if(typeof response.response === 'undefined')
+                    throw response;
+                assert.equal(response.response.statusCode, 404);
+            })
+
+
         });
     });
 
