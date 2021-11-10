@@ -3,7 +3,6 @@
  */
 package com.infiniteautomation.mango.rest.latest.model.publisher;
 
-import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,6 +26,8 @@ import com.serotonin.m2m2.util.ExportCodes;
 import com.serotonin.m2m2.vo.event.EventTypeVO;
 import com.serotonin.m2m2.vo.publish.PublishedPointVO;
 import com.serotonin.m2m2.vo.publish.PublisherVO;
+
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  * @author Terry Packer
