@@ -140,7 +140,7 @@ public class WatchListDao extends AbstractVoDao<WatchListVO, WatchListsRecord, W
         vo.setEditPermission(permissionService.get(vo.getEditPermission().getId()));
 
         if (vo.getType() == WatchListType.STATIC) {
-            List<IDataPoint> points = create.select(
+            vo.supplyPointList(() -> create.select(
                     dataPoints.id,
                     dataPoints.xid,
                     dataPoints.name,
@@ -155,9 +155,8 @@ public class WatchListDao extends AbstractVoDao<WatchListVO, WatchListsRecord, W
                     .on(dataPoints.id.equal(watchListPoints.dataPointId))
                     .where(watchListPoints.watchListId.eq(vo.getId()))
                     .orderBy(watchListPoints.sortOrder)
-                    .fetch(dataPointDao::mapDataPointSummary);
-
-            vo.setPointList(points);
+                    .fetch(dataPointDao::mapDataPointSummary)
+            );
         }
     }
 

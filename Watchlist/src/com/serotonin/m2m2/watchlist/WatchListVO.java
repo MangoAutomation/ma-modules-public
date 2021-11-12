@@ -12,11 +12,13 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 import org.apache.commons.lang3.StringUtils;
 
 import com.infiniteautomation.mango.permission.MangoPermission;
 import com.infiniteautomation.mango.spring.service.PermissionService;
+import com.infiniteautomation.mango.util.LazyField;
 import com.serotonin.json.JsonException;
 import com.serotonin.json.JsonReader;
 import com.serotonin.json.ObjectWriter;
@@ -54,7 +56,7 @@ public class WatchListVO extends AbstractVO {
         TAGS
     }
 
-    private List<IDataPoint> pointList = Collections.emptyList();
+    private LazyField<List<IDataPoint>> pointList = new LazyField<>(Collections.emptyList());
     private MangoPermission readPermission = new MangoPermission();
     private MangoPermission editPermission = new MangoPermission();
     private WatchListType type;
@@ -103,11 +105,15 @@ public class WatchListVO extends AbstractVO {
     }
 
     public List<IDataPoint> getPointList() {
-        return pointList;
+        return pointList.get();
     }
 
     public void setPointList(List<IDataPoint> pointList) {
-        this.pointList = pointList;
+        this.pointList.set(pointList);
+    }
+
+    public void supplyPointList(Supplier<List<IDataPoint>> pointList) {
+        this.pointList = new LazyField<>(pointList);
     }
 
     public MangoPermission getReadPermission() {
@@ -170,7 +176,7 @@ public class WatchListVO extends AbstractVO {
         writer.writeEntry("editPermission", editPermission);
 
         List<String> dpXids = new ArrayList<>();
-        for (IDataPoint dpVO : pointList)
+        for (IDataPoint dpVO : pointList.get())
             dpXids.add(dpVO.getXid());
         writer.writeEntry("dataPoints", dpXids);
         writer.writeEntry("data", this.data);
@@ -238,15 +244,16 @@ public class WatchListVO extends AbstractVO {
 
         JsonArray jsonDataPoints = jsonObject.getJsonArray("dataPoints");
         if (jsonDataPoints != null) {
-            pointList = new ArrayList<>();
+            List<IDataPoint> points = new ArrayList<>();
             DataPointDao dataPointDao = DataPointDao.getInstance();
             for (JsonValue jv : jsonDataPoints) {
                 String xid = jv.toString();
                 DataPointSummary dpVO = dataPointDao.getSummary(xid);
                 if (dpVO == null)
                     throw new TranslatableJsonException("emport.error.missingPoint", xid);
-                pointList.add(dpVO);
+                points.add(dpVO);
             }
+            pointList.set(points);
         }
 
         JsonObject o = jsonObject.getJsonObject("data");
