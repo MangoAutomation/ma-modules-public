@@ -4,7 +4,7 @@
 
 package com.infiniteautomation.mango.spring.service;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.util.HashMap;
 import java.util.List;
@@ -22,6 +22,7 @@ import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.permission.PermissionException;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.watchlist.WatchListCreatePermission;
+import com.serotonin.m2m2.watchlist.WatchListParameter;
 import com.serotonin.m2m2.watchlist.WatchListVO;
 import com.serotonin.m2m2.watchlist.WatchListVO.WatchListType;
 import com.serotonin.m2m2.watchlist.db.tables.WatchLists;
@@ -79,10 +80,24 @@ public class WatchListServiceTest extends AbstractVOServiceWithPermissionsTest<W
             }
         }
 
+        List<WatchListParameter> expectedParams = expected.getParams();
+        List<WatchListParameter> actualParams = actual.getParams();
+        if (expectedParams == null) {
+            assertNull(actualParams);
+        } else {
+            assertEquals(expectedParams.size(), actualParams.size());
+            for (int i = 0; i < expectedParams.size(); i++) {
+                assertEquals(expectedParams.get(i).getName(), actualParams.get(i).getName());
+            }
+        }
+
         assertEquals(expected.getData().size(), actual.getData().size());
         expected.getData().keySet().forEach(key -> {
             assertEquals(expected.getData().get(key), (actual.getData().get(key)));
         });
+
+        assertPermission(expected.getReadPermission(), actual.getReadPermission());
+        assertPermission(expected.getEditPermission(), actual.getEditPermission());
     }
 
     @Override
