@@ -53,6 +53,7 @@ import com.serotonin.m2m2.i18n.ProcessMessage;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.vo.User;
+import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.timer.RejectedTaskReason;
 import com.serotonin.util.ProgressiveTaskListener;
 
@@ -137,7 +138,7 @@ public class JsonEmportController extends AbstractMangoRestController {
             HttpServletRequest request,
             @ApiParam(value = "timeout for Status Resource to Expire, defaults to 5 minutes", required = false, allowMultiple = false)
             @RequestParam(value="timeout", required=false) Long timeout,
-            @AuthenticationPrincipal User user) throws IOException, JsonException {
+            @AuthenticationPrincipal PermissionHolder user) throws IOException, JsonException {
 
         if (!file.isEmpty()) {
             JsonReader jr = new JsonReader(Common.JSON_CONTEXT, new String(file.getBytes()));
@@ -164,7 +165,7 @@ public class JsonEmportController extends AbstractMangoRestController {
             @ApiParam(value = "Optional timeout for resource to expire, defaults to 5 minutes", required = false, allowMultiple = false)
             @RequestParam(value="timeout", required=false) Long timeout,
             @RequestBody(required=true) JsonValue config,
-            @AuthenticationPrincipal User user){
+            @AuthenticationPrincipal PermissionHolder user){
 
         if (config instanceof JsonObject) {
             //Setup the Temporary Resource
@@ -231,7 +232,7 @@ public class JsonEmportController extends AbstractMangoRestController {
                 String resourceId,
                 JsonConfigImportWebSocketHandler websocket,
                 Long expirationMs,
-                User user,
+                                    PermissionHolder user,
                 JsonObject root){
             super(resourceId, container);
             this.websocket = websocket;
@@ -239,11 +240,17 @@ public class JsonEmportController extends AbstractMangoRestController {
                 this.expirationMs = 300000L;
             else
                 this.expirationMs = expirationMs;
-            this.username = user.getUsername();
+            this.username = user.getPermissionHolderName();
             this.start = new Date();
             this.state = JsonConfigImportStateEnum.RUNNING;
             this.progress = 0.0f;
-            this.task = service.getImportTask(root, this, true, user.getTranslations());
+            if(user instanceof User) {
+                this.task = service.getImportTask(root, this, true, ((User)user).getTranslations());
+            }else{
+                this.task = service.getImportTask(root, this, true, Common.getTranslations());
+            }
+
+
         }
 
         @JsonGetter
@@ -360,5 +367,6 @@ public class JsonEmportController extends AbstractMangoRestController {
             schedule(new Date(Common.timer.currentTimeMillis() + expirationMs));
         }
     }
+
 
 }
