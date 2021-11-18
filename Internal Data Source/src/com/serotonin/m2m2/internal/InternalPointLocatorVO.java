@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.infiniteautomation.mango.monitor.ValueMonitor;
+import com.infiniteautomation.mango.spring.components.ServerMonitoringService;
 import com.serotonin.json.JsonException;
 import com.serotonin.json.JsonReader;
 import com.serotonin.json.ObjectWriter;
@@ -20,7 +21,6 @@ import com.serotonin.json.spi.JsonSerializable;
 import com.serotonin.json.type.JsonObject;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataTypes;
-import com.serotonin.m2m2.db.dao.PointValueDaoSQL;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.dataSource.AbstractPointLocatorVO;
@@ -33,8 +33,8 @@ import com.serotonin.util.SerializationHelper;
 public class InternalPointLocatorVO extends AbstractPointLocatorVO<InternalPointLocatorVO> implements JsonSerializable {
 
     public static String[] MONITOR_NAMES = { "", //
-            PointValueDaoSQL.ENTRIES_MONITOR_ID, //
-            PointValueDaoSQL.INSTANCES_MONITOR_ID, //
+            ServerMonitoringService.ENTRIES_MONITOR_ID, //
+            ServerMonitoringService.INSTANCES_MONITOR_ID, //
             "com.serotonin.m2m2.rt.maint.WorkItemMonitor.highPriorityServiceQueueSize", //
             "com.serotonin.m2m2.rt.maint.WorkItemMonitor.mediumPriorityServiceQueueSize", //
             "com.serotonin.m2m2.rt.maint.WorkItemMonitor.scheduledTimerTaskCount", //
@@ -42,7 +42,7 @@ public class InternalPointLocatorVO extends AbstractPointLocatorVO<InternalPoint
             "com.serotonin.m2m2.rt.maint.WorkItemMonitor.threadCount", //
             "com.serotonin.m2m2.rt.maint.WorkItemMonitor.dbActiveConnections", //
             "com.serotonin.m2m2.rt.maint.WorkItemMonitor.dbIdleConnections", //
-            PointValueDaoSQL.BATCH_WRITE_SPEED_MONITOR_ID, //
+            ServerMonitoringService.BATCH_WRITE_SPEED_MONITOR_ID, //
             "java.lang.Runtime.freeMemory",
             "java.lang.Runtime.usedMemory",
             "java.lang.Runtime.maxMemory",
