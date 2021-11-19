@@ -3,10 +3,12 @@
  */
 package com.infiniteautomation.mango.rest.latest.model.publisher;
 
-import io.swagger.annotations.ApiModelProperty;
+import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.serotonin.m2m2.vo.publish.PublishedPointVO;
+
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  * @author Terry Packer
@@ -22,6 +24,7 @@ public abstract class AbstractPublishedPointModel<T extends PublishedPointVO> {
     protected boolean enabled;
     protected String dataPointXid;
     protected String publisherXid;
+    protected Map<String, String> dataPointTags;
 
     /**
      * Return the TYPE_NAME for the point's model
@@ -78,5 +81,14 @@ public abstract class AbstractPublishedPointModel<T extends PublishedPointVO> {
 
     public void setPublisherXid(String publisherXid) {
         this.publisherXid = publisherXid;
+    }
+
+    @ApiModelProperty(value ="Tags for source data point, including name and device tags")
+    public Map<String, String> getDataPointTags() {
+        return dataPointTags;
+    }
+
+    public void setDataPointTags(Map<String, String> dataPointTags) {
+        this.dataPointTags = dataPointTags;
     }
 }

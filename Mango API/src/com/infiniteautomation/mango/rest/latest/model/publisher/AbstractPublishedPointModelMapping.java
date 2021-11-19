@@ -71,6 +71,7 @@ public abstract class AbstractPublishedPointModelMapping<VO extends PublishedPoi
         model.setEnabled(vo.isEnabled());
         model.setPublisherXid(vo.getPublisherXid());
         model.setDataPointXid(vo.getDataPointXid());
+        model.setDataPointTags(vo.getDataPointTags());
     }
 
     /**
