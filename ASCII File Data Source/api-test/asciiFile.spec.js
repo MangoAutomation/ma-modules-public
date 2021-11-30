@@ -102,7 +102,6 @@ describe('ASCII file data source', function() {
             return dp.save().then(saved => {
                 testHelper.assertDataPoint(saved, local, assertPointLocator);
 
-                saved.pointLocator.dataType = 'NUMERIC';
                 saved.pointLocator.pointIdentifier = 'id2';
                 saved.pointLocator.pointIdentifierIndex = 2;
                 saved.pointLocator.valueIndex = 3;

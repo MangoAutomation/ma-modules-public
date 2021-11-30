@@ -97,9 +97,8 @@ describe('Environment Canada data source', function() {
             const local = Object.assign({}, dp);
             return dp.save().then(saved => {
                 testHelper.assertDataPoint(saved, local, assertPointLocator);
-                
-                saved.pointLocator.dataType = 'ALPHANUMERIC';
-                saved.pointLocator.attribute = 'WEATHER';
+
+                saved.pointLocator.attribute = 'WIND_SPEED';
                 
                 const localUpdate = Object.assign({}, saved);
                 return saved.save().then(updated => {
