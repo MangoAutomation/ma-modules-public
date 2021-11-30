@@ -61,6 +61,9 @@ describe('Server endpoint tests', function(){
                         method: 'GET'
                     }).then(response => {
                       assert.isAbove(response.data.length, 0);
+                    }, error => {
+                        assert.equal(error.status, 500);
+                        assert.equal(error.data.cause, 'UnsupportedOperationException');
                     });
                 });
             }).finally(() => {
