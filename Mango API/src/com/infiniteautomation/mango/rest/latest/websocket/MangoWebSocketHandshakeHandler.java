@@ -21,24 +21,32 @@ import com.serotonin.m2m2.Common;
  */
 @Component("mangoWebSocketHandshakeHandlerV2")
 public class MangoWebSocketHandshakeHandler extends DefaultHandshakeHandler {
+    private static final int KB = 1024;
+    private static final long SECOND = 1000L;
 
-    //TODO Autowire properties
-    public static final int DEFAULT_INPUT_BUFFER_SIZE = 8192;
-    public static final long DEFAULT_IDLE_TIMEOUT_MS = 60000L;
-    
     public MangoWebSocketHandshakeHandler(@Autowired ServletContext servletContext) {
         super(new JettyRequestUpgradeStrategy(new WebSocketServerFactory(servletContext, getPolicy())));
     }
-    
+
     static WebSocketPolicy getPolicy() {
-        int inputBufferSize = Common.envProps.getInt("web.websocket.inputBufferSize", DEFAULT_INPUT_BUFFER_SIZE);
-        long idleTimeout = Common.envProps.getLong("web.websocket.idleTimeoutMs", DEFAULT_IDLE_TIMEOUT_MS);
+        int inputBufferSize = Common.envProps.getInt("web.websocket.inputBufferSize", 8 * KB);
+        int maxTextMessageSize = Common.envProps.getInt("web.websocket.maxTextMessageSize", 64 * KB);
+        int maxTextMessageBufferSize = Common.envProps.getInt("web.websocket.maxTextMessageBufferSize", 32 * KB);
+        int maxBinaryMessageSize = Common.envProps.getInt("web.websocket.maxBinaryMessageSize", 64 * KB);
+        int maxBinaryMessageBufferSize = Common.envProps.getInt("web.websocket.maxBinaryMessageBufferSize", 32 * KB);
+        long asyncWriteTimeout = Common.envProps.getLong("web.websocket.asyncWriteTimeoutMs", 60 * SECOND);
+        long idleTimeout = Common.envProps.getLong("web.websocket.idleTimeoutMs", 60 * SECOND);
 
         WebSocketPolicy policy = new WebSocketPolicy(WebSocketBehavior.SERVER);
         policy.setInputBufferSize(inputBufferSize);
+        policy.setMaxTextMessageSize(maxTextMessageSize);
+        policy.setMaxTextMessageBufferSize(maxTextMessageBufferSize);
+        policy.setMaxBinaryMessageSize(maxBinaryMessageSize);
+        policy.setMaxBinaryMessageBufferSize(maxBinaryMessageBufferSize);
+        policy.setAsyncWriteTimeout(asyncWriteTimeout);
+
         // ping pong mechanism will keep socket alive, web.websocket.pingTimeoutMs should be set lower than the idle timeout
         policy.setIdleTimeout(idleTimeout);
         return policy;
     }
 }
-
