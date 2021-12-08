@@ -5,6 +5,7 @@
 * Add published-points endpoints to access publisher points separately from the publisher
 * Add publishers-without-points endpoints to supply publishers without the points attached
 * Add ability to query published points via data point tags
+* Add ability to change default WebSocketPolicy options over mango.properties
 
 *Version 4.2.2*
 * Allow non-admin users to create reset-password token for users they had permission to edit
