@@ -13,7 +13,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import com.infiniteautomation.mango.rest.latest.model.FilteredStreamWithTotal;
 import com.infiniteautomation.mango.rest.latest.model.RestModelMapper;
@@ -25,7 +24,6 @@ import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
-import com.serotonin.m2m2.rt.dataImage.types.ImageValue;
 import com.serotonin.m2m2.rt.dataSource.DataSourceRT;
 import com.serotonin.m2m2.view.text.TextRenderer;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
@@ -45,7 +43,6 @@ public class RealTimeDataRestController {
 
     private final String OK = "OK";
     private final String UNRELIABLE = "UNRELIABLE";
-    private final UriComponentsBuilder imageServletBuilder = UriComponentsBuilder.fromPath("/imageValue/{ts}_{id}.jpg");
 
     private final PermissionService permissionService;
     private final BiFunction<DataPointRT, PermissionHolder, RealTimeDataPointValueModel> map;
@@ -66,11 +63,7 @@ public class RealTimeDataRestController {
 
             PointValueTime pvt = rt.getPointValue();
             if(pvt != null) {
-                if(pvt.getValue() instanceof ImageValue) {
-                    model.setValue(imageServletBuilder.buildAndExpand(pvt.getTime(), rt.getId()).toUri());
-                }else {
-                    model.setValue(pvt.getValue().getObjectValue());
-                }
+                model.setValue(pvt.getValue().getObjectValue());
                 model.setTimestamp(pvt.getTime());
                 model.setRenderedValue(rt.getVO().getTextRenderer().getText(pvt, TextRenderer.HINT_FULL));
             }

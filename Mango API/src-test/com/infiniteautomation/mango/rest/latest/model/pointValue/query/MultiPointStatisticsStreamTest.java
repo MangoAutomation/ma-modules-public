@@ -9,7 +9,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -20,15 +19,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
-import javax.imageio.ImageIO;
-
-import org.apache.commons.io.FileUtils;
 import org.junit.Test;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockHttpServletResponse;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -40,13 +33,11 @@ import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueField
 import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueTimeJsonWriter;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueTimeStream.StreamContentType;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueTimeWriter;
-import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.statistics.AnalogStatistics;
 import com.infiniteautomation.mango.statistics.StartsAndRuntime;
 import com.infiniteautomation.mango.statistics.StartsAndRuntimeList;
 import com.infiniteautomation.mango.statistics.ValueChangeCounter;
 import com.infiniteautomation.mango.util.datetime.NextTimePeriodAdjuster;
-import com.infiniteautomation.mango.webapp.servlets.ImageValueServlet;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.Common.TimePeriods;
@@ -64,7 +55,6 @@ import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT.FireEvents;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
-import com.serotonin.m2m2.rt.dataImage.types.ImageValue;
 import com.serotonin.m2m2.rt.dataImage.types.MultistateValue;
 import com.serotonin.m2m2.rt.dataImage.types.NumericValue;
 import com.serotonin.m2m2.view.stats.StatisticsGenerator;
@@ -82,7 +72,6 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
 
     protected ZoneId zoneId;
     protected static final TestRuntimeManager runtimeManager = new TestRuntimeManager();
-    protected ImageValueServlet imageServlet;
 
     public MultiPointStatisticsStreamTest() {
         this.zoneId = ZoneId.systemDefault();
@@ -93,183 +82,12 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
     @Override
     public void before() {
         super.before();
-        this.imageServlet = new ImageValueServlet(Common.getBean(PermissionService.class));
     }
 
     @Override
     public void after() {
         super.after();
         runtimeManager.points.clear();
-
-        try {
-            FileUtils.cleanDirectory(Common.getFiledataPath().toFile());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Test
-    public void testSingleImagePointNoCacheNoChangeInitialValue() throws IOException, QueryCancelledException {
-
-        //Setup the data to run once daily for 30 days
-        ZonedDateTime from = ZonedDateTime.of(2017, 01, 01, 00, 00, 00, 0, zoneId);
-        ZonedDateTime to = ZonedDateTime.of(2017, 02, 01, 00, 00, 00, 0, zoneId);
-        NextTimePeriodAdjuster adjuster = new NextTimePeriodAdjuster(TimePeriods.DAYS, 1);
-
-        MockDataSourceVO ds = createDataSource();
-        DataPointVO dp = createDataPoint(ds.getId(), DataType.IMAGE, 1);
-
-        ImageValue v = new ImageValue(createImageBytes(10), ImageValue.TYPE_JPG);
-        PointValueTime initialValue = new PointValueTime(v, 0);
-
-        DataPointWrapper<ValueChangeCounter> point = new DataPointWrapper<ValueChangeCounter>(ds, dp,
-                initialValue,
-                (value) -> {
-                    //No change
-                    return value;
-                },
-                (info, w) ->{
-                    return new ValueChangeCounter(info.getFromMillis(), info.getToMillis(), w.initialValue, w.values);
-                },
-                (w, gen, root) -> {
-                    JsonNode stats = root.get(w.vo.getXid());
-                    if(stats == null)
-                        fail("Missing stats for point " + w.vo.getXid());
-
-                    JsonNode stat = stats.get(PointValueTimeWriter.START);
-                    if(stat == null)
-                        fail("Missing " + PointValueTimeWriter.START + " entry");
-
-                    assertNotNull(stat.get(PointValueTimeWriter.TIMESTAMP));
-                    PointValueTime value = w.rt.getPointValueAfter(0);
-                    assertEquals(gen.getStartValue(), value.getValue());
-                    assertEquals(0l, value.getTime());
-
-                    stat = stats.get(PointValueTimeWriter.FIRST);
-                    if(stat == null)
-                        fail("Missing " + PointValueTimeWriter.FIRST + " entry");
-                    //Test the access via the servlet
-                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
-                    //TODO Cannot compare the values as the gen doesn't have the 'data' loaded
-                    assertEquals((long)gen.getFirstTime(), value.getTime());
-
-                    stat = stats.get(PointValueTimeWriter.LAST);
-                    if(stat == null)
-                        fail("Missing " + PointValueTimeWriter.LAST + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
-                    //TODO Cannot compare the values as the gen doesn't have the 'data' loaded
-                    assertEquals((long)gen.getLastTime(), value.getTime());
-
-                    stat = stats.get(PointValueTimeWriter.COUNT);
-                    if(stat == null)
-                        fail("Missing " + PointValueTimeWriter.COUNT + " entry");
-                    assertEquals(gen.getCount(), stat.asInt());
-                });
-
-        //Insert the data skipping first day so we get the initial value
-        ZonedDateTime time = (ZonedDateTime) adjuster.adjustInto(from);
-        timer.setStartTime(time.toInstant().toEpochMilli());
-
-        while(time.toInstant().isBefore(to.toInstant())) {
-            point.updatePointValue(new PointValueTime(point.getNextValue(), time.toInstant().toEpochMilli()));
-            time = (ZonedDateTime) adjuster.adjustInto(time);
-            timer.fastForwardTo(time.toInstant().toEpochMilli());
-        }
-
-        //Perform the query
-        String dateTimeFormat = null;
-        String timezone = zoneId.getId();
-        PointValueTimeCacheControl cache = PointValueTimeCacheControl.NONE;
-        PointValueField[] fields = getFields();
-        ZonedDateTimeStatisticsQueryInfo info = new ZonedDateTimeStatisticsQueryInfo(from, to, dateTimeFormat, timezone, cache, fields);
-
-        test(info, point);
-    }
-
-    @Test
-    public void testSingleImagePointOnlyCacheChange() throws IOException, QueryCancelledException {
-
-        //Setup the data to run once daily for 30 days
-        ZonedDateTime from = ZonedDateTime.of(2017, 01, 01, 00, 00, 00, 0, zoneId);
-        ZonedDateTime to = ZonedDateTime.of(2017, 02, 01, 00, 00, 00, 0, zoneId);
-        NextTimePeriodAdjuster adjuster = new NextTimePeriodAdjuster(TimePeriods.DAYS, 1);
-
-        int cacheSize = 10;
-        MockDataSourceVO ds = createDataSource();
-        DataPointVO dp = createDataPoint(ds.getId(), DataType.IMAGE, cacheSize);
-
-        AtomicInteger imageSize = new AtomicInteger(1);
-        ImageValue v = new ImageValue(createImageBytes(imageSize.getAndIncrement()), ImageValue.TYPE_JPG);
-        PointValueTime initialValue = new PointValueTime(v, 0);
-
-        DataPointWrapper<ValueChangeCounter> point = new DataPointWrapper<ValueChangeCounter>(ds, dp,
-                initialValue,
-                (value) -> {
-                    return new ImageValue(createImageBytes(imageSize.getAndIncrement()), ImageValue.TYPE_JPG);
-                },
-                (info, w) ->{
-                    return new ValueChangeCounter(info.getFromMillis(), info.getToMillis(), null, w.values);
-                },
-                (w, gen, root) -> {
-                    JsonNode stats = root.get(w.vo.getXid());
-                    if(stats == null)
-                        fail("Missing stats for point " + w.vo.getXid());
-
-                    JsonNode stat = stats.get(PointValueTimeWriter.START);
-                    if(stat == null)
-                        fail("Missing " + PointValueTimeWriter.START + " entry");
-                    assertNull(gen.getStartValue());
-                    assertTrue(stat.isNull());
-
-                    stat = stats.get(PointValueTimeWriter.FIRST);
-                    if(stat == null)
-                        fail("Missing " + PointValueTimeWriter.FIRST + " entry");
-                    PointValueTime value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
-                    assertEquals(gen.getFirstValue(), value.getValue());
-                    assertEquals((long)gen.getFirstTime(), value.getTime());
-
-                    stat = stats.get(PointValueTimeWriter.LAST);
-                    if(stat == null)
-                        fail("Missing " + PointValueTimeWriter.LAST + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
-                    assertEquals(gen.getLastValue(), value.getValue() );
-                    assertEquals((long)gen.getLastTime(), value.getTime());
-
-                    stat = stats.get(PointValueTimeWriter.COUNT);
-                    if(stat == null)
-                        fail("Missing " + PointValueTimeWriter.COUNT + " entry");
-                    assertEquals(gen.getCount(), stat.asInt());
-                });
-
-        //Insert the data skipping first day so we get the initial value
-        ZonedDateTime time = (ZonedDateTime) adjuster.adjustInto(from);
-        timer.setStartTime(time.toInstant().toEpochMilli());
-
-        while(time.toInstant().isBefore(to.toInstant())) {
-            point.updatePointValue(new PointValueTime(point.getNextValue(), time.toInstant().toEpochMilli()));
-            time = (ZonedDateTime) adjuster.adjustInto(time);
-            timer.fastForwardTo(time.toInstant().toEpochMilli());
-        }
-
-        //Insert some values directly into the cache
-        point.values.clear();
-        for(int i=0; i<cacheSize; i++) {
-            time = (ZonedDateTime) adjuster.adjustInto(time);
-            timer.fastForwardTo(time.toInstant().toEpochMilli());
-            point.saveOnlyToCache(new PointValueTime(point.getNextValue(), timer.currentTimeMillis()));
-        }
-
-        //Ensure we get all the data
-        Instant now = Instant.ofEpochMilli(timer.currentTimeMillis() + 1);
-        to = ZonedDateTime.ofInstant(now, zoneId);
-        //Perform the query
-        String dateTimeFormat = null;
-        String timezone = zoneId.getId();
-        PointValueTimeCacheControl cache = PointValueTimeCacheControl.CACHE_ONLY;
-        PointValueField[] fields =  getFields();
-        ZonedDateTimeStatisticsQueryInfo info = new ZonedDateTimeStatisticsQueryInfo(from, to, dateTimeFormat, timezone, cache, fields);
-
-        test(info, point);
     }
 
     @Test
@@ -1031,24 +849,6 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                 return new PointValueTime(stat.get(PointValueTimeWriter.VALUE).asDouble(), stat.get(PointValueTimeWriter.TIMESTAMP).asLong());
             case ALPHANUMERIC:
                 return new PointValueTime(stat.get(PointValueTimeWriter.VALUE).asText(), stat.get(PointValueTimeWriter.TIMESTAMP).asLong());
-            case IMAGE:
-                try {
-                    //Use image value servlet to get the image out, first create a mock request
-                    // to simulate the normal request
-                    String url = stat.get(PointValueTimeWriter.VALUE).asText();
-                    String[] paths = url.split("/");
-                    MockHttpServletRequest request = new MockHttpServletRequest();
-                    request.setMethod("GET");
-                    request.setRequestURI(url);
-                    request.setPathInfo("/" + paths[2]);
-                    MockHttpServletResponse response = new MockHttpServletResponse();
-                    imageServlet.service(request, response);
-                    assertEquals(200, response.getStatus());
-                    byte[] imgData = response.getContentAsByteArray();
-                    return new PointValueTime(new ImageValue(imgData, ImageValue.TYPE_JPG), stat.get(PointValueTimeWriter.TIMESTAMP).asLong());
-                } catch (Exception e) {
-                    throw new ShouldNeverHappenException(e);
-                }
             default:
                 throw new ShouldNeverHappenException("Unsupported data type: " + dataType);
         }
@@ -1340,35 +1140,6 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
             assertEquals(gen.getIntegral(), value.getDoubleValue(), 0.00001);
         }
 
-    }
-
-    /**
-     * Create a random square image with w=h=size
-     */
-    private byte[] createImageBytes(int size) {
-        int width = size;
-        int height = size;
-        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-        // create random image pixel by pixel
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                int a = (int) (Math.random() * 256); // alpha
-                int r = (int) (Math.random() * 256); // red
-                int g = (int) (Math.random() * 256); // green
-                int b = (int) (Math.random() * 256); // blue
-
-                int p = (a << 24) | (r << 16) | (g << 8) | b; // pixel
-
-                image.setRGB(x, y, p);
-            }
-        }
-        try(ByteArrayOutputStream baos = new ByteArrayOutputStream()){
-            ImageIO.write(image, "jpg", baos);
-            return baos.toByteArray();
-        } catch (IOException e) {
-            fail(e.getMessage());
-        }
-        return null;
     }
 
     @Override

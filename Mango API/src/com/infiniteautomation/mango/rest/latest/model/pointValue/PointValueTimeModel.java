@@ -3,8 +3,6 @@
  */
 package com.infiniteautomation.mango.rest.latest.model.pointValue;
 
-import org.springframework.web.util.UriComponentsBuilder;
-
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.DataType;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -14,7 +12,6 @@ import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.types.AlphanumericValue;
 import com.serotonin.m2m2.rt.dataImage.types.BinaryValue;
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
-import com.serotonin.m2m2.rt.dataImage.types.ImageValue;
 import com.serotonin.m2m2.rt.dataImage.types.MultistateValue;
 import com.serotonin.m2m2.rt.dataImage.types.NumericValue;
 
@@ -39,15 +36,7 @@ public class PointValueTimeModel {
     public PointValueTimeModel(PointValueTime data) {
 
         this.dataType = data.getValue().getDataType();
-        if(dataType != DataType.IMAGE){
-            this.value = data.getValue().getObjectValue();
-        }else{
-            ImageValue imageValue = (ImageValue)data.getValue();
-            if(imageValue.isSaved()) {
-                UriComponentsBuilder imageServletBuilder = UriComponentsBuilder.fromPath("/imageValue/hst{ts}_{id}.jpg");
-                this.value = imageServletBuilder.buildAndExpand(data.getTime(), imageValue.getId()).toUri().toString();
-            }
-        }
+        this.value = data.getValue().getObjectValue();
         this.timestamp = data.getTime();
 
         if(data instanceof IAnnotated)
