@@ -121,22 +121,22 @@ public abstract class PointValueTimeWriter {
                 writeNullField(name);
             }else
                 switch(value.getDataType()) {
-                    case DataTypes.ALPHANUMERIC:
+                    case ALPHANUMERIC:
                         writeStringField(name, value.getStringValue());
                         break;
-                    case DataTypes.BINARY:
+                    case BINARY:
                         writeBooleanField(name, value.getBooleanValue());
                         break;
-                    case DataTypes.MULTISTATE:
+                    case MULTISTATE:
                         writeIntegerField(name, value.getIntegerValue());
                         break;
-                    case DataTypes.NUMERIC:
+                    case NUMERIC:
                         if(vo.getRenderedUnit() != Unit.ONE && !raw)
                             writeDoubleField(name, vo.getUnit().getConverterTo(vo.getRenderedUnit()).convert(value.getDoubleValue()));
                         else
                             writeDoubleField(name, value.getDoubleValue());
                         break;
-                    case DataTypes.IMAGE:
+                    case IMAGE:
                         writeStringField(name, info.writeImageLink(timestamp, vo.getId()));
                         break;
                 }

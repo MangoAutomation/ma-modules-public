@@ -136,7 +136,7 @@ public class MangoJavaScriptModel {
         PermissionService service = Common.getBean(PermissionService.class);
         vo.setPermissions(new ScriptPermissions(service.explodeLegacyPermissionGroupsToRoles(permissions)));
         if(resultDataType != null)
-            vo.setResultDataTypeId(DataTypes.CODES.getId(resultDataType));
+            vo.setResultDataType(DataTypes.fromName(resultDataType));
         vo.setScript(script);
         vo.setAdditionalContext(additionalContext);
         return vo;

@@ -42,7 +42,7 @@ public class SerialDataSourceTestData {
         vo.setId(currentId++);
         vo.setDataSourceId(ds.getId());
         SerialPointLocatorVO plVo = new SerialPointLocatorVO();
-        plVo.setDataTypeId(DataTypes.ALPHANUMERIC);
+        plVo.setDataType(DataTypes.ALPHANUMERIC);
         plVo.setValueRegex(PATTERNS.get(vo.getName()));
         plVo.setValueIndex(2);
         plVo.setPointIdentifier("");
@@ -56,7 +56,7 @@ public class SerialDataSourceTestData {
         vo.setId(currentId++);
         vo.setDataSourceId(ds.getId());
         SerialPointLocatorVO plVo = new SerialPointLocatorVO();
-        plVo.setDataTypeId(DataTypes.ALPHANUMERIC);
+        plVo.setDataType(DataTypes.ALPHANUMERIC);
         plVo.setValueRegex(PATTERNS.get(vo.getName()));
         plVo.setValueIndex(2);
         plVo.setPointIdentifier("");
@@ -70,7 +70,7 @@ public class SerialDataSourceTestData {
         vo.setId(currentId++);
         vo.setDataSourceId(ds.getId());
         SerialPointLocatorVO plVo = new SerialPointLocatorVO();
-        plVo.setDataTypeId(DataTypes.ALPHANUMERIC);
+        plVo.setDataType(DataTypes.ALPHANUMERIC);
         plVo.setValueRegex(valueRegex);
         plVo.setValueIndex(valueIndex);
         plVo.setPointIdentifier(pointIdentifier);

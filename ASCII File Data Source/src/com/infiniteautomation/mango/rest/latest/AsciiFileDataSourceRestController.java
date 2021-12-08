@@ -160,7 +160,7 @@ public class AsciiFileDataSourceRestController {
                     Pattern.compile(locator.getValueRegex()),
                     locator.getPointIdentifier(),
                     locator.getPointIdentifierIndex(),
-                    locator.getDataTypeId(),
+                    locator.getDataType(),
                     locator.getValueIndex(),
                     locator.getHasTimestamp(),
                     locator.getTimestampIndex(),

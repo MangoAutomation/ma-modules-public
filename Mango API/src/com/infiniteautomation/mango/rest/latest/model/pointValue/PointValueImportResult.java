@@ -128,17 +128,17 @@ public class PointValueImportResult {
 
             try {
                 DataValue value;
-                switch(vo.getPointLocator().getDataTypeId()) {
-                    case DataTypes.ALPHANUMERIC:
+                switch(vo.getPointLocator().getDataType()) {
+                    case ALPHANUMERIC:
                         value = new AlphanumericValue((String) model.getValue());
                         break;
-                    case DataTypes.BINARY:
+                    case BINARY:
                         value = new BinaryValue((Boolean)model.getValue());
                         break;
-                    case DataTypes.MULTISTATE:
+                    case MULTISTATE:
                         if(model.getValue() instanceof String) {
                             try {
-                                value = vo.getTextRenderer().parseText((String) model.getValue(), vo.getPointLocator().getDataTypeId());
+                                value = vo.getTextRenderer().parseText((String) model.getValue(), vo.getPointLocator().getDataType());
                             } catch (Exception e) {
                                 // Lots can go wrong here so let the user know
                                 result.addContextualMessage("value", "event.valueParse.textParse", e.getMessage());
@@ -148,12 +148,12 @@ public class PointValueImportResult {
                             value = new MultistateValue(((Number)model.getValue()).intValue());
                         }
                         break;
-                    case DataTypes.NUMERIC:
+                    case NUMERIC:
                         value = new NumericValue(((Number)model.getValue()).doubleValue());
                         break;
-                    case DataTypes.IMAGE:
+                    case IMAGE:
                     default:
-                        result.addContextualMessage("dataType", "common.default", vo.getPointLocator().getDataTypeId() + " data type not supported yet");
+                        result.addContextualMessage("dataType", "common.default", vo.getPointLocator().getDataType() + " data type not supported yet");
                         return;
                 }
 

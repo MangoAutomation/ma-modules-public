@@ -51,18 +51,18 @@ abstract public class ChangeTypeVO implements Serializable, JsonSerializable {
         CHANGE_TYPE_CODES.addElement(Types.SINUSOIDAL, "SINUSOIDAL", "dsEdit.virtual.changeType.sinusoidal");
     }
 
-    public static IntMessagePair[] getChangeTypes(int dataTypeId) {
-        switch (dataTypeId) {
-        case DataTypes.BINARY:
+    public static IntMessagePair[] getChangeTypes(DataTypes dataType) {
+        switch (dataType) {
+        case BINARY:
             return new IntMessagePair[] { new IntMessagePair(Types.ALTERNATE_BOOLEAN, AlternateBooleanChangeVO.KEY),
                     new IntMessagePair(Types.NO_CHANGE, NoChangeVO.KEY),
                     new IntMessagePair(Types.RANDOM_BOOLEAN, RandomBooleanChangeVO.KEY), };
-        case DataTypes.MULTISTATE:
+        case MULTISTATE:
             return new IntMessagePair[] {
                     new IntMessagePair(Types.INCREMENT_MULTISTATE, IncrementMultistateChangeVO.KEY),
                     new IntMessagePair(Types.NO_CHANGE, NoChangeVO.KEY),
                     new IntMessagePair(Types.RANDOM_MULTISTATE, RandomMultistateChangeVO.KEY), };
-        case DataTypes.NUMERIC:
+        case NUMERIC:
             return new IntMessagePair[] { new IntMessagePair(Types.BROWNIAN, BrownianChangeVO.KEY),
                     new IntMessagePair(Types.INCREMENT_ANALOG, IncrementAnalogChangeVO.KEY),
                     new IntMessagePair(Types.NO_CHANGE, NoChangeVO.KEY),
@@ -70,7 +70,7 @@ abstract public class ChangeTypeVO implements Serializable, JsonSerializable {
                     new IntMessagePair(Types.ANALOG_ATTRACTOR, AnalogAttractorChangeVO.KEY), 
             		new IntMessagePair(Types.SINUSOIDAL, SinusoidalChangeVO.KEY)};
             		
-        case DataTypes.ALPHANUMERIC:
+        case ALPHANUMERIC:
             return new IntMessagePair[] { new IntMessagePair(Types.NO_CHANGE, NoChangeVO.KEY), };
         }
         return new IntMessagePair[] {};

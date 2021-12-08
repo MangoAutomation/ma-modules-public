@@ -9,8 +9,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import com.infiniteautomation.mango.db.query.WideCallback;
 import com.infiniteautomation.mango.db.query.QueryCancelledException;
+import com.infiniteautomation.mango.db.query.WideCallback;
 import com.infiniteautomation.mango.quantize.BucketCalculator;
 import com.infiniteautomation.mango.quantize.BucketsBucketCalculator;
 import com.infiniteautomation.mango.quantize.TimePeriodBucketCalculator;
@@ -18,7 +18,6 @@ import com.infiniteautomation.mango.rest.latest.model.pointValue.RollupEnum;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.query.PointValueTimeDatabaseStream;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.query.ZonedDateTimeRangeQueryInfo;
 import com.infiniteautomation.mango.rest.latest.model.time.TimePeriodType;
-import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.rt.dataImage.IdPointValueTime;
 import com.serotonin.m2m2.vo.DataPointVO;
@@ -98,20 +97,20 @@ public abstract class AbstractMultiDataPointStatisticsQuantizerStream <T, INFO e
                 //Raw Data Stream
                 quantizer = new NoStatisticsDataPointQuantizer(vo, getBucketCalculator(), this);
             }else {
-                switch(vo.getPointLocator().getDataTypeId()) {
-                    case DataTypes.ALPHANUMERIC:
-                    case DataTypes.IMAGE:
+                switch(vo.getPointLocator().getDataType()) {
+                    case ALPHANUMERIC:
+                    case IMAGE:
                         quantizer = new ValueChangeCounterDataPointQuantizer(vo, getBucketCalculator(), this);
                         break;
-                    case DataTypes.BINARY:
-                    case DataTypes.MULTISTATE:
+                    case BINARY:
+                    case MULTISTATE:
                         quantizer = new StartsAndRuntimeListDataPointQuantizer(vo, getBucketCalculator(), this);
                         break;
-                    case DataTypes.NUMERIC:
+                    case NUMERIC:
                         quantizer = new AnalogStatisticsDataPointQuantizer(vo, getBucketCalculator(), this);
                         break;
                     default:
-                        throw new RuntimeException("Unknown Data Type: " + vo.getPointLocator().getDataTypeId());
+                        throw new RuntimeException("Unknown Data Type: " + vo.getPointLocator().getDataType());
                 }
             }
             this.quantizerMap.put(entry.getKey(), quantizer);

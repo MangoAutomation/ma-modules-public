@@ -149,30 +149,30 @@ public class SerialDataSourceRT extends EventDataSource<SerialDataSourceVO> impl
         if(this.vo.isHex()){
             //Convert to Hex
             try{
-                switch(dataPoint.getDataTypeId()){
-                    case DataTypes.ALPHANUMERIC:
+                switch(dataPoint.getDataType()){
+                    case ALPHANUMERIC:
                         data = convertToHex(valueTime.getStringValue());
                         break;
-                    case DataTypes.BINARY:
+                    case BINARY:
                         if(valueTime.getBooleanValue())
                             data = convertToHex("00");
                         else
                             data = convertToHex("01");
                         break;
-                    case DataTypes.MULTISTATE:
+                    case MULTISTATE:
                         String intValue = Integer.toString(valueTime.getIntegerValue());
                         if(intValue.length()%2 != 0)
                             intValue = "0" + intValue;
                         data = convertToHex(intValue);
                         break;
-                    case DataTypes.NUMERIC:
+                    case NUMERIC:
                         String numValue = Integer.toString(valueTime.getIntegerValue());
                         if(numValue.length()%2 != 0)
                             numValue = "0" + numValue;
                         data = convertToHex(numValue);
                         break;
                     default:
-                        throw new ShouldNeverHappenException("Unsupported data type" + dataPoint.getDataTypeId());
+                        throw new ShouldNeverHappenException("Unsupported data type" + dataPoint.getDataType());
                 }
                 if(this.vo.isLogIO())
                     this.ioLog.log(false, data);
@@ -484,29 +484,29 @@ public class SerialDataSourceRT extends EventDataSource<SerialDataSourceVO> impl
     /**
      * Convert to a point value time or NULL if not possible
      */
-    public static PointValueTime convertToPointValue(String value, int dataTypeId, boolean isHex) throws ConvertHexException{
+    public static PointValueTime convertToPointValue(String value, DataTypes dataType, boolean isHex) throws ConvertHexException{
         //Parse out the value
         DataValue dataValue = null;
         if(isHex){
             byte[] data = convertToHex(value);
 
-            switch(dataTypeId){
-                case DataTypes.ALPHANUMERIC:
+            switch(dataType){
+                case ALPHANUMERIC:
                     dataValue = new AlphanumericValue(new String(data, StandardCharsets.UTF_8));
                     break;
-                case DataTypes.BINARY:
+                case BINARY:
                     if(data.length > 0){
                         dataValue = new BinaryValue((data[0]==1)?true:false);
                     }
                     break;
-                case DataTypes.MULTISTATE:
+                case MULTISTATE:
                     ByteBuffer buffer = ByteBuffer.wrap(data);
                     if(data.length == 2)
                         dataValue = new MultistateValue(buffer.getShort());
                     else
                         dataValue = new MultistateValue(buffer.getInt());
                     break;
-                case DataTypes.NUMERIC:
+                case NUMERIC:
                     ByteBuffer nBuffer = ByteBuffer.wrap(data);
                     if(data.length == 4)
                         dataValue = new NumericValue(nBuffer.getFloat());
@@ -514,10 +514,10 @@ public class SerialDataSourceRT extends EventDataSource<SerialDataSourceVO> impl
                         dataValue = new NumericValue(nBuffer.getDouble());
                     break;
                 default:
-                    throw new ShouldNeverHappenException("Un-supported data type: " + dataTypeId);
+                    throw new ShouldNeverHappenException("Un-supported data type: " + dataType);
             }
         }else{
-            dataValue = DataValue.stringToValue(value, dataTypeId);
+            dataValue = DataValue.stringToValue(value, dataType);
         }
 
         if(dataValue != null)
@@ -630,7 +630,7 @@ public class SerialDataSourceRT extends EventDataSource<SerialDataSourceVO> impl
                     if(log.isDebugEnabled()){
                         log.debug("Point Value matched regex: " + plVo.getValueRegex() + " and extracted value " + value);
                     }
-                    PointValueTime pvt = convertToPointValue(value, plVo.getDataTypeId(), isHex);
+                    PointValueTime pvt = convertToPointValue(value, plVo.getDataType(), isHex);
                     callback.onMatch(pointIdentifier, pvt);
                 } else {
                     callback.pointPatternMismatch(msg, plVo.getValueRegex());

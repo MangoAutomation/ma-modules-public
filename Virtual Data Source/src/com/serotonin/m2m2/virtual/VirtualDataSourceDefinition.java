@@ -47,11 +47,6 @@ public class VirtualDataSourceDefinition extends PollingDataSourceDefinition<Vir
 
         VirtualPointLocatorVO pl = dpvo.getPointLocator();
 
-        if (!DataTypes.CODES.isValidId(pl.getDataTypeId()))
-            response.addContextualMessage("dataTypeId", "validate.invalidValue");
-
-
-
         // Alternate boolean
         if (pl.getChangeTypeId() == ChangeTypeVO.Types.ALTERNATE_BOOLEAN) {
             if (StringUtils.isBlank(pl.getAlternateBooleanChange().getStartValue()))
@@ -98,7 +93,7 @@ public class VirtualDataSourceDefinition extends PollingDataSourceDefinition<Vir
         // No change
         else if (pl.getChangeTypeId() == ChangeTypeVO.Types.NO_CHANGE) {
             if (StringUtils.isBlank(pl.getNoChange().getStartValue())
-                    && pl.getDataTypeId() != DataTypes.ALPHANUMERIC)
+                    && pl.getDataType() != DataTypes.ALPHANUMERIC)
                 response.addContextualMessage("noChange.startValue",
                         "validate.required");
         }
@@ -159,7 +154,7 @@ public class VirtualDataSourceDefinition extends PollingDataSourceDefinition<Vir
         ChangeTypeVO changeType = pl.getChangeType();
         if (changeType != null) {
             boolean found = false;
-            for (IntMessagePair imp : ChangeTypeVO.getChangeTypes(pl.getDataTypeId())) {
+            for (IntMessagePair imp : ChangeTypeVO.getChangeTypes(pl.getDataType())) {
                 if (imp.getKey() == pl.getChangeTypeId()) {
                     found = true;
                     break;

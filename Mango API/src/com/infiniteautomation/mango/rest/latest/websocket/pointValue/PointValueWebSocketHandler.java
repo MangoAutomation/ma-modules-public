@@ -168,7 +168,7 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
             this.vo = vo;
 
             //If we are an image type we should build the URLS
-            if(vo.getPointLocator().getDataTypeId() == DataTypes.IMAGE)
+            if(vo.getPointLocator().getDataType() == DataTypes.IMAGE)
                 imageServletBuilder = UriComponentsBuilder.fromPath("/imageValue/{ts}_{id}.jpg");
 
             this.setEventTypes(eventTypes);
@@ -196,12 +196,12 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
             PointValueTimeModel pvtModel = null;
             if (pvt != null) {
                 pvtModel = new PointValueTimeModel(pvt);
-                if (vo.getPointLocator().getDataTypeId() == DataTypes.IMAGE) {
+                if (vo.getPointLocator().getDataType() == DataTypes.IMAGE) {
                     pvtModel.setValue(imageServletBuilder.buildAndExpand(pvt.getTime(), vo.getId()).toUri().toString());
                 }
 
                 renderedValue = Functions.getRenderedText(vo, pvt);
-                if (vo.getPointLocator().getDataTypeId() == DataTypes.NUMERIC) {
+                if (vo.getPointLocator().getDataType() == DataTypes.NUMERIC) {
                     convertedValue = vo.getUnit().getConverterTo(vo.getRenderedUnit()).convert(pvt.getValue().getDoubleValue());
                 }
             }

@@ -149,14 +149,14 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.FIRST + " entry");
                     //Test the access via the servlet
-                    value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
                     //TODO Cannot compare the values as the gen doesn't have the 'data' loaded
                     assertEquals((long)gen.getFirstTime(), value.getTime());
 
                     stat = stats.get(PointValueTimeWriter.LAST);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.LAST + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
                     //TODO Cannot compare the values as the gen doesn't have the 'data' loaded
                     assertEquals((long)gen.getLastTime(), value.getTime());
 
@@ -224,14 +224,14 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                     stat = stats.get(PointValueTimeWriter.FIRST);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.FIRST + " entry");
-                    PointValueTime value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    PointValueTime value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
                     assertEquals(gen.getFirstValue(), value.getValue());
                     assertEquals((long)gen.getFirstTime(), value.getTime());
 
                     stat = stats.get(PointValueTimeWriter.LAST);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.LAST + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
                     assertEquals(gen.getLastValue(), value.getValue() );
                     assertEquals((long)gen.getLastTime(), value.getTime());
 
@@ -479,14 +479,14 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                     stat = stats.get(PointValueTimeWriter.FIRST);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.FIRST + " entry");
-                    PointValueTime value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    PointValueTime value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
                     assertEquals(gen.getFirstValue(), value.getValue().getDoubleValue(), 0.00001);
                     assertEquals((long)gen.getFirstTime(), value.getTime());
 
                     stat = stats.get(PointValueTimeWriter.LAST);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.LAST + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
                     assertEquals(gen.getLastValue(), value.getValue().getDoubleValue(), 0.00001);
                     assertEquals((long)gen.getLastTime(), value.getTime());
 
@@ -498,7 +498,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                     stat = stats.get(PointValueTimeWriter.ACCUMULATOR);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.ACCUMULATOR + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
                     Double accumulatorValue = gen.getLastValue();
                     if(accumulatorValue == null)
                         accumulatorValue = gen.getMaximumValue();
@@ -507,39 +507,39 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                     stat = stats.get(PointValueTimeWriter.AVERAGE);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.AVERAGE + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
                     assertEquals(gen.getAverage(), value.getDoubleValue(), 0.00001);
 
                     stat = stats.get(PointValueTimeWriter.DELTA);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.DELTA + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
                     assertEquals(gen.getDelta(), value.getDoubleValue(), 0.00001);
 
                     stat = stats.get(PointValueTimeWriter.MINIMUM);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.MINIMUM + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
                     assertEquals(gen.getMinimumValue(), value.getValue().getDoubleValue(), 0.00001);
                     assertEquals((long)gen.getMinimumTime(), value.getTime());
 
                     stat = stats.get(PointValueTimeWriter.MAXIMUM);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.MAXIMUM + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
                     assertEquals(gen.getMaximumValue(), value.getValue().getDoubleValue(), 0.00001);
                     assertEquals((long)gen.getMaximumTime(), value.getTime());
 
                     stat = stats.get(PointValueTimeWriter.SUM);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.SUM + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
                     assertEquals(gen.getSum(), value.getDoubleValue(), 0.00001);
 
                     stat = stats.get(PointValueTimeWriter.INTEGRAL);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.INTEGRAL + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
                     assertEquals(gen.getIntegral(), value.getDoubleValue(), 0.00001);
                 });
 
@@ -658,21 +658,21 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.START + " entry");
 
-                    PointValueTime value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    PointValueTime value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
                     assertEquals(gen.getStartValue(), value.getDoubleValue(), 0.00001);
                     assertEquals(gen.getPeriodStartTime(), value.getTime());
 
                     stat = stats.get(PointValueTimeWriter.FIRST);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.FIRST + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
                     assertEquals(gen.getFirstValue(), value.getValue().getDoubleValue(), 0.00001);
                     assertEquals((long)gen.getFirstTime(), value.getTime());
 
                     stat = stats.get(PointValueTimeWriter.LAST);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.LAST + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
                     assertEquals(gen.getLastValue(), value.getValue().getDoubleValue(), 0.00001);
                     assertEquals((long)gen.getLastTime(), value.getTime());
 
@@ -684,7 +684,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                     stat = stats.get(PointValueTimeWriter.ACCUMULATOR);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.ACCUMULATOR + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
                     Double accumulatorValue = gen.getLastValue();
                     if(accumulatorValue == null)
                         accumulatorValue = gen.getMaximumValue();
@@ -693,39 +693,39 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                     stat = stats.get(PointValueTimeWriter.AVERAGE);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.AVERAGE + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
                     assertEquals(gen.getAverage(), value.getDoubleValue(), 0.00001);
 
                     stat = stats.get(PointValueTimeWriter.DELTA);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.DELTA + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
                     assertEquals(gen.getDelta(), value.getDoubleValue(), 0.00001);
 
                     stat = stats.get(PointValueTimeWriter.MINIMUM);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.MINIMUM + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
                     assertEquals(gen.getMinimumValue(), value.getValue().getDoubleValue(), 0.00001);
                     assertEquals((long)gen.getMinimumTime(), value.getTime());
 
                     stat = stats.get(PointValueTimeWriter.MAXIMUM);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.MAXIMUM + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
                     assertEquals(gen.getMaximumValue(), value.getValue().getDoubleValue(), 0.00001);
                     assertEquals((long)gen.getMaximumTime(), value.getTime());
 
                     stat = stats.get(PointValueTimeWriter.SUM);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.SUM + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
                     assertEquals(gen.getSum(), value.getDoubleValue(), 0.00001);
 
                     stat = stats.get(PointValueTimeWriter.INTEGRAL);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.INTEGRAL + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
                     assertEquals(gen.getIntegral(), value.getDoubleValue(), 0.00001);
                 });
 
@@ -850,14 +850,14 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                     stat = stats.get(PointValueTimeWriter.FIRST);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.FIRST + " entry");
-                    PointValueTime value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    PointValueTime value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
                     assertEquals(gen.getFirstValue(), value.getValue().getDoubleValue(), 0.00001);
                     assertEquals((long)gen.getFirstTime(), value.getTime());
 
                     stat = stats.get(PointValueTimeWriter.LAST);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.LAST + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
                     assertEquals(gen.getLastValue(), value.getValue().getDoubleValue(), 0.00001);
                     assertEquals((long)gen.getLastTime(), value.getTime());
 
@@ -869,7 +869,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                     stat = stats.get(PointValueTimeWriter.ACCUMULATOR);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.ACCUMULATOR + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
                     Double accumulatorValue = gen.getLastValue();
                     if(accumulatorValue == null)
                         accumulatorValue = gen.getMaximumValue();
@@ -878,39 +878,39 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                     stat = stats.get(PointValueTimeWriter.AVERAGE);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.AVERAGE + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
                     assertEquals(gen.getAverage(), value.getDoubleValue(), 0.00001);
 
                     stat = stats.get(PointValueTimeWriter.DELTA);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.DELTA + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
                     assertEquals(gen.getDelta(), value.getDoubleValue(), 0.00001);
 
                     stat = stats.get(PointValueTimeWriter.MINIMUM);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.MINIMUM + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
                     assertEquals(gen.getMinimumValue(), value.getValue().getDoubleValue(), 0.00001);
                     assertEquals((long)gen.getMinimumTime(), value.getTime());
 
                     stat = stats.get(PointValueTimeWriter.MAXIMUM);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.MAXIMUM + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
                     assertEquals(gen.getMaximumValue(), value.getValue().getDoubleValue(), 0.00001);
                     assertEquals((long)gen.getMaximumTime(), value.getTime());
 
                     stat = stats.get(PointValueTimeWriter.SUM);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.SUM + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
                     assertEquals(gen.getSum(), value.getDoubleValue(), 0.00001);
 
                     stat = stats.get(PointValueTimeWriter.INTEGRAL);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.INTEGRAL + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
                     assertEquals(gen.getIntegral(), value.getDoubleValue(), 0.00001);
                 });
 
@@ -938,14 +938,14 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                     stat = stats.get(PointValueTimeWriter.FIRST);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.FIRST + " entry");
-                    PointValueTime value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    PointValueTime value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
                     assertEquals(gen.getFirstValue(), value.getValue());
                     assertEquals((long)gen.getFirstTime(), value.getTime());
 
                     stat = stats.get(PointValueTimeWriter.LAST);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.LAST + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
                     assertEquals(gen.getLastValue(), value.getValue());
                     assertEquals((long)gen.getLastTime(), value.getTime());
 
@@ -1018,20 +1018,20 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
         return PointValueField.values();
     }
 
-    protected PointValueTime getPointValueTime(int dataTypeId, JsonNode stat) {
+    protected PointValueTime getPointValueTime(DataTypes dataType, JsonNode stat) {
         if(stat.isNull()) {
             return null;
         }
         assertNotNull(stat.get(PointValueTimeWriter.TIMESTAMP));
         assertNotNull(stat.get(PointValueTimeWriter.VALUE));
-        switch(dataTypeId) {
-            case DataTypes.MULTISTATE:
+        switch(dataType) {
+            case MULTISTATE:
                 return new PointValueTime(stat.get(PointValueTimeWriter.VALUE).asInt(), stat.get(PointValueTimeWriter.TIMESTAMP).asLong());
-            case DataTypes.NUMERIC:
+            case NUMERIC:
                 return new PointValueTime(stat.get(PointValueTimeWriter.VALUE).asDouble(), stat.get(PointValueTimeWriter.TIMESTAMP).asLong());
-            case DataTypes.ALPHANUMERIC:
+            case ALPHANUMERIC:
                 return new PointValueTime(stat.get(PointValueTimeWriter.VALUE).asText(), stat.get(PointValueTimeWriter.TIMESTAMP).asLong());
-            case DataTypes.IMAGE:
+            case IMAGE:
                 try {
                     //Use image value servlet to get the image out, first create a mock request
                     // to simulate the normal request
@@ -1050,7 +1050,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                     throw new ShouldNeverHappenException(e);
                 }
             default:
-                throw new ShouldNeverHappenException("Unsupported data type: " + dataTypeId);
+                throw new ShouldNeverHappenException("Unsupported data type: " + dataType);
         }
     }
 
@@ -1082,7 +1082,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
         return vo;
     }
 
-    protected DataPointVO createDataPoint(int dataSourceId, int dataType, int defaultCacheSize) {
+    protected DataPointVO createDataPoint(int dataSourceId, DataTypes dataType, int defaultCacheSize) {
         DataPointVO vo = new DataPointVO();
         vo.setPointLocator(new MockPointLocatorVO(dataType, true));
         vo.setXid(DataPointDao.getInstance().generateUniqueXid());
@@ -1173,21 +1173,21 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
             JsonNode stat = stats.get(PointValueTimeWriter.START);
             if(stat == null)
                 fail("Missing " + PointValueTimeWriter.START + " entry");
-            PointValueTime value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+            PointValueTime value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
             assertEquals(gen.getStartValue(), value.getValue());
             assertEquals(gen.getPeriodStartTime(), value.getTime());
 
             stat = stats.get(PointValueTimeWriter.FIRST);
             if(stat == null)
                 fail("Missing " + PointValueTimeWriter.FIRST + " entry");
-            value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+            value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
             assertEquals(gen.getFirstValue(), value.getValue());
             assertEquals((long)gen.getFirstTime(), value.getTime());
 
             stat = stats.get(PointValueTimeWriter.LAST);
             if(stat == null)
                 fail("Missing " + PointValueTimeWriter.LAST + " entry");
-            value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+            value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
             assertEquals(gen.getLastValue(), value.getValue() );
             assertEquals((long)gen.getLastTime(), value.getTime());
 
@@ -1213,21 +1213,21 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
             JsonNode stat = stats.get(PointValueTimeWriter.START);
             if(stat == null)
                 fail("Missing " + PointValueTimeWriter.START + " entry");
-            PointValueTime value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+            PointValueTime value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
             assertEquals(gen.getStartValue(), value.getValue());
             assertEquals(gen.getPeriodStartTime(), value.getTime());
 
             stat = stats.get(PointValueTimeWriter.FIRST);
             if(stat == null)
                 fail("Missing " + PointValueTimeWriter.FIRST + " entry");
-            value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+            value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
             assertEquals(gen.getFirstValue(), value.getValue());
             assertEquals((long)gen.getFirstTime(), value.getTime());
 
             stat = stats.get(PointValueTimeWriter.LAST);
             if(stat == null)
                 fail("Missing " + PointValueTimeWriter.LAST + " entry");
-            value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+            value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
             assertEquals(gen.getLastValue(), value.getValue() );
             assertEquals((long)gen.getLastTime(), value.getTime());
 
@@ -1268,21 +1268,21 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
             JsonNode stat = stats.get(PointValueTimeWriter.START);
             if(stat == null)
                 fail("Missing " + PointValueTimeWriter.START + " entry");
-            PointValueTime value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+            PointValueTime value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
             assertEquals(gen.getStartValue(), value.getDoubleValue(), 0.00001);
             assertEquals(gen.getPeriodStartTime(), value.getTime());
 
             stat = stats.get(PointValueTimeWriter.FIRST);
             if(stat == null)
                 fail("Missing " + PointValueTimeWriter.FIRST + " entry");
-            value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+            value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
             assertEquals(gen.getFirstValue(), value.getValue().getDoubleValue(), 0.00001);
             assertEquals((long)gen.getFirstTime(), value.getTime());
 
             stat = stats.get(PointValueTimeWriter.LAST);
             if(stat == null)
                 fail("Missing " + PointValueTimeWriter.LAST + " entry");
-            value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+            value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
             assertEquals(gen.getLastValue(), value.getValue().getDoubleValue(), 0.00001);
             assertEquals((long)gen.getLastTime(), value.getTime());
 
@@ -1294,7 +1294,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
             stat = stats.get(PointValueTimeWriter.ACCUMULATOR);
             if(stat == null)
                 fail("Missing " + PointValueTimeWriter.ACCUMULATOR + " entry");
-            value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+            value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
             Double accumulatorValue = gen.getLastValue();
             if(accumulatorValue == null)
                 accumulatorValue = gen.getMaximumValue();
@@ -1303,40 +1303,40 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
             stat = stats.get(PointValueTimeWriter.AVERAGE);
             if(stat == null)
                 fail("Missing " + PointValueTimeWriter.AVERAGE + " entry");
-            value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+            value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
             assertEquals(gen.getAverage(), value.getDoubleValue(), 0.00001);
 
             stat = stats.get(PointValueTimeWriter.DELTA);
             if(stat == null)
                 fail("Missing " + PointValueTimeWriter.DELTA + " entry");
-            value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+            value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
             assertEquals(gen.getDelta(), value.getDoubleValue(), 0.00001);
 
 
             stat = stats.get(PointValueTimeWriter.MINIMUM);
             if(stat == null)
                 fail("Missing " + PointValueTimeWriter.MINIMUM + " entry");
-            value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+            value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
             assertEquals(gen.getMinimumValue(), value.getValue().getDoubleValue(), 0.00001);
             assertEquals((long)gen.getMinimumTime(), value.getTime());
 
             stat = stats.get(PointValueTimeWriter.MAXIMUM);
             if(stat == null)
                 fail("Missing " + PointValueTimeWriter.MAXIMUM + " entry");
-            value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+            value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
             assertEquals(gen.getMaximumValue(), value.getValue().getDoubleValue(), 0.00001);
             assertEquals((long)gen.getMaximumTime(), value.getTime());
 
             stat = stats.get(PointValueTimeWriter.SUM);
             if(stat == null)
                 fail("Missing " + PointValueTimeWriter.SUM + " entry");
-            value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+            value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
             assertEquals(gen.getSum(), value.getDoubleValue(), 0.00001);
 
             stat = stats.get(PointValueTimeWriter.INTEGRAL);
             if(stat == null)
                 fail("Missing " + PointValueTimeWriter.INTEGRAL + " entry");
-            value = getPointValueTime(w.vo.getPointLocator().getDataTypeId(), stat);
+            value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
             assertEquals(gen.getIntegral(), value.getDoubleValue(), 0.00001);
         }
 

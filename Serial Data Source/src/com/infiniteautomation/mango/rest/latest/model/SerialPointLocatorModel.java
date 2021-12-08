@@ -28,7 +28,7 @@ public class SerialPointLocatorModel extends AbstractPointLocatorModel<SerialPoi
     @Override
     public SerialPointLocatorVO toVO() {
         SerialPointLocatorVO vo = new SerialPointLocatorVO();
-        vo.setDataTypeId(DataTypes.CODES.getId(dataType));
+        vo.setDataType(DataTypes.fromName(dataType));
         vo.setPointIdentifier(pointIdentifier);
         vo.setValueRegex(valueRegex);
         vo.setValueIndex(valueIndex);

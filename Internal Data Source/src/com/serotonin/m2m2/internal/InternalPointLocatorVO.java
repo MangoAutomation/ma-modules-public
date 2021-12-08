@@ -98,7 +98,7 @@ public class InternalPointLocatorVO extends AbstractPointLocatorVO<InternalPoint
     }
 
     @Override
-    public int getDataTypeId() {
+    public DataTypes getDataType() {
         return DataTypes.NUMERIC;
     }
 

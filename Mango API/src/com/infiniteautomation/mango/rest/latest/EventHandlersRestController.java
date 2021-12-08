@@ -3,9 +3,6 @@
  */
 package com.infiniteautomation.mango.rest.latest;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
@@ -13,8 +10,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+
 import javax.servlet.http.HttpServletRequest;
-import net.jazdw.rql.parser.ASTNode;
 
 import org.apache.poi.EncryptedDocumentException;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
@@ -40,7 +37,6 @@ import com.infiniteautomation.mango.rest.latest.model.StreamedVORqlQueryWithTota
 import com.infiniteautomation.mango.rest.latest.model.event.handlers.AbstractEventHandlerModel;
 import com.infiniteautomation.mango.rest.latest.model.javascript.MangoJavaScriptModel;
 import com.infiniteautomation.mango.rest.latest.model.javascript.MangoJavaScriptResultModel;
-import com.infiniteautomation.mango.rest.latest.model.pointValue.DataTypeEnum;
 import com.infiniteautomation.mango.rest.latest.patch.PatchVORequestBody;
 import com.infiniteautomation.mango.spring.service.EventHandlerService;
 import com.infiniteautomation.mango.spring.service.MangoJavaScriptService;
@@ -49,6 +45,7 @@ import com.infiniteautomation.mango.util.RQLUtils;
 import com.infiniteautomation.mango.util.WorkItemInfo;
 import com.infiniteautomation.mango.util.script.MangoJavaScript;
 import com.serotonin.m2m2.Common;
+import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.email.UsedImagesDirective;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -61,6 +58,11 @@ import com.serotonin.m2m2.rt.event.type.EventType;
 import com.serotonin.m2m2.rt.script.EventInstanceWrapper;
 import com.serotonin.m2m2.vo.event.AbstractEventHandlerVO;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import net.jazdw.rql.parser.ASTNode;
 
 /**
  * @author Terry Packer
@@ -292,7 +294,7 @@ public class EventHandlersRestController {
 
     private MangoJavaScriptResultModel validateScript(MangoJavaScriptModel model, String noChangeTranslationKey) {
         //Set to potentially return a String
-        model.setResultDataType(DataTypeEnum.NUMERIC.name());
+        model.setResultDataType(DataTypes.NUMERIC.name());
         MangoJavaScript jsVo = model.toVO();
         jsVo.setWrapInFunction(true);
         return new MangoJavaScriptResultModel(javaScriptService.testScript(jsVo, noChangeTranslationKey));

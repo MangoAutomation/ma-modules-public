@@ -119,7 +119,7 @@ public class PointValueModificationRestController {
         protected final FireEvents fireEvents;
         protected DataPointRT rt;
         protected final DataPointVO vo;
-        protected final int dataTypeId;
+        protected final DataTypes dataType;
 
         public PointValueTimeImport(String xid, PointValueDao dao, DataPointDao dataPointDao, FireEvents fireEvents, PermissionHolder user) {
             this.xid = xid;
@@ -129,16 +129,16 @@ public class PointValueModificationRestController {
             this.vo = dataPointDao.getByXid(xid);
             if(vo == null) {
                 valid = false;
-                dataTypeId = DataTypes.UNKNOWN;
+                dataType = null;
                 result.addContextualMessage("xid", "emport.error.missingPoint", xid);
             }else {
                 if (permissionService.hasPermission(user, vo.getSetPermission())){
                     valid = true;
                     rt = Common.runtimeManager.getDataPoint(vo.getId());
-                    dataTypeId = vo.getPointLocator().getDataTypeId();
+                    dataType = vo.getPointLocator().getDataType();
                 }else {
                     valid = false;
-                    dataTypeId = DataTypes.UNKNOWN;
+                    dataType = null;
                     result.addContextualMessage("xid", "permission.exception.setDataPoint", user.getPermissionHolderName());
                 }
             }
@@ -162,24 +162,24 @@ public class PointValueModificationRestController {
 
                 DataValue dataValue = null;
                 try {
-                    switch(dataTypeId) {
-                        case DataTypes.ALPHANUMERIC:
+                    switch(dataType) {
+                        case ALPHANUMERIC:
                             dataValue = new AlphanumericValue(value.toString());
                             break;
-                        case DataTypes.BINARY:
+                        case BINARY:
                             if(value instanceof String) {
                                 dataValue = new BinaryValue(Boolean.valueOf((String)value));
                             }else {
                                 dataValue = new BinaryValue((Boolean)value);
                             }
                             break;
-                        case DataTypes.MULTISTATE:
+                        case MULTISTATE:
                             if(value instanceof String) {
                                 try {
                                     dataValue = new MultistateValue(Integer.parseInt((String)value));
                                 }catch(NumberFormatException ex) {
                                     try {
-                                        dataValue = vo.getTextRenderer().parseText((String) value, dataTypeId);
+                                        dataValue = vo.getTextRenderer().parseText((String) value, dataType);
                                     } catch (Exception e) {
                                         // Lots can go wrong here so let the user know
                                         result.addContextualMessage("value", "event.valueParse.textParse", e.getMessage());
@@ -191,14 +191,14 @@ public class PointValueModificationRestController {
                                 dataValue = new MultistateValue(((Number)value).intValue());
                             }
                             break;
-                        case DataTypes.NUMERIC:
+                        case NUMERIC:
                             if(value instanceof String) {
                                 dataValue =  new NumericValue(Double.valueOf((String)value));
                             }else {
                                 dataValue = new NumericValue(((Number)value).doubleValue());
                             }
                             break;
-                        case DataTypes.IMAGE:
+                        case IMAGE:
                         default:
                             result.addContextualMessage("dataType", "rest.validate.imageNotSupported");
                             return;

@@ -91,7 +91,7 @@ public class ScriptUtilRestController {
             DataPointRT dprt = (DataPointRT) point;
 
             try {
-                DataValue mangoValue = service.coerce(value, dprt.getDataTypeId());
+                DataValue mangoValue = service.coerce(value, dprt.getDataType());
                 SetPointSource source;
                 PointValueTime newValue = new PointValueTime(mangoValue, timestamp);
                 if(StringUtils.isBlank(annotation))

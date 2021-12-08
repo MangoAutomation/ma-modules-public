@@ -42,7 +42,6 @@ import com.infiniteautomation.mango.rest.latest.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.latest.exception.GenericRestException;
 import com.infiniteautomation.mango.rest.latest.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.latest.exception.ServerErrorException;
-import com.infiniteautomation.mango.rest.latest.model.pointValue.DataTypeEnum;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.LegacyPointValueTimeModel;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.LegacyXidPointValueTimeModel;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueField;
@@ -864,8 +863,7 @@ public class PointValueRestController extends AbstractMangoRestController {
         }
 
         // Validate the model's data type for compatibility
-        if (DataTypeEnum.convertFrom(model.getDataType()) != vo.getPointLocator()
-                .getDataTypeId()) {
+        if (model.getDataType() != vo.getPointLocator().getDataType()) {
             throw new GenericRestException(HttpStatus.NOT_ACCEPTABLE,
                     new TranslatableMessage("event.ds.dataType"));
         }
@@ -883,7 +881,7 @@ public class PointValueRestController extends AbstractMangoRestController {
 
         // Are we converting from the rendered Unit?
         if (unitConversion) {
-            if ((model.getDataType() == DataTypeEnum.NUMERIC)
+            if ((model.getDataType() == DataTypes.NUMERIC)
                     && (model.getValue() instanceof Number)) {
                 double value;
                 if (model.getValue() instanceof Integer) {
@@ -902,12 +900,12 @@ public class PointValueRestController extends AbstractMangoRestController {
 
         // If we are a multistate point and our value is in string format then we should try
         // to convert it
-        if ((model.getDataType() == DataTypeEnum.MULTISTATE || model.getDataType() == DataTypeEnum.NUMERIC)
+        if ((model.getDataType() == DataTypes.MULTISTATE || model.getDataType() == DataTypes.NUMERIC)
                 && (model.getValue() instanceof String)) {
             try {
                 DataValue value =
                         vo.getTextRenderer().parseText((String) model.getValue(),
-                                vo.getPointLocator().getDataTypeId());
+                                vo.getPointLocator().getDataType());
                 model.setValue(value.getObjectValue());
             } catch (Exception e) {
                 // Lots can go wrong here so let the user know
@@ -948,8 +946,8 @@ public class PointValueRestController extends AbstractMangoRestController {
         }
 
         // one last check to ensure we are inserting the correct data type
-        if (DataTypes.getDataType(pvt.getValue()) != vo.getPointLocator()
-                .getDataTypeId()) {
+        if (pvt.getValue().getDataType() != vo.getPointLocator()
+                .getDataType()) {
             throw new GenericRestException(HttpStatus.NOT_ACCEPTABLE,
                     new TranslatableMessage("event.ds.dataType"));
         }
@@ -1265,7 +1263,7 @@ public class PointValueRestController extends AbstractMangoRestController {
         if(info.isUseSimplify()) {
             //Ensure no Simplify support
             for(DataPointVO vo : voMap.values())
-                if(vo.getPointLocator().getDataTypeId() == DataTypes.ALPHANUMERIC || vo.getPointLocator().getDataTypeId() == DataTypes.IMAGE)
+                if(vo.getPointLocator().getDataType() == DataTypes.ALPHANUMERIC || vo.getPointLocator().getDataType() == DataTypes.IMAGE)
                     throw new BadRequestException(new TranslatableMessage("rest.validation.noSimplifySupport", vo.getXid()));
             return ResponseEntity.ok(new MultiPointSimplifyLatestDatabaseStream<T, INFO>(info, voMap, this.dao));
         }else
@@ -1290,7 +1288,7 @@ public class PointValueRestController extends AbstractMangoRestController {
             if(info.isUseSimplify()) {
                 //Ensure no Simplify support
                 for(DataPointVO vo : voMap.values())
-                    if(vo.getPointLocator().getDataTypeId() == DataTypes.ALPHANUMERIC || vo.getPointLocator().getDataTypeId() == DataTypes.IMAGE)
+                    if(vo.getPointLocator().getDataType() == DataTypes.ALPHANUMERIC || vo.getPointLocator().getDataType() == DataTypes.IMAGE)
                         throw new BadRequestException(new TranslatableMessage("rest.validation.noSimplifySupport", vo.getXid()));
                 return ResponseEntity.ok(new MultiPointSimplifyTimeRangeDatabaseStream<T, INFO>(info, voMap, this.dao));
             }
@@ -1312,15 +1310,15 @@ public class PointValueRestController extends AbstractMangoRestController {
             DataPointVO vo = dataPointService.get(xid);
 
             //Validate the rollup
-            switch(vo.getPointLocator().getDataTypeId()) {
-                case DataTypes.ALPHANUMERIC:
-                case DataTypes.BINARY:
-                case DataTypes.IMAGE:
-                case DataTypes.MULTISTATE:
+            switch(vo.getPointLocator().getDataType()) {
+                case ALPHANUMERIC:
+                case BINARY:
+                case IMAGE:
+                case MULTISTATE:
                     if(rollup.nonNumericSupport() == false)
                         throw new BadRequestException(new TranslatableMessage("rest.validate.rollup.incompatible", rollup.toString(), xid));
                     break;
-                case DataTypes.NUMERIC:
+                case NUMERIC:
                     break;
             }
             voMap.put(vo.getSeriesId(), vo);

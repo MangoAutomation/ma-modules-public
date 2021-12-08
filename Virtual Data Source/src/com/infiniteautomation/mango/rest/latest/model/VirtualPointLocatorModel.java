@@ -121,7 +121,7 @@ public class VirtualPointLocatorModel extends AbstractPointLocatorModel<VirtualP
     @Override
     public VirtualPointLocatorVO toVO() {
         VirtualPointLocatorVO vo = new VirtualPointLocatorVO();
-        vo.setDataTypeId(DataTypes.CODES.getId(dataType));
+        vo.setDataType(DataTypes.fromName(dataType));
         vo.setChangeTypeId(ChangeTypeVO.CHANGE_TYPE_CODES.getId(changeType));
         vo.setSettable(settable);
 

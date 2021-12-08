@@ -75,15 +75,15 @@ JsonSerializable {
         ChangeTypeRT changeType = getChangeType().createRuntime();
         String startValue = getChangeType().getStartValue();
         DataValue startObject;
-        if (dataTypeId == DataTypes.BINARY)
+        if (dataType == DataTypes.BINARY)
             startObject = BinaryValue.parseBinary(startValue);
-        else if (dataTypeId == DataTypes.MULTISTATE) {
+        else if (dataType == DataTypes.MULTISTATE) {
             try {
                 startObject = MultistateValue.parseMultistate(startValue);
             } catch (NumberFormatException e) {
                 startObject = new MultistateValue(0);
             }
-        } else if (dataTypeId == DataTypes.NUMERIC) {
+        } else if (dataType == DataTypes.NUMERIC) {
             try {
                 startObject = NumericValue.parseNumeric(startValue);
             } catch (NumberFormatException e) {
@@ -103,7 +103,7 @@ JsonSerializable {
         return VirtualDataSourceDefinition.TYPE_NAME;
     }
 
-    private int dataTypeId = DataTypes.BINARY;
+    private DataTypes dataType = DataTypes.BINARY;
     private int changeTypeId = Types.ALTERNATE_BOOLEAN;
     @JsonProperty
     private boolean settable;
@@ -127,12 +127,12 @@ JsonSerializable {
     }
 
     @Override
-    public int getDataTypeId() {
-        return dataTypeId;
+    public DataTypes getDataType() {
+        return dataType;
     }
 
-    public void setDataTypeId(int dataTypeId) {
-        this.dataTypeId = dataTypeId;
+    public void setDataType(DataTypes dataType) {
+        this.dataType = dataType;
     }
 
     public AlternateBooleanChangeVO getAlternateBooleanChange() {
@@ -238,7 +238,7 @@ JsonSerializable {
 
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.writeInt(version);
-        out.writeInt(dataTypeId);
+        out.writeInt(dataType.getId());
         out.writeInt(changeTypeId);
         out.writeBoolean(settable);
         out.writeObject(alternateBooleanChange);
@@ -258,7 +258,7 @@ JsonSerializable {
 
         // Switch on the version of the class so that version changes can be elegantly handled.
         if (ver == 1) {
-            dataTypeId = in.readInt();
+            dataType = DataTypes.fromId(in.readInt());
             changeTypeId = in.readInt();
             settable = in.readBoolean();
             alternateBooleanChange = (AlternateBooleanChangeVO) in.readObject();
@@ -273,7 +273,7 @@ JsonSerializable {
             sinusoidalChange = new SinusoidalChangeVO();
         }
         if(ver == 2){
-            dataTypeId = in.readInt();
+            dataType = DataTypes.fromId(in.readInt());
             changeTypeId = in.readInt();
             settable = in.readBoolean();
             alternateBooleanChange = (AlternateBooleanChangeVO) in.readObject();
@@ -300,9 +300,9 @@ JsonSerializable {
     @Override
     public void jsonRead(JsonReader reader, JsonObject jsonObject)
             throws JsonException {
-        Integer value = readDataType(jsonObject, DataTypes.IMAGE);
-        if (value != null)
-            dataTypeId = value;
+        if (jsonObject.containsKey("dataType")) {
+            this.dataType = readDataType(jsonObject, DataTypes.IMAGE);
+        }
 
         JsonObject ctjson = jsonObject.getJsonObject("changeType");
         if (ctjson == null)

@@ -5,7 +5,6 @@
 package com.infiniteautomation.mango.rest.latest.model.dataPoint;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.dataSource.PointLocatorVO;
 
@@ -32,7 +31,7 @@ public abstract class AbstractPointLocatorModel <T extends PointLocatorVO<T>> {
      * Convert from a point locator to this model
      */
     public void fromVO(T vo) {
-        this.dataType = DataTypes.CODES.getCode(vo.getDataTypeId());
+        this.dataType = vo.getDataType().name();
         this.settable = vo.isSettable();
         this.relinquishable = vo.isRelinquishable();
         this.configurationDescription = vo.getConfigurationDescription();

@@ -52,20 +52,20 @@ public class MultiPointStatisticsStream extends MultiPointTimeRangeDatabaseStrea
                     return;
             StatisticsGenerator generator = statsMap.compute(value.getSeriesId(), (k, v) -> {
                 if(v == null) {
-                    switch(vo.getPointLocator().getDataTypeId()){
-                        case DataTypes.BINARY:
-                        case DataTypes.MULTISTATE:
+                    switch(vo.getPointLocator().getDataType()){
+                        case BINARY:
+                        case MULTISTATE:
                             v = new StartsAndRuntimeList(info.getFromMillis(), info.getToMillis(), value);
                             break;
-                        case DataTypes.ALPHANUMERIC:
-                        case DataTypes.IMAGE:
+                        case ALPHANUMERIC:
+                        case IMAGE:
                             v = new ValueChangeCounter(info.getFromMillis(), info.getToMillis(), value);
                             break;
-                        case DataTypes.NUMERIC:
+                        case NUMERIC:
                             v = new AnalogStatistics(info.getFromMillis(), info.getToMillis(), value);
                             break;
                         default:
-                            throw new ShouldNeverHappenException("Invalid Data Type: "+ voMap.get(value.getSeriesId()).getPointLocator().getDataTypeId());
+                            throw new ShouldNeverHappenException("Invalid Data Type: "+ voMap.get(value.getSeriesId()).getPointLocator().getDataType());
                     }
                 }
                 if(!lastBookend && !firstBookend) {

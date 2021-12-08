@@ -44,7 +44,7 @@ public class AsciiFilePointLocatorModel extends AbstractPointLocatorModel<AsciiF
     @Override
     public AsciiFilePointLocatorVO toVO() {
         AsciiFilePointLocatorVO vo = new AsciiFilePointLocatorVO();
-        vo.setDataType(DataTypes.CODES.getId(dataType));
+        vo.setDataType(DataTypes.fromName(dataType));
         vo.setPointIdentifier(pointIdentifier);
         vo.setPointIdentifierIndex(pointIdentifierIndex);
         vo.setValueIndex(valueIndex);

@@ -25,7 +25,7 @@ public class MockPointLocatorModel extends AbstractPointLocatorModel<MockPointLo
     @Override
     public MockPointLocatorVO toVO() {
         MockPointLocatorVO vo = new MockPointLocatorVO();
-        vo.setDataTypeId(DataTypes.CODES.getId(dataType));
+        vo.setDataType(DataTypes.fromName(dataType));
         vo.setSettable(settable);
         return vo;
     }

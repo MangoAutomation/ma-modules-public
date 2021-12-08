@@ -228,7 +228,7 @@ public class InternalLifecycle extends LifecycleDefinition {
                     dp.setEnabled(true);
                     dp.setChartColour("");
 
-                    if (pl.getDataTypeId() == DataTypes.NUMERIC) {
+                    if (pl.getDataType() == DataTypes.NUMERIC) {
                         dp.setRollup(Rollups.AVERAGE);
                         switch(xid) {
                             case SQL_DATABASE_PARTITION_USABLE_SPACE_POINT_XID:

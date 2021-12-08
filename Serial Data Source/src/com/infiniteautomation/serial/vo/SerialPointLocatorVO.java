@@ -20,8 +20,8 @@ import com.serotonin.util.SerializationHelper;
 public class SerialPointLocatorVO extends AbstractPointLocatorVO<SerialPointLocatorVO> implements JsonSerializable{
 
     @Override
-    public int getDataTypeId() {
-        return dataTypeId;
+    public DataTypes getDataType() {
+        return dataType;
     }
 
     @Override
@@ -51,7 +51,7 @@ public class SerialPointLocatorVO extends AbstractPointLocatorVO<SerialPointLoca
     private String valueRegex;
     @JsonProperty
     private int valueIndex;
-    private int dataTypeId = DataTypes.ALPHANUMERIC;
+    private DataTypes dataType = DataTypes.ALPHANUMERIC;
 
     public String getPointIdentifier() {
         return pointIdentifier;
@@ -77,8 +77,8 @@ public class SerialPointLocatorVO extends AbstractPointLocatorVO<SerialPointLoca
         this.valueIndex = valueIndex;
     }
 
-    public void setDataTypeId(int dataTypeId) {
-        this.dataTypeId = dataTypeId;
+    public void setDataType(DataTypes dataType) {
+        this.dataType = dataType;
     }
 
     //
@@ -93,7 +93,7 @@ public class SerialPointLocatorVO extends AbstractPointLocatorVO<SerialPointLoca
         SerializationHelper.writeSafeUTF(out, pointIdentifier);
         SerializationHelper.writeSafeUTF(out, valueRegex);
         out.writeInt(valueIndex);
-        out.writeInt(dataTypeId);
+        out.writeInt(dataType.getId());
 
     }
 
@@ -104,15 +104,15 @@ public class SerialPointLocatorVO extends AbstractPointLocatorVO<SerialPointLoca
             pointIdentifier= SerializationHelper.readSafeUTF(in);
             valueRegex= SerializationHelper.readSafeUTF(in);
             valueIndex = in.readInt();
-            dataTypeId = in.readInt();
+            dataType = DataTypes.fromId(in.readInt());
         }
     }
 
     @Override
     public void jsonRead(JsonReader reader, JsonObject jsonObject) throws JsonException {
-        Integer value = readDataType(jsonObject, DataTypes.IMAGE);
-        if (value != null)
-            dataTypeId = value;
+        if (jsonObject.containsKey("dataType")) {
+            this.dataType = readDataType(jsonObject, DataTypes.IMAGE);
+        }
     }
 
     @Override

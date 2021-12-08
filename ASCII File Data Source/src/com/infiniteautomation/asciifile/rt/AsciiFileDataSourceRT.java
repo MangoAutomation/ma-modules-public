@@ -251,7 +251,7 @@ public class AsciiFileDataSourceRT extends PollingDataSource<AsciiFileDataSource
                         };
 
                         matchPointValueTime(msg, pl.getValuePattern(), plVo.getPointIdentifier(),
-                                plVo.getPointIdentifierIndex(), plVo.getDataTypeId(),
+                                plVo.getPointIdentifierIndex(), plVo.getDataType(),
                                 plVo.getValueIndex(), plVo.getHasTimestamp(), plVo.getTimestampIndex(),
                                 plVo.getTimestampFormat(), callback);
 
@@ -286,7 +286,7 @@ public class AsciiFileDataSourceRT extends PollingDataSource<AsciiFileDataSource
     }
 
     public static void matchPointValueTime(String message, Pattern pattern, String pointIdentifier,
-            int pointIdentifierIndex, int dataTypeId, int valueIndex, boolean hasTimestamp, int timestampIndex,
+            int pointIdentifierIndex, DataTypes dataType, int valueIndex, boolean hasTimestamp, int timestampIndex,
             String timestampFormat, MatchCallback callback) {
         Matcher messageMatcher = pattern.matcher(message);
         if (messageMatcher.find()) {
@@ -315,17 +315,17 @@ public class AsciiFileDataSourceRT extends PollingDataSource<AsciiFileDataSource
                     }
 
                     // Switch on the type
-                    switch (dataTypeId) {
-                        case DataTypes.ALPHANUMERIC:
+                    switch (dataType) {
+                        case ALPHANUMERIC:
                             newValue = new PointValueTime(value, dt.getTime());
                             break;
-                        case DataTypes.NUMERIC:
+                        case NUMERIC:
                             newValue = new PointValueTime(Double.parseDouble(value), dt.getTime());
                             break;
-                        case DataTypes.MULTISTATE:
+                        case MULTISTATE:
                             newValue = new PointValueTime(Integer.parseInt(value), dt.getTime());
                             break;
-                        case DataTypes.BINARY:
+                        case BINARY:
                             newValue = new PointValueTime(Boolean.parseBoolean(value), dt.getTime());
                             break;
                         default:

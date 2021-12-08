@@ -9,7 +9,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.infiniteautomation.asciifile.vo.AsciiFileDataSourceVO;
 import com.infiniteautomation.asciifile.vo.AsciiFilePointLocatorVO;
-import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.module.PollingDataSourceDefinition;
@@ -80,9 +79,6 @@ public class AsciiFileDataSourceDefinition extends PollingDataSourceDefinition<A
 
         if(pl.getValueIndex() < 0)
             response.addContextualMessage("valueIndex", "validate.invalidValue");
-
-        if (!DataTypes.CODES.isValidId(pl.getDataTypeId()))
-            response.addContextualMessage("dataTypeId", "validate.invalidValue");
 
         if(pl.getHasTimestamp()) {
             if(pl.getTimestampIndex() < 0)

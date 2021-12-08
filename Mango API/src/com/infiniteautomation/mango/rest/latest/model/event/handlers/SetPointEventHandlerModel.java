@@ -272,11 +272,11 @@ public class SetPointEventHandlerModel extends AbstractEventHandlerModel<SetPoin
         if(target != null) {
             this.targetPointXid = target.getXid();
             if(vo.getActiveAction() == SetPointEventHandlerVO.SET_ACTION_STATIC_VALUE) {
-                DataValue value = DataValue.stringToValue(vo.getActiveValueToSet(), target.getPointLocator().getDataTypeId());
+                DataValue value = DataValue.stringToValue(vo.getActiveValueToSet(), target.getPointLocator().getDataType());
                 this.activeValueToSet = value.getObjectValue();
             }
             if(vo.getInactiveAction() == SetPointEventHandlerVO.SET_ACTION_STATIC_VALUE) {
-                DataValue value = DataValue.stringToValue(vo.getInactiveValueToSet(), target.getPointLocator().getDataTypeId());
+                DataValue value = DataValue.stringToValue(vo.getInactiveValueToSet(), target.getPointLocator().getDataType());
                 this.inactiveValueToSet = value.getObjectValue();
             }
         }

@@ -83,7 +83,7 @@ public class VMStatPointLocatorVO extends AbstractPointLocatorVO<VMStatPointLoca
     }
 
     @Override
-    public int getDataTypeId() {
+    public DataTypes getDataType() {
         return DataTypes.NUMERIC;
     }
 

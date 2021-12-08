@@ -7,7 +7,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.infiniteautomation.serial.vo.SerialDataSourceVO;
 import com.infiniteautomation.serial.vo.SerialPointLocatorVO;
-import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.module.DataSourceDefinition;
 import com.serotonin.m2m2.vo.DataPointVO;
@@ -101,10 +100,6 @@ public class SerialDataSourceDefinition extends DataSourceDefinition<SerialDataS
 
         if(pl.getValueIndex() < 0)
             response.addContextualMessage("valueIndex","validate.invalidValue");
-
-        if (!DataTypes.CODES.isValidId(pl.getDataTypeId()))
-            response.addContextualMessage("dataTypeId", "validate.invalidValue");
-
     }
 
 }

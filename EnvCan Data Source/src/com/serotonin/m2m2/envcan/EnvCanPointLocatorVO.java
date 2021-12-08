@@ -71,7 +71,7 @@ public class EnvCanPointLocatorVO extends AbstractPointLocatorVO<EnvCanPointLoca
     }
 
     @Override
-    public int getDataTypeId() {
+    public DataTypes getDataType() {
         if (attributeId == Attributes.WEATHER)
             return DataTypes.ALPHANUMERIC;
         return DataTypes.NUMERIC;
