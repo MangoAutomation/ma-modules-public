@@ -17,7 +17,7 @@ import com.serotonin.json.ObjectWriter;
 import com.serotonin.json.spi.JsonProperty;
 import com.serotonin.json.spi.JsonSerializable;
 import com.serotonin.json.type.JsonObject;
-import com.serotonin.m2m2.DataTypes;
+import com.serotonin.m2m2.DataType;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.types.AlphanumericValue;
@@ -75,15 +75,15 @@ JsonSerializable {
         ChangeTypeRT changeType = getChangeType().createRuntime();
         String startValue = getChangeType().getStartValue();
         DataValue startObject;
-        if (dataType == DataTypes.BINARY)
+        if (dataType == DataType.BINARY)
             startObject = BinaryValue.parseBinary(startValue);
-        else if (dataType == DataTypes.MULTISTATE) {
+        else if (dataType == DataType.MULTISTATE) {
             try {
                 startObject = MultistateValue.parseMultistate(startValue);
             } catch (NumberFormatException e) {
                 startObject = new MultistateValue(0);
             }
-        } else if (dataType == DataTypes.NUMERIC) {
+        } else if (dataType == DataType.NUMERIC) {
             try {
                 startObject = NumericValue.parseNumeric(startValue);
             } catch (NumberFormatException e) {
@@ -103,7 +103,7 @@ JsonSerializable {
         return VirtualDataSourceDefinition.TYPE_NAME;
     }
 
-    private DataTypes dataType = DataTypes.BINARY;
+    private DataType dataType = DataType.BINARY;
     private int changeTypeId = Types.ALTERNATE_BOOLEAN;
     @JsonProperty
     private boolean settable;
@@ -127,11 +127,11 @@ JsonSerializable {
     }
 
     @Override
-    public DataTypes getDataType() {
+    public DataType getDataType() {
         return dataType;
     }
 
-    public void setDataType(DataTypes dataType) {
+    public void setDataType(DataType dataType) {
         this.dataType = dataType;
     }
 
@@ -258,7 +258,7 @@ JsonSerializable {
 
         // Switch on the version of the class so that version changes can be elegantly handled.
         if (ver == 1) {
-            dataType = DataTypes.fromId(in.readInt());
+            dataType = DataType.fromId(in.readInt());
             changeTypeId = in.readInt();
             settable = in.readBoolean();
             alternateBooleanChange = (AlternateBooleanChangeVO) in.readObject();
@@ -273,7 +273,7 @@ JsonSerializable {
             sinusoidalChange = new SinusoidalChangeVO();
         }
         if(ver == 2){
-            dataType = DataTypes.fromId(in.readInt());
+            dataType = DataType.fromId(in.readInt());
             changeTypeId = in.readInt();
             settable = in.readBoolean();
             alternateBooleanChange = (AlternateBooleanChangeVO) in.readObject();
@@ -301,7 +301,7 @@ JsonSerializable {
     public void jsonRead(JsonReader reader, JsonObject jsonObject)
             throws JsonException {
         if (jsonObject.containsKey("dataType")) {
-            this.dataType = readDataType(jsonObject, DataTypes.IMAGE);
+            this.dataType = readDataType(jsonObject, DataType.IMAGE);
         }
 
         JsonObject ctjson = jsonObject.getJsonObject("changeType");

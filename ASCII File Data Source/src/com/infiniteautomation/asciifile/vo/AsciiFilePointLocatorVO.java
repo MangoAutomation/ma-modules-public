@@ -12,7 +12,7 @@ import com.serotonin.json.ObjectWriter;
 import com.serotonin.json.spi.JsonProperty;
 import com.serotonin.json.spi.JsonSerializable;
 import com.serotonin.json.type.JsonObject;
-import com.serotonin.m2m2.DataTypes;
+import com.serotonin.m2m2.DataType;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.dataSource.AbstractPointLocatorVO;
@@ -50,7 +50,7 @@ public class AsciiFilePointLocatorVO extends AbstractPointLocatorVO<AsciiFilePoi
     private int pointIdentifierIndex;
     @JsonProperty
     private int valueIndex;
-    private DataTypes dataType;
+    private DataType dataType;
     @JsonProperty
     private boolean hasTimestamp;
     @JsonProperty
@@ -91,11 +91,11 @@ public class AsciiFilePointLocatorVO extends AbstractPointLocatorVO<AsciiFilePoi
     }
 
     @Override
-    public DataTypes getDataType() {
+    public DataType getDataType() {
         return dataType;
     }
 
-    public void setDataType(DataTypes dataType) {
+    public void setDataType(DataType dataType) {
         this.dataType = dataType;
     }
 
@@ -149,7 +149,7 @@ public class AsciiFilePointLocatorVO extends AbstractPointLocatorVO<AsciiFilePoi
             valueRegex= SerializationHelper.readSafeUTF(in);
             pointIdentifierIndex = in.readInt();
             valueIndex = in.readInt();
-            dataType = DataTypes.fromId(in.readInt());
+            dataType = DataType.fromId(in.readInt());
             hasTimestamp = false;
             timestampIndex = 0;
             timestampFormat = "";
@@ -159,7 +159,7 @@ public class AsciiFilePointLocatorVO extends AbstractPointLocatorVO<AsciiFilePoi
             valueRegex= SerializationHelper.readSafeUTF(in);
             pointIdentifierIndex = in.readInt();
             valueIndex = in.readInt();
-            dataType = DataTypes.fromId(in.readInt());
+            dataType = DataType.fromId(in.readInt());
             hasTimestamp = in.readBoolean();
             timestampIndex = in.readInt();
             timestampFormat = SerializationHelper.readSafeUTF(in);
@@ -170,13 +170,13 @@ public class AsciiFilePointLocatorVO extends AbstractPointLocatorVO<AsciiFilePoi
     public void jsonRead(JsonReader reader, JsonObject jo) throws JsonException {
         String text = jo.getString("dataType");
         if (text == null) {
-            throw new TranslatableJsonException("emport.error.missing", "dataType", DataTypes.formatNames());
+            throw new TranslatableJsonException("emport.error.missing", "dataType", DataType.formatNames());
         }
 
         try {
-            this.dataType = DataTypes.valueOf(text);
+            this.dataType = DataType.valueOf(text);
         } catch (IllegalArgumentException e) {
-            throw new TranslatableJsonException("emport.error.invalid", "dataType", text, DataTypes.formatNames());
+            throw new TranslatableJsonException("emport.error.invalid", "dataType", text, DataType.formatNames());
         }
     }
 

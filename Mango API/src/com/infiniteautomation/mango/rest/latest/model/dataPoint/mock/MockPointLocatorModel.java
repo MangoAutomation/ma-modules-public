@@ -5,7 +5,7 @@
 package com.infiniteautomation.mango.rest.latest.model.dataPoint.mock;
 
 import com.infiniteautomation.mango.rest.latest.model.dataPoint.AbstractPointLocatorModel;
-import com.serotonin.m2m2.DataTypes;
+import com.serotonin.m2m2.DataType;
 import com.serotonin.m2m2.vo.dataPoint.MockPointLocatorVO;
 
 /**
@@ -25,7 +25,7 @@ public class MockPointLocatorModel extends AbstractPointLocatorModel<MockPointLo
     @Override
     public MockPointLocatorVO toVO() {
         MockPointLocatorVO vo = new MockPointLocatorVO();
-        vo.setDataType(DataTypes.fromName(dataType));
+        vo.setDataType(DataType.fromName(dataType));
         vo.setSettable(settable);
         return vo;
     }

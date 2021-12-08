@@ -16,7 +16,6 @@ import com.infiniteautomation.mango.statistics.StartsAndRuntimeList;
 import com.infiniteautomation.mango.statistics.ValueChangeCounter;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.DataTypes;
 import com.serotonin.m2m2.i18n.Translations;
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.view.stats.IValueTime;

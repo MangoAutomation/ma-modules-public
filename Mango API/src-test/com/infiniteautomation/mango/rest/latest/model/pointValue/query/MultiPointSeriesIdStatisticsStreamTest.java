@@ -4,7 +4,7 @@
 
 package com.infiniteautomation.mango.rest.latest.model.pointValue.query;
 
-import com.serotonin.m2m2.DataTypes;
+import com.serotonin.m2m2.DataType;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.vo.DataPointVO;
 
@@ -17,7 +17,7 @@ import com.serotonin.m2m2.vo.DataPointVO;
 public class MultiPointSeriesIdStatisticsStreamTest extends MultiPointStatisticsStreamTest {
 
     @Override
-    protected DataPointVO createDataPoint(int dataSourceId, DataTypes dataType, int defaultCacheSize) {
+    protected DataPointVO createDataPoint(int dataSourceId, DataType dataType, int defaultCacheSize) {
         DataPointVO vo = super.createDataPoint(dataSourceId, dataType, defaultCacheSize);
 
         //Change series id

@@ -4,7 +4,7 @@
 package com.infiniteautomation.mango.rest.latest.model;
 
 import com.infiniteautomation.mango.rest.latest.model.dataPoint.AbstractPointLocatorModel;
-import com.serotonin.m2m2.DataTypes;
+import com.serotonin.m2m2.DataType;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.virtual.vo.AlternateBooleanChangeVO;
 import com.serotonin.m2m2.virtual.vo.AnalogAttractorChangeVO;
@@ -121,7 +121,7 @@ public class VirtualPointLocatorModel extends AbstractPointLocatorModel<VirtualP
     @Override
     public VirtualPointLocatorVO toVO() {
         VirtualPointLocatorVO vo = new VirtualPointLocatorVO();
-        vo.setDataType(DataTypes.fromName(dataType));
+        vo.setDataType(DataType.fromName(dataType));
         vo.setChangeTypeId(ChangeTypeVO.CHANGE_TYPE_CODES.getId(changeType));
         vo.setSettable(settable);
 

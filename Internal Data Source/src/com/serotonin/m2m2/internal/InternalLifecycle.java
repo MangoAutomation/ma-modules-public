@@ -22,7 +22,7 @@ import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.Common.Rollups;
 import com.serotonin.m2m2.Common.TimePeriods;
-import com.serotonin.m2m2.DataTypes;
+import com.serotonin.m2m2.DataType;
 import com.serotonin.m2m2.IMangoLifecycle;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
@@ -228,7 +228,7 @@ public class InternalLifecycle extends LifecycleDefinition {
                     dp.setEnabled(true);
                     dp.setChartColour("");
 
-                    if (pl.getDataType() == DataTypes.NUMERIC) {
+                    if (pl.getDataType() == DataType.NUMERIC) {
                         dp.setRollup(Rollups.AVERAGE);
                         switch(xid) {
                             case SQL_DATABASE_PARTITION_USABLE_SPACE_POINT_XID:

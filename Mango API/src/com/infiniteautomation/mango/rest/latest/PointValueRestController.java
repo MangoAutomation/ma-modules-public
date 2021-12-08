@@ -78,7 +78,7 @@ import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.infiniteautomation.mango.util.exception.ValidationException;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.DataTypes;
+import com.serotonin.m2m2.DataType;
 import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -881,7 +881,7 @@ public class PointValueRestController extends AbstractMangoRestController {
 
         // Are we converting from the rendered Unit?
         if (unitConversion) {
-            if ((model.getDataType() == DataTypes.NUMERIC)
+            if ((model.getDataType() == DataType.NUMERIC)
                     && (model.getValue() instanceof Number)) {
                 double value;
                 if (model.getValue() instanceof Integer) {
@@ -900,7 +900,7 @@ public class PointValueRestController extends AbstractMangoRestController {
 
         // If we are a multistate point and our value is in string format then we should try
         // to convert it
-        if ((model.getDataType() == DataTypes.MULTISTATE || model.getDataType() == DataTypes.NUMERIC)
+        if ((model.getDataType() == DataType.MULTISTATE || model.getDataType() == DataType.NUMERIC)
                 && (model.getValue() instanceof String)) {
             try {
                 DataValue value =
@@ -1263,7 +1263,7 @@ public class PointValueRestController extends AbstractMangoRestController {
         if(info.isUseSimplify()) {
             //Ensure no Simplify support
             for(DataPointVO vo : voMap.values())
-                if(vo.getPointLocator().getDataType() == DataTypes.ALPHANUMERIC || vo.getPointLocator().getDataType() == DataTypes.IMAGE)
+                if(vo.getPointLocator().getDataType() == DataType.ALPHANUMERIC || vo.getPointLocator().getDataType() == DataType.IMAGE)
                     throw new BadRequestException(new TranslatableMessage("rest.validation.noSimplifySupport", vo.getXid()));
             return ResponseEntity.ok(new MultiPointSimplifyLatestDatabaseStream<T, INFO>(info, voMap, this.dao));
         }else
@@ -1288,7 +1288,7 @@ public class PointValueRestController extends AbstractMangoRestController {
             if(info.isUseSimplify()) {
                 //Ensure no Simplify support
                 for(DataPointVO vo : voMap.values())
-                    if(vo.getPointLocator().getDataType() == DataTypes.ALPHANUMERIC || vo.getPointLocator().getDataType() == DataTypes.IMAGE)
+                    if(vo.getPointLocator().getDataType() == DataType.ALPHANUMERIC || vo.getPointLocator().getDataType() == DataType.IMAGE)
                         throw new BadRequestException(new TranslatableMessage("rest.validation.noSimplifySupport", vo.getXid()));
                 return ResponseEntity.ok(new MultiPointSimplifyTimeRangeDatabaseStream<T, INFO>(info, voMap, this.dao));
             }

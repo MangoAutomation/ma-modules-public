@@ -45,7 +45,7 @@ import com.infiniteautomation.mango.util.RQLUtils;
 import com.infiniteautomation.mango.util.WorkItemInfo;
 import com.infiniteautomation.mango.util.script.MangoJavaScript;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.DataTypes;
+import com.serotonin.m2m2.DataType;
 import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.email.UsedImagesDirective;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
@@ -294,7 +294,7 @@ public class EventHandlersRestController {
 
     private MangoJavaScriptResultModel validateScript(MangoJavaScriptModel model, String noChangeTranslationKey) {
         //Set to potentially return a String
-        model.setResultDataType(DataTypes.NUMERIC.name());
+        model.setResultDataType(DataType.NUMERIC.name());
         MangoJavaScript jsVo = model.toVO();
         jsVo.setWrapInFunction(true);
         return new MangoJavaScriptResultModel(javaScriptService.testScript(jsVo, noChangeTranslationKey));

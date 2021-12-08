@@ -23,7 +23,7 @@ import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.io.StreamUtils;
 import com.serotonin.log.RollingIOLog;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.DataTypes;
+import com.serotonin.m2m2.DataType;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
@@ -484,7 +484,7 @@ public class SerialDataSourceRT extends EventDataSource<SerialDataSourceVO> impl
     /**
      * Convert to a point value time or NULL if not possible
      */
-    public static PointValueTime convertToPointValue(String value, DataTypes dataType, boolean isHex) throws ConvertHexException{
+    public static PointValueTime convertToPointValue(String value, DataType dataType, boolean isHex) throws ConvertHexException{
         //Parse out the value
         DataValue dataValue = null;
         if(isHex){

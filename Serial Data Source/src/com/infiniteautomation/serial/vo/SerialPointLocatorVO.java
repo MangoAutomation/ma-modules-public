@@ -12,7 +12,7 @@ import com.serotonin.json.ObjectWriter;
 import com.serotonin.json.spi.JsonProperty;
 import com.serotonin.json.spi.JsonSerializable;
 import com.serotonin.json.type.JsonObject;
-import com.serotonin.m2m2.DataTypes;
+import com.serotonin.m2m2.DataType;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.dataSource.AbstractPointLocatorVO;
 import com.serotonin.util.SerializationHelper;
@@ -20,7 +20,7 @@ import com.serotonin.util.SerializationHelper;
 public class SerialPointLocatorVO extends AbstractPointLocatorVO<SerialPointLocatorVO> implements JsonSerializable{
 
     @Override
-    public DataTypes getDataType() {
+    public DataType getDataType() {
         return dataType;
     }
 
@@ -51,7 +51,7 @@ public class SerialPointLocatorVO extends AbstractPointLocatorVO<SerialPointLoca
     private String valueRegex;
     @JsonProperty
     private int valueIndex;
-    private DataTypes dataType = DataTypes.ALPHANUMERIC;
+    private DataType dataType = DataType.ALPHANUMERIC;
 
     public String getPointIdentifier() {
         return pointIdentifier;
@@ -77,7 +77,7 @@ public class SerialPointLocatorVO extends AbstractPointLocatorVO<SerialPointLoca
         this.valueIndex = valueIndex;
     }
 
-    public void setDataType(DataTypes dataType) {
+    public void setDataType(DataType dataType) {
         this.dataType = dataType;
     }
 
@@ -104,14 +104,14 @@ public class SerialPointLocatorVO extends AbstractPointLocatorVO<SerialPointLoca
             pointIdentifier= SerializationHelper.readSafeUTF(in);
             valueRegex= SerializationHelper.readSafeUTF(in);
             valueIndex = in.readInt();
-            dataType = DataTypes.fromId(in.readInt());
+            dataType = DataType.fromId(in.readInt());
         }
     }
 
     @Override
     public void jsonRead(JsonReader reader, JsonObject jsonObject) throws JsonException {
         if (jsonObject.containsKey("dataType")) {
-            this.dataType = readDataType(jsonObject, DataTypes.IMAGE);
+            this.dataType = readDataType(jsonObject, DataType.IMAGE);
         }
     }
 

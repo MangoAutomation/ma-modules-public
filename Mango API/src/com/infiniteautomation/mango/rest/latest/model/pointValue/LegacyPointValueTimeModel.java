@@ -4,7 +4,7 @@
 
 package com.infiniteautomation.mango.rest.latest.model.pointValue;
 
-import com.serotonin.m2m2.DataTypes;
+import com.serotonin.m2m2.DataType;
 
 /**
  * Use PointValueTimeModel instead, this is here for compatibility with
@@ -14,15 +14,15 @@ import com.serotonin.m2m2.DataTypes;
 @Deprecated
 public class LegacyPointValueTimeModel {
 
-    private DataTypes dataType;
+    private DataType dataType;
     private Object value;
     private long timestamp;
     private String annotation;
 
-    public DataTypes getDataType() {
+    public DataType getDataType() {
         return dataType;
     }
-    public void setDataType(DataTypes type) {
+    public void setDataType(DataType type) {
         this.dataType = type;
     }
     public Object getValue() {

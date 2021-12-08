@@ -28,7 +28,7 @@ import com.infiniteautomation.mango.rest.latest.model.pointValue.emport.PointVal
 import com.infiniteautomation.mango.rest.latest.model.pointValue.emport.PointValueTimeImportResult;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.DataTypes;
+import com.serotonin.m2m2.DataType;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.i18n.ProcessResult;
@@ -119,7 +119,7 @@ public class PointValueModificationRestController {
         protected final FireEvents fireEvents;
         protected DataPointRT rt;
         protected final DataPointVO vo;
-        protected final DataTypes dataType;
+        protected final DataType dataType;
 
         public PointValueTimeImport(String xid, PointValueDao dao, DataPointDao dataPointDao, FireEvents fireEvents, PermissionHolder user) {
             this.xid = xid;

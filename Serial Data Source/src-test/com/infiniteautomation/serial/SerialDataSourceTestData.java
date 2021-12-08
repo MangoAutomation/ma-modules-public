@@ -12,7 +12,7 @@ import com.infiniteautomation.mango.pointvaluecache.PointValueCache;
 import com.infiniteautomation.serial.vo.SerialDataSourceVO;
 import com.infiniteautomation.serial.vo.SerialPointLocatorVO;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.DataTypes;
+import com.serotonin.m2m2.DataType;
 import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataSource.DataSourceRT;
@@ -42,7 +42,7 @@ public class SerialDataSourceTestData {
         vo.setId(currentId++);
         vo.setDataSourceId(ds.getId());
         SerialPointLocatorVO plVo = new SerialPointLocatorVO();
-        plVo.setDataType(DataTypes.ALPHANUMERIC);
+        plVo.setDataType(DataType.ALPHANUMERIC);
         plVo.setValueRegex(PATTERNS.get(vo.getName()));
         plVo.setValueIndex(2);
         plVo.setPointIdentifier("");
@@ -56,7 +56,7 @@ public class SerialDataSourceTestData {
         vo.setId(currentId++);
         vo.setDataSourceId(ds.getId());
         SerialPointLocatorVO plVo = new SerialPointLocatorVO();
-        plVo.setDataType(DataTypes.ALPHANUMERIC);
+        plVo.setDataType(DataType.ALPHANUMERIC);
         plVo.setValueRegex(PATTERNS.get(vo.getName()));
         plVo.setValueIndex(2);
         plVo.setPointIdentifier("");
@@ -70,7 +70,7 @@ public class SerialDataSourceTestData {
         vo.setId(currentId++);
         vo.setDataSourceId(ds.getId());
         SerialPointLocatorVO plVo = new SerialPointLocatorVO();
-        plVo.setDataType(DataTypes.ALPHANUMERIC);
+        plVo.setDataType(DataType.ALPHANUMERIC);
         plVo.setValueRegex(valueRegex);
         plVo.setValueIndex(valueIndex);
         plVo.setPointIdentifier(pointIdentifier);

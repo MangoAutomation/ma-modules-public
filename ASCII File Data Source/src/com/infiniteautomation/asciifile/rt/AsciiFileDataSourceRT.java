@@ -26,7 +26,7 @@ import com.infiniteautomation.asciifile.vo.AsciiFilePointLocatorVO;
 import com.infiniteautomation.mango.regex.MatchCallback;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.DataTypes;
+import com.serotonin.m2m2.DataType;
 import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
@@ -286,8 +286,8 @@ public class AsciiFileDataSourceRT extends PollingDataSource<AsciiFileDataSource
     }
 
     public static void matchPointValueTime(String message, Pattern pattern, String pointIdentifier,
-            int pointIdentifierIndex, DataTypes dataType, int valueIndex, boolean hasTimestamp, int timestampIndex,
-            String timestampFormat, MatchCallback callback) {
+                                           int pointIdentifierIndex, DataType dataType, int valueIndex, boolean hasTimestamp, int timestampIndex,
+                                           String timestampFormat, MatchCallback callback) {
         Matcher messageMatcher = pattern.matcher(message);
         if (messageMatcher.find()) {
             if (LOG.isDebugEnabled())

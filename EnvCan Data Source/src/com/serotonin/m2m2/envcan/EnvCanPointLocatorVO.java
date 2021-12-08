@@ -13,7 +13,7 @@ import com.serotonin.json.ObjectWriter;
 import com.serotonin.json.spi.JsonEntity;
 import com.serotonin.json.spi.JsonSerializable;
 import com.serotonin.json.type.JsonObject;
-import com.serotonin.m2m2.DataTypes;
+import com.serotonin.m2m2.DataType;
 import com.serotonin.m2m2.i18n.TranslatableJsonException;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.util.ExportCodes;
@@ -71,10 +71,10 @@ public class EnvCanPointLocatorVO extends AbstractPointLocatorVO<EnvCanPointLoca
     }
 
     @Override
-    public DataTypes getDataType() {
+    public DataType getDataType() {
         if (attributeId == Attributes.WEATHER)
-            return DataTypes.ALPHANUMERIC;
-        return DataTypes.NUMERIC;
+            return DataType.ALPHANUMERIC;
+        return DataType.NUMERIC;
     }
 
     public int getAttributeId() {

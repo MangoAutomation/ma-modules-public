@@ -50,7 +50,7 @@ import com.infiniteautomation.mango.webapp.servlets.ImageValueServlet;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.Common.TimePeriods;
-import com.serotonin.m2m2.DataTypes;
+import com.serotonin.m2m2.DataType;
 import com.serotonin.m2m2.MangoTestBase;
 import com.serotonin.m2m2.MockMangoLifecycle;
 import com.serotonin.m2m2.MockRuntimeManager;
@@ -117,7 +117,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
         NextTimePeriodAdjuster adjuster = new NextTimePeriodAdjuster(TimePeriods.DAYS, 1);
 
         MockDataSourceVO ds = createDataSource();
-        DataPointVO dp = createDataPoint(ds.getId(), DataTypes.IMAGE, 1);
+        DataPointVO dp = createDataPoint(ds.getId(), DataType.IMAGE, 1);
 
         ImageValue v = new ImageValue(createImageBytes(10), ImageValue.TYPE_JPG);
         PointValueTime initialValue = new PointValueTime(v, 0);
@@ -196,7 +196,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
 
         int cacheSize = 10;
         MockDataSourceVO ds = createDataSource();
-        DataPointVO dp = createDataPoint(ds.getId(), DataTypes.IMAGE, cacheSize);
+        DataPointVO dp = createDataPoint(ds.getId(), DataType.IMAGE, cacheSize);
 
         AtomicInteger imageSize = new AtomicInteger(1);
         ImageValue v = new ImageValue(createImageBytes(imageSize.getAndIncrement()), ImageValue.TYPE_JPG);
@@ -281,7 +281,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
         NextTimePeriodAdjuster adjuster = new NextTimePeriodAdjuster(TimePeriods.DAYS, 1);
 
         MockDataSourceVO ds = createDataSource();
-        DataPointVO dp = createDataPoint(ds.getId(), DataTypes.ALPHANUMERIC, 1);
+        DataPointVO dp = createDataPoint(ds.getId(), DataType.ALPHANUMERIC, 1);
 
         DataPointWrapper<ValueChangeCounter> point = new DataPointWrapper<ValueChangeCounter>(ds, dp,
                 new PointValueTime("TESTING", 0),
@@ -327,7 +327,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
         NextTimePeriodAdjuster adjuster = new NextTimePeriodAdjuster(TimePeriods.DAYS, 1);
 
         MockDataSourceVO ds = createDataSource();
-        DataPointVO dp = createDataPoint(ds.getId(), DataTypes.MULTISTATE, 1);
+        DataPointVO dp = createDataPoint(ds.getId(), DataType.MULTISTATE, 1);
 
         DataPointWrapper<StartsAndRuntimeList> point = new DataPointWrapper<StartsAndRuntimeList>(ds, dp,
                 new PointValueTime(1, 0),
@@ -370,7 +370,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
         NextTimePeriodAdjuster adjuster = new NextTimePeriodAdjuster(TimePeriods.DAYS, 1);
 
         MockDataSourceVO ds = createDataSource();
-        DataPointVO dp = createDataPoint(ds.getId(), DataTypes.NUMERIC, 1);
+        DataPointVO dp = createDataPoint(ds.getId(), DataType.NUMERIC, 1);
 
         DataPointWrapper<AnalogStatistics> point = new DataPointWrapper<AnalogStatistics>(ds, dp,
                 new PointValueTime(1.0, 0),
@@ -412,7 +412,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
         NextTimePeriodAdjuster adjuster = new NextTimePeriodAdjuster(TimePeriods.DAYS, 1);
 
         MockDataSourceVO ds = createDataSource();
-        DataPointVO dp = createDataPoint(ds.getId(), DataTypes.NUMERIC, 1);
+        DataPointVO dp = createDataPoint(ds.getId(), DataType.NUMERIC, 1);
 
         DataPointWrapper<AnalogStatistics> point = new DataPointWrapper<AnalogStatistics>(ds, dp,
                 new PointValueTime(1.0, 0),
@@ -454,7 +454,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
 
         int cacheSize = 10;
         MockDataSourceVO ds = createDataSource();
-        DataPointVO dp = createDataPoint(ds.getId(), DataTypes.NUMERIC, cacheSize);
+        DataPointVO dp = createDataPoint(ds.getId(), DataType.NUMERIC, cacheSize);
 
         DataPointWrapper<AnalogStatistics> point = new DataPointWrapper<AnalogStatistics>(ds, dp,
                 new PointValueTime(1.0, 0),
@@ -585,7 +585,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
 
         int cacheSize = 10;
         MockDataSourceVO ds = createDataSource();
-        DataPointVO dp = createDataPoint(ds.getId(), DataTypes.NUMERIC, cacheSize);
+        DataPointVO dp = createDataPoint(ds.getId(), DataType.NUMERIC, cacheSize);
 
         DataPointWrapper<AnalogStatistics> point = new DataPointWrapper<AnalogStatistics>(ds, dp,
                 new PointValueTime(1.0, 0),
@@ -639,7 +639,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
 
         int cacheSize = 10;
         MockDataSourceVO ds = createDataSource();
-        DataPointVO dp = createDataPoint(ds.getId(), DataTypes.NUMERIC, cacheSize);
+        DataPointVO dp = createDataPoint(ds.getId(), DataType.NUMERIC, cacheSize);
 
         DataPointWrapper<AnalogStatistics> point = new DataPointWrapper<AnalogStatistics>(ds, dp,
                 new PointValueTime(1.0, 0),
@@ -768,7 +768,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
         NextTimePeriodAdjuster adjuster = new NextTimePeriodAdjuster(TimePeriods.DAYS, 1);
 
         MockDataSourceVO ds = createDataSource();
-        DataPointVO numericDp = createDataPoint(ds.getId(), DataTypes.NUMERIC, 1);
+        DataPointVO numericDp = createDataPoint(ds.getId(), DataType.NUMERIC, 1);
 
         DataPointWrapper<AnalogStatistics> numericPoint = new DataPointWrapper<AnalogStatistics>(ds, numericDp,
                 new PointValueTime(1.0, 0),
@@ -780,7 +780,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                 },
                 new AnalogStatisticsVerifier());
 
-        DataPointVO multistateDp = createDataPoint(ds.getId(), DataTypes.MULTISTATE, 1);
+        DataPointVO multistateDp = createDataPoint(ds.getId(), DataType.MULTISTATE, 1);
 
         DataPointWrapper<StartsAndRuntimeList> multistatePoint = new DataPointWrapper<StartsAndRuntimeList>(ds, multistateDp,
                 new PointValueTime(1, 0),
@@ -825,7 +825,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
 
         int cacheSize = 10;
         MockDataSourceVO ds = createDataSource();
-        DataPointVO numericDp = createDataPoint(ds.getId(), DataTypes.NUMERIC, cacheSize);
+        DataPointVO numericDp = createDataPoint(ds.getId(), DataType.NUMERIC, cacheSize);
 
         DataPointWrapper<AnalogStatistics> numericPoint = new DataPointWrapper<AnalogStatistics>(ds, numericDp,
                 new PointValueTime(1.0, 0),
@@ -914,7 +914,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                     assertEquals(gen.getIntegral(), value.getDoubleValue(), 0.00001);
                 });
 
-        DataPointVO multistateDp = createDataPoint(ds.getId(), DataTypes.MULTISTATE, cacheSize);
+        DataPointVO multistateDp = createDataPoint(ds.getId(), DataType.MULTISTATE, cacheSize);
         DataPointWrapper<StartsAndRuntimeList> multistatePoint = new DataPointWrapper<StartsAndRuntimeList>(ds, multistateDp,
                 new PointValueTime(1, 0),
                 (value) -> {
@@ -1018,7 +1018,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
         return PointValueField.values();
     }
 
-    protected PointValueTime getPointValueTime(DataTypes dataType, JsonNode stat) {
+    protected PointValueTime getPointValueTime(DataType dataType, JsonNode stat) {
         if(stat.isNull()) {
             return null;
         }
@@ -1082,7 +1082,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
         return vo;
     }
 
-    protected DataPointVO createDataPoint(int dataSourceId, DataTypes dataType, int defaultCacheSize) {
+    protected DataPointVO createDataPoint(int dataSourceId, DataType dataType, int defaultCacheSize) {
         DataPointVO vo = new DataPointVO();
         vo.setPointLocator(new MockPointLocatorVO(dataType, true));
         vo.setXid(DataPointDao.getInstance().generateUniqueXid());

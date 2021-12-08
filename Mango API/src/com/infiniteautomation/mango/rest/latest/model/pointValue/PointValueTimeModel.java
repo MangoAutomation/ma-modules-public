@@ -6,7 +6,7 @@ package com.infiniteautomation.mango.rest.latest.model.pointValue;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.serotonin.ShouldNeverHappenException;
-import com.serotonin.m2m2.DataTypes;
+import com.serotonin.m2m2.DataType;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.AnnotatedPointValueTime;
 import com.serotonin.m2m2.rt.dataImage.IAnnotated;
@@ -27,7 +27,7 @@ import com.serotonin.m2m2.rt.dataImage.types.NumericValue;
 public class PointValueTimeModel {
 
 
-    private DataTypes dataType;
+    private DataType dataType;
     private Object value;
     private long timestamp;
     private TranslatableMessage annotation;
@@ -39,7 +39,7 @@ public class PointValueTimeModel {
     public PointValueTimeModel(PointValueTime data) {
 
         this.dataType = data.getValue().getDataType();
-        if(dataType != DataTypes.IMAGE){
+        if(dataType != DataType.IMAGE){
             this.value = data.getValue().getObjectValue();
         }else{
             ImageValue imageValue = (ImageValue)data.getValue();
@@ -55,10 +55,10 @@ public class PointValueTimeModel {
 
     }
 
-    public DataTypes getDataType() {
+    public DataType getDataType() {
         return dataType;
     }
-    public void setDataType(DataTypes type) {
+    public void setDataType(DataType type) {
         this.dataType = type;
     }
     public Object getValue() {

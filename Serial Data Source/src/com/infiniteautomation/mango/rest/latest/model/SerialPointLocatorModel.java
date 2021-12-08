@@ -6,7 +6,7 @@ package com.infiniteautomation.mango.rest.latest.model;
 
 import com.infiniteautomation.mango.rest.latest.model.dataPoint.AbstractPointLocatorModel;
 import com.infiniteautomation.serial.vo.SerialPointLocatorVO;
-import com.serotonin.m2m2.DataTypes;
+import com.serotonin.m2m2.DataType;
 
 /**
  *
@@ -28,7 +28,7 @@ public class SerialPointLocatorModel extends AbstractPointLocatorModel<SerialPoi
     @Override
     public SerialPointLocatorVO toVO() {
         SerialPointLocatorVO vo = new SerialPointLocatorVO();
-        vo.setDataType(DataTypes.fromName(dataType));
+        vo.setDataType(DataType.fromName(dataType));
         vo.setPointIdentifier(pointIdentifier);
         vo.setValueRegex(valueRegex);
         vo.setValueIndex(valueIndex);

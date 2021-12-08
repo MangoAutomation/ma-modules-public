@@ -26,7 +26,7 @@ import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.Functions;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.DataTypes;
+import com.serotonin.m2m2.DataType;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.dataImage.DataPointListener;
@@ -168,7 +168,7 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
             this.vo = vo;
 
             //If we are an image type we should build the URLS
-            if(vo.getPointLocator().getDataType() == DataTypes.IMAGE)
+            if(vo.getPointLocator().getDataType() == DataType.IMAGE)
                 imageServletBuilder = UriComponentsBuilder.fromPath("/imageValue/{ts}_{id}.jpg");
 
             this.setEventTypes(eventTypes);
@@ -196,12 +196,12 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
             PointValueTimeModel pvtModel = null;
             if (pvt != null) {
                 pvtModel = new PointValueTimeModel(pvt);
-                if (vo.getPointLocator().getDataType() == DataTypes.IMAGE) {
+                if (vo.getPointLocator().getDataType() == DataType.IMAGE) {
                     pvtModel.setValue(imageServletBuilder.buildAndExpand(pvt.getTime(), vo.getId()).toUri().toString());
                 }
 
                 renderedValue = Functions.getRenderedText(vo, pvt);
-                if (vo.getPointLocator().getDataType() == DataTypes.NUMERIC) {
+                if (vo.getPointLocator().getDataType() == DataType.NUMERIC) {
                     convertedValue = vo.getUnit().getConverterTo(vo.getRenderedUnit()).convert(pvt.getValue().getDoubleValue());
                 }
             }

@@ -6,7 +6,7 @@ package com.serotonin.m2m2.virtual;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import com.serotonin.m2m2.DataTypes;
+import com.serotonin.m2m2.DataType;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.module.PollingDataSourceDefinition;
 import com.serotonin.m2m2.util.IntMessagePair;
@@ -93,7 +93,7 @@ public class VirtualDataSourceDefinition extends PollingDataSourceDefinition<Vir
         // No change
         else if (pl.getChangeTypeId() == ChangeTypeVO.Types.NO_CHANGE) {
             if (StringUtils.isBlank(pl.getNoChange().getStartValue())
-                    && pl.getDataType() != DataTypes.ALPHANUMERIC)
+                    && pl.getDataType() != DataType.ALPHANUMERIC)
                 response.addContextualMessage("noChange.startValue",
                         "validate.required");
         }

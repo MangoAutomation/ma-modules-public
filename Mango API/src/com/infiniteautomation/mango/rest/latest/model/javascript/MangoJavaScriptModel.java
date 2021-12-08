@@ -13,7 +13,7 @@ import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.util.script.MangoJavaScript;
 import com.infiniteautomation.mango.util.script.ScriptPermissions;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.DataTypes;
+import com.serotonin.m2m2.DataType;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.rt.script.ScriptContextVariable;
 import com.serotonin.m2m2.util.log.LogLevel;
@@ -136,7 +136,7 @@ public class MangoJavaScriptModel {
         PermissionService service = Common.getBean(PermissionService.class);
         vo.setPermissions(new ScriptPermissions(service.explodeLegacyPermissionGroupsToRoles(permissions)));
         if(resultDataType != null)
-            vo.setResultDataType(DataTypes.fromName(resultDataType));
+            vo.setResultDataType(DataType.fromName(resultDataType));
         vo.setScript(script);
         vo.setAdditionalContext(additionalContext);
         return vo;

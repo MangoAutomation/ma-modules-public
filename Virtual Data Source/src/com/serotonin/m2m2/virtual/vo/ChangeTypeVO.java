@@ -14,7 +14,7 @@ import com.serotonin.json.ObjectWriter;
 import com.serotonin.json.spi.JsonProperty;
 import com.serotonin.json.spi.JsonSerializable;
 import com.serotonin.json.type.JsonObject;
-import com.serotonin.m2m2.DataTypes;
+import com.serotonin.m2m2.DataType;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.util.ExportCodes;
 import com.serotonin.m2m2.util.IntMessagePair;
@@ -51,7 +51,7 @@ abstract public class ChangeTypeVO implements Serializable, JsonSerializable {
         CHANGE_TYPE_CODES.addElement(Types.SINUSOIDAL, "SINUSOIDAL", "dsEdit.virtual.changeType.sinusoidal");
     }
 
-    public static IntMessagePair[] getChangeTypes(DataTypes dataType) {
+    public static IntMessagePair[] getChangeTypes(DataType dataType) {
         switch (dataType) {
         case BINARY:
             return new IntMessagePair[] { new IntMessagePair(Types.ALTERNATE_BOOLEAN, AlternateBooleanChangeVO.KEY),

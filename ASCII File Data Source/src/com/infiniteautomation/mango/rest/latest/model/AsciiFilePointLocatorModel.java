@@ -6,7 +6,7 @@ package com.infiniteautomation.mango.rest.latest.model;
 
 import com.infiniteautomation.asciifile.vo.AsciiFilePointLocatorVO;
 import com.infiniteautomation.mango.rest.latest.model.dataPoint.AbstractPointLocatorModel;
-import com.serotonin.m2m2.DataTypes;
+import com.serotonin.m2m2.DataType;
 
 /**
  *
@@ -44,7 +44,7 @@ public class AsciiFilePointLocatorModel extends AbstractPointLocatorModel<AsciiF
     @Override
     public AsciiFilePointLocatorVO toVO() {
         AsciiFilePointLocatorVO vo = new AsciiFilePointLocatorVO();
-        vo.setDataType(DataTypes.fromName(dataType));
+        vo.setDataType(DataType.fromName(dataType));
         vo.setPointIdentifier(pointIdentifier);
         vo.setPointIdentifierIndex(pointIdentifierIndex);
         vo.setValueIndex(valueIndex);
