@@ -99,7 +99,6 @@ public abstract class AbstractMultiDataPointStatisticsQuantizerStream <T, INFO e
             }else {
                 switch(vo.getPointLocator().getDataType()) {
                     case ALPHANUMERIC:
-                    case IMAGE:
                         quantizer = new ValueChangeCounterDataPointQuantizer(vo, getBucketCalculator(), this);
                         break;
                     case BINARY:

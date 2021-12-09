@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueTimeModel;
@@ -161,16 +160,10 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
     public class PointValueWebSocketListener implements DataPointListener {
         private DataPointVO vo;
         private DataPointRT rt;
-        private UriComponentsBuilder imageServletBuilder;
         private volatile EnumSet<PointValueEventType> eventTypes;
 
         public PointValueWebSocketListener(DataPointVO vo,  Set<PointValueEventType> eventTypes) {
             this.vo = vo;
-
-            //If we are an image type we should build the URLS
-            if(vo.getPointLocator().getDataType() == DataType.IMAGE)
-                imageServletBuilder = UriComponentsBuilder.fromPath("/imageValue/{ts}_{id}.jpg");
-
             this.setEventTypes(eventTypes);
         }
 
@@ -196,9 +189,6 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
             PointValueTimeModel pvtModel = null;
             if (pvt != null) {
                 pvtModel = new PointValueTimeModel(pvt);
-                if (vo.getPointLocator().getDataType() == DataType.IMAGE) {
-                    pvtModel.setValue(imageServletBuilder.buildAndExpand(pvt.getTime(), vo.getId()).toUri().toString());
-                }
 
                 renderedValue = Functions.getRenderedText(vo, pvt);
                 if (vo.getPointLocator().getDataType() == DataType.NUMERIC) {

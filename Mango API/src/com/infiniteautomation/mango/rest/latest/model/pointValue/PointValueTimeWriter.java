@@ -135,9 +135,6 @@ public abstract class PointValueTimeWriter {
                         else
                             writeDoubleField(name, value.getDoubleValue());
                         break;
-                    case IMAGE:
-                        writeStringField(name, info.writeImageLink(timestamp, vo.getId()));
-                        break;
                 }
         }
     }

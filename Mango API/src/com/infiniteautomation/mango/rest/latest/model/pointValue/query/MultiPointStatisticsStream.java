@@ -57,7 +57,6 @@ public class MultiPointStatisticsStream extends MultiPointTimeRangeDatabaseStrea
                             v = new StartsAndRuntimeList(info.getFromMillis(), info.getToMillis(), value);
                             break;
                         case ALPHANUMERIC:
-                        case IMAGE:
                             v = new ValueChangeCounter(info.getFromMillis(), info.getToMillis(), value);
                             break;
                         case NUMERIC:

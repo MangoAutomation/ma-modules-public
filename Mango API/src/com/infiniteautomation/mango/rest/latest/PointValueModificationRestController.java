@@ -198,7 +198,6 @@ public class PointValueModificationRestController {
                                 dataValue = new NumericValue(((Number)value).doubleValue());
                             }
                             break;
-                        case IMAGE:
                         default:
                             result.addContextualMessage("dataType", "rest.validate.imageNotSupported");
                             return;

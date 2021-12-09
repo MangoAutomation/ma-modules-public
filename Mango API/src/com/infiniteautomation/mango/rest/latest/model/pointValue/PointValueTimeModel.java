@@ -84,8 +84,8 @@ public class PointValueTimeModel {
             case NUMERIC:
                 dataValue = new NumericValue(((Number)this.value).doubleValue());
                 break;
-            case IMAGE:
-                throw new ShouldNeverHappenException("Importing Image values not supported");
+            default:
+                throw new ShouldNeverHappenException("Data type not supported: " + dataType);
         }
 
         if(this.annotation != null)

@@ -150,7 +150,6 @@ public class PointValueImportResult {
                     case NUMERIC:
                         value = new NumericValue(((Number)model.getValue()).doubleValue());
                         break;
-                    case IMAGE:
                     default:
                         result.addContextualMessage("dataType", "common.default", vo.getPointLocator().getDataType() + " data type not supported yet");
                         return;

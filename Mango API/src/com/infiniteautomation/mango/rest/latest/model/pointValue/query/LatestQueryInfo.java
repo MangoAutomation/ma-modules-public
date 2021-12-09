@@ -9,8 +9,6 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.TimeZone;
 
-import org.springframework.web.util.UriComponentsBuilder;
-
 import com.infiniteautomation.mango.rest.latest.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.latest.exception.ValidationFailedRestException;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueField;
@@ -42,7 +40,6 @@ public class LatestQueryInfo {
     protected final PointValueTimeCacheControl useCache;
 
     protected final String noDataMessage;
-    protected final UriComponentsBuilder imageServletBuilder;
     protected final DateTimeFormatter dateTimeFormatter; // Write a timestamp or string date
 
     protected final Double simplifyTolerance;
@@ -82,9 +79,6 @@ public class LatestQueryInfo {
 
         this.noDataMessage = new TranslatableMessage("common.stats.noDataForPeriod")
                 .translate(Common.getTranslations());
-
-        // If we are an image type we should build the URLS
-        imageServletBuilder = UriComponentsBuilder.fromPath("/imageValue/hst{ts}_{id}.jpg");
 
         if (dateTimeFormat != null)
             this.dateTimeFormatter = DateTimeFormatter.ofPattern(dateTimeFormat);
@@ -156,17 +150,6 @@ public class LatestQueryInfo {
 
     public boolean isUseSimplify() {
         return simplifyTolerance != null || simplifyTarget != null;
-    }
-
-    /**
-     * Write a link to an image based on data point id and timestamp
-     *
-     */
-    public String writeImageLink(Long timestamp, int id) {
-        if(timestamp == null)
-            return "";
-        else
-            return imageServletBuilder.buildAndExpand(timestamp, id).toUri().toString();
     }
 
     /**

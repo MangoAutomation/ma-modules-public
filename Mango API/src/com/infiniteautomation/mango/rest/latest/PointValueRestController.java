@@ -1263,7 +1263,7 @@ public class PointValueRestController extends AbstractMangoRestController {
         if(info.isUseSimplify()) {
             //Ensure no Simplify support
             for(DataPointVO vo : voMap.values())
-                if(vo.getPointLocator().getDataType() == DataType.ALPHANUMERIC || vo.getPointLocator().getDataType() == DataType.IMAGE)
+                if(vo.getPointLocator().getDataType() == DataType.ALPHANUMERIC)
                     throw new BadRequestException(new TranslatableMessage("rest.validation.noSimplifySupport", vo.getXid()));
             return ResponseEntity.ok(new MultiPointSimplifyLatestDatabaseStream<T, INFO>(info, voMap, this.dao));
         }else
@@ -1288,7 +1288,7 @@ public class PointValueRestController extends AbstractMangoRestController {
             if(info.isUseSimplify()) {
                 //Ensure no Simplify support
                 for(DataPointVO vo : voMap.values())
-                    if(vo.getPointLocator().getDataType() == DataType.ALPHANUMERIC || vo.getPointLocator().getDataType() == DataType.IMAGE)
+                    if(vo.getPointLocator().getDataType() == DataType.ALPHANUMERIC)
                         throw new BadRequestException(new TranslatableMessage("rest.validation.noSimplifySupport", vo.getXid()));
                 return ResponseEntity.ok(new MultiPointSimplifyTimeRangeDatabaseStream<T, INFO>(info, voMap, this.dao));
             }
@@ -1313,9 +1313,8 @@ public class PointValueRestController extends AbstractMangoRestController {
             switch(vo.getPointLocator().getDataType()) {
                 case ALPHANUMERIC:
                 case BINARY:
-                case IMAGE:
                 case MULTISTATE:
-                    if(rollup.nonNumericSupport() == false)
+                    if(!rollup.nonNumericSupport())
                         throw new BadRequestException(new TranslatableMessage("rest.validate.rollup.incompatible", rollup.toString(), xid));
                     break;
                 case NUMERIC:

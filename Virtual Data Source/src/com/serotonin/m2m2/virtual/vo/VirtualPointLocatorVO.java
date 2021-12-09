@@ -301,7 +301,7 @@ JsonSerializable {
     public void jsonRead(JsonReader reader, JsonObject jsonObject)
             throws JsonException {
         if (jsonObject.containsKey("dataType")) {
-            this.dataType = readDataType(jsonObject, DataType.IMAGE);
+            this.dataType = readDataType(jsonObject);
         }
 
         JsonObject ctjson = jsonObject.getJsonObject("changeType");
