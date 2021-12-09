@@ -10,7 +10,7 @@ class VirtualDataPointEditorController {
     static get $inject() { return ['maPoint']; }
     
     constructor(maPoint) {
-        this.dataTypes = maPoint.dataTypes.filter(t => t.key !== 'IMAGE');
+        this.dataTypes = maPoint.dataTypes;
         this.changeTypes = { 
             'BINARY': [
                 {key: 'ALTERNATE_BOOLEAN', translation: 'dsEdit.virtual.changeType.alternate'},

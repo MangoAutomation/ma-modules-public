@@ -1439,7 +1439,7 @@ describe('Point values', function() {
             assert.isObject(response.data, 'data');
             assert.isString(response.data.annotation, 'data.annotation');
             assert.isString(response.data.dataType, 'data.dataType');
-            assert.include(["ALPHANUMERIC","BINARY","MULTISTATE","NUMERIC","IMAGE"], response.data.dataType, 'data.dataType');
+            assert.include(["ALPHANUMERIC","BINARY","MULTISTATE","NUMERIC"], response.data.dataType, 'data.dataType');
             assert.isNumber(response.data.timestamp, 'data.timestamp');
             assert.strictEqual(response.data.value, 123, 'data.value');
             // END MODEL: PointValueTimeModel

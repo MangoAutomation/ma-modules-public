@@ -12,7 +12,7 @@ class serialDataPointEditorController {
     static get $$ngIsClass() { return true; }
 
     constructor(maPoint) {
-        this.dataTypes = maPoint.dataTypes.filter(t => t.key !== 'IMAGE');
+        this.dataTypes = maPoint.dataTypes;
     }
 
     $onInit() {
