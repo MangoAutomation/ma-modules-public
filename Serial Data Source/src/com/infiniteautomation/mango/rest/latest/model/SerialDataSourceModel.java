@@ -347,7 +347,7 @@ public class SerialDataSourceModel extends AbstractDataSourceModel<SerialDataSou
     }
 
     /**
-     * @param retries1 the retries1 to set
+     * @param retries the retries to set
      */
     public void setRetries(int retries) {
         this.retries = retries;

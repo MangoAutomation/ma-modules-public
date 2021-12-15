@@ -116,7 +116,7 @@ public abstract class XidQueryInfoModel {
         return fields;
     }
     /**
-     * @param extraFields the extraFields to set
+     * @param fields the extraFields to set
      */
     public void setFields(PointValueField[] fields) {
         this.fields = fields;

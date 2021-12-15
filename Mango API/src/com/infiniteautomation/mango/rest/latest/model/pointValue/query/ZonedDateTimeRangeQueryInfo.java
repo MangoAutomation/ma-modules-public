@@ -37,8 +37,7 @@ public class ZonedDateTimeRangeQueryInfo extends LatestQueryInfo {
      * are applied in this order: use timezone of from if not null use timezone of to if not null
      * use server timezone
      *
-     * @param boolean truncate - Truncate the start and end dates to be round numbers
-     * @param extraFields - Extra information about each data point
+     * @param fields - Extra information about each data point
      */
     public ZonedDateTimeRangeQueryInfo(ZonedDateTime from, ZonedDateTime to,
             String dateTimeFormat, String timezone, RollupEnum rollup, TimePeriod timePeriod,
