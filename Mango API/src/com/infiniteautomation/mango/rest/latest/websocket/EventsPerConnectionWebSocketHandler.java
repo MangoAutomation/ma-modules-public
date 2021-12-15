@@ -15,7 +15,6 @@ import org.springframework.web.socket.handler.PerConnectionWebSocketHandler;
 public class EventsPerConnectionWebSocketHandler extends PerConnectionWebSocketHandler {
 
     /**
-     * @param handlerType
      */
     public EventsPerConnectionWebSocketHandler() {
         super(EventsWebSocketHandler.class);

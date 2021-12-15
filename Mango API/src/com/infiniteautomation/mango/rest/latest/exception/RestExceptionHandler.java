@@ -235,8 +235,6 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     /**
      * Spring exception handlers don't deal with Throwable exceptions and will wrap all Throwable exceptions in
      *   NestedServletException which we can extract and have special handling for.
-     * @param ex
-     * @return
      */
     @ExceptionHandler(NestedServletException.class)
     public ResponseEntity<Object> handleNested(HttpServletRequest request, HttpServletResponse response, NestedServletException ex, WebRequest req) {

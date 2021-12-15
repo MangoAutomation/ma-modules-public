@@ -40,17 +40,6 @@ public class EventInstanceModel {
     }
 
     /**
-     * @param id
-     * @param eventType
-     * @param activeTimestamp
-     * @param acknowledgedByUserId
-     * @param acknowledgedByUsername
-     * @param acknowledgedTimestamp
-     * @param rtnApplicable
-     * @param rtnTimestamp
-     * @param rtnCause
-     * @param alarmLevel
-     * @param message
      */
     public EventInstanceModel(int id, AbstractEventTypeModel<?, ?, ?> eventType,
                               long activeTimestamp, Integer acknowledgedByUserId, String acknowledgedByUsername,

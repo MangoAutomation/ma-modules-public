@@ -30,7 +30,6 @@ public abstract class AbstractPointLocatorModel <T extends PointLocatorVO<T>> {
 
     /**
      * Convert from a point locator to this model
-     * @param locator
      */
     public void fromVO(T vo) {
         this.dataType = DataTypes.CODES.getCode(vo.getDataTypeId());
@@ -41,13 +40,11 @@ public abstract class AbstractPointLocatorModel <T extends PointLocatorVO<T>> {
 
     /**
      * Convert to a point locator VO
-     * @return
      */
     abstract public T toVO();
 
     /**
      * Return the TYPE_NAME from the Data Source definition
-     * @return
      */
     abstract public String getModelType();
 

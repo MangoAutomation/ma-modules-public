@@ -99,7 +99,6 @@ public abstract class AbstractEventDetectorModel<T extends AbstractEventDetector
 
     /**
      * The type name of our module element definition
-     * @return
      */
     @JsonGetter("detectorType")
     public abstract String getDetectorType();

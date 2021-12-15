@@ -95,11 +95,6 @@ public class XidTimeRangeQueryModel extends XidQueryInfoModel{
 
     /**
      * Create a time range query info object for use in the query
-     * @param multiplePointsPerArray
-     * @param singleArray
-     * @param rollup
-     * @return
-     * @throws ValidationFailedRestException
      */
     public ZonedDateTimeRangeQueryInfo createZonedDateTimeRangeQueryInfo(boolean multiplePointsPerArray,
             boolean singleArray) throws ValidationFailedRestException {

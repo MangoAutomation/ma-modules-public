@@ -25,10 +25,7 @@ public class ModuleNotificationModel {
 	public ModuleNotificationModel(){ }
 	
 	/**
-	 * @param type
-	 * @param name
-	 * @param version
-	 */
+     */
 	public ModuleNotificationModel(ModuleNotificationTypeEnum type, String name, String version, String error) {
 		this.type = type;
 		this.name = name;
@@ -37,12 +34,8 @@ public class ModuleNotificationModel {
 	}
 
 	/**
-	 * 
-	 * @param type
-	 * @param name
-	 * @param version
-	 * @param upgradeProcessState
-	 */
+	 *
+     */
 	public ModuleNotificationModel(ModuleNotificationTypeEnum type, UpgradeState upgradeProcessState) {
 		this.type = type;
 		this.upgradeProcessState = upgradeProcessState;

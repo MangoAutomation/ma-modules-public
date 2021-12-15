@@ -23,9 +23,6 @@ public abstract class DaoNotificationWebSocketHandler<T extends AbstractBasicVO>
 
     /**
      * @param action add, update or delete
-     * @param vo
-     * @param originalVo
-     * @param event
      */
     public void notify(String action, T vo, T originalVo, ApplicationEvent event) {
         for (WebSocketSession session : sessions) {
@@ -73,7 +70,6 @@ public abstract class DaoNotificationWebSocketHandler<T extends AbstractBasicVO>
     /**
      * You must annotate the overridden method with @EventListener in order for this to work
      *
-     * @param event
      */
     abstract protected void handleDaoEvent(DaoEvent<? extends T> event);
 

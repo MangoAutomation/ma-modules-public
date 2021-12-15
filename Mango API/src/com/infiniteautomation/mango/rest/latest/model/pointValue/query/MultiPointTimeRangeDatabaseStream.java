@@ -73,8 +73,6 @@ public class MultiPointTimeRangeDatabaseStream<T, INFO extends ZonedDateTimeRang
 
     /**
      * Does this point's time fit within our query range
-     * @param pvt
-     * @return
      */
     @Override
     protected boolean includeCachedPoint(PointValueTime pvt) {

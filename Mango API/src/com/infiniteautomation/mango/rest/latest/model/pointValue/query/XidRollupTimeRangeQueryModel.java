@@ -93,11 +93,6 @@ public class XidRollupTimeRangeQueryModel extends XidQueryInfoModel{
 
     /**
      *
-     * @param multiplePointsPerArray
-     * @param singleArray
-     * @param rollup
-     * @return
-     * @throws ValidationFailedRestException
      */
     public ZonedDateTimeRangeQueryInfo createZonedDateTimeRangeQueryInfo(boolean multiplePointsPerArray,
             boolean singleArray, RollupEnum rollup) throws ValidationFailedRestException {

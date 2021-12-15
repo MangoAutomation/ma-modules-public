@@ -34,9 +34,6 @@ public class MultiPointStatisticsStream extends MultiPointTimeRangeDatabaseStrea
     private Map<Integer, StatisticsGenerator> statsMap;
 
     /**
-     * @param info
-     * @param voMap
-     * @param dao
      */
     public MultiPointStatisticsStream(ZonedDateTimeStatisticsQueryInfo info, Map<Integer, DataPointVO> voMap,
             PointValueDao dao) {

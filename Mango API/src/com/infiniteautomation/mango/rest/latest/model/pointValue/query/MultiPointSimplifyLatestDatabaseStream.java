@@ -29,9 +29,6 @@ public class MultiPointSimplifyLatestDatabaseStream<T, INFO extends LatestQueryI
     protected final Map<Integer, List<DataPointVOPointValueTimeBookend>> valuesMap;
 
     /**
-     * @param info
-     * @param voMap
-     * @param dao
      */
     public MultiPointSimplifyLatestDatabaseStream(INFO info, Map<Integer, DataPointVO> voMap,
             PointValueDao dao) {

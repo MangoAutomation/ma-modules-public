@@ -14,7 +14,6 @@ public interface ChildStatisticsGeneratorCallback {
     /**
      *
      * Called upon period change
-     * @param generator
      */
     void quantizedStatistics(DataPointStatisticsGenerator generator) throws QueryCancelledException;
 

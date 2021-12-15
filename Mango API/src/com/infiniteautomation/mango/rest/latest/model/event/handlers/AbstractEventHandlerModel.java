@@ -35,7 +35,6 @@ public abstract class AbstractEventHandlerModel<T extends AbstractEventHandlerVO
 
     /**
      * The type info for the model
-     * @return
      */
     public abstract String getHandlerType();
 

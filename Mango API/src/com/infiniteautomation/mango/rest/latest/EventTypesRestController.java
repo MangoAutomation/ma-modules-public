@@ -212,10 +212,6 @@ public class EventTypesRestController {
 
     /**
      *
-     * @param typeName
-     * @param user
-     * @return
-     * @throws NotFoundException
      */
     private List<EventTypeVOModel<?,?,?>> getEventTypes(String typeName, PermissionHolder user) throws NotFoundException {
         //track if the type was a default type
@@ -271,11 +267,6 @@ public class EventTypesRestController {
     /**
      * Generate a list of all event types generalized by sub-type
      *
-     * @param typeName
-     * @param subtype
-     * @param user
-     * @return
-     * @throws NotFoundException
      */
     private List<EventTypeVOModel<?,?,?>> getEventTypesForSubtype(String typeName, String subtype, PermissionHolder user) throws NotFoundException {
         //track if the type was a default type
@@ -377,11 +368,6 @@ public class EventTypesRestController {
     /**
      * Generate a list of all event types generalized by sub-type and referenceId1
      *
-     * @param typeName
-     * @param subtype
-     * @param user
-     * @return
-     * @throws NotFoundException
      */
     private List<EventTypeVOModel<?,?,?>> getEventTypesForSubtypeAndReferenceId1(String typeName, String subtype, Integer referenceId1, PermissionHolder user) throws NotFoundException {
         //track if the type was a default type

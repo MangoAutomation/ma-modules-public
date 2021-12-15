@@ -18,8 +18,7 @@ public class SystemActionTemporaryResource extends MangoRestTemporaryResource<Sy
 	private SystemActionTask task;
 	
 	/**
-	 * @param resourceId
-	 */
+     */
 	public SystemActionTemporaryResource(String resourceId, SystemActionTask task, MangoRestTemporaryResourceContainer<SystemActionTemporaryResource> container, Date expiration) {
 		super(resourceId, container, expiration);
 		this.task = task;

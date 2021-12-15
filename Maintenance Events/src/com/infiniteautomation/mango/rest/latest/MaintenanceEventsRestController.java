@@ -553,8 +553,6 @@ public class MaintenanceEventsRestController {
     /**
      * Append an AND Restriction to a query
      * @param query - can be null
-     * @param restriction
-     * @return
      */
     protected static ASTNode addAndRestriction(ASTNode query, ASTNode restriction){
         //Root query node
@@ -573,8 +571,6 @@ public class MaintenanceEventsRestController {
     /**
      * Append an OR restriction to the query
      * @param query - can be null
-     * @param restriction
-     * @return
      */
     protected static ASTNode addOrRestriction(ASTNode query, ASTNode restriction){
         //Root query node
@@ -599,7 +595,6 @@ public class MaintenanceEventsRestController {
 
     /**
      * Set the data point XIDs if there are any, id must be set in model
-     * @param model
      */
     private void fillDataPoints(MaintenanceEventModel model) {
         List<String> xids = new ArrayList<>();
@@ -609,7 +604,6 @@ public class MaintenanceEventsRestController {
 
     /**
      * Set the data source XIDs if there are any, id must be set in model
-     * @param model
      */
     private void fillDataSources(MaintenanceEventModel model) {
         List<String> dsXids = new ArrayList<>();

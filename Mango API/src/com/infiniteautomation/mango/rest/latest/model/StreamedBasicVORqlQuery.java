@@ -39,12 +39,9 @@ public class StreamedBasicVORqlQuery <T extends AbstractBasicVO, R extends Recor
 
     /**
      * Use if permissions cannot be enforced in the RQL/Database query, this will perform a full query and count the results while respecting the limit.
-     * @param service
-     * @param rql
      * @param subSelectMap - can be null
      * @param fieldMap - can be null
      * @param valueConverterMap - can be null
-     * @param filter
      */
     public StreamedBasicVORqlQuery(SERVICE service, ASTNode rql, Map<String, RQLSubSelectCondition> subSelectMap, Map<String, Field<?>> fieldMap, Map<String, Function<Object, Object>> valueConverterMap, Predicate<T> filter) {
         this(service, service.rqlToCondition(rql, subSelectMap, fieldMap, valueConverterMap), filter);
@@ -52,8 +49,6 @@ public class StreamedBasicVORqlQuery <T extends AbstractBasicVO, R extends Recor
 
     /**
      * Variant to use if the permissions can be enforced via the RQL/Database query
-     * @param service
-     * @param rql
      * @param subSelectMap - can be null
      * @param fieldMap - can be null
      * @param valueConverterMap - can be null
@@ -64,8 +59,6 @@ public class StreamedBasicVORqlQuery <T extends AbstractBasicVO, R extends Recor
 
     /**
      * Variant to use if permissions can be enforced via the RQL/Database query
-     * @param service
-     * @param conditions
      */
     public StreamedBasicVORqlQuery(SERVICE service, ConditionSortLimit conditions) {
         this(service, conditions, null);
@@ -73,9 +66,6 @@ public class StreamedBasicVORqlQuery <T extends AbstractBasicVO, R extends Recor
 
     /**
      * Use if permissions cannot be enforced in the RQL/Database query, this will perform a full query and count the results while respecting the limit.
-     * @param service
-     * @param conditions
-     * @param filter
      */
     public StreamedBasicVORqlQuery(SERVICE service, ConditionSortLimit conditions, Predicate<T> filter) {
         this.service = service;

@@ -25,25 +25,21 @@ public abstract class BaseTextRendererModel<T extends BaseTextRenderer> {
 
     /**
      * Create a new VO
-     * @return
      */
     abstract T newVO();
 
     /**
      * Get the model type
-     * @return
      */
     abstract public String getType();
 
     /**
      * Convert from VO
-     * @param vo
      */
     abstract public void fromVO(T vo);
 
     /**
      * Convert to VO
-     * @return
      */
     abstract public T toVO();
 }

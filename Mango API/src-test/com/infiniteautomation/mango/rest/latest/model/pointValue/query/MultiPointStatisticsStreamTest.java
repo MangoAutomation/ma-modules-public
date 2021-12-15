@@ -317,7 +317,6 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
     /**
      * Start with a value of 1 at time 0
      * Then insert a value of 1 at midnight every day during Jan 2017
-     * @throws IOException
      */
     @Test
     public void testSingleMultistatePointNoCacheNoChangeInitialValue() throws IOException, QueryCancelledException {
@@ -1005,10 +1004,6 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
     }
 
     /**
-     * @param info
-     * @param points
-     * @throws IOException
-     * @throws QueryCancelledException
      */
     private void test(ZonedDateTimeStatisticsQueryInfo info, DataPointWrapper<?>...points) throws IOException, QueryCancelledException {
         Map<Integer, DataPointVO> voMap = new HashMap<>();
@@ -1061,10 +1056,6 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
 
     /**
      * Generate a JsonNode from the query
-     * @param info
-     * @param voMap
-     * @return
-     * @throws IOException
      */
     protected JsonNode generateOutput(ZonedDateTimeStatisticsQueryInfo info, Map<Integer, DataPointVO> voMap) throws QueryCancelledException, IOException {
         MultiPointStatisticsStream stream = new MultiPointStatisticsStream(info, voMap, Common.getBean(PointValueDao.class));
@@ -1353,8 +1344,6 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
 
     /**
      * Create a random square image with w=h=size
-     * @param size
-     * @return
      */
     private byte[] createImageBytes(int size) {
         int width = size;
@@ -1390,7 +1379,6 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
     class TestLifecycle extends MockMangoLifecycle {
 
         /**
-         * @param modules
          */
         public TestLifecycle(List<Module> modules, TestRuntimeManager runtimeManager) {
             super(modules);

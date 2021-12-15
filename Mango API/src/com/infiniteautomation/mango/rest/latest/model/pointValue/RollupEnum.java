@@ -54,9 +54,7 @@ public enum RollupEnum {
 	/**
 	 * Convert from an ENUM String to an ID
 	 * if none is found return -1
-	 * @param code
-	 * @return
-	 */
+     */
 	public static int getFromCode(String code){
 		for(RollupEnum r : RollupEnum.values())
 			if(r.name().equals(code))

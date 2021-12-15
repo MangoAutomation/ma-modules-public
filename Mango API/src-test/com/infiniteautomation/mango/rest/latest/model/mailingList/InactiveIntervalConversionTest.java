@@ -173,8 +173,6 @@ public class InactiveIntervalConversionTest {
     }
     
     /**
-     * @param inactive
-     * @param inactiveIntervals
      */
     private void assertIntervals(Set<Integer> expectedIntervals, Set<Integer> actualIntervals) {
         assertEquals(expectedIntervals.size(), actualIntervals.size());

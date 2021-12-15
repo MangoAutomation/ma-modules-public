@@ -101,27 +101,17 @@ public abstract class PointValueTimeWriter {
     /* Full Value Write Methods */
     /**
      * Write many values at the same time
-     * @param currentValues
-     * @param timestamp
-     * @throws IOException
      */
     public abstract void writeDataPointValues(List<DataPointValueTime> currentValues, long timestamp) throws IOException;
 
     /**
      * Write a single value
-     * @param value
-     * @throws IOException
      */
     public abstract void writeDataPointValue(DataPointValueTime value) throws IOException;
 
     /**
-     * @param name
-     * @param vo
-     * @param value
      * @param timestamp - Only used for generating Image File Links
-     * @param rendered
      * @param raw - do not use the rendered unit for conversion
-     * @throws IOException
      */
     protected void writeDataValue(String name, DataPointVO vo, DataValue value, Long timestamp, boolean rendered, boolean raw) throws IOException{
         if(rendered) {
@@ -420,12 +410,6 @@ public abstract class PointValueTimeWriter {
 
     /**
      * Write a rollup
-     * @param name
-     * @param statisticsGenerator
-     * @param vo
-     * @param rendered
-     * @param rollup
-     * @throws IOException
      */
     protected void writeStatistic(String name, StatisticsGenerator statisticsGenerator,
             DataPointVO vo, boolean rendered, boolean raw, RollupEnum rollup) throws IOException {

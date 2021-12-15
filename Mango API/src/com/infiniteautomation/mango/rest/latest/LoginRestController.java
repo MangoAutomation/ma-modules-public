@@ -98,7 +98,6 @@ public class LoginRestController {
      *
      * Ensure that the URLs in MangoSecurityConfiguration are changed if you change the @RequestMapping value
      *
-     * @throws IOException
      */
     @ApiOperation(value = "Switch User", notes = "Used to switch User using GET")
     @RequestMapping(method = RequestMethod.POST,  value="/su")
@@ -136,7 +135,6 @@ public class LoginRestController {
      *
      * Ensure that the URLs in MangoSecurityConfiguration are changed if you change the @RequestMapping value
      *
-     * @throws IOException
      */
     @ApiOperation(value = "Exit Switch User", notes = "Used to switch User using POST")
     @RequestMapping(method = RequestMethod.POST,  value="/exit-su")

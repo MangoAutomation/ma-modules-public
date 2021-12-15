@@ -119,8 +119,6 @@ public class SqlConsoleRestController {
 
     /**
      * Get a translated message about serialized data
-     * @param user
-     * @return
      */
     private String getSerializedDataMessage(User user) {
         return user.getTranslations().translate("sql.serializedData");

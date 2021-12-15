@@ -63,7 +63,6 @@ public class AsciiFileDataSourceRT extends PollingDataSource<AsciiFileDataSource
     /**
      * Load a file path
      *
-     * @throws Exception
      */
     public boolean connect() throws Exception {
         AsciiFileDataSourceVO vo = this.getVo();

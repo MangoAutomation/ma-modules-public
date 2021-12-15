@@ -44,12 +44,6 @@ public enum PointValueField {
 
     /**
      *
-     * @param value
-     * @param info
-     * @param translations
-     * @param useXid
-     * @param writer
-     * @throws IOException
      */
     public void writeValue(DataPointVOPointValueTimeBookend value, LatestQueryInfo info,
             Translations translations, boolean useXid, PointValueTimeWriter writer) throws IOException {
@@ -129,12 +123,6 @@ public enum PointValueField {
     }
 
     /**
-     * @param periodStats
-     * @param info
-     * @param translations
-     * @param useXid
-     * @param writer
-     * @throws IOException
      */
     public void writeValue(DataPointStatisticsGenerator periodStats, LatestQueryInfo info,
             Translations translations, boolean useXid, PointValueTimeWriter writer) throws IOException {
@@ -196,7 +184,6 @@ public enum PointValueField {
     }
 
     /**
-     * @param builder
      */
     public void createColumn(Builder builder, String xid) {
         switch(this) {

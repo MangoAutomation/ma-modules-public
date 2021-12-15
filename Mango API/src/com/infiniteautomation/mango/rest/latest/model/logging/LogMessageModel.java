@@ -20,10 +20,7 @@ public class LogMessageModel {
 	public LogMessageModel(){ }
 	
 	/**
-	 * @param level
-	 * @param message
-	 * @param time
-	 */
+     */
 	public LogMessageModel(String level, String classname, String method, Integer lineNumber, String message, String[] stackTrace, long time) {
 		super();
 		this.level = level;

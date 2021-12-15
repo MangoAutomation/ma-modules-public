@@ -224,7 +224,6 @@ public class MangoLogFilePatternReceiver {
     /**
      * Mutator
      *
-     * @param fileURL
      */
     public void setFileURL(String fileURL) {
         this.fileURL = fileURL;
@@ -256,7 +255,6 @@ public class MangoLogFilePatternReceiver {
     /**
      * Mutator
      *
-     * @param appendNonMatches
      */
     public void setAppendNonMatches(boolean appendNonMatches) {
         this.appendNonMatches = appendNonMatches;
@@ -274,7 +272,6 @@ public class MangoLogFilePatternReceiver {
     /**
      * Mutator
      *
-     * @param tailing
      */
     public void setTailing(boolean tailing) {
         this.tailing = tailing;
@@ -294,7 +291,6 @@ public class MangoLogFilePatternReceiver {
      * Sets whether the current Thread or a new Thread is created to perform the import, the default
      * being false (new Thread created).
      *
-     * @param useCurrentThread
      */
     public final void setUseCurrentThread(boolean useCurrentThread) {
         this.useCurrentThread = useCurrentThread;
@@ -321,7 +317,6 @@ public class MangoLogFilePatternReceiver {
     /**
      * Mutator. Specify a pattern from {@link SimpleDateFormat}
      *
-     * @param timestampFormat
      */
     public void setTimestampFormat(String timestampFormat) {
         this.timestampFormat = timestampFormat;
@@ -348,7 +343,6 @@ public class MangoLogFilePatternReceiver {
     /**
      * Mutator
      *
-     * @param waitMillis
      */
     public void setWaitMillis(long waitMillis) {
         this.waitMillis = waitMillis;
@@ -461,8 +455,6 @@ public class MangoLogFilePatternReceiver {
      *
      * A runtimeException is thrown if the logFormat pattern is malformed.
      *
-     * @param bufferedReader
-     * @throws IOException
      */
     protected void process(BufferedReader bufferedReader) throws IOException {
         Matcher eventMatcher;
@@ -555,7 +547,6 @@ public class MangoLogFilePatternReceiver {
      * Relies on the fact that the matchingKeywords list is in the same order as the groups in the
      * regular expression
      *
-     * @param result
      * @return map
      */
     private Map<String, String> processEvent(MatchResult result) {
@@ -808,7 +799,6 @@ public class MangoLogFilePatternReceiver {
      * Some perl5 characters may occur in the log file format. Escape these characters to prevent
      * parsing errors.
      *
-     * @param input
      * @return string
      */
     private String replaceMetaChars(String input) {
@@ -835,9 +825,6 @@ public class MangoLogFilePatternReceiver {
 
     /**
      * Convert a keyword-to-values map to a LoggingEvent
-     *
-     * @param fieldMap
-     * @param exception
      *
      * @return logging event
      */

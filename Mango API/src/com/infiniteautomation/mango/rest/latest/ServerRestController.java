@@ -209,13 +209,6 @@ public class ServerRestController extends AbstractMangoRestController {
 
     /**
      * Send email helper method
-     * @param to
-     * @param from
-     * @param subject
-     * @param content
-     * @param done
-     * @return
-     * @throws AddressException
      */
     private CompletableFuture<TranslatableMessage> sendTestEmail(Set<String> to, String from, String subject, EmailContent content, Function<SentMessage, TranslatableMessage> done) throws AddressException{
         Set<InternetAddress> toAddresses = new HashSet<>();

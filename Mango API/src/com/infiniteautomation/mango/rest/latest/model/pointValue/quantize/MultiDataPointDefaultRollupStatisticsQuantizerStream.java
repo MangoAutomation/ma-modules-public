@@ -128,8 +128,6 @@ public class MultiDataPointDefaultRollupStatisticsQuantizerStream <T, INFO exten
 
     /**
      * Process the data into lists per data point, simplify if necessary
-     * @param limit
-     * @return
      */
     private Map<DataPointVO, List<DataPointValueTime>> process(Integer limit) {
         Map<DataPointVO, List<DataPointValueTime>> processed = new LinkedHashMap<>();

@@ -71,7 +71,6 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
 
     /**
      * Get cached instance from Spring Context
-     * @return
      */
     public static MaintenanceEventDao getInstance() {
         return springInstance.get();
@@ -150,8 +149,6 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
 
     /**
      * Get the points for a maintenance event
-     * @param maintenanceEventId
-     * @param callback
      */
     public void getPoints(int maintenanceEventId, final Consumer<DataPointVO> callback){
         dataPointDao.getJoinedSelectQuery()
@@ -165,8 +162,6 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
 
     /**
      * Get data point xids for a maintenance event
-     * @param maintenanceEventId
-     * @param callback
      */
     public void getPointXids(int maintenanceEventId, final Consumer<String> callback) {
         dataPointDao.getJoinedSelectQuery()
@@ -178,8 +173,6 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
 
     /**
      * Get the data sources for a maintenance event
-     * @param maintenanceEventId
-     * @param callback
      */
     public void getDataSources(int maintenanceEventId, final Consumer<DataSourceVO> callback) {
         dataSourceDao.getJoinedSelectQuery()
@@ -193,8 +186,6 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
 
     /**
      * Get data source xids for a maintenance event
-     * @param maintenanceEventId
-     * @param callback
      */
     public void getSourceXids(int maintenanceEventId, final Consumer<String> callback) {
         dataSourceDao.getJoinedSelectQuery()
@@ -206,8 +197,6 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
 
     /**
      * Get all maintenance events that have this data point in their list OR the its data source in the list
-     * @param dataPointId
-     * @param callback
      */
     public void getForDataPoint(int dataPointId, Consumer<MaintenanceEventVO> callback) {
         DataPointVO vo = dataPointDao.get(dataPointId);
@@ -217,8 +206,6 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
     }
     /**
      * Get all maintenance events that have this data point in their list OR the its data source in the list
-     * @param dataPointXid
-     * @param callback
      */
     public void getForDataPoint(String dataPointXid, Consumer<MaintenanceEventVO> callback) {
         DataPointVO vo = dataPointDao.getByXid(dataPointXid);
@@ -242,8 +229,6 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
 
     /**
      * Get all Maintenance events that have this data source in their list
-     * @param dataSourceXid
-     * @param callback
      */
     public void getForDataSource(String dataSourceXid, Consumer<MaintenanceEventVO> callback) {
         Integer id = dataPointDao.getIdByXid(dataSourceXid);
@@ -255,8 +240,6 @@ public class MaintenanceEventDao extends AbstractVoDao<MaintenanceEventVO, Maint
 
     /**
      * Get all Maintenance events that have this data source in their list
-     * @param dataSourceId
-     * @param callback
      */
     public void getForDataSource(int dataSourceId, Consumer<MaintenanceEventVO> callback) {
         Select<Record1<Integer>> idsForSource = DSL.select(meSources.maintenanceEventId)

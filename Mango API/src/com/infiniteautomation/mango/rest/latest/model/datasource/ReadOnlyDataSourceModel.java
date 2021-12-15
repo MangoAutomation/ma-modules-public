@@ -32,7 +32,6 @@ public class ReadOnlyDataSourceModel extends AbstractDataSourceModel<DataSourceV
 
     /**
      * Return the TYPE_NAME from the Data Source definition
-     * @return
      */
     @Override
     public String getModelType() {

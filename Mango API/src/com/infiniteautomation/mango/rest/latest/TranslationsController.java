@@ -147,9 +147,6 @@ public class TranslationsController {
 
     /**
      * Get the locale for the request
-     * @param language
-     * @param request
-     * @return
      */
     private Locale getLocale(String language, boolean server, boolean browser, HttpServletRequest request, PermissionHolder user) {
         if (!StringUtils.isBlank(language)) {
@@ -167,9 +164,6 @@ public class TranslationsController {
 
     /**
      * Get a set of translations for many namespaces
-     * @param namespaces
-     * @param locale
-     * @return
      */
     public static Map<String, Map<String,String>> getTranslationMap(String[] namespaces, Locale locale) {
         Translations translations = Translations.getTranslations(locale);

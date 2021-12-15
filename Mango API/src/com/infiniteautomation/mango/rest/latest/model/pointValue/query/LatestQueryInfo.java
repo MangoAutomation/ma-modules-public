@@ -161,9 +161,6 @@ public class LatestQueryInfo {
     /**
      * Write a link to an image based on data point id and timestamp
      *
-     * @param timestamp
-     * @param id
-     * @return
      */
     public String writeImageLink(Long timestamp, int id) {
         if(timestamp == null)
@@ -175,9 +172,6 @@ public class LatestQueryInfo {
     /**
      * Return an rendered string representation of the value
      *
-     * @param vo
-     * @param pvt
-     * @return
      */
     public String getRenderedString(DataPointVO vo, PointValueTime pvt) {
         return Functions.getRenderedText(vo, pvt);
@@ -185,9 +179,6 @@ public class LatestQueryInfo {
 
     /**
      * Render a double value using the data point's text renderer properties
-     * @param vo
-     * @param value
-     * @return
      */
     public String getRenderedString(DataPointVO vo, Double value) {
         if (vo == null)
@@ -198,9 +189,6 @@ public class LatestQueryInfo {
     }
 
     /**
-     * @param vo
-     * @param value
-     * @return
      */
     public String getRenderedString(DataPointVO vo, DataValue value) {
         if(value == null)
@@ -212,9 +200,6 @@ public class LatestQueryInfo {
     /**
      * Return an rendered string representation of the integral
      *
-     * @param vo
-     * @param integral
-     * @return
      */
     public String getIntegralString(DataPointVO vo, Double integral) {
         return Functions.getIntegralText(vo, integral);
@@ -223,8 +208,6 @@ public class LatestQueryInfo {
     /**
      * Generate a Date Time String using our time zone
      *
-     * @param timestamp
-     * @return
      */
     public String getDateTimeString(long timestamp) {
         return dateTimeFormatter

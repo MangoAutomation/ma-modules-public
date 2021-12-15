@@ -17,7 +17,6 @@ public class TestingComponent {
 
     /**
      * Listen for and run any Runnable Event
-     * @param event
      */
     @EventListener
     protected void handleRunnableEvent(TestingService.RunnableTestEvent event) {

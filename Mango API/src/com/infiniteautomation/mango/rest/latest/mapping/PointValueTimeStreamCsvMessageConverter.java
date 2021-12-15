@@ -262,7 +262,6 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
     /**
      * Helper to get all valid enums for writing
      * TODO Could trim the list based on the data types in the voMap if we wanted
-     * @return
      */
     protected RollupEnum[] getAllRollups() {
         List<RollupEnum> enums = new ArrayList<>();

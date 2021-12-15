@@ -90,7 +90,6 @@ public abstract class BaseEventTypeModel<T extends EventType> {
      * EventType(s) are lacking setters
      *  so they must be created/filled in this method
      *  implemented in the concrete model class
-     * @return
      */
     public abstract T toVO();
 

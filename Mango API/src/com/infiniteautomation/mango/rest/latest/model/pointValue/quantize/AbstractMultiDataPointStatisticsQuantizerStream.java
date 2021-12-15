@@ -57,8 +57,6 @@ public abstract class AbstractMultiDataPointStatisticsQuantizerStream <T, INFO e
 
     /**
      * Check limit and maybe write the period stats
-     * @param generator
-     * @throws IOException
      */
     protected void writePeriodStats(DataPointRollupPeriodValue generator) throws QueryCancelledException{
         //Code limit
@@ -76,8 +74,6 @@ public abstract class AbstractMultiDataPointStatisticsQuantizerStream <T, INFO e
      * Track and advance the quantizers to ensure when
      * we change points we finish the quantizer to fill in the periods
      *
-     * @param value
-     * @throws IOException
      */
     protected void updateQuantizers(IdPointValueTime value) throws IOException, QueryCancelledException {
         long time = value.getTime();
@@ -124,7 +120,6 @@ public abstract class AbstractMultiDataPointStatisticsQuantizerStream <T, INFO e
 
     /**
      * Create a Bucket Calculator
-     * @return
      */
     protected BucketCalculator getBucketCalculator(){
         if(this.info.getTimePeriod() == null){

@@ -92,10 +92,6 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
 
     /**
      * Delete an event
-     * @param vo
-     * @return
-     * @throws NotFoundException
-     * @throws PermissionException
      */
     @Override
     protected MaintenanceEventVO delete(MaintenanceEventVO vo)
@@ -109,7 +105,6 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
 
     /**
      * Toggle a running maintenance event
-     * @param xid
      * @return - state of event after toggle
      * @throws NotFoundException - if DNE
      * @throws PermissionException - if no toggle permission
@@ -122,7 +117,6 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
 
     /**
      * Check if a maintenance event is active
-     * @param xid
      * @return - state of event
      * @throws NotFoundException - if DNE
      * @throws PermissionException - if no toggle permission
@@ -135,8 +129,6 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
 
     /**
      * Set the state of a Maintenance event, if state does not change do nothing.
-     * @param xid
-     * @param active
      * @return - state of event, should match active unless event is disabled
      * @throws NotFoundException - if DNE
      * @throws PermissionException - if no toggle permission
@@ -171,8 +163,6 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
 
     /**
      * Ensure the user has permission to toggle this event
-     * @param user
-     * @param vo
      */
     public void ensureTogglePermission(MaintenanceEventVO vo, PermissionHolder user) {
         //TODO Review use and potentially use DAO Permission JOIN
@@ -204,7 +194,6 @@ public class MaintenanceEventsService extends AbstractVOService<MaintenanceEvent
         /**
          *
          * @param read = true to check read permission, false = check edit permission
-         * @param dataPointService
          */
         public DataPointPermissionsCheckCallback(PermissionHolder user, boolean read,
                                                  PermissionService permissionService,

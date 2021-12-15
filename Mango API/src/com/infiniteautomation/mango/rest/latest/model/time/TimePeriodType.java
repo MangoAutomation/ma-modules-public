@@ -23,13 +23,10 @@ public enum TimePeriodType {
 	YEARS;
 
 	/**
-	 * Convert Mango's 
-	 * @See Common.TimePeriods to the Enum Type TimePeriodType
-	 * 
-	 * 
-	 * @param updatePeriodType
-	 * @return
-	 */
+	 * Convert Mango's Common.TimePeriods to the Enum Type TimePeriodType
+	 * @see Common.TimePeriods
+	 *
+     */
 	public static TimePeriodType convertTo(int updatePeriodType) {
 		switch(updatePeriodType){
 		case Common.TimePeriods.MILLISECONDS:
@@ -54,12 +51,10 @@ public enum TimePeriodType {
 	}
 	
 	/**
-	 * Convert this enum into  
-	 * @See Common.TimePeriods 
-	 * 
-	 * @param updatePeriodType
-	 * @return
-	 */
+	 * Convert this enum into Common.TimePeriods
+	 * @see Common.TimePeriods
+	 *
+     */
 	public static int convertFrom(TimePeriodType type) {
 		switch(type){
 		case MILLISECONDS:

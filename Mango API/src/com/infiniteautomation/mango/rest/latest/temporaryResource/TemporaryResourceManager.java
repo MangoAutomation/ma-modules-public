@@ -57,7 +57,6 @@ public abstract class TemporaryResourceManager<T, E> implements ExceptionMapper<
      * @param expiration time after the resource completes that it will be removed (milliseconds). If null or less than zero, it will be set to the default DEFAULT_EXPIRATION_MILLISECONDS
      * @param timeout time after the resource starts that it will be timeout if not complete (milliseconds). If null or less than zero, it will be set to the default DEFAULT_TIMEOUT_MILLISECONDS
      * @param task the task to be run
-     * @return
      */
     public final TemporaryResource<T, E> newTemporaryResource(String resourceType, String id, Long expiration, Long timeout, ResourceTask<T, E> task) {
         if (expiration == null || expiration < 0) {
@@ -93,8 +92,6 @@ public abstract class TemporaryResourceManager<T, E> implements ExceptionMapper<
 
     /**
      * Get a resource from the map of resources using its id
-     * @param id
-     * @return
      */
     public final TemporaryResource<T, E> get(String id) {
         TemporaryResource<T, E> resource = this.resources.get(id);
@@ -107,7 +104,6 @@ public abstract class TemporaryResourceManager<T, E> implements ExceptionMapper<
 
     /**
      * Adds the resource to the map of resources.
-     * @param resource
      */
     private final void add(TemporaryResource<T, E> resource) {
         TemporaryResource<T, E> existing = this.resources.putIfAbsent(resource.getId(), resource);
@@ -120,7 +116,6 @@ public abstract class TemporaryResourceManager<T, E> implements ExceptionMapper<
 
     /**
      * Removes the resource from the map of resources.
-     * @param resource
      */
     final void remove(TemporaryResource<T, E> resource) {
         TemporaryResource<T, E> existing = this.resources.remove(resource.getId());

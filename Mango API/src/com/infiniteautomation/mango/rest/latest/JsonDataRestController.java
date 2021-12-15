@@ -367,17 +367,6 @@ public class JsonDataRestController {
 
     /**
      * Helper method
-     * @param operation
-     * @param xid
-     * @param pathParts
-     * @param readPermissions
-     * @param editPermissions
-     * @param name
-     * @param data
-     * @param builder
-     * @param request
-     * @param user
-     * @return
      */
     private ResponseEntity<JsonDataModel> modifyJsonData(MapOperation operation,
                                                          String xid, String[] pathParts, MangoPermission readPermissions, MangoPermission editPermissions, String name,

@@ -37,8 +37,6 @@ public class SystemActionsRestController {
     
     /**
      * Get the status for a result
-     * @param id
-     * @return
      */
     @ApiOperation(value = "Get Action Progress", notes = "Polls temporary resource for results.")
     @RequestMapping( method = {RequestMethod.GET}, value = {"/system-actions/status/{id}"})
@@ -50,8 +48,6 @@ public class SystemActionsRestController {
     
     /**
      * Cancel/Delete a temporary resource for a system action
-     * @param id
-     * @return
      */
     @ApiOperation(value = "Cancel a system action", notes = "Cancels action and removes resource.")
     @RequestMapping( method = {RequestMethod.DELETE}, value = {"/system-actions/status/{id}"})

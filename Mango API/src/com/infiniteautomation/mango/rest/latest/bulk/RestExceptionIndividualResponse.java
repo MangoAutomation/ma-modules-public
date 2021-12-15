@@ -12,7 +12,6 @@ import com.infiniteautomation.mango.rest.latest.util.RestExceptionMapper;
 public class RestExceptionIndividualResponse<A, B> extends IndividualResponse<A, B, AbstractRestException> implements RestExceptionMapper {
     /**
      * Sets the http status and error fields from the exception
-     * @param exception
      */
     public void exceptionCaught(Throwable exception) {
         AbstractRestException e = this.mapException(exception);

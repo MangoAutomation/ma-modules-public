@@ -18,10 +18,7 @@ public abstract class AbstractMangoRestController {
 
 	/**
 	 * For created resources
-	 * @param body
-	 * @param location
-	 * @return
-	 */
+     */
 	public static <N> ResponseEntity<N> getResourceCreated(N body, URI location) {
 		return getResourceModified(body, location, HttpStatus.CREATED);
 	}
@@ -32,11 +29,7 @@ public abstract class AbstractMangoRestController {
 
 	/**
 	 * To modify a resource with a Location header
-	 * @param body
-	 * @param location
-	 * @param status
-	 * @return
-	 */
+     */
 	protected static <N> ResponseEntity<N> getResourceModified(N body, URI location, HttpStatus status) {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setLocation(location);

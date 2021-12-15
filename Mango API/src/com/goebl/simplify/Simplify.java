@@ -15,9 +15,8 @@ public class Simplify<T> extends AbstractSimplify<T> {
      * <br>
      * With this simple constructor your array elements must implement {@link Point}.<br>
      * If you have coordinate classes which cannot be changed to implement <tt>Point</tt>, use
-     * {@link #Simplify(List<T>, PointExtractor)} constructor!
+     * {@link Simplify#Simplify(com.goebl.simplify.PointExtractor)} constructor!
      *
-     * @param sampleArray pass just an empty array (<tt>new MyPoint[0]</tt>) - necessary for type consistency.
      */
     public Simplify() {
         super();
@@ -40,7 +39,6 @@ public class Simplify<T> extends AbstractSimplify<T> {
      * With this constructor your array elements do not have to implement a special interface like {@link Point}.<br>
      * Implement a {@link PointExtractor} to give <tt>Simplify</tt> access to your coordinates.
      *
-     * @param sampleArray pass just an empty array (<tt>new MyPoint[0]</tt>) - necessary for type consistency.
      * @param pointExtractor your implementation to extract X and Y coordinates from you array elements.
      */
     public Simplify(PointExtractor<T> pointExtractor) {

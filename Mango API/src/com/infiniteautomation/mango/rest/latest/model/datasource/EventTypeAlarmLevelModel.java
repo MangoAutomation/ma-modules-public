@@ -36,10 +36,6 @@ public class EventTypeAlarmLevelModel {
     public EventTypeAlarmLevelModel() { }
 
     /**
-     * @param eventType
-     * @param duplicateHandling
-     * @param level
-     * @param description
      */
     public EventTypeAlarmLevelModel(String eventType,
             DuplicateHandling duplicateHandling, AlarmLevels level,

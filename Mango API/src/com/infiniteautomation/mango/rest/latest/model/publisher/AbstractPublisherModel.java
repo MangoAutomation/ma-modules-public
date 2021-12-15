@@ -65,7 +65,6 @@ public abstract class AbstractPublisherModel<POINT extends PublishedPointVO, PUB
 
     /**
      * Return the TYPE_NAME from the Publisher Source definition
-     * @return
      */
     public abstract String getModelType();
 
@@ -141,7 +140,6 @@ public abstract class AbstractPublisherModel<POINT extends PublishedPointVO, PUB
 
     /**
      * Get the description for the publisher's connection
-     * @return
      */
     public TranslatableMessage getConnectionDescription() {
         return connectionDescription;
@@ -149,7 +147,6 @@ public abstract class AbstractPublisherModel<POINT extends PublishedPointVO, PUB
 
     /**
      * Get the description for the type of publisher
-     * @return
      */
     public TranslatableMessage getDescription() {
         return description;
@@ -157,7 +154,6 @@ public abstract class AbstractPublisherModel<POINT extends PublishedPointVO, PUB
 
     /**
      * Get the description translation key for the type of publisher
-     * @return
      */
     public String getDescriptionKey() {
         return description.getKey();

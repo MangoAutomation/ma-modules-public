@@ -15,12 +15,6 @@ public class FileModel {
     boolean directory;
 
     /**
-     * @param folderPath
-     * @param filename
-     * @param mimeType
-     * @param lastModified
-     * @param size
-     * @param directory
      */
     public FileModel(String folderPath, String filename, String mimeType, Date lastModified,
             Long size, boolean directory) {

@@ -12,9 +12,7 @@ public enum ThreadModelProperty {
 	ID,NAME,CPU_TIME,USER_TIME,STATE,PRIORITY,LOCATION;
 
 	/**
-	 * @param orderBy
-	 * @return
-	 */
+     */
 	public static ThreadModelProperty convert(String orderBy) {
 		
 		if(orderBy.equalsIgnoreCase("location"))

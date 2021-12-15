@@ -57,12 +57,6 @@ public class MangoStoreClient {
 
     /**
      * Login to the store
-     * @param email
-     * @param password
-     * @param retries
-     * @throws ClientProtocolException
-     * @throws IOException
-     * @throws HttpException
      */
     public void login(String email, String password, int retries) throws ClientProtocolException, IOException, HttpException{
 
@@ -108,12 +102,6 @@ public class MangoStoreClient {
 
     /**
      * Get a license token from the store
-     * @param guid
-     * @param distributor
-     * @param retries
-     * @return
-     * @throws HttpException
-     * @throws IOException
      */
     public String getLicenseToken(String guid, String distributor, int retries) throws HttpException, IOException{
         StringBuilder baseUrl = new StringBuilder(storeUrl);
@@ -156,11 +144,6 @@ public class MangoStoreClient {
 
     /**
      * Get the license from the store using supplied token
-     * @param token
-     * @param retries
-     * @return
-     * @throws IOException
-     * @throws HttpException
      */
     public String getLicense(String token, int retries) throws IOException, HttpException{
         // Send the request
@@ -180,10 +163,6 @@ public class MangoStoreClient {
 
     /**
      * Logout the current user
-     * @param retries
-     * @throws ClientProtocolException
-     * @throws IOException
-     * @throws HttpException
      */
     public void logout(int retries) throws ClientProtocolException, IOException, HttpException{
         String url = storeUrl + "/logout";
@@ -193,11 +172,6 @@ public class MangoStoreClient {
 
     /**
      * Execute the response
-     * @param request
-     * @return
-     * @throws ClientProtocolException
-     * @throws IOException
-     * @throws HttpException
      */
     protected HttpResponse executeRequest(HttpRequestBase request, int expectedStatus, int retries) throws ClientProtocolException, IOException, HttpException{
         HttpResponse response = null;

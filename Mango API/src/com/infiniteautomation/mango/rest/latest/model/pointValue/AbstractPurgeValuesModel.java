@@ -49,8 +49,7 @@ public abstract class AbstractPurgeValuesModel {
     }
     
     /**
-     * 
-     * @param result
+     *
      */
     protected abstract void validateImpl(ProcessResult result);
 

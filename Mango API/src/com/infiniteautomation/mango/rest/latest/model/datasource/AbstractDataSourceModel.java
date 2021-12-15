@@ -62,7 +62,6 @@ public abstract class AbstractDataSourceModel<T extends DataSourceVO> extends Ab
 
     /**
      * Return the TYPE_NAME from the Data Source definition
-     * @return
      */
     public abstract String getModelType();
 
@@ -139,7 +138,6 @@ public abstract class AbstractDataSourceModel<T extends DataSourceVO> extends Ab
 
     /**
      * Get the lifecycle state for the data source
-     * @return
      */
     public ILifecycleState getLifecycleState() {
         return lifecycleState;
@@ -155,7 +153,6 @@ public abstract class AbstractDataSourceModel<T extends DataSourceVO> extends Ab
 
     /**
      * Get the description for the data source's connection
-     * @return
      */
     public TranslatableMessage getConnectionDescription() {
         return connectionDescription;
@@ -163,7 +160,6 @@ public abstract class AbstractDataSourceModel<T extends DataSourceVO> extends Ab
 
     /**
      * Get the description for the type of data source
-     * @return
      */
     public TranslatableMessage getDescription() {
         return description;
@@ -171,7 +167,6 @@ public abstract class AbstractDataSourceModel<T extends DataSourceVO> extends Ab
 
     /**
      * Get the description translation key for the type of data source
-     * @return
      */
     public String getDescriptionKey() {
         return description.getKey();

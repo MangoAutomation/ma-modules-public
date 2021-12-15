@@ -134,7 +134,6 @@ public class MaintenanceEventVO extends AbstractVO {
 
     /**
      * Deprecated as we should just use the name. Leaving here as I believe these are probably accessed on the legacy page via DWR.
-     * @return
      */
     @Deprecated
     public String getAlias() {

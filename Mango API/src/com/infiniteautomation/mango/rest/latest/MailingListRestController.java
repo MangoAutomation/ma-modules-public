@@ -204,9 +204,6 @@ public class MailingListRestController {
 
     /**
      *
-     * @param rql
-     * @param user
-     * @return
      */
     private StreamedArrayWithTotal doQuery(ASTNode rql, PermissionHolder user) {
         //We can filter in the database on the roles

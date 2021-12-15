@@ -16,8 +16,6 @@ import com.serotonin.m2m2.vo.DataPointVO;
 public class NoStatisticsDataPointQuantizer extends DataPointStatisticsQuantizer<NoStatisticsGenerator>{
 
     /**
-     * @param vo
-     * @param callback
      */
     public NoStatisticsDataPointQuantizer(DataPointVO vo,
             BucketCalculator calc,

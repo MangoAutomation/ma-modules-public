@@ -22,10 +22,6 @@ public abstract class XidQueryInfoModel {
     public XidQueryInfoModel() { }
 
     /**
-     * @param xids
-     * @param useRendered
-     * @param dateTimeFormat
-     * @param timezone
      */
     public XidQueryInfoModel(String[] xids, String dateTimeFormat,
             String timezone, Integer limit, Double simplifyTolerance, Integer simplifyTarget, 

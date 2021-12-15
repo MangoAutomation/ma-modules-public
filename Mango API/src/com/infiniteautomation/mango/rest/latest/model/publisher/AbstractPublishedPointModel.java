@@ -28,7 +28,6 @@ public abstract class AbstractPublishedPointModel<T extends PublishedPointVO> {
 
     /**
      * Return the TYPE_NAME for the point's model
-     * @return
      */
     public abstract String getModelType();
 

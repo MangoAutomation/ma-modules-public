@@ -1258,9 +1258,6 @@ public class PointValueRestController extends AbstractMangoRestController {
     /**
      * The Hard Working Value Generation Logic for Latest Value Queries
      *
-     * @param info
-     * @param xids
-     * @return
      */
     protected <T, INFO extends LatestQueryInfo> ResponseEntity<PointValueTimeStream<T, INFO>> generateLatestStream(INFO info, String[] xids){
         //Build the map, check permissions
@@ -1277,9 +1274,6 @@ public class PointValueRestController extends AbstractMangoRestController {
 
     /**
      * The Hard Working Value Generation Logic for Time Range Queries
-     * @param info
-     * @param xids
-     * @return
      */
     protected <T, INFO extends ZonedDateTimeRangeQueryInfo> ResponseEntity<PointValueTimeStream<T, INFO>> generateStream(INFO info, String[] xids){
 
@@ -1307,7 +1301,6 @@ public class PointValueRestController extends AbstractMangoRestController {
 
     /**
      * Build and validate the map of Requested Data Points
-     * @param xids
      * @return Map of series ids to data points
      */
     protected Map<Integer, DataPointVO> buildMap(String[] xids, RollupEnum rollup){

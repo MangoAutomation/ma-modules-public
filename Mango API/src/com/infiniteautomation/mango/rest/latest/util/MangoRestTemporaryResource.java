@@ -26,9 +26,7 @@ public abstract class MangoRestTemporaryResource<T extends MangoRestTemporaryRes
 
 	/**
 	 * Create the resource and plan to schedule it's timeout later
-	 * @param resourceId
-	 * @param container
-	 */
+     */
 	@SuppressWarnings("unchecked")
 	public MangoRestTemporaryResource(String resourceId, MangoRestTemporaryResourceContainer<T> container){
 		this.resourceId = resourceId;
@@ -38,10 +36,7 @@ public abstract class MangoRestTemporaryResource<T extends MangoRestTemporaryRes
 
 	/**
 	 * Create and schedule the resource to expire
-	 * @param resourceId
-	 * @param expiration
-	 * @param container
-	 */
+     */
 	@SuppressWarnings("unchecked")
 	public MangoRestTemporaryResource(String resourceId, MangoRestTemporaryResourceContainer<T> container, Date expiration){
 		this.resourceId = resourceId;
@@ -53,9 +48,7 @@ public abstract class MangoRestTemporaryResource<T extends MangoRestTemporaryRes
 	
 	/**
 	 * Schedule a timeout for the resource
-	 * @param expiration
-	 * @param container
-	 */
+     */
 	public void schedule(Date expiration){
 		this.expiration = expiration;
 		this.cancelTimeout();
@@ -80,16 +73,14 @@ public abstract class MangoRestTemporaryResource<T extends MangoRestTemporaryRes
 	
 	/**
 	 * ID for this resource
-	 * @return
-	 */
+     */
 	public String getResourceId(){
 		return this.resourceId;
 	}
 
 	/**
 	 * Timestamp at which the resource will expire
-	 * @return
-	 */
+     */
 	public long getExpires(){
 		if(this.expiration != null)
 			return this.expiration.getTime();

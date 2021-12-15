@@ -21,10 +21,6 @@ public class UpdateLicensePayloadModel {
     public UpdateLicensePayloadModel(){ }
 
     /**
-     * @param guid
-     * @param description
-     * @param distributor
-     * @param modules
      */
     public UpdateLicensePayloadModel(String guid, String description, String distributor,
             Map<String, String> modules, String storeUrl, int upgradeVersionState,

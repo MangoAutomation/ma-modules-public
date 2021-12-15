@@ -94,7 +94,6 @@ public class RealTimeDataRestController {
 
     /**
      * Query the User's Real Time Data
-     * @return
      */
     @ApiOperation(value = "Query realtime values",
             notes = "Check the status member to ensure the point is OK not DISABLED or UNRELIABLE")

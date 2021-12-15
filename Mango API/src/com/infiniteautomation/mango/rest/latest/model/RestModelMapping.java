@@ -44,7 +44,6 @@ public interface RestModelMapping<F, T> {
      * Check for reverse mapping support.
      * @param modelClass the model class
      * @param voClass vo class
-     * @return
      */
     default boolean unmapSupports(Class<?> modelClass, Class<?> voClass) {
         return toClass().isAssignableFrom(modelClass) && voClass.isAssignableFrom(fromClass());
@@ -53,9 +52,6 @@ public interface RestModelMapping<F, T> {
     /**
      * Performs the mapping of the object to the desired model class. If null is returned other mappings will be tried in order.
      *
-     * @param from
-     * @param user
-     * @param mapper
      * @return The model object or null
      */
     T map(Object from, PermissionHolder user, RestModelMapper mapper);
@@ -63,11 +59,6 @@ public interface RestModelMapping<F, T> {
     /**
      * TODO Remove default and require an implementation for all model mappings
      * Unmap a model by creating a new object
-     * @param from
-     * @param user
-     * @param mapper
-     * @return
-     * @throws ValidationException
      */
     default F unmap(Object from, PermissionHolder user, RestModelMapper mapper) throws ValidationException {
         throw new UnsupportedOperationException("Unimplemented");
@@ -76,12 +67,6 @@ public interface RestModelMapping<F, T> {
     /**
      * TODO Remove default and require an implementation
      * Unmap a model into an existing object
-     * @param from
-     * @param into
-     * @param user
-     * @param mapper
-     * @return
-     * @throws ValidationException
      */
     default F unmapInto(Object from, F into, PermissionHolder user, RestModelMapper mapper) throws ValidationException {
         throw new UnsupportedOperationException("Unimplemented");
@@ -90,9 +75,6 @@ public interface RestModelMapping<F, T> {
     /**
      * Returns the view to use when serializing the mapped object
      *
-     * @param from
-     * @param user
-     * @return
      */
     default Class<?> view(Object from, PermissionHolder user) {
         return null;
@@ -101,11 +83,6 @@ public interface RestModelMapping<F, T> {
     /**
      * Perform any model to vo field mappings that may be off during validation
      *
-     * @param modelClass
-     * @param validatedClass
-     * @param result
-     * @param restModelMapper
-     * @return
      */
     default ProcessResult mapValidationErrors(Class<?> modelClass, Class<?> validatedClass,
             ProcessResult result, RestModelMapper restModelMapper) {
@@ -114,9 +91,6 @@ public interface RestModelMapping<F, T> {
 
     /**
      * Helper method for basic mapping
-     * @param fieldMap
-     * @param result
-     * @return
      */
     default ProcessResult mapValidationErrors(Map<String, String> fieldMap, ProcessResult result) {
         ProcessResult mapped = new ProcessResult();

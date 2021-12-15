@@ -26,7 +26,6 @@ public class MangoRestSwaggerResourceProvider implements SwaggerResourcesProvide
 
     /**
      * Add a swagger resource definition
-     * @param resource
      */
     public void add(SwaggerResource resource) {
         this.resources.add(0, resource);

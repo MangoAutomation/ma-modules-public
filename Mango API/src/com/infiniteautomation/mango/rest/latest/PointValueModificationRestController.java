@@ -146,9 +146,6 @@ public class PointValueModificationRestController {
 
         /**
          *
-         * @param value
-         * @param date
-         * @param annotation
          */
         private void saveValue(Object value, ZonedDateTime date, String annotation) {
 

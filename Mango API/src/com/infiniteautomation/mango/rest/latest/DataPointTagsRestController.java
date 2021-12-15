@@ -533,8 +533,6 @@ public class DataPointTagsRestController {
 
     /**
      * Lists possible values for a tag key. Restrictions for other tag keys can be given via RQL
-     * @param tagKey
-     * @return
      */
     @ApiOperation(value = "Gets tag values for a given tag key", notes = "Only returns tag values which are present on data points the user has access to")
     @RequestMapping(method = RequestMethod.GET, value="/values/{tagKey}")

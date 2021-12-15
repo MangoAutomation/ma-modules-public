@@ -28,44 +28,37 @@ public class SerialDataSourceTestCase {
 	}
 
 	/**
-	 * @return
-	 */
+     */
 	public DataPointRT getTargetPoint() {
 		return this.dprt;
 	}
 
 	/**
-	 * @return
-	 */
+     */
 	public String getCondition() {
 		return this.condition;
 	}
 
 	/**
-	 * @return
-	 */
+     */
 	public String getTerminator() {
 		return this.terminator;
 	}
 
 	/**
-	 * @return
-	 */
+     */
 	public String[] getResults() {
 		return this.results;
 	}
 
 	/**
-	 * @return
-	 */
+     */
 	public int getNewValueCount() {
 		return this.newValueCount;
 	}
 
 	/**
-	 * @param k
-	 * @return
-	 */
+     */
 	public String getResult(int k) {
 		return this.results[k];
 	}

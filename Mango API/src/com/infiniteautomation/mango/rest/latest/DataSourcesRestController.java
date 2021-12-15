@@ -338,9 +338,6 @@ public class DataSourcesRestController {
 
     /**
      * Perform a query
-     * @param rql
-     * @param user
-     * @return
      */
     private StreamedArrayWithTotal doQuery(ASTNode rql, PermissionHolder user) {
         return new StreamedVORqlQueryWithTotal<>(service, rql, null, null, null, vo -> map.apply(vo, user));

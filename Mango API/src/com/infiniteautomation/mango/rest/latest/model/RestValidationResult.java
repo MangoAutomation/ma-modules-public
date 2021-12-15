@@ -22,7 +22,6 @@ public class RestValidationResult {
 
     /**
      * For adding validation results from a VO
-     * @param result
      */
     public RestValidationResult(ProcessResult result){
         this();
@@ -59,8 +58,6 @@ public class RestValidationResult {
 
     /**
      * Create a result with one message
-     * @param msg
-     * @param property
      */
     public RestValidationResult(TranslatableMessage msg, String property){
         this();
@@ -73,7 +70,6 @@ public class RestValidationResult {
 
     /**
      * Add Validation Error
-     * @param msg
      * @param property with validation error
      */
     public void addError(TranslatableMessage msg, String property){
@@ -91,7 +87,6 @@ public class RestValidationResult {
 
     /**
      * Add an invalid value message for a property
-     * @param property
      */
     public void addInvalidValueError(String property){
         this.messages.add(new RestValidationMessage(new TranslatableMessage("validate.invalidValue"), RestMessageLevel.ERROR, property));
@@ -99,7 +94,6 @@ public class RestValidationResult {
 
     /**
      * Add a 'required' message for a property
-     * @param property
      */
     public void addRequiredError(String property){
         this.messages.add(new RestValidationMessage(new TranslatableMessage("validate.required"), RestMessageLevel.ERROR, property));
@@ -107,7 +101,6 @@ public class RestValidationResult {
 
     /**
      * If there are messages throw exception
-     * @throws ValidationFailedRestException
      */
     public void ensureValid() throws ValidationFailedRestException{
         if(messages.size() > 0)
@@ -130,8 +123,6 @@ public class RestValidationResult {
         }
 
         /**
-         * @param status
-         * @param message
          */
         public RestValidationMessage(TranslatableMessage message, RestMessageLevel level, String propertyName) {
             this.message = message;

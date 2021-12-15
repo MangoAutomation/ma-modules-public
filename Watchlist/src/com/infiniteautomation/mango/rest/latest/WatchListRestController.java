@@ -359,9 +359,6 @@ public class WatchListRestController {
 
     /**
      *
-     * @param rql
-     * @param user
-     * @return
      */
     private StreamedArrayWithTotal doQuery(ASTNode rql, PermissionHolder user) {
         return new StreamedVORqlQueryWithTotal<>(service, rql, null, fieldMap, valueConverters, (item) -> {

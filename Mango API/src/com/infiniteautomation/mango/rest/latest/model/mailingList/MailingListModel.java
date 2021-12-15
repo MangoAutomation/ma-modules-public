@@ -116,8 +116,6 @@ public class MailingListModel extends AbstractVoModel<MailingList> {
 
     /**
      * Convert a set of inactive intervals into a weekly schedule
-     * @param inactiveIntervals
-     * @return
      */
     private WeeklySchedule getInactiveIntervalsAsWeeklySchedule(Set<Integer> inactiveIntervals) {
 
@@ -193,8 +191,6 @@ public class MailingListModel extends AbstractVoModel<MailingList> {
      *
      * Offsets Monday - Sunday
      * Schedule Sunday - Saturday
-     * @param weeklySchedule
-     * @return
      */
     private Set<Integer> weeklyScheduleToInactiveIntervals(WeeklySchedule weeklySchedule) {
         if(weeklySchedule == null)

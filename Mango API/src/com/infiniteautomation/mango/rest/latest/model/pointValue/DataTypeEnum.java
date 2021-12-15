@@ -19,10 +19,8 @@ public enum DataTypeEnum {
 	
 	
 	/**
-	 * Convert from the Mango int value to an Interval Logging type 
-	 * @param type
-	 * @return
-	 */
+	 * Convert from the Mango int value to an Interval Logging type
+     */
 	public static DataTypeEnum convertTo(int type){
 		switch (type){
 			case DataTypes.ALPHANUMERIC:
@@ -42,9 +40,7 @@ public enum DataTypeEnum {
 	
 	/**
 	 * Convert from an Interval Logging Type to the Mango int value
-	 * @param type
-	 * @return
-	 */
+     */
 	public static int convertFrom(DataTypeEnum type){
 		switch (type){
 		case ALPHANUMERIC:

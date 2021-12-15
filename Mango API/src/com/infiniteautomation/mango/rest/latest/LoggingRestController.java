@@ -105,8 +105,6 @@ public class LoggingRestController {
      *     <li><a href="https://bugzilla.mozilla.org/show_bug.cgi?id=852868">FF bug 852868</a></li>
      * </ul>
      *
-     * @param filename
-     * @return
      */
     @PreAuthorize("isAdmin()")
     @ApiOperation(value = "Download log file", response = String.class)

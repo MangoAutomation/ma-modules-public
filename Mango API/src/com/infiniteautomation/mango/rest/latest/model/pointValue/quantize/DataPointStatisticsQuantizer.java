@@ -69,7 +69,6 @@ public abstract class DataPointStatisticsQuantizer<T extends StatisticsGenerator
     }
 
     /**
-     * @throws IOException
      *
      */
     public void done() throws QueryCancelledException {

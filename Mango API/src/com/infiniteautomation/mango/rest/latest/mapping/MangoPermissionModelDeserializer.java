@@ -92,8 +92,6 @@ public class MangoPermissionModelDeserializer extends StdDeserializer<MangoPermi
 
     /**
      * Explode a comma separated group of permissions (roles) from the legacy format (don't strip whitespace)
-     * @param groups
-     * @return
      */
     public static Set<String> explodeLegacyPermissionGroups(String groups) {
         if (groups == null || groups.isEmpty()) {

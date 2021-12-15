@@ -36,7 +36,6 @@ public class PointValueTimeJsonWriter extends PointValueTimeWriter {
     }
 
     /**
-     * @param currentValues
      */
     @Override
     public void writeDataPointValues(List<DataPointValueTime> currentValues, long timestamp)  throws IOException{

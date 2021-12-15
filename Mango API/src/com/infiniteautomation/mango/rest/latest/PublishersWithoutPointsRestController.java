@@ -237,9 +237,6 @@ public class PublishersWithoutPointsRestController {
 
     /**
      * Perform a query
-     * @param rql
-     * @param user
-     * @return
      */
     private StreamedArrayWithTotal doQuery(ASTNode rql, PermissionHolder user, BiFunction<PublisherVO, PermissionHolder, AbstractPublisherModel<?,?>> map) {
         if (permissionService.hasAdminRole(user)) {

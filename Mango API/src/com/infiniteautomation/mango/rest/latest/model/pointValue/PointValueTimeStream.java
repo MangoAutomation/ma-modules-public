@@ -30,7 +30,6 @@ public interface PointValueTimeStream<T, INFO extends LatestQueryInfo> {
 
     /**
      * Set the content type of the stream CSV or JSON
-     * @param type
      */
     public void setContentType(StreamContentType type);
 

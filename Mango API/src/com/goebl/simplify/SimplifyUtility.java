@@ -21,12 +21,6 @@ public class SimplifyUtility {
      *  desired target via Newton's Method or use a tolerance in one go. Optionally pre/post
      *  process the data to remove !Point.isProcessable() values and add them back in.
      *
-     * @param simplifyTolerance
-     * @param simplifyTarget
-     * @param simplifyHighQuality
-     * @param prePostProcess
-     * @param list
-     * @return
      */
     public static <T extends Point> List<T> simplify(
             Double simplifyTolerance,

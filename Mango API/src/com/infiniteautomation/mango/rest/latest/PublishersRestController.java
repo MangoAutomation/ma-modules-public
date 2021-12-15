@@ -251,9 +251,6 @@ public class PublishersRestController {
 
     /**
      * Perform a query
-     * @param rql
-     * @param user
-     * @return
      */
     private StreamedArrayWithTotal doQuery(ASTNode rql, PermissionHolder user) {
         if (permissionService.hasAdminRole(user)) {
@@ -265,8 +262,6 @@ public class PublishersRestController {
 
     /**
      * If points are not null they will replace any points on this publisher
-     * @param publisherVO
-     * @param points
      */
     private void maybeReplacePoints(PublisherVO publisherVO, List<? extends AbstractPublishedPointModel<?>> points, PermissionHolder user) {
         if(points != null) {

@@ -34,8 +34,6 @@ public class LogQueryArrayStream implements JSONStreamedArray {
     /**
      * Specifically Process a Log4J file
      *
-     * @param jgen
-     * @throws IOException
      */
     @Override
     public void writeArrayValues(JsonGenerator jgen) throws IOException {

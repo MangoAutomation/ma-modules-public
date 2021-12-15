@@ -22,9 +22,7 @@ public class ModuleUpgradesModel {
 	public ModuleUpgradesModel(){ }
 	
 	/**
-	 * @param upgrades
-	 * @param newInstalls
-	 */
+     */
 	public ModuleUpgradesModel(List<ModuleUpgradeModel> upgrades, List<ModuleUpgradeModel> newInstalls) {
 		this.upgrades = upgrades;
 		this.newInstalls = newInstalls;
@@ -52,8 +50,7 @@ public class ModuleUpgradesModel {
 	}
 
 	/**
-	 * @return
-	 */
+     */
 	public List<StringStringPair> fullModulesList() {
 		List<StringStringPair> list = new ArrayList<StringStringPair>();
 		if(upgrades != null){

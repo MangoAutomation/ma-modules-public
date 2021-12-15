@@ -46,13 +46,7 @@ public class SystemActionTemporaryResourceManager {
 
     /**
      * Create the task
-     * @param requestBody
-     * @param user
-     * @param builder
      * @param permissionTypeName - To get from system settings
-     * @param resourceType
-     * @param task
-     * @return
      */
     public <T extends SystemActionResult> ResponseEntity<TemporaryResource<T, AbstractRestException>> create(
             SystemActionModel requestBody,
@@ -88,8 +82,6 @@ public class SystemActionTemporaryResourceManager {
 
     /**
      * Get the status for a result
-     * @param id
-     * @return
      */
     public TemporaryResource<SystemActionResult, AbstractRestException> getStatus(String id) {
         return resourceManager.get(id);
@@ -97,8 +89,6 @@ public class SystemActionTemporaryResourceManager {
 
     /**
      * Cancel/Delete a temporary resource for a system action
-     * @param id
-     * @return
      */
     public TemporaryResource<SystemActionResult, AbstractRestException> cancel(String id) {
         TemporaryResource<SystemActionResult, AbstractRestException> resource = resourceManager.get(id);

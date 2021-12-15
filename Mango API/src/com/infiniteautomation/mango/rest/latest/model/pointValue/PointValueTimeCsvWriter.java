@@ -24,8 +24,6 @@ public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter {
 
     protected final int pointCount;
     /**
-     * @param info
-     * @param jgen
      */
     public PointValueTimeCsvWriter(LatestQueryInfo info, int pointCount, JsonGenerator jgen) {
         super(info, jgen);
@@ -45,7 +43,6 @@ public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter {
     }
 
     /**
-     * @param currentValues
      */
     @Override
     public void writeDataPointValues(List<DataPointValueTime> currentValues, long timestamp)  throws IOException{

@@ -29,7 +29,6 @@ public class LimitCounter {
 
     /**
      * Is the result set to be limited now, i.e. don't return any more values
-     * @return
      */
     public boolean limited(){
         if(!use)

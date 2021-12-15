@@ -122,8 +122,6 @@ public class WatchListService extends AbstractVOService<WatchListVO, WatchListDa
 
     /**
      * Get the full data points for a list (TAG_TYPE not supported)
-     * @param id
-     * @param callback
      */
     public void getDataPoints(int id, Consumer<DataPointVO> callback) {
         WatchListVO vo = get(id);
@@ -132,8 +130,6 @@ public class WatchListService extends AbstractVOService<WatchListVO, WatchListDa
 
     /**
      * Get the full data points for a list (TAG_TYPE not supported)
-     * @param xid
-     * @param callback
      */
     public void getDataPoints(String xid, Consumer<DataPointVO> callback) {
         WatchListVO vo = get(xid);
@@ -142,8 +138,6 @@ public class WatchListService extends AbstractVOService<WatchListVO, WatchListDa
 
     /**
      * Get the full data points for a list (TAG_TYPE not supported)
-     * @param vo
-     * @param callback
      */
     public void getDataPoints(WatchListVO vo, Consumer<DataPointVO> callback) {
         PermissionHolder user = Common.getUser();
@@ -172,10 +166,6 @@ public class WatchListService extends AbstractVOService<WatchListVO, WatchListDa
 
     /**
      * Get data point events for a list
-     * @param id
-     * @param limit
-     * @param offset
-     * @param callback
      */
     public void getPointEvents(int id, Integer limit, Integer offset, Consumer<EventInstanceVO> callback) {
         WatchListVO vo = get(id);
@@ -184,10 +174,6 @@ public class WatchListService extends AbstractVOService<WatchListVO, WatchListDa
 
     /**
      * Get data point events for a list
-     * @param xid
-     * @param limit
-     * @param offset
-     * @param callback
      */
     public void getPointEvents(String xid, Integer limit, Integer offset, Consumer<EventInstanceVO> callback) {
         WatchListVO vo = get(xid);
@@ -196,10 +182,6 @@ public class WatchListService extends AbstractVOService<WatchListVO, WatchListDa
 
     /**
      *
-     * @param vo
-     * @param limit
-     * @param offset
-     * @param callback
      */
     public void getPointEvents(WatchListVO vo, Integer limit, Integer offset, Consumer<EventInstanceVO> callback) {
         PermissionHolder user = Common.getUser();
@@ -254,8 +236,6 @@ public class WatchListService extends AbstractVOService<WatchListVO, WatchListDa
     /**
      * Append an AND Restriction to a query
      * @param query - can be null
-     * @param restriction
-     * @return
      */
     protected static ASTNode addAndRestriction(ASTNode query, ASTNode restriction){
         //Root query node

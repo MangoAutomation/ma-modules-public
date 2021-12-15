@@ -80,11 +80,6 @@ public abstract class MangoWebSocketHandler extends TextWebSocketHandler {
     /**
      * Send an error message
      *
-     * @param session
-     * @param errorType
-     * @param message
-     * @throws JsonProcessingException
-     * @throws IOException
      */
     protected void sendErrorMessage(WebSocketSession session, MangoWebSocketErrorType errorType, TranslatableMessage message) throws JsonProcessingException {
         MangoWebSocketErrorModel error = new MangoWebSocketErrorModel(errorType, message.translate(Common.getTranslations()));
@@ -96,10 +91,6 @@ public abstract class MangoWebSocketHandler extends TextWebSocketHandler {
     /**
      * Send a positive response
      *
-     * @param session
-     * @param payload
-     * @throws JsonProcessingException
-     * @throws IOException
      */
     protected void sendMessage(WebSocketSession session, Object payload) throws JsonProcessingException {
         MangoWebSocketResponseModel model = new MangoWebSocketResponseModel(MangoWebSocketResponseStatus.OK, payload);
@@ -108,9 +99,6 @@ public abstract class MangoWebSocketHandler extends TextWebSocketHandler {
 
     /**
      * Sends a message raw without wrapping it in a MangoWebSocketResponseModel
-     * @param session
-     * @param message
-     * @throws JsonProcessingException
      */
     protected void sendRawMessage(WebSocketSession session, Object message) throws JsonProcessingException {
         this.sendStringMessageAsync(session, this.jacksonMapper.writeValueAsString(message));
@@ -118,10 +106,6 @@ public abstract class MangoWebSocketHandler extends TextWebSocketHandler {
 
     /**
      * Sends a message raw without wrapping it in a MangoWebSocketResponseModel using a Jackson serialization view
-     * @param session
-     * @param message
-     * @param view
-     * @throws JsonProcessingException
      */
     protected void sendRawMessageUsingView(WebSocketSession session, Object message, Class<?> view) throws JsonProcessingException {
         ObjectWriter objectWriter = this.jacksonMapper.writerWithView(view);
@@ -132,9 +116,6 @@ public abstract class MangoWebSocketHandler extends TextWebSocketHandler {
      * WebSocketSession.sendMessage() is blocking and will throw exceptions on concurrent sends, this method uses the aysnc RemoteEndpoint.sendStringByFuture() method instead
      * <p>TODO use {@link ConcurrentWebSocketSessionDecorator} instead of Jetty API</p>
      *
-     * @param session
-     * @param message
-     * @throws IOException
      */
     protected void sendStringMessageAsync(WebSocketSession session, String message) {
         if (!session.isOpen()) {
@@ -229,7 +210,6 @@ public abstract class MangoWebSocketHandler extends TextWebSocketHandler {
 
     /**
      * Permission required to use this WebSocket
-     * @return
      */
     protected MangoPermission requiredPermission() {
         return DEFAULT_PERMISSION;

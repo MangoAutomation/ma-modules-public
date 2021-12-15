@@ -32,9 +32,6 @@ public class MultiPointSimplifyTimeRangeDatabaseStream<T, INFO extends ZonedDate
     protected final Map<Integer, List<DataPointVOPointValueTimeBookend>> valuesMap;
 
     /**
-     * @param info
-     * @param voMap
-     * @param dao
      */
     public MultiPointSimplifyTimeRangeDatabaseStream(INFO info, Map<Integer, DataPointVO> voMap,
             PointValueDao dao) {
@@ -120,7 +117,6 @@ public class MultiPointSimplifyTimeRangeDatabaseStream<T, INFO extends ZonedDate
 
         /**
          * Add a bookend, its either the at the from time or to time
-         * @param bookend
          */
         void addBookend(DataPointVOPointValueTimeBookend bookend) {
             if(bookend.getPvt().getTime() == info.getFromMillis())

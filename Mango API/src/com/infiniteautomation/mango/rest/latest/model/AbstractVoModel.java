@@ -63,7 +63,6 @@ public abstract class AbstractVoModel<VO extends AbstractVO> {
 
     /**
      * Create a vo from our fields
-     * @return
      */
     public VO toVO() throws ValidationException {
         VO vo = newVO();
@@ -79,7 +78,6 @@ public abstract class AbstractVoModel<VO extends AbstractVO> {
 
     /**
      * Create a new empty VO to fill with values from the model
-     * @return
      */
     protected abstract VO newVO();
 

@@ -62,8 +62,6 @@ public class SerialDataSourceRT extends EventDataSource<SerialDataSourceVO> impl
 
     /**
      * Connect to a serial port
-     * @param portName
-     * @throws Exception
      */
     public boolean connect() {
 
@@ -485,10 +483,6 @@ public class SerialDataSourceRT extends EventDataSource<SerialDataSourceVO> impl
 
     /**
      * Convert to a point value time or NULL if not possible
-     * @param value
-     * @param dataTypeId
-     * @return
-     * @throws ConvertHexException
      */
     public static PointValueTime convertToPointValue(String value, int dataTypeId, boolean isHex) throws ConvertHexException{
         //Parse out the value
@@ -534,10 +528,6 @@ public class SerialDataSourceRT extends EventDataSource<SerialDataSourceVO> impl
 
     /**
      * Update a value if possible and return if we did
-     * @param pvt
-     * @param dp
-     * @param dp
-     * @return
      */
     private boolean updatePointValue(PointValueTime pvt, DataPointRT dp){
         if(pvt != null){
@@ -552,8 +542,6 @@ public class SerialDataSourceRT extends EventDataSource<SerialDataSourceVO> impl
 
     /**
      * Convert a string value to HEX
-     * @param stringValue
-     * @return
      */
     public static byte[] convertToHex(String stringValue) throws ConvertHexException {
         int len = stringValue.length();
@@ -572,8 +560,6 @@ public class SerialDataSourceRT extends EventDataSource<SerialDataSourceVO> impl
 
     /**
      * Convert a string value to HEX
-     * @param hexValue
-     * @return
      */
     public  static String convertFromHex(byte[] hexValue) {
         return StreamUtils.dumpHex(hexValue, 0, hexValue.length);
@@ -606,9 +592,6 @@ public class SerialDataSourceRT extends EventDataSource<SerialDataSourceVO> impl
 
     /**
      * Helper for DWR and Here
-     * @param message
-     * @param terminator
-     * @return
      */
     public static String[] splitMessages(String message, String terminator){
         return message.split("(?<=" + terminator + ")");
@@ -620,12 +603,6 @@ public class SerialDataSourceRT extends EventDataSource<SerialDataSourceVO> impl
 
     /**
      * Match for 1 point Helper for DWR and here
-     * @param msg
-     * @param messageRegex
-     * @param pointIdentifierIndex
-     * @param plVo
-     * @param callback
-     * @param log
      */
     public static void matchPointValue(String msg, String messageRegex, int pointIdentifierIndex, SerialPointLocatorVO plVo, boolean isHex, Logger log, MatchCallback callback) throws Exception{
         Pattern messagePattern = Pattern.compile(messageRegex);

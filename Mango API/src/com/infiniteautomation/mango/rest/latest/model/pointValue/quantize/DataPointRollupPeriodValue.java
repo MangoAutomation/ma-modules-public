@@ -97,8 +97,6 @@ public class DataPointRollupPeriodValue implements DataPointValueTime {
 
     /**
      * Is the data value acceptable for Simplify?
-     * @param startValue
-     * @return
      */
     private boolean isDataValueProcessable(DataValue value) {
         if(value == null)
@@ -110,8 +108,6 @@ public class DataPointRollupPeriodValue implements DataPointValueTime {
     }
 
     /**
-     * @param doubleValue
-     * @return
      */
     private boolean isDoubleProcessable(Double value) {
         if(value == null)

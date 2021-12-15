@@ -66,7 +66,6 @@ public class WatchListDao extends AbstractVoDao<WatchListVO, WatchListsRecord, W
 
     /**
      * Get cached instance from Spring Context
-     * @return
      */
     public static WatchListDao getInstance() {
         return springInstance.get(() -> {
@@ -79,8 +78,6 @@ public class WatchListDao extends AbstractVoDao<WatchListVO, WatchListsRecord, W
 
     /**
      * Get the Data Points for a Given Watchlist
-     * @param watchListId
-     * @param callback
      */
     public void getPoints(int watchListId, final Consumer<DataPointVO> callback) {
         List<Field<?>> selectFields = dataPointDao.getSelectFields();

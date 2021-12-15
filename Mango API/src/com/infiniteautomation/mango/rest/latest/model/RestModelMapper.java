@@ -97,9 +97,6 @@ public class RestModelMapper {
     }
 
     /**
-     * @param validatedClass
-     * @param result
-     * @return
      */
     public ProcessResult mapValidationErrors(Class<?> modelClass, Class<?> validatedClass, ProcessResult result) {
         Objects.requireNonNull(modelClass);

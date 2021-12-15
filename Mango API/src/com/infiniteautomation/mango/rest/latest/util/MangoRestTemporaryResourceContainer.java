@@ -32,10 +32,7 @@ public class MangoRestTemporaryResourceContainer<T extends MangoRestTemporaryRes
 	
 	/**
 	 * Get a resource if exists else throw exception
-	 * @param id
-	 * @return
-	 * @throws NotFoundRestException
-	 */
+     */
 	public T get(String id) throws NotFoundRestException{
 		T resource =  this.resources.get(id);
 		if(resource == null)
@@ -46,9 +43,7 @@ public class MangoRestTemporaryResourceContainer<T extends MangoRestTemporaryRes
 	
 	/**
 	 * Add a Resource, with an expiration date
-	 * @param id
-	 * @param resource
-	 */
+     */
 	public void put(String id, T resource, Date expiration){
 		this.resources.put(id, resource);
 		resource.schedule(expiration);
@@ -56,18 +51,14 @@ public class MangoRestTemporaryResourceContainer<T extends MangoRestTemporaryRes
 	
 	/**
 	 * Add a resource, no expiration
-	 * @param id
-	 * @param mangoRestTemporaryResource
-	 */
+     */
 	public void put(String id, T mangoRestTemporaryResource){
 		this.resources.put(id, mangoRestTemporaryResource);
 	}
 	
 	/**
 	 * Remove a resource and cancel its timeout if there is one
-	 * @param resourceId
-	 * @return
-	 */
+     */
 	public T remove(String resourceId){
 		T resource = this.resources.remove(resourceId);
 		if(resource != null){
@@ -79,8 +70,7 @@ public class MangoRestTemporaryResourceContainer<T extends MangoRestTemporaryRes
 	
 	/**
 	 * Generate a unique resource Id for this container
-	 * @return
-	 */
+     */
 	public String generateResourceId(){
 		String resourceId = Common.generateXid(resourcePrefix);
         while (!isResourceIdUnique(resourceId))

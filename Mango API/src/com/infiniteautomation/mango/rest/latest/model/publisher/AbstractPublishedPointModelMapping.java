@@ -59,10 +59,6 @@ public abstract class AbstractPublishedPointModelMapping<VO extends PublishedPoi
 
     /**
      * Set the model properties from a VO
-     * @param model
-     * @param vo
-     * @param user
-     * @param mapper
      */
     protected void setModelProperties(MODEL model, VO vo, PermissionHolder user, RestModelMapper mapper) {
         model.setId(vo.getId());
@@ -76,10 +72,6 @@ public abstract class AbstractPublishedPointModelMapping<VO extends PublishedPoi
 
     /**
      * Set the VO properties from a model
-     * @param vo
-     * @param model
-     * @param user
-     * @param mapper
      */
     protected void setVoProperties(VO vo, MODEL model, PermissionHolder user, RestModelMapper mapper) {
         vo.setId(model.getId() == null ? Common.NEW_ID : model.id);

@@ -125,8 +125,6 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
 
     /**
      * Write the value or collate it based on our output structure
-     * @param value
-     * @throws IOException
      */
     protected void writeValue(DataPointVOPointValueTimeBookend value) throws IOException {
 
@@ -193,8 +191,6 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
 
     /**
      * Does this point's time fit within our query range
-     * @param pvt
-     * @return
      */
     protected boolean includeCachedPoint(PointValueTime pvt) {
         return pvt.getTime() < info.getFromMillis();
@@ -202,7 +198,6 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
 
     /**
      * Sort the cache based on our query info
-     * @param cache
      */
     protected void sortCache(List<IdPointValueTime> cache) {
         Collections.sort(cache,
@@ -257,7 +252,6 @@ public class MultiPointLatestDatabaseStream <T, INFO extends LatestQueryInfo> ex
 
     /**
      * Process all data from the cache respecting the query restrictions
-     * @throws IOException
      */
     protected void processCacheOnly() throws QueryCancelledException {
         //Performance enhancement to return data within cache only

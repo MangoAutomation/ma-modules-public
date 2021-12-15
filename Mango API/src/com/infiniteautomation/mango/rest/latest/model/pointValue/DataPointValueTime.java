@@ -20,18 +20,15 @@ public interface DataPointValueTime extends Point {
 
     /**
      * return the data point for this value
-     * @return
      */
     public DataPointVO getVo();
     
     /**
      * Get the time of the value
-     * @return
      */
     public long getTime();
     
     /**
-     * @param writer
      */
     public abstract void writeEntry(PointValueTimeWriter writer, boolean useXid, boolean allowTimestamp) throws IOException;
 

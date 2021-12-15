@@ -228,8 +228,6 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
 
     /**
      * Override as necessary, return rollup for this data point
-     * @param vo
-     * @return
      */
     protected RollupEnum getRollup(DataPointVO vo) {
         return info.getRollup();

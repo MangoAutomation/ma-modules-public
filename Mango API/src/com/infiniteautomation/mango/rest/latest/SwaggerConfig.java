@@ -143,7 +143,6 @@ public class SwaggerConfig {
     /**
      * Setup the security context to allow Tokens to test the API
      *
-     * @return
      */
     private SecurityContext securityContext() {
         return SecurityContext.builder().securityReferences(defaultAuth())

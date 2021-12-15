@@ -26,25 +26,21 @@ public @interface PatchVORequestBody {
 
     /**
      * The service for the VO to patch
-     * @return
      */
     Class<?> service();
     
     /**
      * Class for model
-     * @return
      */
     Class<?> modelClass();
     
     /**
      * The type of ID
-     * @return
      */
     PatchIdField idType() default PatchIdField.XID;
     
     /**
      * The name of the path variable mapping in the url
-     * @return
      */
     String urlPathVariableName() default "xid";
     

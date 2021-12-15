@@ -90,7 +90,6 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
 
     /**
      * For writing out JSON
-     * @param point
      */
     public DataPointModel(DataPointVO point) {
         fromVO(point);
@@ -314,7 +313,6 @@ public class DataPointModel extends AbstractVoModel<DataPointVO> {
 
     /**
      * Get the lifecycle state for the data point
-     * @return
      */
     public ILifecycleState getLifecycleState() {
         return lifecycleState;

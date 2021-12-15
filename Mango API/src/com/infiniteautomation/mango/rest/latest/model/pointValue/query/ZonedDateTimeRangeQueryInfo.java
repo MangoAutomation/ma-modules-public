@@ -37,19 +37,6 @@ public class ZonedDateTimeRangeQueryInfo extends LatestQueryInfo {
      * are applied in this order: use timezone of from if not null use timezone of to if not null
      * use server timezone
      *
-     * @param from
-     * @param to
-     * @param dateTimeFormat
-     * @param timezone
-     * @param rollup
-     * @param timePeriod
-     * @param limit
-     * @param bookend
-     * @param multiplePointsPerArray
-     * @param singleArray
-     * @param useCache
-     * @param simplifyTolerance
-     * @param simplifyTarget
      * @param boolean truncate - Truncate the start and end dates to be round numbers
      * @param extraFields - Extra information about each data point
      */

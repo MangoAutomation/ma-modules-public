@@ -205,7 +205,6 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
 
     /**
      * To inject a singleton into the JSON Import rest controller
-     * @return
      */
     @Bean()
     public MangoRestTemporaryResourceContainer<ImportStatusProvider> importStatusResources() {

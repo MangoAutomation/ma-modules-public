@@ -349,7 +349,6 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
 
         /**
          * Re-set the event types
-         * @param eventTypes
          */
         public void setEventTypes(Set<PointValueEventType> eventTypes) {
             this.eventTypes = EnumSet.copyOf(eventTypes);
