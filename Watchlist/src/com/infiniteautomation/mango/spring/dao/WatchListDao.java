@@ -152,6 +152,7 @@ public class WatchListDao extends AbstractVoDao<WatchListVO, WatchListsRecord, W
                     .from(dataPoints)
                     .join(watchListPoints)
                     .on(dataPoints.id.equal(watchListPoints.dataPointId))
+                    .where(watchListPoints.watchListId.eq(vo.getId()))
                     .orderBy(watchListPoints.sortOrder)
                     .fetch(dataPointDao::mapDataPointSummary);
 
