@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "@infinite-automation/watchlists",
-  "version": "4.2.1-SNAPSHOT",
+  "version": "4.2.1",
   "description": "Page for dynamically adding points to lists to monitor their values via AJAX",
   "main": "web/angular/watchlists.js",
   "dependencies": {},
