@@ -501,6 +501,7 @@ public class SerialDataSourceVO extends DataSourceVO<SerialDataSourceVO>{
             retries = 1;
         }else if(ver == 4){
             commPortId = SerializationHelper.readSafeUTF(in);
+            baudRate = in.readInt();
             //Convert legacy JSSC ints
             switch(in.readInt()) {
                 case 1:
