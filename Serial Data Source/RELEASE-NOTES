@@ -1,5 +1,6 @@
 *Version 4.3.0*
 * Upgraded for Mango 4.3.0
+* Fix for reading v4 serialized SerialDataSourceVO
 
 *Version 4.2.0*
 * Upgraded for Mango 4.2.0
