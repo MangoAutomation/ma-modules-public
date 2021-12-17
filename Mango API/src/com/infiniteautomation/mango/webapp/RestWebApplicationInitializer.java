@@ -74,7 +74,7 @@ public class RestWebApplicationInitializer implements WebApplicationInitializer 
                     "/swagger-resources");
         }
 
-        /**
+        /*
          * REST latest
          */
         AnnotationConfigWebApplicationContext latestRestContext = new AnnotationConfigWebApplicationContext();

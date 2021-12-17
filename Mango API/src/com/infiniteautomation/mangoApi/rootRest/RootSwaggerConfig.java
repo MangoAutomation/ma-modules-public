@@ -21,7 +21,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
  * is where the ApiResourceController retrieves the list of resources from.</li>
  * <li>Each SwaggerConfig creates a {@link springfox.documentation.swagger2.web.Swagger2Controller Swagger2Controller} which serves up the swagger JSON</li>
  * <li>Each Swagger2Controller creates a swagger endpoint under the current dispatcher (e.g. /rest/latest/swagger/v2/api-docs). This is controlled via the
- * <code>springfox.documentation.swagger.v2.path</code> environment property.</li>
+ * {@code springfox.documentation.swagger.v2.path} environment property.</li>
  * </ul>
  * @author Terry Packer
  * @author Jared Wiltshire

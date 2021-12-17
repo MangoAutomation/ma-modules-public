@@ -11,10 +11,6 @@ import com.serotonin.m2m2.vo.mailingList.PhoneEntry;
 import io.swagger.annotations.ApiModel;
 
 /**
- *
- * @author Terry Packer
- */
-/**
  * @author Terry Packer
  *
  */

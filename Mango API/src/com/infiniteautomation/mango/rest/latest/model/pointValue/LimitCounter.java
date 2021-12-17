@@ -6,7 +6,7 @@ package com.infiniteautomation.mango.rest.latest.model.pointValue;
 /**
  * Simple class to handle limits for point value query logic.
  *
- * Will not limit the results if limit is null or <= 0
+ * Will not limit the results if limit is null or less than or equal to 0
  *
  * @author Terry Packer
  */
