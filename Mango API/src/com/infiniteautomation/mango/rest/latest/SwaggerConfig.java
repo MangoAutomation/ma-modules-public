@@ -131,10 +131,10 @@ public class SwaggerConfig {
                 AlternateTypeRules.newRule(typeResolver.resolve(JsonNode.class), typeResolver.resolve(ArbitraryJsonData.class)));
 
         docket.apiInfo(new ApiInfoBuilder().title("Mango REST v3 API").description(
-                "Support: <a href='http://infiniteautomation.com/forum' target='_blank'>Forum</a> or <a href='https://help.infiniteautomation.com/explore-the-api/' target='_blank'>Help</a>")
-                .version("2.0").termsOfServiceUrl("https://infiniteautomation.com/terms/")
-                .contact(new Contact("IAS", "https://infiniteautomation.com",
-                        "support@infiniteautomation.com"))
+                "Support: <a href='https://forum.mango-os.com' target='_blank'>Forum</a> or <a href='https://docs-v4.mango-os.com/explore-the-api' target='_blank'>Help</a>")
+                .version("2.0").termsOfServiceUrl("https://radixiot.com/terms-of-use/")
+                .contact(new Contact("IAS", "https://radixiot.com/support/",
+                        "support@radixiot.com"))
                 .license("Apache 2.0").licenseUrl("http://www.apache.org/licenses/LICENSE-2.0.html")
                 .build());
         return docket;
