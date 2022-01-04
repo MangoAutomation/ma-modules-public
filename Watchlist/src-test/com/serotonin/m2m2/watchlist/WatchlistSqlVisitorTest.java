@@ -69,7 +69,7 @@ public class WatchlistSqlVisitorTest extends MangoTestBase {
         odd.setReadPermission(MangoPermission.requireAnyRole(users.get(0).getRoles()));
         WatchListDao.getInstance().insert(odd);
 
-        String rql = "like(name,Watchlist *)&limit(3)";
+        String rql = "like(name,Watchlist%20*)&limit(3)";
         RQLParser parser = new RQLParser();
         ASTNode query = parser.parse(rql);
 

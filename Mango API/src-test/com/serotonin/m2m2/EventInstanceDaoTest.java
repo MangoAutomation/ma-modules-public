@@ -37,7 +37,7 @@ public class EventInstanceDaoTest extends MangoTestBase {
         }
 
 
-        ASTNode rql = new RQLParser().parse("lt(activeTs, " + timestamp + ")&limit(100");
+        ASTNode rql = new RQLParser().parse("lt(activeTs, " + timestamp + ")&limit(100)");
         MutableInt count = new MutableInt();
         Common.getBean(EventInstanceService.class).customizedQuery(rql, (EventInstanceVO item) -> {
             count.increment();
