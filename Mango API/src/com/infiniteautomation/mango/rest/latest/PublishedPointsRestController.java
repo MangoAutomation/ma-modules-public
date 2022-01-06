@@ -4,9 +4,6 @@
 
 package com.infiniteautomation.mango.rest.latest;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
 import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
@@ -14,8 +11,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
+
 import javax.servlet.http.HttpServletRequest;
-import net.jazdw.rql.parser.ASTNode;
 
 import org.jooq.Field;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,6 +63,11 @@ import com.serotonin.m2m2.vo.permission.PermissionHolder;
 import com.serotonin.m2m2.vo.publish.PublishedPointVO;
 import com.serotonin.m2m2.web.MediaTypes;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import net.jazdw.rql.parser.ASTNode;
+
 /**
  * Access to Published Points, superadmin only
  *
@@ -91,12 +93,8 @@ public class PublishedPointsRestController {
                                          TemporaryResourceWebSocketHandler websocket,
                                          Environment environment) {
         this.service = service;
-        this.map = (vo, user) -> {
-            return modelMapper.map(vo, AbstractPublishedPointModel.class, user);
-        };
-        this.unmap = (model, user) -> {
-            return modelMapper.unMap(model, PublishedPointVO.class, user);
-        };
+        this.map = (vo, user) -> modelMapper.map(vo, AbstractPublishedPointModel.class, user);
+        this.unmap = (model, user) -> modelMapper.unMap(model, PublishedPointVO.class, user);
 
         this.permissionService = permissionService;
         //Setup any exposed special query aliases to map model fields to db columns
@@ -107,7 +105,7 @@ public class PublishedPointsRestController {
         this.fieldMap.put("dataPointXid", dataPoints.xid);
         this.fieldMap.put("publisherType", publishers.publisherType);
 
-        this.resourceManager = new MangoTaskTemporaryResourceManager(permissionService, websocket, environment);
+        this.resourceManager = new MangoTaskTemporaryResourceManager<>(permissionService, websocket, environment);
     }
 
     @ApiOperation(
@@ -127,24 +125,22 @@ public class PublishedPointsRestController {
     }
 
     @ApiOperation(
-            value = "Get Published Point by XID",
-            notes = ""
+            value = "Get Published Point by XID"
     )
     @RequestMapping(method = RequestMethod.GET, value="/{xid}")
     public AbstractPublishedPointModel<?> get(
-            @ApiParam(value = "XID of published point", required = true, allowMultiple = false)
+            @ApiParam(value = "XID of published point", required = true)
             @PathVariable String xid,
             @AuthenticationPrincipal PermissionHolder user) {
         return map.apply(service.get(xid), user);
     }
 
     @ApiOperation(
-            value = "Get published point by ID",
-            notes = ""
+            value = "Get published point by ID"
     )
     @RequestMapping(method = RequestMethod.GET, value="/by-id/{id}")
     public AbstractPublishedPointModel<?> getById(
-            @ApiParam(value = "ID of published point", required = true, allowMultiple = false)
+            @ApiParam(value = "ID of published point", required = true)
             @PathVariable int id,
             @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
@@ -154,12 +150,12 @@ public class PublishedPointsRestController {
     @ApiOperation(value = "Create published point")
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<AbstractPublishedPointModel<?>> create(
-            @RequestBody(required=true) AbstractPublishedPointModel<?> model,
+            @RequestBody() AbstractPublishedPointModel<?> model,
             @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
 
         PublishedPointVO vo = this.service.insert(unmap.apply(model, user));
-        URI location = builder.path("/published-points/{xid}").buildAndExpand(new Object[]{vo.getXid()}).toUri();
+        URI location = builder.path("/published-points/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
         return new ResponseEntity<>(map.apply(vo, user), headers, HttpStatus.CREATED);
@@ -169,12 +165,12 @@ public class PublishedPointsRestController {
     @RequestMapping(method = RequestMethod.PUT, value = "/{xid}")
     public ResponseEntity<AbstractPublishedPointModel<?>> update(
             @PathVariable String xid,
-            @RequestBody(required=true) AbstractPublishedPointModel<?> model,
+            @RequestBody() AbstractPublishedPointModel<?> model,
             @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
 
         PublishedPointVO vo = this.service.update(xid, unmap.apply(model, user));
-        URI location = builder.path("/published-points/{xid}").buildAndExpand(new Object[]{vo.getXid()}).toUri();
+        URI location = builder.path("/published-points/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
         return new ResponseEntity<>(map.apply(vo, user), headers, HttpStatus.OK);
@@ -207,12 +203,11 @@ public class PublishedPointsRestController {
 
     @ApiOperation(
             value = "Delete a published point",
-            notes = "",
             response=AbstractPublishedPointModel.class
     )
     @RequestMapping(method = RequestMethod.DELETE, value="/{xid}")
     public AbstractPublishedPointModel<?> delete(
-            @ApiParam(value = "XID of published point to delete", required = true, allowMultiple = false)
+            @ApiParam(value = "XID of published point to delete", required = true)
             @PathVariable String xid,
             @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
@@ -224,10 +219,10 @@ public class PublishedPointsRestController {
     public void enableDisable(
             @PathVariable String xid,
 
-            @ApiParam(value = "Enable or disable the published point", required = true, allowMultiple = false)
-            @RequestParam(required=true) boolean enabled,
+            @ApiParam(value = "Enable or disable the published point", required = true)
+            @RequestParam() boolean enabled,
 
-            @ApiParam(value = "Restart the published point, enabled must equal true", required = false, defaultValue="false", allowMultiple = false)
+            @ApiParam(value = "Restart the published point, enabled must equal true", defaultValue="false")
             @RequestParam(required=false, defaultValue="false") boolean restart,
 
             @AuthenticationPrincipal PermissionHolder user) {
@@ -236,11 +231,11 @@ public class PublishedPointsRestController {
 
 
     @ApiOperation(
-            value = "Export formatted for Configuration Import",
-            notes = "")
+            value = "Export formatted for Configuration Import"
+    )
     @RequestMapping(method = RequestMethod.GET, value = "/export/{xid}", produces = MediaTypes.SEROTONIN_JSON_VALUE)
     public Map<String, Object> exportPublishedPoint(
-            @ApiParam(value = "Valid published point XID", required = true, allowMultiple = false)
+            @ApiParam(value = "Valid published point XID", required = true)
             @PathVariable String xid,
             @AuthenticationPrincipal PermissionHolder user) {
 
@@ -306,7 +301,7 @@ public class PublishedPointsRestController {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(builder.path("/published-points/bulk/{id}").buildAndExpand(responseBody.getId()).toUri());
-        return new ResponseEntity<TemporaryResource<PublishedPointBulkResponse, AbstractRestException>>(responseBody, headers, HttpStatus.CREATED);
+        return new ResponseEntity<>(responseBody, headers, HttpStatus.CREATED);
     }
 
     @ApiOperation(
@@ -318,9 +313,7 @@ public class PublishedPointsRestController {
             Translations translations) {
 
         // hide result property by setting a view
-        MappingJacksonValue resultWithView = new MappingJacksonValue(new FilteredStreamWithTotal<>(() -> {
-            return resourceManager.list().stream();
-        }, query, translations));
+        MappingJacksonValue resultWithView = new MappingJacksonValue(new FilteredStreamWithTotal<>(() -> resourceManager.list().stream(), query, translations));
 
         resultWithView.setSerializationView(Object.class);
         return resultWithView;
@@ -330,7 +323,7 @@ public class PublishedPointsRestController {
             "User can only update their own bulk operations unless they are an admin.")
     @RequestMapping(method = RequestMethod.PUT, value="/bulk/{id}")
     public TemporaryResource<PublishedPointBulkResponse, AbstractRestException> updateBulkOperation(
-            @ApiParam(value = "Temporary resource id", required = true, allowMultiple = false)
+            @ApiParam(value = "Temporary resource id", required = true)
             @PathVariable String id,
 
             @RequestBody
@@ -349,11 +342,10 @@ public class PublishedPointsRestController {
     @ApiOperation(value = "Get the status of a bulk published point operation using its id", notes = "User can only get their own bulk operations unless they are an admin")
     @RequestMapping(method = RequestMethod.GET, value="/bulk/{id}")
     public TemporaryResource<PublishedPointBulkResponse, AbstractRestException> getBulkOperation(
-            @ApiParam(value = "Temporary resource id", required = true, allowMultiple = false)
+            @ApiParam(value = "Temporary resource id", required = true)
             @PathVariable String id) {
 
-        TemporaryResource<PublishedPointBulkResponse, AbstractRestException> resource = resourceManager.get(id);
-        return resource;
+        return resourceManager.get(id);
     }
 
     @ApiOperation(value = "Remove a bulk published point operation using its id",
@@ -361,7 +353,7 @@ public class PublishedPointsRestController {
                     "User can only remove their own bulk operations unless they are an admin.")
     @RequestMapping(method = RequestMethod.DELETE, value="/bulk/{id}")
     public void removeBulkOperation(
-            @ApiParam(value = "Temporary resource id", required = true, allowMultiple = false)
+            @ApiParam(value = "Temporary resource id", required = true)
             @PathVariable String id) {
 
         TemporaryResource<PublishedPointBulkResponse, AbstractRestException> resource = resourceManager.get(id);
@@ -423,13 +415,13 @@ public class PublishedPointsRestController {
 
     private static final String RESOURCE_TYPE_BULK_PUBLISHED_POINT = "BULK_PUBLISHED_POINT";
 
-    public static class PublishedPointIndividualRequest extends VoIndividualRequest<AbstractPublishedPointModel> {
+    public static class PublishedPointIndividualRequest extends VoIndividualRequest<AbstractPublishedPointModel<?>> {
     }
 
-    public static class PublishedPointIndividualResponse extends VoIndividualResponse<AbstractPublishedPointModel> {
+    public static class PublishedPointIndividualResponse extends VoIndividualResponse<AbstractPublishedPointModel<?>> {
     }
 
-    public static class PublishedPointBulkRequest extends BulkRequest<VoAction, AbstractPublishedPointModel, PublishedPointIndividualRequest> {
+    public static class PublishedPointBulkRequest extends BulkRequest<VoAction, AbstractPublishedPointModel<?>, PublishedPointIndividualRequest> {
     }
 
     public static class PublishedPointBulkResponse extends BulkResponse<PublishedPointIndividualResponse> {
