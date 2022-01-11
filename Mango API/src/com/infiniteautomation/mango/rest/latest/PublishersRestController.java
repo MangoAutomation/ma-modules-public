@@ -3,9 +3,6 @@
  */
 package com.infiniteautomation.mango.rest.latest;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -14,8 +11,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
+
 import javax.servlet.http.HttpServletRequest;
-import net.jazdw.rql.parser.ASTNode;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +45,11 @@ import com.serotonin.m2m2.vo.publish.PublishedPointVO;
 import com.serotonin.m2m2.vo.publish.PublisherVO;
 import com.serotonin.m2m2.web.MediaTypes;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import net.jazdw.rql.parser.ASTNode;
+
 /**
  * @author Terry Packer
  *
@@ -71,20 +73,15 @@ public class PublishersRestController {
         this.service = service;
         this.publishedPointService = publishedPointService;
         this.map = (vo, user) -> {
-            AbstractPublisherModel model = modelMapper.map(vo, AbstractPublisherModel.class, user);
-            List<AbstractPublishedPointModel> points = new ArrayList<>();
-            model.setPoints(points);
+            AbstractPublisherModel<?, ?> model = modelMapper.map(vo, AbstractPublisherModel.class, user);
             for(PublishedPointVO point : publishedPointService.getPublishedPoints(vo.getId())) {
-                points.add(modelMapper.map(point, AbstractPublishedPointModel.class, user));
+                //noinspection unchecked
+                model.addPoint(modelMapper.map(point, AbstractPublishedPointModel.class, user));
             }
             return model;
         };
-        this.mapWithoutPoints = (vo, user) -> {
-            return modelMapper.map(vo, AbstractPublisherModel.class, user);
-        };
-        this.unmapPoint = (model, user) -> {
-            return modelMapper.unMap(model, PublishedPointVO.class, user);
-        };
+        this.mapWithoutPoints = (vo, user) -> modelMapper.map(vo, AbstractPublisherModel.class, user);
+        this.unmapPoint = (model, user) -> modelMapper.unMap(model, PublishedPointVO.class, user);
         this.permissionService = permissionService;
     }
 
@@ -97,50 +94,44 @@ public class PublishersRestController {
     @RequestMapping(method = RequestMethod.GET)
     public StreamedArrayWithTotal query(
             HttpServletRequest request,
-            @ApiParam(value="User", required=true)
-            @AuthenticationPrincipal PermissionHolder user,
-            UriComponentsBuilder builder) {
+            @ApiParam(value = "User", required = true)
+            @AuthenticationPrincipal PermissionHolder user) {
         ASTNode rql = RQLUtils.parseRQLtoAST(request.getQueryString());
         return doQuery(rql, user);
     }
 
     @ApiOperation(
-            value = "Get publisher by XID",
-            notes = ""
+            value = "Get publisher by XID"
     )
     @RequestMapping(method = RequestMethod.GET, value="/{xid}")
     public AbstractPublisherModel<?,?> get(
-            @ApiParam(value = "XID of publisher", required = true, allowMultiple = false)
+            @ApiParam(value = "XID of publisher", required = true)
             @PathVariable String xid,
-            @AuthenticationPrincipal PermissionHolder user,
-            UriComponentsBuilder builder) {
+            @AuthenticationPrincipal PermissionHolder user) {
         return map.apply(service.get(xid), user);
     }
 
     @ApiOperation(
-            value = "Get publisher by ID",
-            notes = ""
+            value = "Get publisher by ID"
     )
     @RequestMapping(method = RequestMethod.GET, value="/by-id/{id}")
     public AbstractPublisherModel<?,?> getById(
-            @ApiParam(value = "ID of publisher", required = true, allowMultiple = false)
+            @ApiParam(value = "ID of publisher", required = true)
             @PathVariable int id,
-            @AuthenticationPrincipal PermissionHolder user,
-            UriComponentsBuilder builder) {
+            @AuthenticationPrincipal PermissionHolder user) {
         return map.apply(service.get(id), user);
     }
 
     @ApiOperation(value = "Save publisher")
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<AbstractPublisherModel<?,?>> save(
-            @RequestBody(required=true) AbstractPublisherModel<?, ?> model,
+            @RequestBody() AbstractPublisherModel<?, ?> model,
             @AuthenticationPrincipal PermissionHolder user,
-            UriComponentsBuilder builder,
-            HttpServletRequest request) {
+            UriComponentsBuilder builder) {
 
         PublisherVO vo = this.service.insert(model.toVO());
         maybeReplacePoints(vo, model.getPoints(), user);
-        URI location = builder.path("/publishers/{xid}").buildAndExpand(new Object[]{vo.getXid()}).toUri();
+        URI location = builder.path("/publishers/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
         return new ResponseEntity<>(map.apply(vo, user), headers, HttpStatus.CREATED);
@@ -150,14 +141,13 @@ public class PublishersRestController {
     @RequestMapping(method = RequestMethod.PUT, value = "/{xid}")
     public ResponseEntity<AbstractPublisherModel<?,?>> update(
             @PathVariable String xid,
-            @RequestBody(required=true) AbstractPublisherModel<?, ?> model,
+            @RequestBody() AbstractPublisherModel<?, ?> model,
             @AuthenticationPrincipal PermissionHolder user,
-            UriComponentsBuilder builder,
-            HttpServletRequest request) {
+            UriComponentsBuilder builder) {
 
         PublisherVO vo = this.service.update(xid, model.toVO());
         maybeReplacePoints(vo, model.getPoints(), user);
-        URI location = builder.path("/publishers/{xid}").buildAndExpand(new Object[]{vo.getXid()}).toUri();
+        URI location = builder.path("/publishers/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
         return new ResponseEntity<>(map.apply(vo, user), headers, HttpStatus.OK);
@@ -190,15 +180,13 @@ public class PublishersRestController {
 
     @ApiOperation(
             value = "Delete a publisher",
-            notes = "",
             response=AbstractPublisherModel.class
     )
     @RequestMapping(method = RequestMethod.DELETE, value="/{xid}")
     public AbstractPublisherModel<?,?> delete(
-            @ApiParam(value = "XID of publisher to delete", required = true, allowMultiple = false)
+            @ApiParam(value = "XID of publisher to delete", required = true)
             @PathVariable String xid,
-            @AuthenticationPrincipal PermissionHolder user,
-            UriComponentsBuilder builder) {
+            @AuthenticationPrincipal PermissionHolder user) {
         return mapWithoutPoints.apply(service.delete(xid), user);
     }
 
@@ -207,25 +195,22 @@ public class PublishersRestController {
     public void enableDisable(
             @PathVariable String xid,
 
-            @ApiParam(value = "Enable or disable the publisher", required = true, allowMultiple = false)
-            @RequestParam(required=true) boolean enabled,
+            @ApiParam(value = "Enable or disable the publisher", required = true)
+            @RequestParam() boolean enabled,
 
-            @ApiParam(value = "Restart the publisher, enabled must equal true", required = false, defaultValue="false", allowMultiple = false)
-            @RequestParam(required=false, defaultValue="false") boolean restart,
-
-            @AuthenticationPrincipal PermissionHolder user) {
+            @ApiParam(value = "Restart the publisher, enabled must equal true", defaultValue = "false")
+            @RequestParam(required = false, defaultValue = "false") boolean restart) {
         service.restart(xid, enabled, restart);
     }
 
 
     @ApiOperation(
-            value = "Export formatted for Configuration Import",
-            notes = "")
+            value = "Export formatted for Configuration Import"
+    )
     @RequestMapping(method = RequestMethod.GET, value = "/export/{xid}", produces = MediaTypes.SEROTONIN_JSON_VALUE)
     public Map<String, Object> exportDataSource(
-            @ApiParam(value = "Valid publisher XID", required = true, allowMultiple = false)
-            @PathVariable String xid,
-            @AuthenticationPrincipal PermissionHolder user) {
+            @ApiParam(value = "Valid publisher XID", required = true)
+            @PathVariable String xid) {
 
         PublisherVO vo = service.get(xid);
         Map<String,Object> export = new LinkedHashMap<>();

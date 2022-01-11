@@ -235,4 +235,8 @@ public abstract class AbstractPublisherModel<POINT extends PublishedPointVO, PUB
         this.points = points;
     }
 
+    public void addPoint(AbstractPublishedPointModel<POINT> point) {
+        points.add(point);
+    }
+
 }
