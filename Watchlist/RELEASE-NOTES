@@ -1,5 +1,6 @@
 *Version 4.3.0*
 * Upgraded for Mango 4.3.0
+* Optimize query for static watchlists to improve performance on large systems
 
 *Version 4.2.0*
 * Upgraded for Mango 4.2.0
