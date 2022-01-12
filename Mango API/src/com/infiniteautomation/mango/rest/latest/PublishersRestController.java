@@ -130,7 +130,7 @@ public class PublishersRestController {
             UriComponentsBuilder builder) {
 
         PublisherVO vo = this.service.insert(model.toVO());
-        maybeReplacePoints(vo, model.getPoints(), user);
+        insertPoints(vo, model.getPoints(), user);
         URI location = builder.path("/publishers/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
@@ -146,7 +146,7 @@ public class PublishersRestController {
             UriComponentsBuilder builder) {
 
         PublisherVO vo = this.service.update(xid, model.toVO());
-        maybeReplacePoints(vo, model.getPoints(), user);
+        insertPoints(vo, model.getPoints(), user);
         URI location = builder.path("/publishers/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
@@ -170,7 +170,7 @@ public class PublishersRestController {
             UriComponentsBuilder builder) {
 
         PublisherVO vo = service.update(xid, model.toVO());
-        maybeReplacePoints(vo, model.getPoints(), user);
+        insertPoints(vo, model.getPoints(), user);
         URI location = builder.path("/publishers/{xid}").buildAndExpand(vo.getXid()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
@@ -245,10 +245,8 @@ public class PublishersRestController {
         }
     }
 
-    /**
-     * If points are not null they will replace any points on this publisher
-     */
-    private void maybeReplacePoints(PublisherVO publisherVO, List<? extends AbstractPublishedPointModel<?>> points, PermissionHolder user) {
+
+    private void insertPoints(PublisherVO publisherVO, List<? extends AbstractPublishedPointModel<?>> points, PermissionHolder user) {
         if(points != null) {
             List<PublishedPointVO> pointVos = new ArrayList<>();
             int i =0;
@@ -261,10 +259,9 @@ public class PublishersRestController {
                 }
                 pm.setName(publisherVO.getName() + " point " + i);
                 pm.setEnabled(true);
-                pointVos.add(unmapPoint.apply(pm, user));
                 i++;
+                publishedPointService.insert(unmapPoint.apply(pm, user));
             }
-            publishedPointService.replacePoints(publisherVO.getId(), pointVos);
         }
     }
 
