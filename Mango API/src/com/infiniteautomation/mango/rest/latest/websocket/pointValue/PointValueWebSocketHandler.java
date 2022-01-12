@@ -177,10 +177,11 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
         private void sendNotification(PointValueEventType eventType, PointValueTime pvt) throws JsonProcessingException, Exception {
             boolean enabled = false;
             boolean pointEnabled = false;
-            Map<String,Object> attributes = null;
+            Map<String, Object> attributes = null;
             Double convertedValue = null;
             String renderedValue = null;
             DataPointRT dprt = rt;
+
             if (dprt != null) {
                 enabled = true; //We are enabled
                 pointEnabled = true; //Must be if we are running
@@ -188,11 +189,7 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
                     pvt = dprt.getPointValue(); //Get the value
                 }
                 attributes = new HashMap<>(dprt.getAttributes());
-                renderedValue = Functions.getRenderedText(vo, pvt);
-                if (vo.getPointLocator().getDataTypeId() == DataTypes.NUMERIC && (pvt != null)) {
-                    convertedValue = vo.getUnit().getConverterTo(vo.getRenderedUnit()).convert(pvt.getValue().getDoubleValue());
-                }
-            }else {
+            } else {
                 pointEnabled = dataPointDao.isEnabled(vo.getId());
             }
 
@@ -202,7 +199,13 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
                 if (vo.getPointLocator().getDataTypeId() == DataTypes.IMAGE) {
                     pvtModel.setValue(imageServletBuilder.buildAndExpand(pvt.getTime(), vo.getId()).toUri().toString());
                 }
+
+                renderedValue = Functions.getRenderedText(vo, pvt);
+                if (vo.getPointLocator().getDataTypeId() == DataTypes.NUMERIC) {
+                    convertedValue = vo.getUnit().getConverterTo(vo.getRenderedUnit()).convert(pvt.getValue().getDoubleValue());
+                }
             }
+
             sendMessage(new PointValueEventModel(vo.getXid(), enabled, pointEnabled, attributes, eventType, pvtModel, renderedValue, convertedValue));
         }
 
