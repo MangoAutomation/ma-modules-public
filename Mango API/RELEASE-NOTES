@@ -1,3 +1,6 @@
+*Version 4.4.0*
+* Upgraded for Mango 4.4.0
+
 *Version 4.3.0*
 * Upgraded for Mango 4.3.0
 * Fix bug where PermissionHolder was throwing a NPE when using oAuth
