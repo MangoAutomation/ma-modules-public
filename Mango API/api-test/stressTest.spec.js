@@ -15,15 +15,14 @@
  */
 
 const fs = require('fs');
-const {createClient, login, delay, noop, config, assertValidationErrors} = require('@infinite-automation/mango-module-tools/test-helper/testHelper');
+const {createClient, login, delay, noop, config} = require('@infinite-automation/mango-module-tools/test-helper/testHelper');
 const client = createClient();
 const MangoObject = client.MangoObject;
 const DataSource = client.DataSource;
-const DataPoint = client.DataPoint;
 
 class Publisher extends MangoObject {
     static get baseUrl() {
-        return '/rest/latest/publishers';
+        return '/rest/latest/publishers-without-points';
     }
 }
 
@@ -41,11 +40,20 @@ describe('Stress test', function() {
         if (response.data.status === 'SUCCESS') {
             return response;
         } else if (['TIMED_OUT', 'CANCELLED', 'ERROR'].includes(response.data.status)) {
-            return Promise.reject(new Error(`Bulk create points error ${response.data.status}`));
+            return Promise.reject(new Error(`Temporary resource error ${response.data.status}`));
         } else {
             return delay(1000).then(() => {
+                // response.headers.location is not set when you do a GET, only on first POST
+                let url;
+                switch (response.data.resourceType) {
+                    case 'BULK_DATA_POINT': url = '/rest/latest/data-points/bulk/'; break;
+                    case 'BULK_PUBLISHED_POINT': url = '/rest/latest/published-points/bulk/'; break;
+                    default: throw new Error('Unknown type ' + response.data.resourceType);
+                }
+                url += encodeURIComponent(response.data.id);
+
                 return client.restRequest({
-                    path: `/rest/latest/data-points/bulk/${encodeURIComponent(response.data.id)}`,
+                    path: url,
                     method: 'GET'
                 }).then(waitUntilComplete);
             });
@@ -117,7 +125,6 @@ describe('Stress test', function() {
             name: 'Stress test publisher',
             enabled: false,
             modelType: 'PERSISTENT',
-            points: [],
             publishType: 'ALL',
             cacheWarningSize: 1000,
             cacheDiscardSize: 10000,
@@ -271,12 +278,28 @@ describe('Stress test', function() {
                 this.metaXids = response.data.result.responses.map(r => r.body.xid);
             });
         }).then(() => {
-            // Add meta points to publisher and save it
-            this.publisher.points = this.metaXids.map(xid => ({
-                dataPointXid: xid,
-                modelType: 'PERSISTENT'
-            }));
+            // Save the publisher
             return this.publisher.save();
+        }).then(publisher => {
+            // Add meta points to publisher
+            const publisherPoints = this.metaXids.map((xid, i) => ({
+                publisherXid: publisher.xid,
+                dataPointXid: xid,
+                modelType: 'PERSISTENT',
+                enabled: true,
+                name: `Point ${i}`
+            }));
+
+            return client.restRequest({
+                path: '/rest/latest/published-points/bulk',
+                method: 'POST',
+                data: {
+                    action: 'CREATE',
+                    requests: publisherPoints.map(pp => ({body: pp}))
+                }
+            }).then(waitUntilComplete).then(response => {
+                assert.isFalse(response.data.result.hasError);
+            });
         });
     });
     
