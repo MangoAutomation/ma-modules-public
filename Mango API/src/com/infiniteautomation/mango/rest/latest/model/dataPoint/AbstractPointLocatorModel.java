@@ -31,7 +31,7 @@ public abstract class AbstractPointLocatorModel <T extends PointLocatorVO<T>> {
      * Convert from a point locator to this model
      */
     public void fromVO(T vo) {
-        this.dataType = vo.getDataType().name();
+        this.dataType = vo.getDataType() == null ? null : vo.getDataType().name();
         this.settable = vo.isSettable();
         this.relinquishable = vo.isRelinquishable();
         this.configurationDescription = vo.getConfigurationDescription();
