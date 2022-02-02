@@ -3,6 +3,8 @@
  */
 package com.infiniteautomation.mango.rest.latest.model.time;
 
+import java.time.temporal.ChronoUnit;
+
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.Common;
 
@@ -13,14 +15,24 @@ import com.serotonin.m2m2.Common;
  */
 public enum TimePeriodType {
 
-	MILLISECONDS,
-	SECONDS,
-	MINUTES,
-	HOURS,
-	DAYS,
-	WEEKS,
-	MONTHS,
-	YEARS;
+	MILLISECONDS(ChronoUnit.MILLIS),
+	SECONDS(ChronoUnit.SECONDS),
+	MINUTES(ChronoUnit.MINUTES),
+	HOURS(ChronoUnit.HOURS),
+	DAYS(ChronoUnit.DAYS),
+	WEEKS(ChronoUnit.WEEKS),
+	MONTHS(ChronoUnit.MONTHS),
+	YEARS(ChronoUnit.YEARS);
+
+	private final ChronoUnit chronoUnit;
+
+	TimePeriodType(ChronoUnit chronoUnit) {
+		this.chronoUnit = chronoUnit;
+	}
+
+	public ChronoUnit getChronoUnit() {
+		return chronoUnit;
+	}
 
 	/**
 	 * Convert Mango's Common.TimePeriods to the Enum Type TimePeriodType
