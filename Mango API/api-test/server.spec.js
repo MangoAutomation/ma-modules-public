@@ -90,13 +90,13 @@ describe('Server endpoint tests', function(){
         });
     });
     
-    it('List directory', () => {
+    it('Get java version', () => {
         return client.restRequest({
             path: '/rest/latest/server/execute-command',
             method: 'POST',
             data:{
                 timeout: 5000,
-                command: 'ls'
+                command: 'java --version'
             }
         }).then(response => {
             assert.isString(response.data);
