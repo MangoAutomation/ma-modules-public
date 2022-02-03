@@ -8,7 +8,7 @@ package com.goebl.simplify;
  */
 public class Simplify<T> extends AbstractSimplify<T> {
 
-    private final PointExtractor<T> pointExtractor;
+    private final PointExtractor<? super T> pointExtractor;
 
     /**
      * Simple constructor for 2D-Simplifier.
@@ -41,7 +41,7 @@ public class Simplify<T> extends AbstractSimplify<T> {
      *
      * @param pointExtractor your implementation to extract X and Y coordinates from you array elements.
      */
-    public Simplify(PointExtractor<T> pointExtractor) {
+    public Simplify(PointExtractor<? super T> pointExtractor) {
         super();
         this.pointExtractor = pointExtractor;
     }

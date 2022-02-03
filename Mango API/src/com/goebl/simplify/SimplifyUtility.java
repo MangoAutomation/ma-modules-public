@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 
+import com.infiniteautomation.mango.rest.latest.model.pointValue.streams.PointPointExtractor;
 import com.serotonin.log.LogStopWatch;
 
 /**
@@ -16,18 +17,29 @@ import com.serotonin.log.LogStopWatch;
  */
 public class SimplifyUtility {
 
-    /**
-     * Simplify according to the requirements.  Either reduce the list to with 10% of
-     *  desired target via Newton's Method or use a tolerance in one go. Optionally pre/post
-     *  process the data to remove !Point.isProcessable() values and add them back in.
-     *
-     */
     public static <T extends Point> List<T> simplify(
             Double simplifyTolerance,
             Integer simplifyTarget,
             boolean simplifyHighQuality,
             boolean prePostProcess,
             List<T> list) {
+
+        return simplify(simplifyTolerance, simplifyTarget, simplifyHighQuality, prePostProcess, list, PointPointExtractor.INSTANCE);
+    }
+
+    /**
+     * Simplify according to the requirements.  Either reduce the list to with 10% of
+     *  desired target via Newton's Method or use a tolerance in one go. Optionally pre/post
+     *  process the data to remove !Point.isProcessable() values and add them back in.
+     *
+     */
+    public static <T extends Comparable<? super T>> List<T> simplify(
+            Double simplifyTolerance,
+            Integer simplifyTarget,
+            boolean simplifyHighQuality,
+            boolean prePostProcess,
+            List<T> list,
+            PointExtractor<? super T> extractor) {
         LogStopWatch logStopWatch = new LogStopWatch();
 
         //PreProcess by removing all invalid values (to add back in at the end)
@@ -36,15 +48,25 @@ public class SimplifyUtility {
             ListIterator<T> it = list.listIterator();
             while(it.hasNext()) {
                 T value = it.next();
-                if(!value.isProcessable()) {
+                boolean processable;
+                try {
+                    double x = extractor.getX(value);
+                    double y = extractor.getY(value);
+                    processable = !Double.isNaN(x) && !Double.isNaN(y) &&
+                            !Double.isInfinite(x) && !Double.isInfinite(y);
+                } catch (Exception e) {
+                    processable = false;
+                }
+
+                if(!processable) {
                     unprocessable.add(value);
                     it.remove();
                 }
             }
         }
         List<T> simplified;
+        Simplify<T> simplify = new Simplify<>(extractor);
         if(simplifyTolerance != null) {
-            Simplify<T> simplify = new Simplify<T>();
             simplified = simplify.simplify(list, simplifyTolerance, simplifyHighQuality);
         }else {
             if(list.size() > simplifyTarget) {
@@ -53,13 +75,12 @@ public class SimplifyUtility {
                 int upperTarget = simplifyTarget + (int)(simplifyTarget * 0.1);
 
                 //Compute tolerance bounds and initial tolerance
-                Double max = Double.MIN_VALUE;
-                Double min = Double.MAX_VALUE;
+                double max = Double.MIN_VALUE;
+                double min = Double.MAX_VALUE;
                 for(T value : list) {
-                    if(value.getY() > max)
-                        max = value.getY();
-                    if(value.getY() < min)
-                        min = value.getY();
+                    double y = extractor.getY(value);
+                    max = Math.max(max, y);
+                    min = Math.min(min, y);
                 }
                 double difference = max - min;
                 double tolerance = difference / 20d;
@@ -70,7 +91,6 @@ public class SimplifyUtility {
                 int maxIterations = 100;
                 int iteration = 1;
 
-                Simplify<T> simplify = new Simplify<T>();
                 simplified = simplify.simplify(list, tolerance, simplifyHighQuality);
                 List<T> best = simplified;
                 while(simplified.size() < lowerTarget || simplified.size() > upperTarget) {
@@ -83,7 +103,6 @@ public class SimplifyUtility {
 
                     //Adjust tolerance
                     tolerance = bottomBound + (topBound - bottomBound) / 2.0d;
-                    simplify = new Simplify<T>();
                     simplified = simplify.simplify(list, tolerance, simplifyHighQuality);
 
                     //Keep our best effort
