@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-const testHelper = require('@infinite-automation/mango-module-tools/test-helper/testHelper');;
-const {createClient, assertValidationErrors, assertPermissions, uuid, login} = testHelper;
+const path = require('path');
+const testHelper = require('@infinite-automation/mango-module-tools/test-helper/testHelper');
+const {createClient, assertValidationErrors, uuid, login} = testHelper;
 
 const client = createClient();
 const DataSource = client.DataSource;
@@ -49,7 +50,7 @@ describe('ASCII file data source', function() {
                 type: 'MINUTES'
             };
             
-            saved.filePath = '/user/local/test2';
+            saved.filePath = path.resolve('/user/local/test2');
             
             const localUpdate = Object.assign({}, saved);
             return saved.save().then(updated => {
@@ -183,7 +184,7 @@ describe('ASCII file data source', function() {
             },
             quantize: true,
             useCron: false,
-            filePath: '/user/local/test',
+            filePath: path.resolve('/user/local/test'),
             modelType: 'ASCII FILE'
         });
     }
