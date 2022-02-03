@@ -35,7 +35,7 @@ describe('SQL Console ', () => {
             path: '/rest/latest/sql-console',
             method: 'GET',
             params: {
-                query: 'SELECT * FROM USERS;'
+                query: 'SELECT * FROM users;'
             }
         }).then(response => {
             assert.isAbove(response.data.headers.length, 17);
@@ -50,7 +50,7 @@ describe('SQL Console ', () => {
             headers: {
                 'Content-Type': 'application/sql'
             },
-            data: "UPDATE USERS set name = 'testing';"
+            data: "UPDATE users set name = 'testing';"
         }).then(response => {
             assert.isAbove(response.data, 0);
         });
