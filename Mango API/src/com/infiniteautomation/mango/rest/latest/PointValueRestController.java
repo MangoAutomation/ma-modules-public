@@ -8,6 +8,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -16,6 +17,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.TimeZone;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,11 +38,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.goebl.simplify.SimplifyUtility;
+import com.google.common.base.Functions;
 import com.infiniteautomation.mango.rest.latest.exception.AbstractRestException;
 import com.infiniteautomation.mango.rest.latest.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.latest.exception.GenericRestException;
 import com.infiniteautomation.mango.rest.latest.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.latest.exception.ServerErrorException;
+import com.infiniteautomation.mango.rest.latest.model.pointValue.DataPointVOPointValueTimeBookend;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.LegacyPointValueTimeModel;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.LegacyXidPointValueTimeModel;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueField;
@@ -63,6 +69,8 @@ import com.infiniteautomation.mango.rest.latest.model.pointValue.query.XidRollup
 import com.infiniteautomation.mango.rest.latest.model.pointValue.query.XidTimeRangeQueryModel;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.query.ZonedDateTimeRangeQueryInfo;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.query.ZonedDateTimeStatisticsQueryInfo;
+import com.infiniteautomation.mango.rest.latest.model.pointValue.streams.StreamPointValueTimeModel;
+import com.infiniteautomation.mango.rest.latest.model.pointValue.streams.StreamPointValueTimeModelMapper;
 import com.infiniteautomation.mango.rest.latest.model.time.TimePeriod;
 import com.infiniteautomation.mango.rest.latest.model.time.TimePeriodType;
 import com.infiniteautomation.mango.rest.latest.temporaryResource.MangoTaskTemporaryResourceManager;
@@ -77,12 +85,15 @@ import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataType;
 import com.serotonin.m2m2.db.dao.PointValueDao;
+import com.serotonin.m2m2.db.dao.PointValueDao.TimeOrder;
 import com.serotonin.m2m2.db.dao.SystemSettingsDao;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.rt.RTException;
+import com.serotonin.m2m2.rt.RuntimeManager;
 import com.serotonin.m2m2.rt.dataImage.AnnotatedPointValueTime;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT.FireEvents;
+import com.serotonin.m2m2.rt.dataImage.IdPointValueTime;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.SetPointSource;
 import com.serotonin.m2m2.rt.dataImage.types.AlphanumericValue;
@@ -115,12 +126,16 @@ public class PointValueRestController extends AbstractMangoRestController {
     private final MangoTaskTemporaryResourceManager<PurgePointValuesResponseModel> resourceManager;
     private final DataPointService dataPointService;
     private final DataSourceService dataSourceService;
+    private final RuntimeManager runtimeManager;
 
     @Autowired
     public PointValueRestController(PointValueDao dao, TemporaryResourceWebSocketHandler websocket,
-                                    PermissionService permissionService, DataPointService dataPointService, DataSourceService dataSourceService, Environment environment) {
+                                    PermissionService permissionService, DataPointService dataPointService,
+                                    DataSourceService dataSourceService, Environment environment,
+                                    RuntimeManager runtimeManager) {
         this.dao = dao;
         this.dataSourceService = dataSourceService;
+        this.runtimeManager = runtimeManager;
         this.resourceManager = new MangoTaskTemporaryResourceManager<>(permissionService, websocket, environment);
         this.dataPointService = dataPointService;
     }
@@ -132,7 +147,7 @@ public class PointValueRestController extends AbstractMangoRestController {
             responseContainer = "Array"
     )
     @RequestMapping(method = RequestMethod.GET, value = "/latest/{xid}")
-    public ResponseEntity<PointValueTimeStream<PointValueTimeModel, LatestQueryInfo>> getLatestPointValues(
+    public Stream<StreamPointValueTimeModel> getLatestPointValues(
             @ApiParam(value = "Point xid", required = true)
             @PathVariable String xid,
 
@@ -171,10 +186,45 @@ public class PointValueRestController extends AbstractMangoRestController {
                     PointValueField[] fields
     ) {
 
-        LatestQueryInfo info = new LatestQueryInfo(before, dateTimeFormat, timezone, limit,
-                false, true, useCache, simplifyTolerance, simplifyTarget, fields);
+        DataPointVO point = dataPointService.get(xid);
 
-        return generateLatestStream(info, new String[]{xid});
+        Stream<IdPointValueTime> stream;
+        if (useCache == PointValueTimeCacheControl.CACHE_ONLY) {
+            stream = streamCache(point, limit);
+        } else if (useCache == PointValueTimeCacheControl.NONE) {
+            stream = dao.streamPointValues(point,
+                    null, before == null ? null : before.toInstant().toEpochMilli(),
+                    limit, TimeOrder.DESCENDING);
+        } else {
+            throw new UnsupportedOperationException("Cache option not supported: " + useCache);
+        }
+
+        if (simplifyTolerance != null || simplifyTarget != null) {
+            stream = simplifyStream(stream, point, simplifyTolerance, simplifyTarget);
+        }
+
+        StreamPointValueTimeModelMapper mapper = new StreamPointValueTimeModelMapper()
+                .withDataPoint(point)
+                .withFields(fields)
+                .withDateTimeFormat(dateTimeFormat)
+                .withTimezone(timezone)
+                .withTo(before);
+
+        return stream.map(mapper);
+    }
+
+    private Stream<IdPointValueTime> simplifyStream(Stream<IdPointValueTime> stream, DataPointVO point, Double simplifyTolerance, Integer simplifyTarget) {
+        var list = stream.map(v -> new DataPointVOPointValueTimeBookend(point, v)).collect(Collectors.toList());
+        var simplified = SimplifyUtility.simplify(simplifyTolerance, simplifyTarget, true, true, list);
+        return simplified.stream().map(DataPointVOPointValueTimeBookend::getPvt).sorted();
+        // TODO should already be sorted?
+    }
+
+    private Stream<IdPointValueTime> streamCache(DataPointVO point, Integer limit) {
+        DataPointRT rt = runtimeManager.getDataPoint(point.getId());
+        Stream<IdPointValueTime> stream = rt == null ? Stream.empty() : rt.getLatestPointValues().stream()
+                .map(v -> v.withSeriesId(point.getSeriesId()).withFromCache());
+        return limit == null ? stream : stream.limit(limit);
     }
 
     @ApiOperation(
@@ -1225,28 +1275,19 @@ public class PointValueRestController extends AbstractMangoRestController {
     protected Map<Integer, DataPointVO> buildMap(String[] xids, RollupEnum rollup) {
         if (xids == null)
             throw new BadRequestException(new TranslatableMessage("validate.invalidValueForField", "xids"));
-        //Build the map, check permissions, we want this map ordered so our results are in order for csv output
-        Map<Integer, DataPointVO> voMap = new LinkedHashMap<>();
-        for (String xid : xids) {
-            DataPointVO vo = dataPointService.get(xid);
-
-            //Validate the rollup
-            switch (vo.getPointLocator().getDataType()) {
-                case ALPHANUMERIC:
-                case BINARY:
-                case MULTISTATE:
-                    if (!rollup.nonNumericSupport())
-                        throw new BadRequestException(new TranslatableMessage("rest.validate.rollup.incompatible", rollup.toString(), xid));
-                    break;
-                case NUMERIC:
-                    break;
-            }
-            voMap.put(vo.getSeriesId(), vo);
-        }
 
         //Do we have any points
-        if (voMap.isEmpty())
-            throw new NotFoundRestException();
-        return voMap;
+        if (xids.length == 0) throw new NotFoundRestException();
+
+        // Build the map, check permissions, we want this map ordered so our results are in order for csv output
+
+        return Arrays.stream(xids)
+                .map(dataPointService::get)
+                .peek(point -> {
+                    if (!rollup.nonNumericSupport() && point.getPointLocator().getDataType() != DataType.NUMERIC) {
+                        throw new BadRequestException(new TranslatableMessage("rest.validate.rollup.incompatible", rollup.toString(), point.getXid()));
+                    }
+                })
+                .collect(Collectors.toMap(DataPointVO::getSeriesId, Functions.identity(), (x,y) -> y, LinkedHashMap::new));
     }
 }
