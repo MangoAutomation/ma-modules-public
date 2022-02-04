@@ -7,12 +7,18 @@ package com.infiniteautomation.mango.rest.latest.model.pointValue.streams;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
+import com.serotonin.m2m2.rt.dataImage.IdPointValueTime;
+import com.serotonin.m2m2.vo.DataPointVO;
 
 /**
  * @author Jared Wiltshire
  */
 @JsonInclude(Include.NON_NULL)
 public class StreamPointValueTimeModel {
+
+    final IdPointValueTime pointValueTime;
+    final DataPointVO point;
+
     Object value;
     Object timestamp;
     TranslatableMessage annotation;
@@ -24,6 +30,11 @@ public class StreamPointValueTimeModel {
     String name;
     String deviceName;
     String dataSourceName;
+
+    public StreamPointValueTimeModel(DataPointVO point, IdPointValueTime pointValueTime) {
+        this.point = point;
+        this.pointValueTime = pointValueTime;
+    }
 
     public Object getValue() {
         return value;

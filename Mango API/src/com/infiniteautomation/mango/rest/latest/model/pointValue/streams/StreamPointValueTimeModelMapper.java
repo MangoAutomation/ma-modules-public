@@ -101,10 +101,17 @@ public class StreamPointValueTimeModelMapper implements Function<IdPointValueTim
         return zoneId;
     }
 
+    private Object formatTime(long timestamp) {
+        if (dateTimeFormatter != null) {
+            return dateTimeFormatter.format(ZonedDateTime.ofInstant(Instant.ofEpochMilli(timestamp), zoneId()));
+        }
+        return timestamp;
+    }
+
     @Override
     public StreamPointValueTimeModel apply(IdPointValueTime v) {
-        StreamPointValueTimeModel model = new StreamPointValueTimeModel();
         DataPointVO point = Objects.requireNonNull(dataPoints.get(v.getSeriesId()));
+        StreamPointValueTimeModel model = new StreamPointValueTimeModel(point, v);
         for (PointValueField field : fieldSet) {
             switch (field) {
                 case VALUE: {
@@ -118,11 +125,7 @@ public class StreamPointValueTimeModelMapper implements Function<IdPointValueTim
                     break;
                 }
                 case TIMESTAMP: {
-                    Object time = v.getTime();
-                    if (dateTimeFormatter != null) {
-                        time = dateTimeFormatter.format(ZonedDateTime.ofInstant(Instant.ofEpochMilli(v.getTime()), zoneId()));
-                    }
-                    model.setTimestamp(time);
+                    model.setTimestamp(formatTime(v.getTime()));
                     break;
                 }
                 case ANNOTATION:
