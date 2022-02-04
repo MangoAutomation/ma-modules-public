@@ -17,8 +17,8 @@ public class StreamPointValueTimeModelCombiner implements Combiner<StreamPointVa
 
     @Override
     public @NonNull MultiPointModel combineValue(MultiPointModel group, StreamPointValueTimeModel value) {
-        if (group == null || group.getTimestamp() != value.pointValueTime.getTime()) {
-            group = new MultiPointModel(value.pointValueTime.getTime());
+        if (group == null || !group.getTimestamp().equals(value.getTimestamp())) {
+            group = new MultiPointModel(value.getTimestamp());
         }
         group.putPointValue(value.point.getXid(), value);
         return group;

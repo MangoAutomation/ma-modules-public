@@ -16,15 +16,15 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
  */
 @JsonInclude(Include.NON_NULL)
 public class MultiPointModel {
-    private final long timestamp;
+    private final Object timestamp;
 
     private final Map<String, StreamPointValueTimeModel> pointValues = new LinkedHashMap<>();
 
-    public MultiPointModel(long timestamp) {
+    public MultiPointModel(Object timestamp) {
         this.timestamp = timestamp;
     }
 
-    public long getTimestamp() {
+    public Object getTimestamp() {
         return timestamp;
     }
 
