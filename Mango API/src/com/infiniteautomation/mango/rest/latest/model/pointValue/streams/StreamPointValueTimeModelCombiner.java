@@ -4,6 +4,8 @@
 
 package com.infiniteautomation.mango.rest.latest.model.pointValue.streams;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
+
 import com.infiniteautomation.mango.db.iterators.GroupingSpliterator.Combiner;
 
 /**
@@ -14,11 +16,9 @@ import com.infiniteautomation.mango.db.iterators.GroupingSpliterator.Combiner;
 public class StreamPointValueTimeModelCombiner implements Combiner<StreamPointValueTimeModel, MultiPointModel> {
 
     @Override
-    public MultiPointModel combineValue(MultiPointModel group, StreamPointValueTimeModel value) {
-        if (group == null) {
+    public @NonNull MultiPointModel combineValue(MultiPointModel group, StreamPointValueTimeModel value) {
+        if (group == null || group.getTimestamp() != value.pointValueTime.getTime()) {
             group = new MultiPointModel(value.pointValueTime.getTime());
-        } else if (group.getTimestamp() != value.pointValueTime.getTime()) {
-            return null;
         }
         group.putPointValue(value.point.getXid(), value);
         return group;
