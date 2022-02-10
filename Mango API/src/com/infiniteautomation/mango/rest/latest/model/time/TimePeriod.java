@@ -3,8 +3,6 @@
  */
 package com.infiniteautomation.mango.rest.latest.model.time;
 
-import java.time.Duration;
-import java.time.Period;
 import java.time.temporal.TemporalAmount;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -47,18 +45,7 @@ public class TimePeriod {
 	}
 
 	public TemporalAmount toTemporalAmount() {
-		switch (type.getChronoUnit()) {
-			case DAYS:
-				return Period.ofDays(periods);
-			case WEEKS:
-				return Period.ofWeeks(periods);
-			case MONTHS:
-				return Period.ofMonths(periods);
-			case YEARS:
-				return Period.ofYears(periods);
-			default:
-				return Duration.of(periods, type.getChronoUnit());
-		}
+		return type.toTemporalAmount(periods);
 	}
 	
 }

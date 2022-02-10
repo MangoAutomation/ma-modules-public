@@ -3,7 +3,10 @@
  */
 package com.infiniteautomation.mango.rest.latest.model.time;
 
+import java.time.Duration;
+import java.time.Period;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAmount;
 
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.Common;
@@ -32,6 +35,21 @@ public enum TimePeriodType {
 
 	public ChronoUnit getChronoUnit() {
 		return chronoUnit;
+	}
+
+	public TemporalAmount toTemporalAmount(int periods) {
+		switch (chronoUnit) {
+			case DAYS:
+				return Period.ofDays(periods);
+			case WEEKS:
+				return Period.ofWeeks(periods);
+			case MONTHS:
+				return Period.ofMonths(periods);
+			case YEARS:
+				return Period.ofYears(periods);
+			default:
+				return Duration.of(periods, chronoUnit);
+		}
 	}
 
 	/**

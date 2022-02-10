@@ -7,6 +7,7 @@ import java.net.URI;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.temporal.TemporalAmount;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -42,6 +43,10 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.goebl.simplify.SimplifyUtility;
 import com.google.common.base.Functions;
 import com.infiniteautomation.mango.db.iterators.MergingIterator;
+import com.infiniteautomation.mango.db.iterators.RollupStream;
+import com.infiniteautomation.mango.quantize.AnalogStatisticsQuantizer;
+import com.infiniteautomation.mango.quantize.BucketCalculator;
+import com.infiniteautomation.mango.quantize.TemporalAmountBucketCalculator;
 import com.infiniteautomation.mango.rest.latest.exception.AbstractRestException;
 import com.infiniteautomation.mango.rest.latest.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.latest.exception.GenericRestException;
@@ -449,7 +454,7 @@ public class PointValueRestController extends AbstractMangoRestController {
             responseContainer = "Array"
     )
     @RequestMapping(method = RequestMethod.GET, value = "/time-period/{xid}/{rollup}")
-    public ResponseEntity<PointValueTimeStream<PointValueTimeModel, ZonedDateTimeRangeQueryInfo>> getRollupPointValues(
+    public Stream<StreamPointValueTimeModel> getRollupPointValues(
             @ApiParam(value = "Point xid", required = true)
             @PathVariable String xid,
 
@@ -496,16 +501,28 @@ public class PointValueRestController extends AbstractMangoRestController {
                     PointValueField[] fields
     ) {
 
-        TimePeriod timePeriod = null;
-        if ((timePeriodType != null) && (timePeriods != null)) {
-            timePeriod = new TimePeriod(timePeriods, timePeriodType);
-        }
+        DataPointVO point = dataPointService.get(xid);
 
-        ZonedDateTimeRangeQueryInfo info = new ZonedDateTimeRangeQueryInfo(
-                from, to, dateTimeFormat, timezone, rollup, timePeriod, limit,
-                true, false, true, PointValueTimeCacheControl.NONE, null, null, truncate, fields);
+        StreamPointValueTimeModelMapper mapper = new StreamPointValueTimeModelMapper()
+                .withDataPoint(point)
+                .withRollup(rollup)
+                .withFields(fields)
+                .withDateTimeFormat(dateTimeFormat)
+                .withTimezone(timezone, from, to);
 
-        return generateStream(info, new String[]{xid});
+        // TODO truncate to and from
+
+        TemporalAmount rollupPeriod = timePeriodType.toTemporalAmount(timePeriods);
+        BucketCalculator bucketCalc = new TemporalAmountBucketCalculator(from, to, rollupPeriod);
+
+        // TODO from and to can be null?
+        Stream<IdPointValueTime> stream = dao.bookendStream(point, from.toInstant().toEpochMilli(), to.toInstant().toEpochMilli(), limit);
+
+        // TODO none rollup?
+        // TODO if rollup is POINT_DEFAULT get simplifyTolerance, simplifyTarget from point
+//        stream = simplifyStream(stream, simplifyTolerance, simplifyTarget);
+
+        return RollupStream.rollup(stream, new AnalogStatisticsQuantizer(bucketCalc)).map(stats -> mapper.mapAnalogStatistics(point, stats));
     }
 
     @ApiOperation(value = "Query Time Range for multiple data points, return in time ascending order",

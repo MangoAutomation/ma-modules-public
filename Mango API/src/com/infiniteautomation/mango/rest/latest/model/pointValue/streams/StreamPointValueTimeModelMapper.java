@@ -25,6 +25,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 import com.google.common.base.Functions;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueField;
+import com.infiniteautomation.mango.rest.latest.model.pointValue.RollupEnum;
+import com.infiniteautomation.mango.statistics.AnalogStatistics;
 import com.serotonin.m2m2.DataType;
 import com.serotonin.m2m2.rt.dataImage.IAnnotated;
 import com.serotonin.m2m2.rt.dataImage.IdPointValueTime;
@@ -42,6 +44,7 @@ public class StreamPointValueTimeModelMapper implements Function<IdPointValueTim
     EnumSet<PointValueField> fieldSet = EnumSet.of(PointValueField.TIMESTAMP, PointValueField.VALUE);
     DateTimeFormatter dateTimeFormatter = null;
     ZoneId zoneId;
+    RollupEnum rollup;
 
     public StreamPointValueTimeModelMapper withFields(@Nullable PointValueField[] fields) {
         if (fields != null && fields.length > 0) {
@@ -82,6 +85,11 @@ public class StreamPointValueTimeModelMapper implements Function<IdPointValueTim
         return this;
     }
 
+    public StreamPointValueTimeModelMapper withRollup(RollupEnum rollup) {
+        this.rollup = rollup;
+        return this;
+    }
+
     private ZoneId zoneId() {
         ZoneId zoneId = this.zoneId;
         if (zoneId == null) {
@@ -100,14 +108,14 @@ public class StreamPointValueTimeModelMapper implements Function<IdPointValueTim
     @Override
     public StreamPointValueTimeModel apply(IdPointValueTime v) {
         DataPointVO point = Objects.requireNonNull(dataPoints.get(v.getSeriesId()));
-        StreamPointValueTimeModel model = new StreamPointValueTimeModel(point, v);
+        StreamPointValueTimeModel model = new StreamPointValueTimeModel(point, v.getTime());
         for (PointValueField field : fieldSet) {
             switch (field) {
                 case VALUE: {
                     DataValue value = v.getValue();
-                    if (point.getPointLocator().getDataType() == DataType.NUMERIC && point.getRenderedUnit() != Unit.ONE) {
-                        UnitConverter converter = point.getUnit().getConverterTo(point.getRenderedUnit());
-                        model.setValue(converter.convert(value.getDoubleValue()));
+                    if (point.getPointLocator().getDataType() == DataType.NUMERIC) {
+                        double convertedValue = convertValue(point, value.getDoubleValue());
+                        model.setValue(convertedValue);
                     } else {
                         model.setValue(value.getObjectValue());
                     }
@@ -133,12 +141,84 @@ public class StreamPointValueTimeModelMapper implements Function<IdPointValueTim
                     if (value == null) {
                         model.setRendered("-");
                     } else {
-                        model.setRendered(point.getTextRenderer().getText(v.getValue(), TextRenderer.HINT_FULL));
+                        if (point.getPointLocator().getDataType() == DataType.NUMERIC) {
+                            double convertedValue = convertValue(point, value.getDoubleValue());
+                            model.setRendered(point.getTextRenderer().getText(convertedValue, TextRenderer.HINT_FULL));
+                        } else {
+                            model.setRendered(point.getTextRenderer().getText(v.getValue(), TextRenderer.HINT_FULL));
+                        }
                     }
                     break;
                 }
                 case RAW:
                     model.setRaw(v.getValue().getObjectValue());
+                    break;
+                case XID:
+                    model.setXid(point.getXid());
+                    break;
+                case NAME:
+                    model.setName(point.getName());
+                    break;
+                case DEVICE_NAME:
+                    model.setDeviceName(point.getDeviceName());
+                    break;
+                case DATA_SOURCE_NAME:
+                    model.setDataSourceName(point.getDataSourceName());
+                    break;
+                default:
+                    throw new IllegalStateException("Unknown field: " + field);
+            }
+        }
+        return model;
+    }
+
+    private double getRollupValue(AnalogStatistics stats) {
+        // TODO
+        switch (rollup) {
+            case AVERAGE:
+                return stats.getStatistics().getAverage();
+            default:
+                throw new IllegalStateException("Unknown rollup: " + rollup);
+        }
+    }
+
+    private double convertValue(DataPointVO point, double value) {
+        if (point.getRenderedUnit() != Unit.ONE) {
+            UnitConverter converter = point.getUnit().getConverterTo(point.getRenderedUnit());
+            return converter.convert(value);
+        }
+        return value;
+    }
+
+    public StreamPointValueTimeModel mapAnalogStatistics(DataPointVO point, AnalogStatistics stats) {
+        // TODO add series id to AnalogStatistics object
+        StreamPointValueTimeModel model = new StreamPointValueTimeModel(point, stats.getPeriodStartTime());
+        for (PointValueField field : fieldSet) {
+            switch (field) {
+                case VALUE: {
+                    double convertedValue = convertValue(point, getRollupValue(stats));
+                    model.setValue(convertedValue);
+                    break;
+                }
+                case TIMESTAMP: {
+                    model.setTimestamp(formatTime(stats.getPeriodStartTime()));
+                    break;
+                }
+                case ANNOTATION:
+                    break;
+                case CACHED:
+                    model.setCached(false);
+                    break;
+                case BOOKEND:
+                    model.setBookend(false);
+                    break;
+                case RENDERED: {
+                    double convertedValue = convertValue(point, getRollupValue(stats));
+                    model.setRendered(point.getTextRenderer().getText(convertedValue, TextRenderer.HINT_FULL));
+                    break;
+                }
+                case RAW:
+                    model.setRaw(getRollupValue(stats));
                     break;
                 case XID:
                     model.setXid(point.getXid());
