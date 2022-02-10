@@ -145,6 +145,43 @@ public class PointValueRestController extends AbstractMangoRestController {
         this.dataPointService = dataPointService;
     }
 
+    private Stream<IdPointValueTime> latestStream(Collection<? extends DataPointVO> points,
+                                                 ZonedDateTime before,
+                                                 Integer limit,
+                                                 PointValueTimeCacheControl useCache) {
+
+        var beforeTimestamp = before == null ? null : before.toInstant().toEpochMilli();
+
+        if (useCache == PointValueTimeCacheControl.NONE) {
+            return dao.streamPointValuesCombined(points, null, beforeTimestamp, limit, TimeOrder.DESCENDING);
+        } else if (useCache == PointValueTimeCacheControl.CACHE_ONLY) {
+            var streams = points.stream()
+                    .map(point -> streamCache(point, beforeTimestamp, limit))
+                    .collect(Collectors.toList());
+            return MergingIterator.mergeStreams(streams, TimeOrder.DESCENDING.getComparator());
+        } else {
+            throw new UnsupportedOperationException("Cache option not supported: " + useCache);
+        }
+    }
+
+    private Stream<IdPointValueTime> streamCache(DataPointVO point, Long before, Integer limit) {
+        DataPointRT rt = runtimeManager.getDataPoint(point.getId());
+        Stream<IdPointValueTime> stream = rt == null ? Stream.empty() : rt.getLatestPointValues().stream()
+                .filter(v -> before == null || v.getTime() < before)
+                .map(v -> v.withSeriesId(point.getSeriesId()).withFromCache());
+        return limit == null ? stream : stream.limit(limit);
+    }
+
+    private Stream<IdPointValueTime> simplifyStream(Stream<IdPointValueTime> stream, @Nullable Double simplifyTolerance, @Nullable Integer simplifyTarget) {
+        if (simplifyTolerance != null || simplifyTarget != null) {
+            var list = stream.collect(Collectors.toList());
+            return SimplifyUtility.simplify(simplifyTolerance, simplifyTarget,
+                    true, true, list, IdPointValueTimePointExtractor.INSTANCE)
+                    .stream();
+        }
+        return stream;
+    }
+
     @ApiOperation(
             value = "Get latest values For 1 Data Point in time descending order",
             notes = "Optionally use memory cached values that are available on Interval Logged data points, < before time and optional limit"
@@ -191,36 +228,16 @@ public class PointValueRestController extends AbstractMangoRestController {
 
         DataPointVO point = dataPointService.get(xid);
 
-        var stream = Stream.of(point)
-                .map(p -> latestStream(point, before, limit, useCache))
-                .flatMap(s -> simplifyStream(s, simplifyTolerance, simplifyTarget));
+        var stream = latestStream(List.of(point), before, limit, useCache);
+        stream = simplifyStream(stream, simplifyTolerance, simplifyTarget);
 
         StreamPointValueTimeModelMapper mapper = new StreamPointValueTimeModelMapper()
                 .withDataPoint(point)
                 .withFields(fields)
                 .withDateTimeFormat(dateTimeFormat)
-                .withTimezone(timezone)
-                .withTo(before);
+                .withTimezone(timezone, before);
 
         return stream.map(mapper);
-    }
-
-    private Stream<IdPointValueTime> simplifyStream(Stream<IdPointValueTime> stream, @Nullable Double simplifyTolerance, @Nullable Integer simplifyTarget) {
-        if (simplifyTolerance != null || simplifyTarget != null) {
-            var list = stream.collect(Collectors.toList());
-            var simplified = SimplifyUtility.simplify(simplifyTolerance, simplifyTarget,
-                    true, true, list, IdPointValueTimePointExtractor.INSTANCE);
-            // TODO should already be sorted?
-            return simplified.stream().sorted();
-        }
-        return stream;
-    }
-
-    private Stream<IdPointValueTime> streamCache(DataPointVO point, Integer limit) {
-        DataPointRT rt = runtimeManager.getDataPoint(point.getId());
-        Stream<IdPointValueTime> stream = rt == null ? Stream.empty() : rt.getLatestPointValues().stream()
-                .map(v -> v.withSeriesId(point.getSeriesId()).withFromCache());
-        return limit == null ? stream : stream.limit(limit);
     }
 
     @ApiOperation(
@@ -254,57 +271,22 @@ public class PointValueRestController extends AbstractMangoRestController {
             @RequestParam(value = "useCache", required = false, defaultValue = "NONE")
                     PointValueTimeCacheControl useCache,
 
-            @ApiParam(value = "Tolerance for use in Simplify algorithm")
-            @RequestParam(required = false)
-                    Double simplifyTolerance,
-
-            @ApiParam(value = "Target number of values to return for use in Simplify algorithm")
-            @RequestParam(required = false)
-                    Integer simplifyTarget,
-
             @ApiParam(value = "Fields to be included in the returned data, default is TIMESTAMP,VALUE")
             @RequestParam(required = false)
-                    PointValueField[] fields
-    ) {
+                    PointValueField[] fields) {
 
         var points = Arrays.stream(xids).distinct()
                 .map(dataPointService::get)
                 .collect(Collectors.toUnmodifiableSet());
 
-        // TODO how does limit apply? Per point? Must apply limit per point when using simplify or whole history is read into memory
-        // TODO multi point down to DB layer
-        var streams = points.stream()
-                .map(point -> latestStream(point, before, limit, useCache))
-                .map(stream -> simplifyStream(stream, simplifyTolerance, simplifyTarget))
-                .collect(Collectors.toList());
-
-        var mergedStream = MergingIterator.mergeStreams(streams, TimeOrder.DESCENDING.getComparator());
-
+        var mergedStream = latestStream(points, before, limit, useCache);
         var mapper = new StreamPointValueTimeModelMapper()
                 .withDataPoints(points)
                 .withFields(fields)
                 .withDateTimeFormat(dateTimeFormat)
-                .withTimezone(timezone)
-                .withTo(before);
+                .withTimezone(timezone, before);
 
         return GroupingSpliterator.group(mergedStream.map(mapper), new StreamPointValueTimeModelCombiner());
-    }
-
-    private Stream<IdPointValueTime> latestStream(DataPointVO point, ZonedDateTime before, Integer limit, PointValueTimeCacheControl useCache) {
-        Stream<IdPointValueTime> stream;
-        switch (useCache) {
-            case CACHE_ONLY:
-                stream = streamCache(point, limit);
-                break;
-            case NONE:
-                stream = dao.streamPointValues(point,
-                        null, before == null ? null : before.toInstant().toEpochMilli(),
-                        limit, TimeOrder.DESCENDING);
-                break;
-            default:
-                throw new UnsupportedOperationException("Cache option not supported: " + useCache);
-        }
-        return stream;
     }
 
     @ApiOperation(
@@ -314,13 +296,22 @@ public class PointValueRestController extends AbstractMangoRestController {
             responseContainer = "Array"
     )
     @RequestMapping(method = RequestMethod.POST, value = "/single-array/latest")
-    public ResponseEntity<PointValueTimeStream<PointValueTimeModel, LatestQueryInfo>> postLatestPointValuesAsSingleArray(
+    public Stream<MultiPointModel> postLatestPointValuesAsSingleArray(
             @ApiParam(value = "Query Information", required = true)
-            @RequestBody
-                    XidLatestQueryInfoModel info
-    ) {
+            @RequestBody XidLatestQueryInfoModel info) {
 
-        return generateLatestStream(info.createLatestQueryInfo(true, true), info.getXids());
+        var points = Arrays.stream(info.getXids()).distinct()
+                .map(dataPointService::get)
+                .collect(Collectors.toUnmodifiableSet());
+
+        var mergedStream = latestStream(points, info.getBefore(), info.getLimit(), info.getUseCache());
+        var mapper = new StreamPointValueTimeModelMapper()
+                .withDataPoints(points)
+                .withFields(info.getFields())
+                .withDateTimeFormat(info.getDateTimeFormat())
+                .withTimezone(info.getTimezone(), info.getBefore());
+
+        return GroupingSpliterator.group(mergedStream.map(mapper), new StreamPointValueTimeModelCombiner());
     }
 
     @ApiOperation(

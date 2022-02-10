@@ -38,22 +38,10 @@ import com.serotonin.m2m2.vo.DataPointVO;
 @NonNull
 public class StreamPointValueTimeModelMapper implements Function<IdPointValueTime, StreamPointValueTimeModel> {
 
-    ZonedDateTime from;
-    ZonedDateTime to;
     Map<Integer, DataPointVO> dataPoints = Collections.emptyMap();
     EnumSet<PointValueField> fieldSet = EnumSet.of(PointValueField.TIMESTAMP, PointValueField.VALUE);
     DateTimeFormatter dateTimeFormatter = null;
     ZoneId zoneId;
-
-    public StreamPointValueTimeModelMapper withFrom(@Nullable ZonedDateTime from) {
-        this.from = from;
-        return this;
-    }
-
-    public StreamPointValueTimeModelMapper withTo(@Nullable ZonedDateTime to) {
-        this.to = to;
-        return this;
-    }
 
     public StreamPointValueTimeModelMapper withFields(@Nullable PointValueField[] fields) {
         if (fields != null && fields.length > 0) {
@@ -69,9 +57,16 @@ public class StreamPointValueTimeModelMapper implements Function<IdPointValueTim
         return this;
     }
 
-    public StreamPointValueTimeModelMapper withTimezone(@Nullable String timezone) {
+    public StreamPointValueTimeModelMapper withTimezone(@Nullable String timezone, ZonedDateTime... alternatives) {
         if (timezone != null) {
             this.zoneId = ZoneId.of(timezone);
+        } else {
+            for (var alternative : alternatives) {
+                if (alternative != null) {
+                    this.zoneId = alternative.getZone();
+                    break;
+                }
+            }
         }
         return this;
     }
@@ -90,13 +85,7 @@ public class StreamPointValueTimeModelMapper implements Function<IdPointValueTim
     private ZoneId zoneId() {
         ZoneId zoneId = this.zoneId;
         if (zoneId == null) {
-            if (from != null) {
-                zoneId = from.getZone();
-            } else if (to != null) {
-                zoneId = to.getZone();
-            } else {
-                zoneId = ZoneId.systemDefault();
-            }
+            zoneId = ZoneId.systemDefault();
         }
         return zoneId;
     }
