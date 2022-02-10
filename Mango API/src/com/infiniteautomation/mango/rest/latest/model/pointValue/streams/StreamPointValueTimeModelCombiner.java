@@ -4,8 +4,11 @@
 
 package com.infiniteautomation.mango.rest.latest.model.pointValue.streams;
 
+import java.util.stream.Stream;
+
 import org.checkerframework.checker.nullness.qual.NonNull;
 
+import com.infiniteautomation.mango.db.iterators.GroupingSpliterator;
 import com.infiniteautomation.mango.db.iterators.GroupingSpliterator.Combiner;
 
 /**
@@ -17,11 +20,15 @@ public class StreamPointValueTimeModelCombiner implements Combiner<StreamPointVa
 
     @Override
     public @NonNull MultiPointModel combineValue(MultiPointModel group, StreamPointValueTimeModel value) {
-        if (group == null || !group.getTimestamp().equals(value.getTimestamp())) {
-            group = new MultiPointModel(value.getTimestamp());
+        if (group == null || group.getExactTimestamp() != value.pointValueTime.getTime()) {
+            group = new MultiPointModel(value.pointValueTime.getTime(), value.getTimestamp());
         }
         group.putPointValue(value.point.getXid(), value);
         return group;
+    }
+
+    public static Stream<MultiPointModel> groupByTimestamp(Stream<StreamPointValueTimeModel> stream) {
+        return GroupingSpliterator.group(stream, new StreamPointValueTimeModelCombiner());
     }
 
 }

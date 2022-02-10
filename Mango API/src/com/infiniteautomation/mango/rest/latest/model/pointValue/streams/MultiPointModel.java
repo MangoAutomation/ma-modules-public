@@ -8,6 +8,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
@@ -16,16 +17,23 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
  */
 @JsonInclude(Include.NON_NULL)
 public class MultiPointModel {
-    private final Object timestamp;
+    private final long exactTimestamp;
+    private final Object formattedTimestamp;
 
     private final Map<String, StreamPointValueTimeModel> pointValues = new LinkedHashMap<>();
 
-    public MultiPointModel(Object timestamp) {
-        this.timestamp = timestamp;
+    public MultiPointModel(long exactTimestamp, Object formattedTimestamp) {
+        this.exactTimestamp = exactTimestamp;
+        this.formattedTimestamp = formattedTimestamp;
+    }
+
+    @JsonIgnore
+    public long getExactTimestamp() {
+        return exactTimestamp;
     }
 
     public Object getTimestamp() {
-        return timestamp;
+        return formattedTimestamp;
     }
 
     @JsonAnyGetter

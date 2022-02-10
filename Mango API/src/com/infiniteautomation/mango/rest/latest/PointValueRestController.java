@@ -42,7 +42,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.goebl.simplify.SimplifyUtility;
 import com.google.common.base.Functions;
 import com.infiniteautomation.mango.db.iterators.MergingIterator;
-import com.infiniteautomation.mango.db.iterators.GroupingSpliterator;
 import com.infiniteautomation.mango.rest.latest.exception.AbstractRestException;
 import com.infiniteautomation.mango.rest.latest.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.latest.exception.GenericRestException;
@@ -73,8 +72,8 @@ import com.infiniteautomation.mango.rest.latest.model.pointValue.query.ZonedDate
 import com.infiniteautomation.mango.rest.latest.model.pointValue.query.ZonedDateTimeStatisticsQueryInfo;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.streams.IdPointValueTimePointExtractor;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.streams.MultiPointModel;
-import com.infiniteautomation.mango.rest.latest.model.pointValue.streams.StreamPointValueTimeModelCombiner;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.streams.StreamPointValueTimeModel;
+import com.infiniteautomation.mango.rest.latest.model.pointValue.streams.StreamPointValueTimeModelCombiner;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.streams.StreamPointValueTimeModelMapper;
 import com.infiniteautomation.mango.rest.latest.model.time.TimePeriod;
 import com.infiniteautomation.mango.rest.latest.model.time.TimePeriodType;
@@ -286,7 +285,7 @@ public class PointValueRestController extends AbstractMangoRestController {
                 .withDateTimeFormat(dateTimeFormat)
                 .withTimezone(timezone, before);
 
-        return GroupingSpliterator.group(mergedStream.map(mapper), new StreamPointValueTimeModelCombiner());
+        return StreamPointValueTimeModelCombiner.groupByTimestamp(mergedStream.map(mapper));
     }
 
     @ApiOperation(
@@ -311,7 +310,7 @@ public class PointValueRestController extends AbstractMangoRestController {
                 .withDateTimeFormat(info.getDateTimeFormat())
                 .withTimezone(info.getTimezone(), info.getBefore());
 
-        return GroupingSpliterator.group(mergedStream.map(mapper), new StreamPointValueTimeModelCombiner());
+        return StreamPointValueTimeModelCombiner.groupByTimestamp(mergedStream.map(mapper));
     }
 
     @ApiOperation(
