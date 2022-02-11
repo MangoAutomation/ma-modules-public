@@ -2,12 +2,13 @@
  * Copyright (C) 2022 Radix IoT LLC. All rights reserved.
  */
 
-package com.infiniteautomation.mango.rest.latest.model.pointValue.streams;
+package com.infiniteautomation.mango.rest.latest.streamingvalues.model;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
@@ -15,12 +16,12 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
  * @author Jared Wiltshire
  */
 @JsonInclude(Include.NON_NULL)
-public class MultiPointModel {
+public class StreamingMultiPointModel {
     final long exactTimestamp;
     final Object formattedTimestamp;
-    final Map<String, StreamPointValueTimeModel> pointValues = new LinkedHashMap<>();
+    final Map<String, StreamingPointValueTimeModel> pointValues = new LinkedHashMap<>();
 
-    public MultiPointModel(long exactTimestamp, Object formattedTimestamp) {
+    public StreamingMultiPointModel(long exactTimestamp, Object formattedTimestamp) {
         this.exactTimestamp = exactTimestamp;
         this.formattedTimestamp = formattedTimestamp;
     }
@@ -29,12 +30,17 @@ public class MultiPointModel {
         return formattedTimestamp;
     }
 
+    @JsonIgnore
+    public long getExactTimestamp() {
+        return exactTimestamp;
+    }
+
     @JsonAnyGetter
-    public Map<String, StreamPointValueTimeModel> getPointValues() {
+    public Map<String, StreamingPointValueTimeModel> getPointValues() {
         return pointValues;
     }
 
-    public void putPointValue(String xid, StreamPointValueTimeModel pointValue) {
+    public void addPointValue(String xid, StreamingPointValueTimeModel pointValue) {
         this.pointValues.put(xid, pointValue);
     }
 }

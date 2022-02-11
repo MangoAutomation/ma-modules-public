@@ -8,7 +8,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 
-import com.infiniteautomation.mango.rest.latest.model.pointValue.streams.PointPointExtractor;
+import com.infiniteautomation.mango.rest.pointextractor.IdentityPointExtractor;
 import com.serotonin.log.LogStopWatch;
 
 /**
@@ -24,7 +24,7 @@ public class SimplifyUtility {
             boolean prePostProcess,
             List<T> list) {
 
-        return simplify(simplifyTolerance, simplifyTarget, simplifyHighQuality, prePostProcess, list, PointPointExtractor.INSTANCE);
+        return simplify(simplifyTolerance, simplifyTarget, simplifyHighQuality, prePostProcess, list, IdentityPointExtractor.INSTANCE);
     }
 
     /**

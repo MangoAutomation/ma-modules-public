@@ -2,20 +2,22 @@
  * Copyright (C) 2022 Radix IoT LLC. All rights reserved.
  */
 
-package com.infiniteautomation.mango.rest.latest.model.pointValue.streams;
+package com.infiniteautomation.mango.rest.latest.streamingvalues.model;
 
+import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
-import com.serotonin.m2m2.vo.DataPointVO;
 
 /**
  * @author Jared Wiltshire
  */
 @JsonInclude(Include.NON_NULL)
-public class StreamPointValueTimeModel {
+public class StreamingPointValueTimeModel {
 
-    final DataPointVO point;
+    final String dataPointXid;
     final long exactTimestamp;
 
     Object value;
@@ -30,9 +32,29 @@ public class StreamPointValueTimeModel {
     String deviceName;
     String dataSourceName;
 
-    public StreamPointValueTimeModel(DataPointVO point, long exactTimestamp) {
-        this.point = point;
+    /**
+     * @param dataPointXid required for grouping by timestamp
+     * @param exactTimestamp required for grouping by timestamp
+     */
+    public StreamingPointValueTimeModel(String dataPointXid, long exactTimestamp) {
+        this.dataPointXid = Objects.requireNonNull(dataPointXid);
         this.exactTimestamp = exactTimestamp;
+    }
+
+    /**
+     * Not part of the model.
+     */
+    @JsonIgnore
+    public String getDataPointXid() {
+        return dataPointXid;
+    }
+
+    /**
+     * Not part of the model.
+     */
+    @JsonIgnore
+    public long getExactTimestamp() {
+        return exactTimestamp;
     }
 
     public Object getValue() {

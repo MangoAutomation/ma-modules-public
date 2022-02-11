@@ -75,11 +75,13 @@ import com.infiniteautomation.mango.rest.latest.model.pointValue.query.XidRollup
 import com.infiniteautomation.mango.rest.latest.model.pointValue.query.XidTimeRangeQueryModel;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.query.ZonedDateTimeRangeQueryInfo;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.query.ZonedDateTimeStatisticsQueryInfo;
-import com.infiniteautomation.mango.rest.latest.model.pointValue.streams.IdPointValueTimePointExtractor;
-import com.infiniteautomation.mango.rest.latest.model.pointValue.streams.MultiPointModel;
-import com.infiniteautomation.mango.rest.latest.model.pointValue.streams.StreamPointValueTimeModel;
-import com.infiniteautomation.mango.rest.latest.model.pointValue.streams.StreamPointValueTimeModelCombiner;
-import com.infiniteautomation.mango.rest.latest.model.pointValue.streams.StreamPointValueTimeModelMapper;
+import com.infiniteautomation.mango.rest.latest.streamingvalues.mapper.DefaultStreamMapper;
+import com.infiniteautomation.mango.rest.pointextractor.PointValueTimePointExtractor;
+import com.infiniteautomation.mango.rest.latest.streamingvalues.mapper.StreamMapperBuilder;
+import com.infiniteautomation.mango.rest.latest.streamingvalues.model.StreamingMultiPointModel;
+import com.infiniteautomation.mango.rest.latest.streamingvalues.mapper.RollupStreamMapper;
+import com.infiniteautomation.mango.rest.latest.streamingvalues.model.StreamingPointValueTimeModel;
+import com.infiniteautomation.mango.rest.latest.streamingvalues.mapper.TimestampGrouper;
 import com.infiniteautomation.mango.rest.latest.model.time.TimePeriod;
 import com.infiniteautomation.mango.rest.latest.model.time.TimePeriodType;
 import com.infiniteautomation.mango.rest.latest.temporaryResource.MangoTaskTemporaryResourceManager;
@@ -180,7 +182,7 @@ public class PointValueRestController extends AbstractMangoRestController {
         if (simplifyTolerance != null || simplifyTarget != null) {
             var list = stream.collect(Collectors.toList());
             return SimplifyUtility.simplify(simplifyTolerance, simplifyTarget,
-                    true, true, list, IdPointValueTimePointExtractor.INSTANCE)
+                    true, true, list, PointValueTimePointExtractor.INSTANCE)
                     .stream();
         }
         return stream;
@@ -191,7 +193,7 @@ public class PointValueRestController extends AbstractMangoRestController {
             notes = "Optionally use memory cached values that are available on Interval Logged data points, < before time and optional limit"
     )
     @RequestMapping(method = RequestMethod.GET, value = "/latest/{xid}")
-    public Stream<StreamPointValueTimeModel> getLatestPointValues(
+    public Stream<StreamingPointValueTimeModel> getLatestPointValues(
             @ApiParam(value = "Point xid", required = true)
             @PathVariable String xid,
 
@@ -235,11 +237,12 @@ public class PointValueRestController extends AbstractMangoRestController {
         var stream = latestStream(List.of(point), before, limit, useCache);
         stream = simplifyStream(stream, simplifyTolerance, simplifyTarget);
 
-        StreamPointValueTimeModelMapper mapper = new StreamPointValueTimeModelMapper()
+        DefaultStreamMapper mapper = new StreamMapperBuilder()
                 .withDataPoint(point)
                 .withFields(fields)
                 .withDateTimeFormat(dateTimeFormat)
-                .withTimezone(timezone, before);
+                .withTimezone(timezone, before)
+                .build(DefaultStreamMapper::new);
 
         return stream.map(mapper);
     }
@@ -249,7 +252,7 @@ public class PointValueRestController extends AbstractMangoRestController {
             notes = "Optionally use memory cached values that are available on Interval Logged data points, < before time and optional limit"
     )
     @RequestMapping(method = RequestMethod.GET, value = "/single-array/latest/{xids}")
-    public Stream<MultiPointModel> getLatestPointValuesAsSingleArray(
+    public Stream<StreamingMultiPointModel> getLatestPointValuesAsSingleArray(
             @ApiParam(value = "Point xids", required = true)
             @PathVariable String[] xids,
 
@@ -284,13 +287,14 @@ public class PointValueRestController extends AbstractMangoRestController {
                 .collect(Collectors.toUnmodifiableSet());
 
         var mergedStream = latestStream(points, before, limit, useCache);
-        var mapper = new StreamPointValueTimeModelMapper()
+        var mapper = new StreamMapperBuilder()
                 .withDataPoints(points)
                 .withFields(fields)
                 .withDateTimeFormat(dateTimeFormat)
-                .withTimezone(timezone, before);
+                .withTimezone(timezone, before)
+                .build(DefaultStreamMapper::new);
 
-        return StreamPointValueTimeModelCombiner.groupByTimestamp(mergedStream.map(mapper));
+        return TimestampGrouper.groupByTimestamp(mergedStream.map(mapper));
     }
 
     @ApiOperation(
@@ -300,7 +304,7 @@ public class PointValueRestController extends AbstractMangoRestController {
             responseContainer = "Array"
     )
     @RequestMapping(method = RequestMethod.POST, value = "/single-array/latest")
-    public Stream<MultiPointModel> postLatestPointValuesAsSingleArray(
+    public Stream<StreamingMultiPointModel> postLatestPointValuesAsSingleArray(
             @ApiParam(value = "Query Information", required = true)
             @RequestBody XidLatestQueryInfoModel info) {
 
@@ -309,13 +313,14 @@ public class PointValueRestController extends AbstractMangoRestController {
                 .collect(Collectors.toUnmodifiableSet());
 
         var mergedStream = latestStream(points, info.getBefore(), info.getLimit(), info.getUseCache());
-        var mapper = new StreamPointValueTimeModelMapper()
+        var mapper = new StreamMapperBuilder()
                 .withDataPoints(points)
                 .withFields(info.getFields())
                 .withDateTimeFormat(info.getDateTimeFormat())
-                .withTimezone(info.getTimezone(), info.getBefore());
+                .withTimezone(info.getTimezone(), info.getBefore())
+                .build(DefaultStreamMapper::new);
 
-        return StreamPointValueTimeModelCombiner.groupByTimestamp(mergedStream.map(mapper));
+        return TimestampGrouper.groupByTimestamp(mergedStream.map(mapper));
     }
 
     @ApiOperation(
@@ -454,7 +459,7 @@ public class PointValueRestController extends AbstractMangoRestController {
             responseContainer = "Array"
     )
     @RequestMapping(method = RequestMethod.GET, value = "/time-period/{xid}/{rollup}")
-    public Stream<StreamPointValueTimeModel> getRollupPointValues(
+    public Stream<StreamingPointValueTimeModel> getRollupPointValues(
             @ApiParam(value = "Point xid", required = true)
             @PathVariable String xid,
 
@@ -503,12 +508,13 @@ public class PointValueRestController extends AbstractMangoRestController {
 
         DataPointVO point = dataPointService.get(xid);
 
-        StreamPointValueTimeModelMapper mapper = new StreamPointValueTimeModelMapper()
+        RollupStreamMapper mapper = new StreamMapperBuilder()
                 .withDataPoint(point)
                 .withRollup(rollup)
                 .withFields(fields)
                 .withDateTimeFormat(dateTimeFormat)
-                .withTimezone(timezone, from, to);
+                .withTimezone(timezone, from, to)
+                .build(RollupStreamMapper::new);
 
         // TODO truncate to and from
 
@@ -522,7 +528,7 @@ public class PointValueRestController extends AbstractMangoRestController {
         // TODO if rollup is POINT_DEFAULT get simplifyTolerance, simplifyTarget from point
 //        stream = simplifyStream(stream, simplifyTolerance, simplifyTarget);
 
-        return RollupStream.rollup(stream, new AnalogStatisticsQuantizer(bucketCalc)).map(stats -> mapper.mapAnalogStatistics(point, stats));
+        return RollupStream.rollup(stream, new AnalogStatisticsQuantizer(bucketCalc)).map(mapper);
     }
 
     @ApiOperation(value = "Query Time Range for multiple data points, return in time ascending order",
