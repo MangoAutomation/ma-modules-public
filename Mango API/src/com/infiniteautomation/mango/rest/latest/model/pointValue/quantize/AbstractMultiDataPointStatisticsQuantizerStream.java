@@ -13,11 +13,10 @@ import com.infiniteautomation.mango.db.query.QueryCancelledException;
 import com.infiniteautomation.mango.db.query.WideCallback;
 import com.infiniteautomation.mango.quantize.BucketCalculator;
 import com.infiniteautomation.mango.quantize.BucketsBucketCalculator;
-import com.infiniteautomation.mango.quantize.TimePeriodBucketCalculator;
+import com.infiniteautomation.mango.quantize.TemporalAmountBucketCalculator;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.RollupEnum;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.query.PointValueTimeDatabaseStream;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.query.ZonedDateTimeRangeQueryInfo;
-import com.infiniteautomation.mango.rest.latest.model.time.TimePeriodType;
 import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.rt.dataImage.IdPointValueTime;
 import com.serotonin.m2m2.vo.DataPointVO;
@@ -123,7 +122,7 @@ public abstract class AbstractMultiDataPointStatisticsQuantizerStream <T, INFO e
         if(this.info.getTimePeriod() == null){
             return  new BucketsBucketCalculator(info.getFrom(), info.getTo(), 1);
         }else{
-            return new TimePeriodBucketCalculator(info.getFrom(), info.getTo(), TimePeriodType.convertFrom(this.info.getTimePeriod().getType()), this.info.getTimePeriod().getPeriods());
+            return new TemporalAmountBucketCalculator(info.getFrom(), info.getTo(), info.getTimePeriod().toTemporalAmount());
         }
     }
 }

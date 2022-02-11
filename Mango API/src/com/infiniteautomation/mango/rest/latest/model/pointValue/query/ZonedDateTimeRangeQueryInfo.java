@@ -10,7 +10,6 @@ import com.infiniteautomation.mango.rest.latest.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueField;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.RollupEnum;
 import com.infiniteautomation.mango.rest.latest.model.time.TimePeriod;
-import com.infiniteautomation.mango.rest.latest.model.time.TimePeriodType;
 import com.infiniteautomation.mango.util.datetime.ExpandTimePeriodAdjuster;
 import com.infiniteautomation.mango.util.datetime.TruncateTimePeriodAdjuster;
 import com.serotonin.m2m2.Common;
@@ -81,11 +80,11 @@ public class ZonedDateTimeRangeQueryInfo extends LatestQueryInfo {
         // Round off the period if we are using periodic rollup
         if (this.timePeriod != null) {
             TruncateTimePeriodAdjuster adj = new TruncateTimePeriodAdjuster(
-                    TimePeriodType.convertFrom(this.timePeriod.getType()),
+                    this.timePeriod.getType().getChronoUnit(),
                     this.timePeriod.getPeriods());
             from = from.with(adj);
             ExpandTimePeriodAdjuster expander = new ExpandTimePeriodAdjuster(from,
-                    TimePeriodType.convertFrom(this.timePeriod.getType()),
+                    this.timePeriod.getType().getChronoUnit(),
                     this.timePeriod.getPeriods());
             to = to.with(expander);
         }

@@ -75,23 +75,25 @@ import com.infiniteautomation.mango.rest.latest.model.pointValue.query.XidRollup
 import com.infiniteautomation.mango.rest.latest.model.pointValue.query.XidTimeRangeQueryModel;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.query.ZonedDateTimeRangeQueryInfo;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.query.ZonedDateTimeStatisticsQueryInfo;
-import com.infiniteautomation.mango.rest.latest.streamingvalues.mapper.DefaultStreamMapper;
-import com.infiniteautomation.mango.rest.pointextractor.PointValueTimePointExtractor;
-import com.infiniteautomation.mango.rest.latest.streamingvalues.mapper.StreamMapperBuilder;
-import com.infiniteautomation.mango.rest.latest.streamingvalues.model.StreamingMultiPointModel;
-import com.infiniteautomation.mango.rest.latest.streamingvalues.mapper.RollupStreamMapper;
-import com.infiniteautomation.mango.rest.latest.streamingvalues.model.StreamingPointValueTimeModel;
-import com.infiniteautomation.mango.rest.latest.streamingvalues.mapper.TimestampGrouper;
 import com.infiniteautomation.mango.rest.latest.model.time.TimePeriod;
 import com.infiniteautomation.mango.rest.latest.model.time.TimePeriodType;
+import com.infiniteautomation.mango.rest.latest.streamingvalues.mapper.DefaultStreamMapper;
+import com.infiniteautomation.mango.rest.latest.streamingvalues.mapper.RollupStreamMapper;
+import com.infiniteautomation.mango.rest.latest.streamingvalues.mapper.StreamMapperBuilder;
+import com.infiniteautomation.mango.rest.latest.streamingvalues.mapper.TimestampGrouper;
+import com.infiniteautomation.mango.rest.latest.streamingvalues.model.StreamingMultiPointModel;
+import com.infiniteautomation.mango.rest.latest.streamingvalues.model.StreamingPointValueTimeModel;
 import com.infiniteautomation.mango.rest.latest.temporaryResource.MangoTaskTemporaryResourceManager;
 import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResource;
 import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResource.TemporaryResourceStatus;
 import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResourceStatusUpdate;
 import com.infiniteautomation.mango.rest.latest.temporaryResource.TemporaryResourceWebSocketHandler;
+import com.infiniteautomation.mango.rest.pointextractor.PointValueTimePointExtractor;
 import com.infiniteautomation.mango.spring.service.DataPointService;
 import com.infiniteautomation.mango.spring.service.DataSourceService;
 import com.infiniteautomation.mango.spring.service.PermissionService;
+import com.infiniteautomation.mango.util.datetime.ExpandTimePeriodAdjuster;
+import com.infiniteautomation.mango.util.datetime.TruncateTimePeriodAdjuster;
 import com.infiniteautomation.mango.util.exception.NotFoundException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataType;
@@ -473,12 +475,12 @@ public class PointValueRestController extends AbstractMangoRestController {
                     String dateTimeFormat,
 
             @ApiParam(value = "From time")
-            @RequestParam(value = "from", required = false)
+            @RequestParam(value = "from")
             @DateTimeFormat(iso = ISO.DATE_TIME)
                     ZonedDateTime from,
 
             @ApiParam(value = "To time")
-            @RequestParam(value = "to", required = false)
+            @RequestParam(value = "to")
             @DateTimeFormat(iso = ISO.DATE_TIME)
                     ZonedDateTime to,
 
@@ -516,18 +518,21 @@ public class PointValueRestController extends AbstractMangoRestController {
                 .withTimezone(timezone, from, to)
                 .build(RollupStreamMapper::new);
 
-        // TODO truncate to and from
+        if (truncate) {
+            from = from.with(new TruncateTimePeriodAdjuster(timePeriodType.getChronoUnit(), timePeriods));
+            to = to.with(new ExpandTimePeriodAdjuster(from, timePeriodType.getChronoUnit(), timePeriods));
+        }
 
-        TemporalAmount rollupPeriod = timePeriodType.toTemporalAmount(timePeriods);
-        BucketCalculator bucketCalc = new TemporalAmountBucketCalculator(from, to, rollupPeriod);
 
-        // TODO from and to can be null?
         Stream<IdPointValueTime> stream = dao.bookendStream(point, from.toInstant().toEpochMilli(), to.toInstant().toEpochMilli(), limit);
 
         // TODO none rollup?
         // TODO if rollup is POINT_DEFAULT get simplifyTolerance, simplifyTarget from point
+        // TODO support ALL rollup
 //        stream = simplifyStream(stream, simplifyTolerance, simplifyTarget);
 
+        TemporalAmount rollupPeriod = timePeriodType.toTemporalAmount(timePeriods);
+        BucketCalculator bucketCalc = new TemporalAmountBucketCalculator(from, to, rollupPeriod);
         return RollupStream.rollup(stream, new AnalogStatisticsQuantizer(bucketCalc)).map(mapper);
     }
 

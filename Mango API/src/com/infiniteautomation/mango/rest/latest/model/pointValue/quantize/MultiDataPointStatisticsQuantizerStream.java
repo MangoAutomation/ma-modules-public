@@ -17,12 +17,11 @@ import java.util.Map;
 import com.infiniteautomation.mango.db.query.QueryCancelledException;
 import com.infiniteautomation.mango.quantize.BucketCalculator;
 import com.infiniteautomation.mango.quantize.BucketsBucketCalculator;
-import com.infiniteautomation.mango.quantize.TimePeriodBucketCalculator;
+import com.infiniteautomation.mango.quantize.TemporalAmountBucketCalculator;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.DataPointValueTime;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueTimeWriter;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.RollupEnum;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.query.ZonedDateTimeRangeQueryInfo;
-import com.infiniteautomation.mango.rest.latest.model.time.TimePeriodType;
 import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.rt.dataImage.IdPointValueTime;
 import com.serotonin.m2m2.vo.DataPointVO;
@@ -183,7 +182,10 @@ public class MultiDataPointStatisticsQuantizerStream<T, INFO extends ZonedDateTi
             if(this.info.getTimePeriod() == null) {
                 bc = new BucketsBucketCalculator(ZonedDateTime.ofInstant(Instant.ofEpochMilli(lastFullPeriodToMillis), info.getZoneId()), info.getTo(), 1);
             }else{
-                bc = new TimePeriodBucketCalculator(ZonedDateTime.ofInstant(Instant.ofEpochMilli(lastFullPeriodToMillis), info.getZoneId()), info.getTo(), TimePeriodType.convertFrom(this.info.getTimePeriod().getType()), this.info.getTimePeriod().getPeriods());
+                bc = new TemporalAmountBucketCalculator(
+                        ZonedDateTime.ofInstant(Instant.ofEpochMilli(lastFullPeriodToMillis), info.getZoneId()),
+                        info.getTo(),
+                        info.getTimePeriod().toTemporalAmount());
             }
             Instant currentPeriodTo = bc.getStartTime().toInstant();
             Instant end = bc.getEndTime().toInstant();

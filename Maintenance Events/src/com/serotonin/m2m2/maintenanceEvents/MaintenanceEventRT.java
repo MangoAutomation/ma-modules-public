@@ -11,6 +11,7 @@ import java.util.TimeZone;
 
 import org.joda.time.DateTime;
 
+import com.infiniteautomation.mango.rest.latest.model.time.TimePeriodType;
 import com.infiniteautomation.mango.util.datetime.NextTimePeriodAdjuster;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.Common;
@@ -74,7 +75,7 @@ public class MaintenanceEventRT implements ModelTimeoutClient<Boolean> {
                 //Do we have a timeout set?
                 if(vo.getTimeoutPeriods() > 0) {
                     //Compute fire time
-                    NextTimePeriodAdjuster adjuster = new NextTimePeriodAdjuster(vo.getTimeoutPeriodType(), vo.getTimeoutPeriods());
+                    NextTimePeriodAdjuster adjuster = new NextTimePeriodAdjuster(TimePeriodType.convertTo(vo.getTimeoutPeriodType()).getChronoUnit(), vo.getTimeoutPeriods());
                     ZonedDateTime time = ZonedDateTime.ofInstant(Instant.ofEpochMilli(Common.timer.currentTimeMillis()), TimeZone.getDefault().toZoneId());
                     time = (ZonedDateTime) adjuster.adjustInto(time);
                     TimerTrigger inactiveTrigger = new OneTimeTrigger(new Date(time.toInstant().toEpochMilli()));

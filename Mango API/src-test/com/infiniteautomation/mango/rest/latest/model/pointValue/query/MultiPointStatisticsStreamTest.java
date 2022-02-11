@@ -15,6 +15,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -40,7 +41,6 @@ import com.infiniteautomation.mango.statistics.ValueChangeCounter;
 import com.infiniteautomation.mango.util.datetime.NextTimePeriodAdjuster;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.Common;
-import com.serotonin.m2m2.Common.TimePeriods;
 import com.serotonin.m2m2.DataType;
 import com.serotonin.m2m2.MangoTestBase;
 import com.serotonin.m2m2.MockMangoLifecycle;
@@ -96,7 +96,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
         //Setup the data to run once daily for 30 days
         ZonedDateTime from = ZonedDateTime.of(2017, 01, 01, 00, 00, 00, 0, zoneId);
         ZonedDateTime to = ZonedDateTime.of(2017, 02, 01, 00, 00, 00, 0, zoneId);
-        NextTimePeriodAdjuster adjuster = new NextTimePeriodAdjuster(TimePeriods.DAYS, 1);
+        NextTimePeriodAdjuster adjuster = new NextTimePeriodAdjuster(ChronoUnit.DAYS, 1);
 
         MockDataSourceVO ds = createDataSource();
         DataPointVO dp = createDataPoint(ds.getId(), DataType.ALPHANUMERIC, 1);
@@ -142,7 +142,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
         //Setup the data to run once daily for 30 days
         ZonedDateTime from = ZonedDateTime.of(2017, 01, 01, 00, 00, 00, 0, zoneId);
         ZonedDateTime to = ZonedDateTime.of(2017, 02, 01, 00, 00, 00, 0, zoneId);
-        NextTimePeriodAdjuster adjuster = new NextTimePeriodAdjuster(TimePeriods.DAYS, 1);
+        NextTimePeriodAdjuster adjuster = new NextTimePeriodAdjuster(ChronoUnit.DAYS, 1);
 
         MockDataSourceVO ds = createDataSource();
         DataPointVO dp = createDataPoint(ds.getId(), DataType.MULTISTATE, 1);
@@ -185,7 +185,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
         //Setup the data to run once daily for 30 days
         ZonedDateTime from = ZonedDateTime.of(2017, 01, 01, 00, 00, 00, 0, zoneId);
         ZonedDateTime to = ZonedDateTime.of(2017, 02, 01, 00, 00, 00, 0, zoneId);
-        NextTimePeriodAdjuster adjuster = new NextTimePeriodAdjuster(TimePeriods.DAYS, 1);
+        NextTimePeriodAdjuster adjuster = new NextTimePeriodAdjuster(ChronoUnit.DAYS, 1);
 
         MockDataSourceVO ds = createDataSource();
         DataPointVO dp = createDataPoint(ds.getId(), DataType.NUMERIC, 1);
@@ -227,7 +227,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
         //Setup the data to run once daily for 30 days
         ZonedDateTime from = ZonedDateTime.of(2017, 01, 01, 00, 00, 00, 0, zoneId);
         ZonedDateTime to = ZonedDateTime.of(2017, 02, 01, 00, 00, 00, 0, zoneId);
-        NextTimePeriodAdjuster adjuster = new NextTimePeriodAdjuster(TimePeriods.DAYS, 1);
+        NextTimePeriodAdjuster adjuster = new NextTimePeriodAdjuster(ChronoUnit.DAYS, 1);
 
         MockDataSourceVO ds = createDataSource();
         DataPointVO dp = createDataPoint(ds.getId(), DataType.NUMERIC, 1);
@@ -268,7 +268,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
         //Setup the data to run once daily for 30 days
         ZonedDateTime from = ZonedDateTime.of(2017, 01, 01, 00, 00, 00, 0, zoneId);
         ZonedDateTime to = ZonedDateTime.of(2017, 02, 01, 00, 00, 00, 0, zoneId);
-        NextTimePeriodAdjuster adjuster = new NextTimePeriodAdjuster(TimePeriods.DAYS, 1);
+        NextTimePeriodAdjuster adjuster = new NextTimePeriodAdjuster(ChronoUnit.DAYS, 1);
 
         int cacheSize = 10;
         MockDataSourceVO ds = createDataSource();
@@ -399,7 +399,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
         //Setup the data to run once daily for 30 days
         ZonedDateTime from = ZonedDateTime.of(2017, 01, 01, 00, 00, 00, 0, zoneId);
         ZonedDateTime to = ZonedDateTime.of(2017, 02, 01, 00, 00, 00, 0, zoneId);
-        NextTimePeriodAdjuster adjuster = new NextTimePeriodAdjuster(TimePeriods.DAYS, 1);
+        NextTimePeriodAdjuster adjuster = new NextTimePeriodAdjuster(ChronoUnit.DAYS, 1);
 
         int cacheSize = 10;
         MockDataSourceVO ds = createDataSource();
@@ -453,7 +453,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
         //Setup the data to run once daily for 30 days
         ZonedDateTime from = ZonedDateTime.of(2017, 01, 01, 00, 00, 00, 0, zoneId);
         ZonedDateTime to = ZonedDateTime.of(2017, 02, 01, 00, 00, 00, 0, zoneId);
-        NextTimePeriodAdjuster adjuster = new NextTimePeriodAdjuster(TimePeriods.DAYS, 1);
+        NextTimePeriodAdjuster adjuster = new NextTimePeriodAdjuster(ChronoUnit.DAYS, 1);
 
         int cacheSize = 10;
         MockDataSourceVO ds = createDataSource();
@@ -583,7 +583,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
         //Setup the data to run once daily for 30 days
         ZonedDateTime from = ZonedDateTime.of(2017, 01, 01, 00, 00, 00, 0, zoneId);
         ZonedDateTime to = ZonedDateTime.of(2017, 02, 01, 00, 00, 00, 0, zoneId);
-        NextTimePeriodAdjuster adjuster = new NextTimePeriodAdjuster(TimePeriods.DAYS, 1);
+        NextTimePeriodAdjuster adjuster = new NextTimePeriodAdjuster(ChronoUnit.DAYS, 1);
 
         MockDataSourceVO ds = createDataSource();
         DataPointVO numericDp = createDataPoint(ds.getId(), DataType.NUMERIC, 1);
@@ -639,7 +639,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
         //Setup the data to run once daily for 30 days
         ZonedDateTime from = ZonedDateTime.of(2017, 01, 01, 00, 00, 00, 0, zoneId);
         ZonedDateTime to = ZonedDateTime.of(2017, 02, 01, 00, 00, 00, 0, zoneId);
-        NextTimePeriodAdjuster adjuster = new NextTimePeriodAdjuster(TimePeriods.DAYS, 1);
+        NextTimePeriodAdjuster adjuster = new NextTimePeriodAdjuster(ChronoUnit.DAYS, 1);
 
         int cacheSize = 10;
         MockDataSourceVO ds = createDataSource();
