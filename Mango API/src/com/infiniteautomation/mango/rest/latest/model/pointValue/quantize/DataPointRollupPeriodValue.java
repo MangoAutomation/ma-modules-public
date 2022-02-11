@@ -85,6 +85,12 @@ public class DataPointRollupPeriodValue implements DataPointValueTime {
                     return true;
                 case INTEGRAL:
                     return isDoubleProcessable(stats.getIntegral());
+                case ARITHMETIC_MEAN:
+                    return isDoubleProcessable(stats.getArithmeticMean());
+                case MINIMUM_IN_PERIOD:
+                    return isDoubleProcessable(stats.getMinimumInPeriod());
+                case MAXIMUM_IN_PERIOD:
+                    return isDoubleProcessable(stats.getMaximumInPeriod());
                 default:
                     throw new ShouldNeverHappenException("Unknown Rollup type " + rollup);
             }
@@ -168,6 +174,12 @@ public class DataPointRollupPeriodValue implements DataPointValueTime {
                     return stats.getCount();
                 case INTEGRAL:
                     return stats.getIntegral();
+                case ARITHMETIC_MEAN:
+                    return stats.getArithmeticMean();
+                case MINIMUM_IN_PERIOD:
+                    return stats.getMinimumInPeriod();
+                case MAXIMUM_IN_PERIOD:
+                    return stats.getMaximumInPeriod();
                 default:
                     throw new ShouldNeverHappenException("Unknown Rollup type " + rollup);
             }

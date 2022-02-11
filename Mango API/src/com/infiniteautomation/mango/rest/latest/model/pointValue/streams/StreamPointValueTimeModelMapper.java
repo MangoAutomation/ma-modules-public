@@ -176,7 +176,13 @@ public class StreamPointValueTimeModelMapper implements Function<IdPointValueTim
         // TODO
         switch (rollup) {
             case AVERAGE:
-                return stats.getStatistics().getAverage();
+                return stats.getAverage();
+            case ARITHMETIC_MEAN:
+                return stats.getArithmeticMean();
+            case MINIMUM_IN_PERIOD:
+                return stats.getMinimumInPeriod();
+            case MAXIMUM_IN_PERIOD:
+                return stats.getMaximumInPeriod();
             default:
                 throw new IllegalStateException("Unknown rollup: " + rollup);
         }

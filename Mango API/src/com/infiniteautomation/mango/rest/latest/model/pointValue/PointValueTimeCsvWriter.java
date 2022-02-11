@@ -87,6 +87,9 @@ public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter {
                 writeAnalogStatistic(vo.getXid() + DOT + RollupEnum.START.name(), vo, stats.getStartValue(), rendered, raw);
                 writeAnalogStatistic(vo.getXid() + DOT + RollupEnum.FIRST.name(), vo, stats.getFirstValue(), rendered, raw);
                 writeAnalogStatistic(vo.getXid() + DOT + RollupEnum.LAST.name(), vo, stats.getLastValue(), rendered, raw);
+                writeAnalogStatistic(vo.getXid() + DOT + RollupEnum.ARITHMETIC_MEAN.name(), vo, stats.getArithmeticMean(), rendered, raw);
+                writeAnalogStatistic(vo.getXid() + DOT + RollupEnum.MINIMUM_IN_PERIOD.name(), vo, stats.getMinimumInPeriod(), rendered, raw);
+                writeAnalogStatistic(vo.getXid() + DOT + RollupEnum.MAXIMUM_IN_PERIOD.name(), vo, stats.getMaximumInPeriod(), rendered, raw);
                 writeIntegral(vo.getXid() + DOT + RollupEnum.INTEGRAL.name(), vo, stats.getIntegral(), rendered);
                 writeIntegerField(vo.getXid() + DOT + RollupEnum.COUNT.name(), stats.getCount());
             }
@@ -115,6 +118,9 @@ public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter {
                 writeAnalogStatistic(RollupEnum.START.name(), vo, stats.getStartValue(), rendered, raw);
                 writeAnalogStatistic(RollupEnum.FIRST.name(), vo, stats.getFirstValue(), rendered, raw);
                 writeAnalogStatistic(RollupEnum.LAST.name(), vo, stats.getLastValue(), rendered, raw);
+                writeAnalogStatistic(RollupEnum.ARITHMETIC_MEAN.name(), vo, stats.getArithmeticMean(), rendered, raw);
+                writeAnalogStatistic(RollupEnum.MINIMUM_IN_PERIOD.name(), vo, stats.getMinimumInPeriod(), rendered, raw);
+                writeAnalogStatistic(RollupEnum.MAXIMUM_IN_PERIOD.name(), vo, stats.getMaximumInPeriod(), rendered, raw);
                 writeIntegral(RollupEnum.INTEGRAL.name(), vo, stats.getIntegral(), rendered);
                 writeIntegerField(RollupEnum.COUNT.name(), stats.getCount());
             }

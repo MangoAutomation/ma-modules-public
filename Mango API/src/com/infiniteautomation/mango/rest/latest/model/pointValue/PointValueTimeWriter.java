@@ -482,6 +482,15 @@ public abstract class PointValueTimeWriter {
                 case INTEGRAL:
                     writeIntegral(name, vo, stats.getIntegral(), rendered);
                     break;
+                case ARITHMETIC_MEAN:
+                    writeAnalogStatistic(name, vo, stats.getArithmeticMean(), rendered, raw);
+                    break;
+                case MINIMUM_IN_PERIOD:
+                    writeAnalogStatistic(name, vo, stats.getMinimumInPeriod(), rendered, raw);
+                    break;
+                case MAXIMUM_IN_PERIOD:
+                    writeAnalogStatistic(name, vo, stats.getMaximumInPeriod(), rendered, raw);
+                    break;
                 default:
                     throw new ShouldNeverHappenException("Unknown Rollup type " + rollup);
             }
