@@ -78,7 +78,7 @@ import com.infiniteautomation.mango.rest.latest.model.pointValue.query.ZonedDate
 import com.infiniteautomation.mango.rest.latest.model.time.TimePeriod;
 import com.infiniteautomation.mango.rest.latest.model.time.TimePeriodType;
 import com.infiniteautomation.mango.rest.latest.streamingvalues.mapper.DefaultStreamMapper;
-import com.infiniteautomation.mango.rest.latest.streamingvalues.mapper.RollupStreamMapper;
+import com.infiniteautomation.mango.rest.latest.streamingvalues.mapper.AnalogStatisticsStreamMapper;
 import com.infiniteautomation.mango.rest.latest.streamingvalues.mapper.StreamMapperBuilder;
 import com.infiniteautomation.mango.rest.latest.streamingvalues.mapper.TimestampGrouper;
 import com.infiniteautomation.mango.rest.latest.streamingvalues.model.StreamingMultiPointModel;
@@ -510,30 +510,41 @@ public class PointValueRestController extends AbstractMangoRestController {
 
         DataPointVO point = dataPointService.get(xid);
 
-        RollupStreamMapper mapper = new StreamMapperBuilder()
+        StreamMapperBuilder mapperBuilder = new StreamMapperBuilder()
                 .withDataPoint(point)
                 .withRollup(rollup)
                 .withFields(fields)
                 .withDateTimeFormat(dateTimeFormat)
-                .withTimezone(timezone, from, to)
-                .build(RollupStreamMapper::new);
+                .withTimezone(timezone, from, to);
 
         if (truncate) {
             from = from.with(new TruncateTimePeriodAdjuster(timePeriodType.getChronoUnit(), timePeriods));
             to = to.with(new ExpandTimePeriodAdjuster(from, timePeriodType.getChronoUnit(), timePeriods));
         }
 
+        boolean simplify = false;
+        if (rollup == RollupEnum.POINT_DEFAULT) {
+            rollup = RollupEnum.convertTo(point.getRollup());
+            simplify = point.isSimplifyDataSets();
+        }
 
         Stream<IdPointValueTime> stream = dao.bookendStream(point, from.toInstant().toEpochMilli(), to.toInstant().toEpochMilli(), limit);
 
-        // TODO none rollup?
-        // TODO if rollup is POINT_DEFAULT get simplifyTolerance, simplifyTarget from point
-        // TODO support ALL rollup
-//        stream = simplifyStream(stream, simplifyTolerance, simplifyTarget);
+        if (rollup != RollupEnum.NONE) {
+            TemporalAmount rollupPeriod = timePeriodType.toTemporalAmount(timePeriods);
+            BucketCalculator bucketCalc = new TemporalAmountBucketCalculator(from, to, rollupPeriod);
+            stream = RollupStream.rollup(stream, new AnalogStatisticsQuantizer(bucketCalc))
+                    .map(mapperBuilder.build(AnalogStatisticsStreamMapper::new));
+        }
 
-        TemporalAmount rollupPeriod = timePeriodType.toTemporalAmount(timePeriods);
-        BucketCalculator bucketCalc = new TemporalAmountBucketCalculator(from, to, rollupPeriod);
-        return RollupStream.rollup(stream, new AnalogStatisticsQuantizer(bucketCalc)).map(mapper);
+        if (simplify) {
+            stream = simplifyStream(stream, point.getSimplifyTolerance(), point.getSimplifyTarget());
+        }
+
+        // TODO support ALL rollup
+        // TODO support non-numeric for RollupStream & in mapper
+
+        return stream.map(mapperBuilder.build(DefaultStreamMapper::new));
     }
 
     @ApiOperation(value = "Query Time Range for multiple data points, return in time ascending order",

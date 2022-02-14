@@ -21,17 +21,18 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
 import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueField;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.RollupEnum;
-import com.infiniteautomation.mango.rest.latest.streamingvalues.model.StreamingPointValueTimeModel;
 import com.infiniteautomation.mango.statistics.AnalogStatistics;
 import com.serotonin.m2m2.vo.DataPointVO;
 
 /**
- * Base class for mappers that convert to a {@link StreamingPointValueTimeModel}.
+ * Base class for mappers, uses options from the REST API parameters to map a stream of point values.
  *
+ * @param <T> input type
+ * @param <R> output type
  * @author Jared Wiltshire
  */
 @NonNull
-public abstract class AbstractStreamMapper<T> implements Function<T, StreamingPointValueTimeModel> {
+public abstract class AbstractStreamMapper<T, R> implements Function<T, R> {
 
     private final Map<Integer, DataPointVO> dataPoints;
     private final Set<PointValueField> fieldSet;

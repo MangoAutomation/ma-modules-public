@@ -19,7 +19,7 @@ import com.serotonin.m2m2.vo.DataPointVO;
  * @author Jared Wiltshire
  */
 @NonNull
-public class RollupStreamMapper extends AbstractStreamMapper<AnalogStatistics> {
+public class RollupStreamMapper extends AbstractStreamMapper<AnalogStatistics, StreamingPointValueTimeModel> {
 
     public RollupStreamMapper(StreamMapperBuilder options) {
         super(options);

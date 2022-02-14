@@ -21,7 +21,7 @@ import com.serotonin.m2m2.vo.DataPointVO;
  * @author Jared Wiltshire
  */
 @NonNull
-public class DefaultStreamMapper extends AbstractStreamMapper<IdPointValueTime> {
+public class DefaultStreamMapper extends AbstractStreamMapper<IdPointValueTime, StreamingPointValueTimeModel> {
 
     public DefaultStreamMapper(StreamMapperBuilder options) {
         super(options);
