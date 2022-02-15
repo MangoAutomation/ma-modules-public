@@ -497,7 +497,7 @@ public abstract class PointValueTimeWriter {
         }else if(statisticsGenerator instanceof NoStatisticsGenerator) {
             NoStatisticsGenerator stats = (NoStatisticsGenerator)statisticsGenerator;
             if(stats.getValues().size() > 0) {
-                for(IValueTime v : stats.getValues()) {
+                for(IValueTime<DataValue> v : stats.getValues()) {
                     writeDataValue(name, vo, v.getValue(), v.getTime(), rendered, raw);
                 }
             }else {

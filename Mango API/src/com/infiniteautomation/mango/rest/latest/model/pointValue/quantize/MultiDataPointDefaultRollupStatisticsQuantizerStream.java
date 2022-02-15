@@ -23,6 +23,7 @@ import com.infiniteautomation.mango.rest.latest.model.pointValue.query.ZonedDate
 import com.infiniteautomation.mango.statistics.NoStatisticsGenerator;
 import com.serotonin.m2m2.db.dao.PointValueDao;
 import com.serotonin.m2m2.rt.dataImage.IdPointValueTime;
+import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.view.stats.IValueTime;
 import com.serotonin.m2m2.vo.DataPointVO;
 
@@ -138,7 +139,7 @@ public class MultiDataPointDefaultRollupStatisticsQuantizerStream <T, INFO exten
                 //Iterate and combine into an array
                 for(DataPointStatisticsGenerator gen : generators) {
                     NoStatisticsGenerator noGen = (NoStatisticsGenerator)gen.getGenerator();
-                    for(IValueTime value : noGen.getValues()) {
+                    for(IValueTime<DataValue> value : noGen.getValues()) {
                         values.add(new DataPointVOPointValueTimeBookend(vo, (IdPointValueTime)value));
                     }
                 }
