@@ -115,6 +115,7 @@ import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.rt.dataImage.types.MultistateValue;
 import com.serotonin.m2m2.rt.dataImage.types.NumericValue;
 import com.serotonin.m2m2.util.DateUtils;
+import com.serotonin.m2m2.view.stats.ITime;
 import com.serotonin.m2m2.vo.DataPointVO;
 import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.dataSource.DataSourceVO;
@@ -184,7 +185,7 @@ public class PointValueRestController extends AbstractMangoRestController {
         if (simplifyTolerance != null || simplifyTarget != null) {
             var list = stream.collect(Collectors.toList());
             return SimplifyUtility.simplify(simplifyTolerance, simplifyTarget,
-                    true, true, list, PointValueTimePointExtractor.INSTANCE)
+                    true, true, list, PointValueTimePointExtractor.INSTANCE, ITime.COMPARATOR)
                     .stream();
         }
         return stream;

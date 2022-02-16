@@ -5,7 +5,6 @@ package com.infiniteautomation.mango.rest.latest.model.pointValue.query;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -56,14 +55,7 @@ public class MultiPointSimplifyLatestDatabaseStream<T, INFO extends LatestQueryI
             while(it.hasNext())
                 sorted.addAll(SimplifyUtility.simplify(info.simplifyTolerance, info.simplifyTarget, info.simplifyHighQuality, info.simplifyPrePostProcess, valuesMap.get(it.next())));
             //Sort the Sorted List
-            Collections.sort(sorted, new Comparator<DataPointVOPointValueTimeBookend>() {
-                @Override
-                public int compare(DataPointVOPointValueTimeBookend o1,
-                        DataPointVOPointValueTimeBookend o2) {
-                    return o1.getPvt().compareTo(o2.getPvt());
-                }
-
-            });
+            sorted.sort(Comparator.comparingLong(DataPointVOPointValueTimeBookend::getTime));
             for(DataPointVOPointValueTimeBookend value : sorted)
                 super.writeValue(value);
         }else {

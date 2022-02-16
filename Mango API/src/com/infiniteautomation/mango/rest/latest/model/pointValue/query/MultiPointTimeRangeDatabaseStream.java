@@ -6,7 +6,6 @@ package com.infiniteautomation.mango.rest.latest.model.pointValue.query;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
@@ -20,6 +19,7 @@ import com.serotonin.m2m2.rt.dataImage.AnnotatedIdPointValueTime;
 import com.serotonin.m2m2.rt.dataImage.IAnnotated;
 import com.serotonin.m2m2.rt.dataImage.IdPointValueTime;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
+import com.serotonin.m2m2.view.stats.ITime;
 import com.serotonin.m2m2.vo.DataPointVO;
 
 /**
@@ -159,6 +159,6 @@ public class MultiPointTimeRangeDatabaseStream<T, INFO extends ZonedDateTimeRang
 
     @Override
     protected void sortCache(List<IdPointValueTime> cache) {
-        Collections.sort(cache);
+        cache.sort(ITime.COMPARATOR);
     }
 }

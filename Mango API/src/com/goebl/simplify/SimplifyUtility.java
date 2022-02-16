@@ -4,7 +4,7 @@
 package com.goebl.simplify;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.ListIterator;
 
@@ -24,7 +24,8 @@ public class SimplifyUtility {
             boolean prePostProcess,
             List<T> list) {
 
-        return simplify(simplifyTolerance, simplifyTarget, simplifyHighQuality, prePostProcess, list, IdentityPointExtractor.INSTANCE);
+        return simplify(simplifyTolerance, simplifyTarget, simplifyHighQuality, prePostProcess, list,
+                IdentityPointExtractor.INSTANCE, Comparator.comparingDouble(Point::getX));
     }
 
     /**
@@ -33,13 +34,14 @@ public class SimplifyUtility {
      *  process the data to remove !Point.isProcessable() values and add them back in.
      *
      */
-    public static <T extends Comparable<? super T>> List<T> simplify(
+    public static <T> List<T> simplify(
             Double simplifyTolerance,
             Integer simplifyTarget,
             boolean simplifyHighQuality,
             boolean prePostProcess,
             List<T> list,
-            PointExtractor<? super T> extractor) {
+            PointExtractor<? super T> extractor,
+            Comparator<? super T> comparator) {
         LogStopWatch logStopWatch = new LogStopWatch();
 
         //PreProcess by removing all invalid values (to add back in at the end)
@@ -136,7 +138,7 @@ public class SimplifyUtility {
         //Post Process, add back in values
         if(prePostProcess) {
             simplified.addAll(unprocessable);
-            Collections.sort(simplified);
+            simplified.sort(comparator);
         }
 
         if(simplifyTolerance != null)

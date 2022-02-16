@@ -79,14 +79,7 @@ public class MultiPointSimplifyTimeRangeDatabaseStream<T, INFO extends ZonedDate
                     sorted.add(pair.endBookend);
             }
             //Sort the Sorted List
-            Collections.sort(sorted, new Comparator<DataPointVOPointValueTimeBookend>() {
-                @Override
-                public int compare(DataPointVOPointValueTimeBookend o1,
-                        DataPointVOPointValueTimeBookend o2) {
-                    return o1.getPvt().compareTo(o2.getPvt());
-                }
-
-            });
+            sorted.sort(Comparator.comparingLong(DataPointVOPointValueTimeBookend::getTime));
             for(DataPointVOPointValueTimeBookend value : sorted)
                 super.writeValue(value);
         }else {
