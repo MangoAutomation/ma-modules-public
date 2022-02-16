@@ -21,7 +21,8 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
 import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueField;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.RollupEnum;
-import com.infiniteautomation.mango.statistics.AnalogStatistics;
+import com.serotonin.m2m2.db.dao.pointvalue.AggregateValue;
+import com.serotonin.m2m2.db.dao.pointvalue.NumericAggregate;
 import com.serotonin.m2m2.vo.DataPointVO;
 
 /**
@@ -78,7 +79,12 @@ public abstract class AbstractStreamMapper<T, R> implements Function<T, R> {
         return this.rollup;
     }
 
-    protected double getRollupValue(AnalogStatistics stats, RollupEnum rollup) {
+    protected Object getRollupValue(AggregateValue aggregate, RollupEnum rollup) {
+        // TODO support other AggregateValue types
+        return getNumericRollupValue((NumericAggregate) aggregate, rollup);
+    }
+
+    protected double getNumericRollupValue(NumericAggregate stats, RollupEnum rollup) {
         switch (rollup) {
             case AVERAGE:
                 return stats.getAverage();

@@ -9,36 +9,47 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueField;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.RollupEnum;
 import com.infiniteautomation.mango.rest.latest.streamingvalues.model.StreamingPointValueTimeModel;
-import com.infiniteautomation.mango.statistics.AnalogStatistics;
+import com.serotonin.m2m2.DataType;
+import com.serotonin.m2m2.db.dao.pointvalue.AggregateValue;
+import com.serotonin.m2m2.db.dao.pointvalue.NumericAggregate;
+import com.serotonin.m2m2.view.stats.SeriesValueTime;
 import com.serotonin.m2m2.view.text.TextRenderer;
 import com.serotonin.m2m2.vo.DataPointVO;
 
 /**
- * Maps {@link AnalogStatistics} to a {@link StreamingPointValueTimeModel}, for use with rollups.
+ * Maps {@link SeriesValueTime} containing a {@link AggregateValue} to a {@link StreamingPointValueTimeModel}, for use with rollups.
  *
  * @author Jared Wiltshire
  */
 @NonNull
-public class RollupStreamMapper extends AbstractStreamMapper<AnalogStatistics, StreamingPointValueTimeModel> {
+public class RollupStreamMapper extends AbstractStreamMapper<SeriesValueTime<? extends AggregateValue>, StreamingPointValueTimeModel> {
 
     public RollupStreamMapper(StreamMapperBuilder options) {
         super(options);
     }
 
     @Override
-    public StreamingPointValueTimeModel apply(AnalogStatistics stats) {
-        DataPointVO point = lookupPoint(stats.getSeriesId());
+    public StreamingPointValueTimeModel apply(SeriesValueTime<? extends AggregateValue> value) {
+        DataPointVO point = lookupPoint(value.getSeriesId());
         RollupEnum rollup = rollup(point);
-        StreamingPointValueTimeModel model = new StreamingPointValueTimeModel(point.getXid(), stats.getPeriodStartTime());
+        AggregateValue aggregate = value.getValue();
+
+        StreamingPointValueTimeModel model = new StreamingPointValueTimeModel(point.getXid(), value.getTime());
         for (PointValueField field : fields()) {
             switch (field) {
                 case VALUE: {
-                    double convertedValue = convertValue(point, getRollupValue(stats, rollup));
-                    model.setValue(convertedValue);
+                    if (aggregate instanceof NumericAggregate && point.getPointLocator().getDataType() == DataType.NUMERIC) {
+                        double rollupValue = getNumericRollupValue((NumericAggregate) aggregate, rollup);
+                        double convertedValue = convertValue(point, rollupValue);
+                        model.setValue(convertedValue);
+                    } else {
+                        Object rollupValue = getRollupValue(aggregate, rollup);
+                        model.setValue(rollupValue);
+                    }
                     break;
                 }
                 case TIMESTAMP: {
-                    model.setTimestamp(formatTime(stats.getPeriodStartTime()));
+                    model.setTimestamp(formatTime(value.getTime()));
                     break;
                 }
                 case ANNOTATION:
@@ -50,12 +61,20 @@ public class RollupStreamMapper extends AbstractStreamMapper<AnalogStatistics, S
                     model.setBookend(false);
                     break;
                 case RENDERED: {
-                    double convertedValue = convertValue(point, getRollupValue(stats, rollup));
-                    model.setRendered(point.getTextRenderer().getText(convertedValue, TextRenderer.HINT_FULL));
+                    if (aggregate instanceof NumericAggregate && point.getPointLocator().getDataType() == DataType.NUMERIC) {
+                        double rollupValue = getNumericRollupValue((NumericAggregate) aggregate, rollup);
+                        double convertedValue = convertValue(point, rollupValue);
+                        model.setRendered(point.getTextRenderer().getText(convertedValue, TextRenderer.HINT_FULL));
+                    } else {
+                        Object rollupValue = getRollupValue(aggregate, rollup);
+                        // TODO render other aggregates?
+                        //model.setRendered(point.getTextRenderer().getText(rollupValue, TextRenderer.HINT_FULL));
+                        model.setRendered(rollupValue.toString());
+                    }
                     break;
                 }
                 case RAW:
-                    model.setRaw(getRollupValue(stats, rollup));
+                    model.setRaw(getRollupValue(aggregate, rollup));
                     break;
                 case XID:
                     model.setXid(point.getXid());
@@ -75,5 +94,4 @@ public class RollupStreamMapper extends AbstractStreamMapper<AnalogStatistics, S
         }
         return model;
     }
-
 }

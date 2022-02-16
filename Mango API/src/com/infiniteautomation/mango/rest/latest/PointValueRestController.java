@@ -43,10 +43,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.goebl.simplify.SimplifyUtility;
 import com.google.common.base.Functions;
 import com.infiniteautomation.mango.db.iterators.MergingIterator;
-import com.infiniteautomation.mango.db.iterators.RollupStream;
-import com.infiniteautomation.mango.quantize.AnalogStatisticsQuantizer;
-import com.infiniteautomation.mango.quantize.BucketCalculator;
-import com.infiniteautomation.mango.quantize.TemporalAmountBucketCalculator;
 import com.infiniteautomation.mango.rest.latest.exception.AbstractRestException;
 import com.infiniteautomation.mango.rest.latest.exception.BadRequestException;
 import com.infiniteautomation.mango.rest.latest.exception.GenericRestException;
@@ -77,8 +73,8 @@ import com.infiniteautomation.mango.rest.latest.model.pointValue.query.ZonedDate
 import com.infiniteautomation.mango.rest.latest.model.pointValue.query.ZonedDateTimeStatisticsQueryInfo;
 import com.infiniteautomation.mango.rest.latest.model.time.TimePeriod;
 import com.infiniteautomation.mango.rest.latest.model.time.TimePeriodType;
-import com.infiniteautomation.mango.rest.latest.streamingvalues.mapper.AnalogStatisticsStreamMapper;
 import com.infiniteautomation.mango.rest.latest.streamingvalues.mapper.DefaultStreamMapper;
+import com.infiniteautomation.mango.rest.latest.streamingvalues.mapper.RollupStreamMapper;
 import com.infiniteautomation.mango.rest.latest.streamingvalues.mapper.StreamMapperBuilder;
 import com.infiniteautomation.mango.rest.latest.streamingvalues.mapper.TimestampGrouper;
 import com.infiniteautomation.mango.rest.latest.streamingvalues.model.StreamingMultiPointModel;
@@ -529,23 +525,20 @@ public class PointValueRestController extends AbstractMangoRestController {
             simplify = point.isSimplifyDataSets();
         }
 
-        Stream<IdPointValueTime> stream = dao.bookendStream(point, from.toInstant().toEpochMilli(), to.toInstant().toEpochMilli(), limit);
-
-        if (rollup != RollupEnum.NONE) {
-            TemporalAmount rollupPeriod = timePeriodType.toTemporalAmount(timePeriods);
-            BucketCalculator bucketCalc = new TemporalAmountBucketCalculator(from, to, rollupPeriod);
-            stream = RollupStream.rollup(stream, new AnalogStatisticsQuantizer(bucketCalc))
-                    .map(mapperBuilder.build(AnalogStatisticsStreamMapper::new));
-        }
-
-        if (simplify) {
-            stream = simplifyStream(stream, point.getSimplifyTolerance(), point.getSimplifyTarget());
-        }
-
         // TODO support ALL rollup
         // TODO support non-numeric for RollupStream & in mapper
 
-        return stream.map(mapperBuilder.build(DefaultStreamMapper::new));
+        if (rollup == RollupEnum.NONE) {
+            Stream<IdPointValueTime> stream = dao.bookendStream(point, from.toInstant().toEpochMilli(), to.toInstant().toEpochMilli(), limit);
+            if (simplify) {
+                stream = simplifyStream(stream, point.getSimplifyTolerance(), point.getSimplifyTarget());
+            }
+            return stream.map(mapperBuilder.build(DefaultStreamMapper::new));
+        }
+
+        TemporalAmount rollupPeriod = timePeriodType.toTemporalAmount(timePeriods);
+        var stream = dao.getAggregateDao(rollupPeriod).query(point, from, to, limit);
+        return stream.map(mapperBuilder.build(RollupStreamMapper::new));
     }
 
     @ApiOperation(value = "Query Time Range for multiple data points, return in time ascending order",
