@@ -311,7 +311,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                     stat = stats.get(PointValueTimeWriter.COUNT);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.COUNT + " entry");
-                    assertEquals(gen.getCount(), stat.asInt());
+                    assertEquals(gen.getCount(), stat.asLong());
 
                     stat = stats.get(PointValueTimeWriter.ACCUMULATOR);
                     if(stat == null)
@@ -497,7 +497,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                     stat = stats.get(PointValueTimeWriter.COUNT);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.COUNT + " entry");
-                    assertEquals(gen.getCount(), stat.asInt());
+                    assertEquals(gen.getCount(), stat.asLong());
 
                     stat = stats.get(PointValueTimeWriter.ACCUMULATOR);
                     if(stat == null)
@@ -682,7 +682,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                     stat = stats.get(PointValueTimeWriter.COUNT);
                     if(stat == null)
                         fail("Missing " + PointValueTimeWriter.COUNT + " entry");
-                    assertEquals(gen.getCount(), stat.asInt());
+                    assertEquals(gen.getCount(), stat.asLong());
 
                     stat = stats.get(PointValueTimeWriter.ACCUMULATOR);
                     if(stat == null)
@@ -1089,7 +1089,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
             stat = stats.get(PointValueTimeWriter.COUNT);
             if(stat == null)
                 fail("Missing " + PointValueTimeWriter.COUNT + " entry");
-            assertEquals(gen.getCount(), stat.asInt());
+            assertEquals(gen.getCount(), stat.asLong());
 
             stat = stats.get(PointValueTimeWriter.ACCUMULATOR);
             if(stat == null)

@@ -387,7 +387,7 @@ public abstract class PointValueTimeWriter {
             }else {
                 writeNullField(INTEGRAL);
             }
-            writeIntegerField(COUNT, stats.getCount());
+            writeLongField(COUNT, stats.getCount());
         }
     }
 
@@ -477,7 +477,7 @@ public abstract class PointValueTimeWriter {
                     writeAnalogStatistic(name, vo, stats.getLastValue(), rendered, raw);
                     break;
                 case COUNT:
-                    writeIntegerField(name, stats.getCount());
+                    writeLongField(name, stats.getCount());
                     break;
                 case INTEGRAL:
                     writeIntegral(name, vo, stats.getIntegral(), rendered);

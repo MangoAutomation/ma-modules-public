@@ -91,7 +91,7 @@ public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter {
                 writeAnalogStatistic(vo.getXid() + DOT + RollupEnum.MINIMUM_IN_PERIOD.name(), vo, stats.getMinimumInPeriod(), rendered, raw);
                 writeAnalogStatistic(vo.getXid() + DOT + RollupEnum.MAXIMUM_IN_PERIOD.name(), vo, stats.getMaximumInPeriod(), rendered, raw);
                 writeIntegral(vo.getXid() + DOT + RollupEnum.INTEGRAL.name(), vo, stats.getIntegral(), rendered);
-                writeIntegerField(vo.getXid() + DOT + RollupEnum.COUNT.name(), stats.getCount());
+                writeLongField(vo.getXid() + DOT + RollupEnum.COUNT.name(), stats.getCount());
             }
         }else {
             if (statisticsGenerator instanceof ValueChangeCounter) {
@@ -122,7 +122,7 @@ public class PointValueTimeCsvWriter extends PointValueTimeJsonWriter {
                 writeAnalogStatistic(RollupEnum.MINIMUM_IN_PERIOD.name(), vo, stats.getMinimumInPeriod(), rendered, raw);
                 writeAnalogStatistic(RollupEnum.MAXIMUM_IN_PERIOD.name(), vo, stats.getMaximumInPeriod(), rendered, raw);
                 writeIntegral(RollupEnum.INTEGRAL.name(), vo, stats.getIntegral(), rendered);
-                writeIntegerField(RollupEnum.COUNT.name(), stats.getCount());
+                writeLongField(RollupEnum.COUNT.name(), stats.getCount());
             }
         }
     }
