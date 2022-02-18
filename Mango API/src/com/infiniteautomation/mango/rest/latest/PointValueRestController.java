@@ -526,7 +526,7 @@ public class PointValueRestController extends AbstractMangoRestController {
         }
 
         // TODO support ALL rollup
-        // TODO support non-numeric for RollupStream & in mapper
+        // TODO support non-numeric for StatisticsAggregator & in mapper
 
         if (rollup == RollupEnum.NONE) {
             Stream<IdPointValueTime> stream = dao.bookendStream(point, from.toInstant().toEpochMilli(), to.toInstant().toEpochMilli(), limit);
