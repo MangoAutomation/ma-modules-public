@@ -11,6 +11,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueField;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.RollupEnum;
 import com.infiniteautomation.mango.rest.latest.streamingvalues.model.AllStatisticsModel;
+import com.infiniteautomation.mango.rest.latest.streamingvalues.model.NumericAllModel;
 import com.infiniteautomation.mango.rest.latest.streamingvalues.model.StreamingPointValueTimeModel;
 import com.infiniteautomation.mango.rest.latest.streamingvalues.model.ValueModel;
 import com.serotonin.m2m2.DataType;
@@ -87,7 +88,23 @@ public class AggregateValueMapper extends AbstractStreamMapper<SeriesValueTime<?
     }
 
     private AllStatisticsModel getAllRollup(DataPointVO point, AggregateValue stats) {
-        AllStatisticsModel all = new AllStatisticsModel();
+        AllStatisticsModel all;
+        if (stats instanceof NumericAggregate) {
+            NumericAllModel model = new NumericAllModel();
+            model.setAccumulator(getRollupValue(point, stats, RollupEnum.ACCUMULATOR));
+            model.setAverage(getRollupValue(point, stats, RollupEnum.AVERAGE));
+            model.setDelta(getRollupValue(point, stats, RollupEnum.DELTA));
+            model.setIntegral(getRollupValue(point, stats, RollupEnum.INTEGRAL));
+            model.setMaximum(getRollupValue(point, stats, RollupEnum.MAXIMUM));
+            model.setMinimum(getRollupValue(point, stats, RollupEnum.MINIMUM));
+            model.setSum(getRollupValue(point, stats, RollupEnum.SUM));
+            model.setMaximumInPeriod(getRollupValue(point, stats, RollupEnum.MAXIMUM_IN_PERIOD));
+            model.setMinimumInPeriod(getRollupValue(point, stats, RollupEnum.MINIMUM_IN_PERIOD));
+            model.setArithmeticMean(getRollupValue(point, stats, RollupEnum.ARITHMETIC_MEAN));
+            all = model;
+        } else {
+            all = new AllStatisticsModel();
+        }
         all.setCount(stats.getCount());
         all.setFirst(getRollupValue(point, stats, RollupEnum.FIRST));
         all.setLast(getRollupValue(point, stats, RollupEnum.LAST));
@@ -116,6 +133,9 @@ public class AggregateValueMapper extends AbstractStreamMapper<SeriesValueTime<?
                 break;
             case DELTA:
                 rawValue = extractNumeric(aggregate, NumericAggregate::getDelta);
+                break;
+            case ACCUMULATOR:
+                rawValue = extractNumeric(aggregate, v -> v.getLastValue() == null ? v.getMaximumValue() : v.getLastValue().getDoubleValue());
                 break;
             case MINIMUM:
                 rawValue = extractNumeric(aggregate, NumericAggregate::getMinimumValue);
