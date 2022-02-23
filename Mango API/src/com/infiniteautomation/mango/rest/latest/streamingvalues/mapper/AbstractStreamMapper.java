@@ -15,25 +15,27 @@ import java.util.Set;
 import java.util.function.Function;
 
 import javax.measure.converter.UnitConverter;
-import javax.measure.unit.Unit;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueField;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.RollupEnum;
+import com.infiniteautomation.mango.rest.latest.streamingvalues.model.StreamingPointValueTimeModel;
+import com.serotonin.m2m2.DataType;
 import com.serotonin.m2m2.db.dao.pointvalue.AggregateValue;
 import com.serotonin.m2m2.db.dao.pointvalue.NumericAggregate;
+import com.serotonin.m2m2.rt.dataImage.types.DataValue;
+import com.serotonin.m2m2.rt.dataImage.types.NumericValue;
 import com.serotonin.m2m2.vo.DataPointVO;
 
 /**
  * Base class for mappers, uses options from the REST API parameters to map a stream of point values.
  *
  * @param <T> input type
- * @param <R> output type
  * @author Jared Wiltshire
  */
 @NonNull
-public abstract class AbstractStreamMapper<T, R> implements Function<T, R> {
+public abstract class AbstractStreamMapper<T> implements Function<T, StreamingPointValueTimeModel> {
 
     private final Map<Integer, DataPointVO> dataPoints;
     private final Set<PointValueField> fieldSet;
@@ -79,49 +81,57 @@ public abstract class AbstractStreamMapper<T, R> implements Function<T, R> {
         return this.rollup;
     }
 
-    protected Object getRollupValue(AggregateValue aggregate, RollupEnum rollup) {
-        // TODO support other AggregateValue types
-        return getNumericRollupValue((NumericAggregate) aggregate, rollup);
-    }
-
-    protected double getNumericRollupValue(NumericAggregate stats, RollupEnum rollup) {
+    protected Object getRollupValue(AggregateValue stats, RollupEnum rollup) {
         switch (rollup) {
-            case AVERAGE:
-                return stats.getAverage();
-            case DELTA:
-                return stats.getDelta();
-            case MINIMUM:
-                return stats.getMinimumValue();
-            case MAXIMUM:
-                return stats.getMaximumValue();
-            case SUM:
-                return stats.getSum();
             case FIRST:
                 return stats.getFirstValue();
             case LAST:
                 return stats.getLastValue();
             case COUNT:
                 return stats.getCount();
-            case INTEGRAL:
-                return stats.getIntegral();
             case START:
                 return stats.getStartValue();
+            case AVERAGE:
+                return ((NumericAggregate) stats).getAverage();
+            case DELTA:
+                return ((NumericAggregate) stats).getDelta();
+            case MINIMUM:
+                return ((NumericAggregate) stats).getMinimumValue();
+            case MAXIMUM:
+                return ((NumericAggregate) stats).getMaximumValue();
+            case SUM:
+                return ((NumericAggregate) stats).getSum();
+            case INTEGRAL:
+                return ((NumericAggregate) stats).getIntegral();
             case ARITHMETIC_MEAN:
-                return stats.getArithmeticMean();
+                return ((NumericAggregate) stats).getArithmeticMean();
             case MINIMUM_IN_PERIOD:
-                return stats.getMinimumInPeriod();
+                return ((NumericAggregate) stats).getMinimumInPeriod();
             case MAXIMUM_IN_PERIOD:
-                return stats.getMaximumInPeriod();
+                return ((NumericAggregate) stats).getMaximumInPeriod();
             default:
                 throw new IllegalArgumentException("Unsupported rollup: " + rollup);
         }
     }
 
-    protected double convertValue(DataPointVO point, double value) {
-        if (point.getRenderedUnit() != Unit.ONE) {
-            UnitConverter converter = point.getUnit().getConverterTo(point.getRenderedUnit());
-            return converter.convert(value);
+    protected Object extractValue(DataPointVO point, Object value) {
+        if (point.getPointLocator().getDataType() == DataType.NUMERIC) {
+            if (value instanceof Double) {
+                return convertValue(point, (double) value);
+            } else if (value instanceof NumericValue) {
+                return convertValue(point, ((NumericValue) value).getDoubleValue());
+            }
         }
+
+        if (value instanceof DataValue) {
+            return ((DataValue) value).getObjectValue();
+        }
+
         return value;
+    }
+
+    protected double convertValue(DataPointVO point, double value) {
+        UnitConverter converter = point.getUnit().getConverterTo(point.getRenderedUnit());
+        return converter.convert(value);
     }
 }

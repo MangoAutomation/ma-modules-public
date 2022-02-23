@@ -8,7 +8,6 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
 import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueField;
 import com.infiniteautomation.mango.rest.latest.streamingvalues.model.StreamingPointValueTimeModel;
-import com.serotonin.m2m2.DataType;
 import com.serotonin.m2m2.rt.dataImage.IAnnotated;
 import com.serotonin.m2m2.rt.dataImage.IdPointValueTime;
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
@@ -21,7 +20,7 @@ import com.serotonin.m2m2.vo.DataPointVO;
  * @author Jared Wiltshire
  */
 @NonNull
-public class DefaultStreamMapper extends AbstractStreamMapper<IdPointValueTime, StreamingPointValueTimeModel> {
+public class DefaultStreamMapper extends AbstractStreamMapper<IdPointValueTime> {
 
     public DefaultStreamMapper(StreamMapperBuilder options) {
         super(options);
@@ -34,13 +33,7 @@ public class DefaultStreamMapper extends AbstractStreamMapper<IdPointValueTime, 
         for (PointValueField field : fields()) {
             switch (field) {
                 case VALUE: {
-                    DataValue value = v.getValue();
-                    if (point.getPointLocator().getDataType() == DataType.NUMERIC) {
-                        double convertedValue = convertValue(point, value.getDoubleValue());
-                        model.setValue(convertedValue);
-                    } else {
-                        model.setValue(value.getObjectValue());
-                    }
+                    model.setValue(extractValue(point, v.getValue()));
                     break;
                 }
                 case TIMESTAMP: {
@@ -63,12 +56,8 @@ public class DefaultStreamMapper extends AbstractStreamMapper<IdPointValueTime, 
                     if (value == null) {
                         model.setRendered("-");
                     } else {
-                        if (point.getPointLocator().getDataType() == DataType.NUMERIC) {
-                            double convertedValue = convertValue(point, value.getDoubleValue());
-                            model.setRendered(point.getTextRenderer().getText(convertedValue, TextRenderer.HINT_FULL));
-                        } else {
-                            model.setRendered(point.getTextRenderer().getText(v.getValue(), TextRenderer.HINT_FULL));
-                        }
+                        // the text renderer converts the value to the appropriate unit before rendering
+                        model.setRendered(point.getTextRenderer().getText(value, TextRenderer.HINT_FULL));
                     }
                     break;
                 }

@@ -15,7 +15,6 @@ import com.infiniteautomation.mango.statistics.NoStatisticsGenerator;
 import com.infiniteautomation.mango.statistics.StartsAndRuntimeList;
 import com.infiniteautomation.mango.statistics.ValueChangeCounter;
 import com.serotonin.ShouldNeverHappenException;
-import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.view.stats.StatisticsGenerator;
 import com.serotonin.m2m2.vo.DataPointVO;
 
@@ -36,91 +35,6 @@ public class DataPointRollupPeriodValue implements DataPointValueTime {
     @Override
     public double getX() {
         return generator.getGenerator().getPeriodStartTime();
-    }
-
-    @Override
-    public boolean isProcessable() {
-        StatisticsGenerator statisticsGenerator = generator.getGenerator();
-        if (statisticsGenerator instanceof ValueChangeCounter) {
-            throw new ShouldNeverHappenException("Can't simplify Alphanumeric or Image data");
-        } else if (statisticsGenerator instanceof StartsAndRuntimeList) {
-            StartsAndRuntimeList stats = (StartsAndRuntimeList) statisticsGenerator;
-            switch (rollup) {
-                case START:
-                    return isDataValueProcessable(stats.getStartValue());
-                case FIRST:
-                    return isDataValueProcessable(stats.getFirstValue());
-                case LAST:
-                    return isDataValueProcessable(stats.getLastValue());
-                case COUNT:
-                    return true;
-                default:
-                    throw new ShouldNeverHappenException("Unknown Rollup type " + rollup);
-            }
-        } else if (statisticsGenerator instanceof AnalogStatistics) {
-            AnalogStatistics stats = (AnalogStatistics) statisticsGenerator;
-            switch (rollup) {
-                case AVERAGE:
-                    return isDoubleProcessable(stats.getAverage());
-                case DELTA:
-                    return true; // always double
-                case MINIMUM:
-                    return isDoubleProcessable(stats.getMinimumValue());
-                case MAXIMUM:
-                    return stats.getMaximumValue() != null;
-                case ACCUMULATOR:
-                    if (stats.getLastValue() == null)
-                        return isDoubleProcessable(stats.getMaximumValue());
-                    else
-                        return isDoubleProcessable(stats.getLastValue());
-                case SUM:
-                    return true; // Always double
-                case START:
-                    return isDoubleProcessable(stats.getStartValue());
-                case FIRST:
-                    return isDoubleProcessable(stats.getFirstValue());
-                case LAST:
-                    return isDoubleProcessable(stats.getLastValue());
-                case COUNT:
-                    return true;
-                case INTEGRAL:
-                    return isDoubleProcessable(stats.getIntegral());
-                case ARITHMETIC_MEAN:
-                    return isDoubleProcessable(stats.getArithmeticMean());
-                case MINIMUM_IN_PERIOD:
-                    return isDoubleProcessable(stats.getMinimumInPeriod());
-                case MAXIMUM_IN_PERIOD:
-                    return isDoubleProcessable(stats.getMaximumInPeriod());
-                default:
-                    throw new ShouldNeverHappenException("Unknown Rollup type " + rollup);
-            }
-        } else if (statisticsGenerator instanceof NoStatisticsGenerator) {
-            throw new ShouldNeverHappenException("Fix this.");
-        } else {
-            throw new ShouldNeverHappenException("Unknown Stats type.");
-        }
-    }
-
-    /**
-     * Is the data value acceptable for Simplify?
-     */
-    private boolean isDataValueProcessable(DataValue value) {
-        if(value == null)
-            return false;
-        double doubleValue = value.getDoubleValue();
-        if(Double.isNaN(doubleValue) || Double.isInfinite(doubleValue))
-            return false;
-        return true;
-    }
-
-    /**
-     */
-    private boolean isDoubleProcessable(Double value) {
-        if(value == null)
-            return false;
-        if(value.isNaN() || value.isInfinite())
-            return false;
-        return true;
     }
 
     /**
@@ -161,15 +75,15 @@ public class DataPointRollupPeriodValue implements DataPointValueTime {
                     if (stats.getLastValue() == null)
                         return stats.getMaximumValue();
                     else
-                        return stats.getLastValue();
+                        return stats.getLastValue().getDoubleValue();
                 case SUM:
                     return stats.getSum();
                 case START:
-                    return stats.getStartValue();
+                    return stats.getStartValue().getDoubleValue();
                 case FIRST:
-                    return stats.getFirstValue();
+                    return stats.getFirstValue().getDoubleValue();
                 case LAST:
-                    return stats.getLastValue();
+                    return stats.getLastValue().getDoubleValue();
                 case COUNT:
                     return stats.getCount();
                 case INTEGRAL:
@@ -207,11 +121,7 @@ public class DataPointRollupPeriodValue implements DataPointValueTime {
 
     @Override
     public int compareTo(Point that) {
-        if (getX() < that.getX())
-            return -1;
-        if (getX() > that.getX())
-            return 1;
-        return 0;
+        return Double.compare(getX(), that.getX());
     }
 
     @Override

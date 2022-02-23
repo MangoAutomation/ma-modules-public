@@ -17,9 +17,5 @@ public interface Point extends Comparable<Point> {
      * Return the value
      */
     double getY();
-    
-    /**
-     * Is the value Process-able i.e. a real double?
-     */
-    boolean isProcessable();
+
 }

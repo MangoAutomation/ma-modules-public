@@ -89,12 +89,6 @@ public class DataPointVOPointValueTimeBookend implements DataPointValueTime {
     }
 
     @Override
-    public boolean isProcessable() {
-        //TODO Could check to see if we are image etc.
-        return pvt.getValue() != null;
-    }
-
-    @Override
     public void writeEntry(PointValueTimeWriter writer, boolean useXid, boolean allowTimestamp)
             throws IOException {
         for(PointValueField field : writer.getInfo().getFields()) {

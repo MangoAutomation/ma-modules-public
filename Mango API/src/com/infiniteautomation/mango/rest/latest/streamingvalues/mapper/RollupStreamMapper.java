@@ -11,7 +11,7 @@ import com.infiniteautomation.mango.rest.latest.model.pointValue.RollupEnum;
 import com.infiniteautomation.mango.rest.latest.streamingvalues.model.StreamingPointValueTimeModel;
 import com.serotonin.m2m2.DataType;
 import com.serotonin.m2m2.db.dao.pointvalue.AggregateValue;
-import com.serotonin.m2m2.db.dao.pointvalue.NumericAggregate;
+import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.view.stats.SeriesValueTime;
 import com.serotonin.m2m2.view.text.TextRenderer;
 import com.serotonin.m2m2.vo.DataPointVO;
@@ -22,7 +22,7 @@ import com.serotonin.m2m2.vo.DataPointVO;
  * @author Jared Wiltshire
  */
 @NonNull
-public class RollupStreamMapper extends AbstractStreamMapper<SeriesValueTime<? extends AggregateValue>, StreamingPointValueTimeModel> {
+public class RollupStreamMapper extends AbstractStreamMapper<SeriesValueTime<? extends AggregateValue>> {
 
     public RollupStreamMapper(StreamMapperBuilder options) {
         super(options);
@@ -38,14 +38,8 @@ public class RollupStreamMapper extends AbstractStreamMapper<SeriesValueTime<? e
         for (PointValueField field : fields()) {
             switch (field) {
                 case VALUE: {
-                    if (aggregate instanceof NumericAggregate && point.getPointLocator().getDataType() == DataType.NUMERIC) {
-                        double rollupValue = getNumericRollupValue((NumericAggregate) aggregate, rollup);
-                        double convertedValue = convertValue(point, rollupValue);
-                        model.setValue(convertedValue);
-                    } else {
-                        Object rollupValue = getRollupValue(aggregate, rollup);
-                        model.setValue(rollupValue);
-                    }
+                    Object rollupValue = getRollupValue(aggregate, rollup);
+                    model.setValue(extractValue(point, rollupValue));
                     break;
                 }
                 case TIMESTAMP: {
@@ -61,14 +55,16 @@ public class RollupStreamMapper extends AbstractStreamMapper<SeriesValueTime<? e
                     model.setBookend(false);
                     break;
                 case RENDERED: {
-                    if (aggregate instanceof NumericAggregate && point.getPointLocator().getDataType() == DataType.NUMERIC) {
-                        double rollupValue = getNumericRollupValue((NumericAggregate) aggregate, rollup);
-                        double convertedValue = convertValue(point, rollupValue);
-                        model.setRendered(point.getTextRenderer().getText(convertedValue, TextRenderer.HINT_FULL));
+                    Object rollupValue = getRollupValue(aggregate, rollup);
+                    if (rollupValue instanceof DataValue) {
+                        // the text renderer converts numeric values to the appropriate unit before rendering
+                        model.setRendered(point.getTextRenderer().getText((DataValue) rollupValue, TextRenderer.HINT_FULL));
+                    } else if (point.getPointLocator().getDataType() == DataType.NUMERIC && rollupValue instanceof Double) {
+                        // the text renderer converts numeric values to the appropriate unit before rendering
+                        model.setRendered(point.getTextRenderer().getText((double) rollupValue, TextRenderer.HINT_FULL));
+                    } else if (rollupValue == null) {
+                        model.setRendered("-");
                     } else {
-                        Object rollupValue = getRollupValue(aggregate, rollup);
-                        // TODO render other aggregates?
-                        //model.setRendered(point.getTextRenderer().getText(rollupValue, TextRenderer.HINT_FULL));
                         model.setRendered(rollupValue.toString());
                     }
                     break;
