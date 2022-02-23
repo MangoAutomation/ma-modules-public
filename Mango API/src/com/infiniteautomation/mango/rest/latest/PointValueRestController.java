@@ -74,7 +74,7 @@ import com.infiniteautomation.mango.rest.latest.model.pointValue.query.ZonedDate
 import com.infiniteautomation.mango.rest.latest.model.time.TimePeriod;
 import com.infiniteautomation.mango.rest.latest.model.time.TimePeriodType;
 import com.infiniteautomation.mango.rest.latest.streamingvalues.mapper.DefaultStreamMapper;
-import com.infiniteautomation.mango.rest.latest.streamingvalues.mapper.RollupStreamMapper;
+import com.infiniteautomation.mango.rest.latest.streamingvalues.mapper.AggregateValueMapper;
 import com.infiniteautomation.mango.rest.latest.streamingvalues.mapper.StreamMapperBuilder;
 import com.infiniteautomation.mango.rest.latest.streamingvalues.mapper.TimestampGrouper;
 import com.infiniteautomation.mango.rest.latest.streamingvalues.model.StreamingMultiPointModel;
@@ -525,9 +525,6 @@ public class PointValueRestController extends AbstractMangoRestController {
             simplify = point.isSimplifyDataSets();
         }
 
-        // TODO support ALL rollup
-        // TODO support non-numeric for StatisticsAggregator & in mapper
-
         if (rollup == RollupEnum.NONE) {
             Stream<IdPointValueTime> stream = dao.bookendStream(point, from.toInstant().toEpochMilli(), to.toInstant().toEpochMilli(), limit);
             if (simplify) {
@@ -538,7 +535,7 @@ public class PointValueRestController extends AbstractMangoRestController {
 
         TemporalAmount rollupPeriod = timePeriodType.toTemporalAmount(timePeriods);
         var stream = dao.getAggregateDao(rollupPeriod).query(point, from, to, limit);
-        return stream.map(mapperBuilder.build(RollupStreamMapper::new));
+        return stream.map(mapperBuilder.build(AggregateValueMapper::new));
     }
 
     @ApiOperation(value = "Query Time Range for multiple data points, return in time ascending order",

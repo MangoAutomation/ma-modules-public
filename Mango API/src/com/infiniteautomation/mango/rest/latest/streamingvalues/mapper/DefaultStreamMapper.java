@@ -8,6 +8,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
 import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueField;
 import com.infiniteautomation.mango.rest.latest.streamingvalues.model.StreamingPointValueTimeModel;
+import com.infiniteautomation.mango.rest.latest.streamingvalues.model.ValueModel;
 import com.serotonin.m2m2.rt.dataImage.IAnnotated;
 import com.serotonin.m2m2.rt.dataImage.IdPointValueTime;
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
@@ -30,16 +31,14 @@ public class DefaultStreamMapper extends AbstractStreamMapper<IdPointValueTime> 
     public StreamingPointValueTimeModel apply(IdPointValueTime v) {
         DataPointVO point = lookupPoint(v.getSeriesId());
         StreamingPointValueTimeModel model = new StreamingPointValueTimeModel(point.getXid(), v.getTime());
-        for (PointValueField field : fields()) {
+
+        model.setValue(getValue(point, v.getValue()));
+
+        for (PointValueField field : fields) {
             switch (field) {
-                case VALUE: {
-                    model.setValue(extractValue(point, v.getValue()));
-                    break;
-                }
-                case TIMESTAMP: {
+                case TIMESTAMP:
                     model.setTimestamp(formatTime(v.getTime()));
                     break;
-                }
                 case ANNOTATION:
                     if (v instanceof IAnnotated) {
                         model.setAnnotation(((IAnnotated) v).getSourceMessage());
@@ -50,19 +49,6 @@ public class DefaultStreamMapper extends AbstractStreamMapper<IdPointValueTime> 
                     break;
                 case BOOKEND:
                     model.setBookend(v.isBookend());
-                    break;
-                case RENDERED: {
-                    DataValue value = v.getValue();
-                    if (value == null) {
-                        model.setRendered("-");
-                    } else {
-                        // the text renderer converts the value to the appropriate unit before rendering
-                        model.setRendered(point.getTextRenderer().getText(value, TextRenderer.HINT_FULL));
-                    }
-                    break;
-                }
-                case RAW:
-                    model.setRaw(v.getValue().getObjectValue());
                     break;
                 case XID:
                     model.setXid(point.getXid());
@@ -76,6 +62,11 @@ public class DefaultStreamMapper extends AbstractStreamMapper<IdPointValueTime> 
                 case DATA_SOURCE_NAME:
                     model.setDataSourceName(point.getDataSourceName());
                     break;
+                case VALUE:
+                case RENDERED:
+                case RAW:
+                    // handled above by getValue()
+                    break;
                 default:
                     throw new IllegalArgumentException("Unsupported field: " + field);
             }
@@ -83,4 +74,23 @@ public class DefaultStreamMapper extends AbstractStreamMapper<IdPointValueTime> 
         return model;
     }
 
+    private ValueModel getValue(DataPointVO point, DataValue rawValue) {
+        ValueModel model = new ValueModel();
+        if (fields.contains(PointValueField.VALUE)) {
+            Object convertedValue = extractValue(point, rawValue);
+            model.setValue(convertedValue);
+        }
+        if (fields.contains(PointValueField.RAW)) {
+            model.setRaw(rawValue == null ? null : rawValue.getObjectValue());
+        }
+        if (fields.contains(PointValueField.RENDERED)) {
+            if (rawValue != null) {
+                // the text renderer converts numeric values to the appropriate unit before rendering
+                model.setRendered(point.getTextRenderer().getText(rawValue, TextRenderer.HINT_FULL));
+            } else {
+                model.setRendered(RENDERED_NULL_STRING);
+            }
+        }
+        return model;
+    }
 }

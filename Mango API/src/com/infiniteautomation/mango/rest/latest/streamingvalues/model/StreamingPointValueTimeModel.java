@@ -9,6 +9,7 @@ import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 
 /**
@@ -20,13 +21,16 @@ public class StreamingPointValueTimeModel {
     final String dataPointXid;
     final long exactTimestamp;
 
-    Object value;
+    @JsonUnwrapped
+    ValueModel value;
+
+    @JsonUnwrapped
+    AllStatisticsModel allStatistics;
+
     Object timestamp;
     TranslatableMessage annotation;
     Boolean cached;
     Boolean bookend;
-    String rendered;
-    Object raw;
     String xid;
     String name;
     String deviceName;
@@ -57,12 +61,20 @@ public class StreamingPointValueTimeModel {
         return exactTimestamp;
     }
 
-    public Object getValue() {
+    public ValueModel getValue() {
         return value;
     }
 
-    public void setValue(Object value) {
+    public void setValue(ValueModel value) {
         this.value = value;
+    }
+
+    public AllStatisticsModel getAllStatistics() {
+        return allStatistics;
+    }
+
+    public void setAllStatistics(AllStatisticsModel allStatistics) {
+        this.allStatistics = allStatistics;
     }
 
     public Object getTimestamp() {
@@ -95,22 +107,6 @@ public class StreamingPointValueTimeModel {
 
     public void setBookend(Boolean bookend) {
         this.bookend = bookend;
-    }
-
-    public String getRendered() {
-        return rendered;
-    }
-
-    public void setRendered(String rendered) {
-        this.rendered = rendered;
-    }
-
-    public Object getRaw() {
-        return raw;
-    }
-
-    public void setRaw(Object raw) {
-        this.raw = raw;
     }
 
     public String getXid() {
