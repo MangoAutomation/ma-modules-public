@@ -3,42 +3,37 @@
  */
 package com.infiniteautomation.mango.rest.latest.model.pointValue.query;
 
+import static com.infiniteautomation.mango.spring.MangoRuntimeContextConfiguration.REST_OBJECT_MAPPER_NAME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.time.Instant;
+import java.time.Duration;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
+import org.springframework.context.ApplicationContext;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.infiniteautomation.mango.db.query.QueryCancelledException;
 import com.infiniteautomation.mango.pointvaluecache.PointValueCache;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueField;
-import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueTimeJsonWriter;
-import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueTimeStream.StreamContentType;
-import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueTimeWriter;
+import com.infiniteautomation.mango.rest.latest.model.pointValue.RollupEnum;
+import com.infiniteautomation.mango.rest.latest.streamingvalues.mapper.AggregateValueMapper;
+import com.infiniteautomation.mango.rest.latest.streamingvalues.mapper.StreamMapperBuilder;
+import com.infiniteautomation.mango.rest.latest.streamingvalues.model.StreamingPointValueTimeModel;
 import com.infiniteautomation.mango.statistics.AnalogStatistics;
 import com.infiniteautomation.mango.statistics.StartsAndRuntime;
 import com.infiniteautomation.mango.statistics.StartsAndRuntimeList;
 import com.infiniteautomation.mango.statistics.ValueChangeCounter;
-import com.infiniteautomation.mango.util.datetime.NextTimePeriodAdjuster;
 import com.serotonin.ShouldNeverHappenException;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.DataType;
@@ -48,11 +43,8 @@ import com.serotonin.m2m2.MockRuntimeManager;
 import com.serotonin.m2m2.db.dao.DataPointDao;
 import com.serotonin.m2m2.db.dao.DataSourceDao;
 import com.serotonin.m2m2.db.dao.PointValueDao;
-import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.Module;
-import com.serotonin.m2m2.rt.dataImage.AnnotatedPointValueTime;
 import com.serotonin.m2m2.rt.dataImage.DataPointRT;
-import com.serotonin.m2m2.rt.dataImage.DataPointRT.FireEvents;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.rt.dataImage.types.MultistateValue;
@@ -65,23 +57,53 @@ import com.serotonin.m2m2.vo.dataPoint.MockPointLocatorVO;
 import com.serotonin.m2m2.vo.dataSource.mock.MockDataSourceVO;
 
 /**
- *
  * @author Terry Packer
  */
 public class MultiPointStatisticsStreamTest extends MangoTestBase {
 
-    protected ZoneId zoneId;
-    protected static final TestRuntimeManager runtimeManager = new TestRuntimeManager();
+    public final static String TIMESTAMP = "timestamp";
+    public final static String VALUE = "value";
+    public final static String INTEGRAL = "integral";
 
+    public static final String FIRST = "first";
+    public static final String LAST = "last";
+    public static final String START = "start";
+    public static final String COUNT = "count";
+
+    public static final String ACCUMULATOR = "accumulator";
+    public static final String DELTA = "delta";
+    public static final String AVERAGE = "average";
+    public static final String MAXIMUM = "maximum";
+    public static final String MINIMUM = "minimum";
+    public static final String SUM = "sum";
+
+    public static final String STARTS = "starts";
+    public static final String RUNTIME = "runtime";
+    public static final String PROPORTION = "proportion";
+    public static final String STARTS_AND_RUNTIMES = "startsAndRuntimes";
+
+    protected static final TestRuntimeManager runtimeManager = new TestRuntimeManager();
+    protected final ZoneId zoneId;
+    protected ObjectMapper mapper;
+
+    //TODO Test initial values and no initial values
+    protected PointValueDao pointValueDao;
     public MultiPointStatisticsStreamTest() {
         this.zoneId = ZoneId.systemDefault();
     }
 
-    //TODO Test initial values and no initial values
+    @BeforeClass
+    public static void setup() {
+        // load module element definitions
+        loadModules();
+    }
 
     @Override
     public void before() {
         super.before();
+        ApplicationContext context = lifecycle.getRuntimeContext();
+        mapper = context.getBean(REST_OBJECT_MAPPER_NAME, ObjectMapper.class);
+        pointValueDao = context.getBean(PointValueDao.class);
     }
 
     @Override
@@ -90,46 +112,58 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
         runtimeManager.points.clear();
     }
 
+    private Map<String, StreamingPointValueTimeModel> getStatistics(Collection<? extends DataPointVO> points,
+                                                                    ZonedDateTime from, ZonedDateTime to,
+                                                                    String timezone,
+                                                                    PointValueField[] fields) {
+        var mapper = new StreamMapperBuilder()
+                .withDataPoints(points)
+                .withRollup(RollupEnum.ALL)
+                .withFields(fields)
+                .withTimezone(timezone, from, to)
+                .build(AggregateValueMapper::new);
+
+        return points.stream().collect(Collectors.toMap(DataPointVO::getXid, point ->
+                pointValueDao.getAggregateDao(Duration.between(from, to))
+                        .query(point, from, to, null).map(mapper)
+                        .findAny()
+                        .orElseThrow()
+        ));
+    }
+
     @Test
-    public void testSingleAlphanumericPointNoCacheNoChangeInitialValue() throws IOException, QueryCancelledException {
+    public void testSingleAlphanumericPointNoCacheNoChangeInitialValue() {
 
         //Setup the data to run once daily for 30 days
-        ZonedDateTime from = ZonedDateTime.of(2017, 01, 01, 00, 00, 00, 0, zoneId);
-        ZonedDateTime to = ZonedDateTime.of(2017, 02, 01, 00, 00, 00, 0, zoneId);
-        NextTimePeriodAdjuster adjuster = new NextTimePeriodAdjuster(ChronoUnit.DAYS, 1);
+        ZonedDateTime from = ZonedDateTime.of(2017, 1, 1, 0, 0, 0, 0, zoneId);
+        ZonedDateTime to = ZonedDateTime.of(2017, 2, 1, 0, 0, 0, 0, zoneId);
+        Duration adjuster = Duration.ofDays(1);
 
         MockDataSourceVO ds = createDataSource();
         DataPointVO dp = createDataPoint(ds.getId(), DataType.ALPHANUMERIC, 1);
 
-        DataPointWrapper<ValueChangeCounter> point = new DataPointWrapper<ValueChangeCounter>(ds, dp,
+        DataPointWrapper<ValueChangeCounter> point = new DataPointWrapper<>(ds, dp,
                 new PointValueTime("TESTING", 0),
-                (value) -> {
-                    //No change
-                    return value;
-                },
-                (info, w) ->{
-                    return new ValueChangeCounter(info.getFromMillis(), info.getToMillis(), w.initialValue, w.values);
-                },
+                Function.identity(), // no change
+                (w) -> new ValueChangeCounter(from.toInstant().toEpochMilli(), to.toInstant().toEpochMilli(), w.initialValue, w.values),
                 new ValueChangeCounterVerifier());
 
         //Insert the data skipping first day so we get the initial value
-        ZonedDateTime time = (ZonedDateTime) adjuster.adjustInto(from);
+        ZonedDateTime time = from.plus(adjuster);
         timer.setStartTime(time.toInstant().toEpochMilli());
 
-        while(time.toInstant().isBefore(to.toInstant())) {
+        while (time.toInstant().isBefore(to.toInstant())) {
             point.updatePointValue(new PointValueTime(point.getNextValue(), time.toInstant().toEpochMilli()));
-            time = (ZonedDateTime) adjuster.adjustInto(time);
+            time = time.plus(adjuster);
             timer.fastForwardTo(time.toInstant().toEpochMilli());
         }
 
         //Perform the query
-        String dateTimeFormat = null;
         String timezone = zoneId.getId();
-        PointValueTimeCacheControl cache = PointValueTimeCacheControl.NONE;
         PointValueField[] fields = getFields();
-        ZonedDateTimeStatisticsQueryInfo info = new ZonedDateTimeStatisticsQueryInfo(from, to, dateTimeFormat, timezone, cache, fields);
 
-        test(info, point);
+        var result = getStatistics(List.of(dp), from, to, timezone, fields);
+        test(result, point);
     }
 
     /**
@@ -137,706 +171,160 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
      * Then insert a value of 1 at midnight every day during Jan 2017
      */
     @Test
-    public void testSingleMultistatePointNoCacheNoChangeInitialValue() throws IOException, QueryCancelledException {
+    public void testSingleMultistatePointNoCacheNoChangeInitialValue() {
 
         //Setup the data to run once daily for 30 days
-        ZonedDateTime from = ZonedDateTime.of(2017, 01, 01, 00, 00, 00, 0, zoneId);
-        ZonedDateTime to = ZonedDateTime.of(2017, 02, 01, 00, 00, 00, 0, zoneId);
-        NextTimePeriodAdjuster adjuster = new NextTimePeriodAdjuster(ChronoUnit.DAYS, 1);
+        ZonedDateTime from = ZonedDateTime.of(2017, 1, 1, 0, 0, 0, 0, zoneId);
+        ZonedDateTime to = ZonedDateTime.of(2017, 2, 1, 0, 0, 0, 0, zoneId);
+        Duration adjuster = Duration.ofDays(1);
 
         MockDataSourceVO ds = createDataSource();
         DataPointVO dp = createDataPoint(ds.getId(), DataType.MULTISTATE, 1);
 
-        DataPointWrapper<StartsAndRuntimeList> point = new DataPointWrapper<StartsAndRuntimeList>(ds, dp,
+        DataPointWrapper<StartsAndRuntimeList> point = new DataPointWrapper<>(ds, dp,
                 new PointValueTime(1, 0),
-                (value) -> {
-                    //No change
-                    return value;
-                },
-                (info, w) ->{
-                    return new StartsAndRuntimeList(info.getFromMillis(), info.getToMillis(), w.initialValue, w.values);
-                },
+                Function.identity(), // no change
+                (w) -> new StartsAndRuntimeList(from.toInstant().toEpochMilli(), to.toInstant().toEpochMilli(), w.initialValue, w.values),
                 new StartsAndRuntimeListVerifier());
 
         //Insert the data skipping first day so we get the initial value
-        ZonedDateTime time = (ZonedDateTime) adjuster.adjustInto(from);
+        ZonedDateTime time = from.plus(adjuster);
         timer.setStartTime(time.toInstant().toEpochMilli());
 
-        while(time.toInstant().isBefore(to.toInstant())) {
+        while (time.toInstant().isBefore(to.toInstant())) {
             point.updatePointValue(new PointValueTime(point.getNextValue(), time.toInstant().toEpochMilli()));
-            time = (ZonedDateTime) adjuster.adjustInto(time);
+            time = time.plus(adjuster);
             timer.fastForwardTo(time.toInstant().toEpochMilli());
         }
 
         //Perform the query
-        String dateTimeFormat = null;
         String timezone = zoneId.getId();
-        PointValueTimeCacheControl cache = PointValueTimeCacheControl.NONE;
         PointValueField[] fields = getFields();
-        ZonedDateTimeStatisticsQueryInfo info = new ZonedDateTimeStatisticsQueryInfo(from, to, dateTimeFormat, timezone, cache, fields);
 
-        test(info, point);
+        var result = getStatistics(List.of(dp), from, to, timezone, fields);
+        test(result, point);
     }
 
-
     @Test
-    public void testSingleNumericPointNoCacheNoChangeInitialValue() throws IOException, QueryCancelledException {
+    public void testSingleNumericPointNoCacheNoChangeInitialValue() {
 
         //Setup the data to run once daily for 30 days
-        ZonedDateTime from = ZonedDateTime.of(2017, 01, 01, 00, 00, 00, 0, zoneId);
-        ZonedDateTime to = ZonedDateTime.of(2017, 02, 01, 00, 00, 00, 0, zoneId);
-        NextTimePeriodAdjuster adjuster = new NextTimePeriodAdjuster(ChronoUnit.DAYS, 1);
+        ZonedDateTime from = ZonedDateTime.of(2017, 1, 1, 0, 0, 0, 0, zoneId);
+        ZonedDateTime to = ZonedDateTime.of(2017, 2, 1, 0, 0, 0, 0, zoneId);
+        Duration adjuster = Duration.ofDays(1);
 
         MockDataSourceVO ds = createDataSource();
         DataPointVO dp = createDataPoint(ds.getId(), DataType.NUMERIC, 1);
 
-        DataPointWrapper<AnalogStatistics> point = new DataPointWrapper<AnalogStatistics>(ds, dp,
+        DataPointWrapper<AnalogStatistics> wrapper = new DataPointWrapper<>(ds, dp,
                 new PointValueTime(1.0, 0),
-                (value) -> {
-                    //No change
-                    return value;
-                },
-                (info, w) ->{
-                    return new AnalogStatistics(info.getFromMillis(), info.getToMillis(), w.initialValue, w.values);
-                },
+                Function.identity(), // no change
+                (w) -> new AnalogStatistics(from.toInstant().toEpochMilli(), to.toInstant().toEpochMilli(), w.initialValue, w.values),
                 new AnalogStatisticsVerifier());
 
         //Insert the data skipping first day so we get the initial value
-        ZonedDateTime time = (ZonedDateTime) adjuster.adjustInto(from);
+        ZonedDateTime time = from.plus(adjuster);
         timer.setStartTime(time.toInstant().toEpochMilli());
 
-        while(time.toInstant().isBefore(to.toInstant())) {
-            point.updatePointValue(new PointValueTime(point.getNextValue(), time.toInstant().toEpochMilli()));
-            time = (ZonedDateTime) adjuster.adjustInto(time);
+        while (time.toInstant().isBefore(to.toInstant())) {
+            wrapper.updatePointValue(new PointValueTime(wrapper.getNextValue(), time.toInstant().toEpochMilli()));
+            time = time.plus(adjuster);
             timer.fastForwardTo(time.toInstant().toEpochMilli());
         }
 
         //Perform the query
-        String dateTimeFormat = null;
         String timezone = zoneId.getId();
-        PointValueTimeCacheControl cache = PointValueTimeCacheControl.NONE;
         PointValueField[] fields = getFields();
-        ZonedDateTimeStatisticsQueryInfo info = new ZonedDateTimeStatisticsQueryInfo(from, to, dateTimeFormat, timezone, cache, fields);
 
-        test(info, point);
+        var result = getStatistics(List.of(dp), from, to, timezone, fields);
+        test(result, wrapper);
     }
 
     @Test
-    public void testSingleNumericPointNoCacheChangeInitialValue() throws IOException, QueryCancelledException {
+    public void testSingleNumericPointNoCacheChangeInitialValue() {
 
         //Setup the data to run once daily for 30 days
-        ZonedDateTime from = ZonedDateTime.of(2017, 01, 01, 00, 00, 00, 0, zoneId);
-        ZonedDateTime to = ZonedDateTime.of(2017, 02, 01, 00, 00, 00, 0, zoneId);
-        NextTimePeriodAdjuster adjuster = new NextTimePeriodAdjuster(ChronoUnit.DAYS, 1);
+        ZonedDateTime from = ZonedDateTime.of(2017, 1, 1, 0, 0, 0, 0, zoneId);
+        ZonedDateTime to = ZonedDateTime.of(2017, 2, 1, 0, 0, 0, 0, zoneId);
+        Duration adjuster = Duration.ofDays(1);
 
         MockDataSourceVO ds = createDataSource();
         DataPointVO dp = createDataPoint(ds.getId(), DataType.NUMERIC, 1);
 
-        DataPointWrapper<AnalogStatistics> point = new DataPointWrapper<AnalogStatistics>(ds, dp,
+        DataPointWrapper<AnalogStatistics> wrapper = new DataPointWrapper<>(ds, dp,
                 new PointValueTime(1.0, 0),
-                (value) -> {
-                    return new NumericValue(value.getDoubleValue() + 1.0);
-                },
-                (info, w) ->{
-                    return new AnalogStatistics(info.getFromMillis(), info.getToMillis(), w.initialValue, w.values);
-                },
+                (value) -> new NumericValue(value.getDoubleValue() + 1.0),
+                (w) -> new AnalogStatistics(from.toInstant().toEpochMilli(), to.toInstant().toEpochMilli(), w.initialValue, w.values),
                 new AnalogStatisticsVerifier());
 
         //Insert the data skipping first day so we get the initial value
-        ZonedDateTime time = (ZonedDateTime) adjuster.adjustInto(from);
+        ZonedDateTime time = from.plus(adjuster);
         timer.setStartTime(time.toInstant().toEpochMilli());
 
-        while(time.toInstant().isBefore(to.toInstant())) {
-            point.updatePointValue(new PointValueTime(point.getNextValue(), time.toInstant().toEpochMilli()));
-            time = (ZonedDateTime) adjuster.adjustInto(time);
+        while (time.toInstant().isBefore(to.toInstant())) {
+            wrapper.updatePointValue(new PointValueTime(wrapper.getNextValue(), time.toInstant().toEpochMilli()));
+            time = time.plus(adjuster);
             timer.fastForwardTo(time.toInstant().toEpochMilli());
         }
 
         //Perform the query
-        String dateTimeFormat = null;
         String timezone = zoneId.getId();
-        PointValueTimeCacheControl cache = PointValueTimeCacheControl.NONE;
         PointValueField[] fields = getFields();
-        ZonedDateTimeStatisticsQueryInfo info = new ZonedDateTimeStatisticsQueryInfo(from, to, dateTimeFormat, timezone, cache, fields);
 
-        test(info, point);
+        var result = getStatistics(List.of(dp), from, to, timezone, fields);
+        test(result, wrapper);
     }
 
     @Test
-    public void testSingleNumericPointOnlyCacheChange() throws IOException, QueryCancelledException {
+    public void testMultiplePointsNoCacheChangeInitialValue() {
 
         //Setup the data to run once daily for 30 days
-        ZonedDateTime from = ZonedDateTime.of(2017, 01, 01, 00, 00, 00, 0, zoneId);
-        ZonedDateTime to = ZonedDateTime.of(2017, 02, 01, 00, 00, 00, 0, zoneId);
-        NextTimePeriodAdjuster adjuster = new NextTimePeriodAdjuster(ChronoUnit.DAYS, 1);
-
-        int cacheSize = 10;
-        MockDataSourceVO ds = createDataSource();
-        DataPointVO dp = createDataPoint(ds.getId(), DataType.NUMERIC, cacheSize);
-
-        DataPointWrapper<AnalogStatistics> point = new DataPointWrapper<AnalogStatistics>(ds, dp,
-                new PointValueTime(1.0, 0),
-                (value) -> {
-                    return new NumericValue(value.getDoubleValue() + 1.0);
-                },
-                (info, w) ->{
-                    return new AnalogStatistics(info.getFromMillis(), info.getToMillis(), null, w.values);
-                },
-                (w, gen, root) -> {
-                    JsonNode stats = root.get(w.vo.getXid());
-                    if(stats == null)
-                        fail("Missing stats for point " + w.vo.getXid());
-
-                    JsonNode stat = stats.get(PointValueTimeWriter.START);
-                    if(stat == null)
-                        fail("Missing " + PointValueTimeWriter.START + " entry");
-
-                    assertNull(gen.getStartValue());
-                    assertTrue(stat.isNull());
-
-                    stat = stats.get(PointValueTimeWriter.FIRST);
-                    if(stat == null)
-                        fail("Missing " + PointValueTimeWriter.FIRST + " entry");
-                    PointValueTime value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
-                    assertEquals(gen.getFirstValue().getDoubleValue(), value.getValue().getDoubleValue(), 0.00001);
-                    assertEquals((long)gen.getFirstTime(), value.getTime());
-
-                    stat = stats.get(PointValueTimeWriter.LAST);
-                    if(stat == null)
-                        fail("Missing " + PointValueTimeWriter.LAST + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
-                    assertEquals(gen.getLastValue().getDoubleValue(), value.getValue().getDoubleValue(), 0.00001);
-                    assertEquals((long)gen.getLastTime(), value.getTime());
-
-                    stat = stats.get(PointValueTimeWriter.COUNT);
-                    if(stat == null)
-                        fail("Missing " + PointValueTimeWriter.COUNT + " entry");
-                    assertEquals(gen.getCount(), stat.asLong());
-
-                    stat = stats.get(PointValueTimeWriter.ACCUMULATOR);
-                    if(stat == null)
-                        fail("Missing " + PointValueTimeWriter.ACCUMULATOR + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
-                    Double accumulatorValue;
-                    if(gen.getLastValue() == null)
-                        accumulatorValue = gen.getMaximumValue();
-                    else
-                        accumulatorValue = gen.getLastValue().getDoubleValue();
-                    assertEquals(accumulatorValue, value.getDoubleValue(), 0.00001);
-
-                    stat = stats.get(PointValueTimeWriter.AVERAGE);
-                    if(stat == null)
-                        fail("Missing " + PointValueTimeWriter.AVERAGE + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
-                    assertEquals(gen.getAverage(), value.getDoubleValue(), 0.00001);
-
-                    stat = stats.get(PointValueTimeWriter.DELTA);
-                    if(stat == null)
-                        fail("Missing " + PointValueTimeWriter.DELTA + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
-                    assertEquals(gen.getDelta(), value.getDoubleValue(), 0.00001);
-
-                    stat = stats.get(PointValueTimeWriter.MINIMUM);
-                    if(stat == null)
-                        fail("Missing " + PointValueTimeWriter.MINIMUM + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
-                    assertEquals(gen.getMinimumValue(), value.getValue().getDoubleValue(), 0.00001);
-                    assertEquals((long)gen.getMinimumTime(), value.getTime());
-
-                    stat = stats.get(PointValueTimeWriter.MAXIMUM);
-                    if(stat == null)
-                        fail("Missing " + PointValueTimeWriter.MAXIMUM + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
-                    assertEquals(gen.getMaximumValue(), value.getValue().getDoubleValue(), 0.00001);
-                    assertEquals((long)gen.getMaximumTime(), value.getTime());
-
-                    stat = stats.get(PointValueTimeWriter.SUM);
-                    if(stat == null)
-                        fail("Missing " + PointValueTimeWriter.SUM + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
-                    assertEquals(gen.getSum(), value.getDoubleValue(), 0.00001);
-
-                    stat = stats.get(PointValueTimeWriter.INTEGRAL);
-                    if(stat == null)
-                        fail("Missing " + PointValueTimeWriter.INTEGRAL + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
-                    assertEquals(gen.getIntegral(), value.getDoubleValue(), 0.00001);
-                });
-
-        //Insert the data skipping first day so we get the initial value
-        ZonedDateTime time = (ZonedDateTime) adjuster.adjustInto(from);
-        timer.setStartTime(time.toInstant().toEpochMilli());
-
-        while(time.toInstant().isBefore(to.toInstant())) {
-            point.updatePointValue(new PointValueTime(point.getNextValue(), time.toInstant().toEpochMilli()));
-            time = (ZonedDateTime) adjuster.adjustInto(time);
-            timer.fastForwardTo(time.toInstant().toEpochMilli());
-        }
-
-        //Insert some values directly into the cache
-        point.values.clear();
-        for(int i=0; i<cacheSize; i++) {
-            time = (ZonedDateTime) adjuster.adjustInto(time);
-            timer.fastForwardTo(time.toInstant().toEpochMilli());
-            point.saveOnlyToCache(new PointValueTime(point.getNextValue(), timer.currentTimeMillis()));
-        }
-
-        //Ensure we get all the data
-        Instant now = Instant.ofEpochMilli(timer.currentTimeMillis() + 1);
-        to = ZonedDateTime.ofInstant(now, zoneId);
-        //Perform the query
-        String dateTimeFormat = null;
-        String timezone = zoneId.getId();
-        PointValueTimeCacheControl cache = PointValueTimeCacheControl.CACHE_ONLY;
-        PointValueField[] fields =  getFields();
-        ZonedDateTimeStatisticsQueryInfo info = new ZonedDateTimeStatisticsQueryInfo(from, to, dateTimeFormat, timezone, cache, fields);
-
-        test(info, point);
-    }
-
-
-    @Test
-    public void testSingleNumericPointOnlyCacheChangeCachedValueAtFrom() throws IOException, QueryCancelledException {
-
-        //Setup the data to run once daily for 30 days
-        ZonedDateTime from = ZonedDateTime.of(2017, 01, 01, 00, 00, 00, 0, zoneId);
-        ZonedDateTime to = ZonedDateTime.of(2017, 02, 01, 00, 00, 00, 0, zoneId);
-        NextTimePeriodAdjuster adjuster = new NextTimePeriodAdjuster(ChronoUnit.DAYS, 1);
-
-        int cacheSize = 10;
-        MockDataSourceVO ds = createDataSource();
-        DataPointVO dp = createDataPoint(ds.getId(), DataType.NUMERIC, cacheSize);
-
-        DataPointWrapper<AnalogStatistics> point = new DataPointWrapper<AnalogStatistics>(ds, dp,
-                new PointValueTime(1.0, 0),
-                (value) -> {
-                    return new NumericValue(value.getDoubleValue() + 1.0);
-                },
-                (info, w) ->{
-                    return new AnalogStatistics(info.getFromMillis(), info.getToMillis(), w.values.get(0), w.values);
-                },
-                new AnalogStatisticsVerifier());
-
-        //Insert the data skipping first day so we get the initial value
-        ZonedDateTime time = (ZonedDateTime) adjuster.adjustInto(from);
-        timer.setStartTime(time.toInstant().toEpochMilli());
-
-        while(time.toInstant().isBefore(to.toInstant())) {
-            point.updatePointValue(new PointValueTime(point.getNextValue(), time.toInstant().toEpochMilli()));
-            time = (ZonedDateTime) adjuster.adjustInto(time);
-            timer.fastForwardTo(time.toInstant().toEpochMilli());
-        }
-
-        //Insert some values directly into the cache
-        point.values.clear();
-        for(int i=0; i<cacheSize; i++) {
-            time = (ZonedDateTime) adjuster.adjustInto(time);
-            timer.fastForwardTo(time.toInstant().toEpochMilli());
-            point.saveOnlyToCache(new AnnotatedPointValueTime(point.getNextValue(), timer.currentTimeMillis(), new TranslatableMessage("common.default", "testing")));
-        }
-
-        //Ensure we get all the data
-        from = ZonedDateTime.ofInstant(Instant.ofEpochMilli(point.values.get(0).getTime()), zoneId);
-        Instant now = Instant.ofEpochMilli(timer.currentTimeMillis() + 1);
-        to = ZonedDateTime.ofInstant(now, zoneId);
-        //Perform the query
-        String dateTimeFormat = null;
-        String timezone = zoneId.getId();
-        PointValueTimeCacheControl cache = PointValueTimeCacheControl.CACHE_ONLY;
-        PointValueField[] fields = getFields();
-        ZonedDateTimeStatisticsQueryInfo info = new ZonedDateTimeStatisticsQueryInfo(from, to, dateTimeFormat, timezone, cache, fields);
-
-        test(info, point);
-    }
-
-    @Test
-    public void testSingleNumericPointBothChange() throws IOException, QueryCancelledException {
-
-        //Setup the data to run once daily for 30 days
-        ZonedDateTime from = ZonedDateTime.of(2017, 01, 01, 00, 00, 00, 0, zoneId);
-        ZonedDateTime to = ZonedDateTime.of(2017, 02, 01, 00, 00, 00, 0, zoneId);
-        NextTimePeriodAdjuster adjuster = new NextTimePeriodAdjuster(ChronoUnit.DAYS, 1);
-
-        int cacheSize = 10;
-        MockDataSourceVO ds = createDataSource();
-        DataPointVO dp = createDataPoint(ds.getId(), DataType.NUMERIC, cacheSize);
-
-        DataPointWrapper<AnalogStatistics> point = new DataPointWrapper<AnalogStatistics>(ds, dp,
-                new PointValueTime(1.0, 0),
-                (value) -> {
-                    return new NumericValue(value.getDoubleValue() + 1.0);
-                },
-                (info, w) ->{
-                    return new AnalogStatistics(info.getFromMillis(), info.getToMillis(), new PointValueTime(1.0, 0), w.values);
-                },
-                (w, gen, root) -> {
-                    JsonNode stats = root.get(w.vo.getXid());
-                    if(stats == null)
-                        fail("Missing stats for point " + w.vo.getXid());
-
-                    JsonNode stat = stats.get(PointValueTimeWriter.START);
-                    if(stat == null)
-                        fail("Missing " + PointValueTimeWriter.START + " entry");
-
-                    PointValueTime value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
-                    assertEquals(gen.getStartValue().getDoubleValue(), value.getDoubleValue(), 0.00001);
-                    assertEquals(gen.getPeriodStartTime(), value.getTime());
-
-                    stat = stats.get(PointValueTimeWriter.FIRST);
-                    if(stat == null)
-                        fail("Missing " + PointValueTimeWriter.FIRST + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
-                    assertEquals(gen.getFirstValue().getDoubleValue(), value.getValue().getDoubleValue(), 0.00001);
-                    assertEquals((long)gen.getFirstTime(), value.getTime());
-
-                    stat = stats.get(PointValueTimeWriter.LAST);
-                    if(stat == null)
-                        fail("Missing " + PointValueTimeWriter.LAST + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
-                    assertEquals(gen.getLastValue().getDoubleValue(), value.getValue().getDoubleValue(), 0.00001);
-                    assertEquals((long)gen.getLastTime(), value.getTime());
-
-                    stat = stats.get(PointValueTimeWriter.COUNT);
-                    if(stat == null)
-                        fail("Missing " + PointValueTimeWriter.COUNT + " entry");
-                    assertEquals(gen.getCount(), stat.asLong());
-
-                    stat = stats.get(PointValueTimeWriter.ACCUMULATOR);
-                    if(stat == null)
-                        fail("Missing " + PointValueTimeWriter.ACCUMULATOR + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
-                    Double accumulatorValue;
-                    if(gen.getLastValue() == null)
-                        accumulatorValue = gen.getMaximumValue();
-                    else {
-                        accumulatorValue = gen.getLastValue().getDoubleValue();
-                    }
-                    assertEquals(accumulatorValue, value.getDoubleValue(), 0.00001);
-
-                    stat = stats.get(PointValueTimeWriter.AVERAGE);
-                    if(stat == null)
-                        fail("Missing " + PointValueTimeWriter.AVERAGE + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
-                    assertEquals(gen.getAverage(), value.getDoubleValue(), 0.00001);
-
-                    stat = stats.get(PointValueTimeWriter.DELTA);
-                    if(stat == null)
-                        fail("Missing " + PointValueTimeWriter.DELTA + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
-                    assertEquals(gen.getDelta(), value.getDoubleValue(), 0.00001);
-
-                    stat = stats.get(PointValueTimeWriter.MINIMUM);
-                    if(stat == null)
-                        fail("Missing " + PointValueTimeWriter.MINIMUM + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
-                    assertEquals(gen.getMinimumValue(), value.getValue().getDoubleValue(), 0.00001);
-                    assertEquals((long)gen.getMinimumTime(), value.getTime());
-
-                    stat = stats.get(PointValueTimeWriter.MAXIMUM);
-                    if(stat == null)
-                        fail("Missing " + PointValueTimeWriter.MAXIMUM + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
-                    assertEquals(gen.getMaximumValue(), value.getValue().getDoubleValue(), 0.00001);
-                    assertEquals((long)gen.getMaximumTime(), value.getTime());
-
-                    stat = stats.get(PointValueTimeWriter.SUM);
-                    if(stat == null)
-                        fail("Missing " + PointValueTimeWriter.SUM + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
-                    assertEquals(gen.getSum(), value.getDoubleValue(), 0.00001);
-
-                    stat = stats.get(PointValueTimeWriter.INTEGRAL);
-                    if(stat == null)
-                        fail("Missing " + PointValueTimeWriter.INTEGRAL + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
-                    assertEquals(gen.getIntegral(), value.getDoubleValue(), 0.00001);
-                });
-
-        //Insert the data skipping first day so we get the initial value
-        ZonedDateTime time = (ZonedDateTime) adjuster.adjustInto(from);
-        timer.setStartTime(time.toInstant().toEpochMilli());
-
-        while(time.toInstant().isBefore(to.toInstant())) {
-            point.updatePointValue(new PointValueTime(point.getNextValue(), time.toInstant().toEpochMilli()));
-            time = (ZonedDateTime) adjuster.adjustInto(time);
-            timer.fastForwardTo(time.toInstant().toEpochMilli());
-        }
-
-        //Insert some values directly into the cache
-        for(int i=0; i<cacheSize; i++) {
-            time = (ZonedDateTime) adjuster.adjustInto(time);
-            timer.fastForwardTo(time.toInstant().toEpochMilli());
-            point.saveOnlyToCache(new PointValueTime(point.getNextValue(), timer.currentTimeMillis()));
-        }
-
-        //Ensure we get all the data
-        Instant now = Instant.ofEpochMilli(timer.currentTimeMillis() + 1);
-        to = ZonedDateTime.ofInstant(now, zoneId);
-        //Perform the query
-        String dateTimeFormat = null;
-        String timezone = zoneId.getId();
-        PointValueTimeCacheControl cache = PointValueTimeCacheControl.BOTH;
-        PointValueField[] fields =  getFields();
-        ZonedDateTimeStatisticsQueryInfo info = new ZonedDateTimeStatisticsQueryInfo(from, to, dateTimeFormat, timezone, cache, fields);
-
-        test(info, point);
-    }
-
-    @Test
-    public void testMultiplePointsNoCacheChangeInitialValue() throws IOException, QueryCancelledException {
-
-        //Setup the data to run once daily for 30 days
-        ZonedDateTime from = ZonedDateTime.of(2017, 01, 01, 00, 00, 00, 0, zoneId);
-        ZonedDateTime to = ZonedDateTime.of(2017, 02, 01, 00, 00, 00, 0, zoneId);
-        NextTimePeriodAdjuster adjuster = new NextTimePeriodAdjuster(ChronoUnit.DAYS, 1);
+        ZonedDateTime from = ZonedDateTime.of(2017, 1, 1, 0, 0, 0, 0, zoneId);
+        ZonedDateTime to = ZonedDateTime.of(2017, 2, 1, 0, 0, 0, 0, zoneId);
+        Duration adjuster = Duration.ofDays(1);
 
         MockDataSourceVO ds = createDataSource();
         DataPointVO numericDp = createDataPoint(ds.getId(), DataType.NUMERIC, 1);
 
-        DataPointWrapper<AnalogStatistics> numericPoint = new DataPointWrapper<AnalogStatistics>(ds, numericDp,
+        DataPointWrapper<AnalogStatistics> numericWrapper = new DataPointWrapper<>(ds, numericDp,
                 new PointValueTime(1.0, 0),
-                (value) -> {
-                    return new NumericValue(value.getDoubleValue() + 1.0);
-                },
-                (info, w) ->{
-                    return new AnalogStatistics(info.getFromMillis(), info.getToMillis(), w.initialValue, w.values);
-                },
+                (value) -> new NumericValue(value.getDoubleValue() + 1.0),
+                (w) -> new AnalogStatistics(from.toInstant().toEpochMilli(), to.toInstant().toEpochMilli(), w.initialValue, w.values),
                 new AnalogStatisticsVerifier());
 
         DataPointVO multistateDp = createDataPoint(ds.getId(), DataType.MULTISTATE, 1);
 
-        DataPointWrapper<StartsAndRuntimeList> multistatePoint = new DataPointWrapper<StartsAndRuntimeList>(ds, multistateDp,
+        DataPointWrapper<StartsAndRuntimeList> multistateWrapper = new DataPointWrapper<>(ds, multistateDp,
                 new PointValueTime(1, 0),
-                (value) -> {
-                    //No change
-                    return new MultistateValue(value.getIntegerValue() + 1);
-                },
-                (info, w) ->{
-                    return new StartsAndRuntimeList(info.getFromMillis(), info.getToMillis(), w.initialValue, w.values);
-                },
+                (value) -> new MultistateValue(value.getIntegerValue() + 1),
+                (w) -> new StartsAndRuntimeList(from.toInstant().toEpochMilli(), to.toInstant().toEpochMilli(), w.initialValue, w.values),
                 new StartsAndRuntimeListVerifier());
 
 
         //Insert the data skipping first day so we get the initial value
-        ZonedDateTime time = (ZonedDateTime) adjuster.adjustInto(from);
+        ZonedDateTime time = from.plus(adjuster);
         timer.setStartTime(time.toInstant().toEpochMilli());
 
-        while(time.toInstant().isBefore(to.toInstant())) {
-            numericPoint.updatePointValue(new PointValueTime(numericPoint.getNextValue(), time.toInstant().toEpochMilli()));
-            multistatePoint.updatePointValue(new PointValueTime(multistatePoint.getNextValue(), time.toInstant().toEpochMilli()));
-            time = (ZonedDateTime) adjuster.adjustInto(time);
+        while (time.toInstant().isBefore(to.toInstant())) {
+            numericWrapper.updatePointValue(new PointValueTime(numericWrapper.getNextValue(), time.toInstant().toEpochMilli()));
+            multistateWrapper.updatePointValue(new PointValueTime(multistateWrapper.getNextValue(), time.toInstant().toEpochMilli()));
+            time = time.plus(adjuster);
             timer.fastForwardTo(time.toInstant().toEpochMilli());
         }
 
         //Perform the query
-        String dateTimeFormat = null;
         String timezone = zoneId.getId();
-        PointValueTimeCacheControl cache = PointValueTimeCacheControl.NONE;
         PointValueField[] fields = getFields();
-        ZonedDateTimeStatisticsQueryInfo info = new ZonedDateTimeStatisticsQueryInfo(from, to, dateTimeFormat, timezone, cache, fields);
 
-        test(info, numericPoint, multistatePoint);
+        var result = getStatistics(List.of(numericDp, multistateDp), from, to, timezone, fields);
+        test(result, numericWrapper, multistateWrapper);
     }
 
-    @Test
-    public void testMultiplePointsOnlyCacheChange() throws IOException, QueryCancelledException {
-
-        //Setup the data to run once daily for 30 days
-        ZonedDateTime from = ZonedDateTime.of(2017, 01, 01, 00, 00, 00, 0, zoneId);
-        ZonedDateTime to = ZonedDateTime.of(2017, 02, 01, 00, 00, 00, 0, zoneId);
-        NextTimePeriodAdjuster adjuster = new NextTimePeriodAdjuster(ChronoUnit.DAYS, 1);
-
-        int cacheSize = 10;
-        MockDataSourceVO ds = createDataSource();
-        DataPointVO numericDp = createDataPoint(ds.getId(), DataType.NUMERIC, cacheSize);
-
-        DataPointWrapper<AnalogStatistics> numericPoint = new DataPointWrapper<AnalogStatistics>(ds, numericDp,
-                new PointValueTime(1.0, 0),
-                (value) -> {
-                    return new NumericValue(value.getDoubleValue() + 1.0);
-                },
-                (info, w) ->{
-                    return new AnalogStatistics(info.getFromMillis(), info.getToMillis(), null, w.values);
-                },
-                (w, gen, root) -> {
-                    JsonNode stats = root.get(w.vo.getXid());
-                    if(stats == null)
-                        fail("Missing stats for point " + w.vo.getXid());
-
-                    JsonNode stat = stats.get(PointValueTimeWriter.START);
-                    if(stat == null)
-                        fail("Missing " + PointValueTimeWriter.START + " entry");
-
-                    assertNull(gen.getStartValue());
-                    assertTrue(stat.isNull());
-
-                    stat = stats.get(PointValueTimeWriter.FIRST);
-                    if(stat == null)
-                        fail("Missing " + PointValueTimeWriter.FIRST + " entry");
-                    PointValueTime value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
-                    assertEquals(gen.getFirstValue().getDoubleValue(), value.getValue().getDoubleValue(), 0.00001);
-                    assertEquals((long)gen.getFirstTime(), value.getTime());
-
-                    stat = stats.get(PointValueTimeWriter.LAST);
-                    if(stat == null)
-                        fail("Missing " + PointValueTimeWriter.LAST + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
-                    assertEquals(gen.getLastValue().getDoubleValue(), value.getValue().getDoubleValue(), 0.00001);
-                    assertEquals((long)gen.getLastTime(), value.getTime());
-
-                    stat = stats.get(PointValueTimeWriter.COUNT);
-                    if(stat == null)
-                        fail("Missing " + PointValueTimeWriter.COUNT + " entry");
-                    assertEquals(gen.getCount(), stat.asLong());
-
-                    stat = stats.get(PointValueTimeWriter.ACCUMULATOR);
-                    if(stat == null)
-                        fail("Missing " + PointValueTimeWriter.ACCUMULATOR + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
-                    Double accumulatorValue;
-                    if(gen.getLastValue() == null)
-                        accumulatorValue = gen.getMaximumValue();
-                    else
-                        accumulatorValue = gen.getLastValue().getDoubleValue();
-                    assertEquals(accumulatorValue, value.getDoubleValue(), 0.00001);
-
-                    stat = stats.get(PointValueTimeWriter.AVERAGE);
-                    if(stat == null)
-                        fail("Missing " + PointValueTimeWriter.AVERAGE + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
-                    assertEquals(gen.getAverage(), value.getDoubleValue(), 0.00001);
-
-                    stat = stats.get(PointValueTimeWriter.DELTA);
-                    if(stat == null)
-                        fail("Missing " + PointValueTimeWriter.DELTA + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
-                    assertEquals(gen.getDelta(), value.getDoubleValue(), 0.00001);
-
-                    stat = stats.get(PointValueTimeWriter.MINIMUM);
-                    if(stat == null)
-                        fail("Missing " + PointValueTimeWriter.MINIMUM + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
-                    assertEquals(gen.getMinimumValue(), value.getValue().getDoubleValue(), 0.00001);
-                    assertEquals((long)gen.getMinimumTime(), value.getTime());
-
-                    stat = stats.get(PointValueTimeWriter.MAXIMUM);
-                    if(stat == null)
-                        fail("Missing " + PointValueTimeWriter.MAXIMUM + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
-                    assertEquals(gen.getMaximumValue(), value.getValue().getDoubleValue(), 0.00001);
-                    assertEquals((long)gen.getMaximumTime(), value.getTime());
-
-                    stat = stats.get(PointValueTimeWriter.SUM);
-                    if(stat == null)
-                        fail("Missing " + PointValueTimeWriter.SUM + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
-                    assertEquals(gen.getSum(), value.getDoubleValue(), 0.00001);
-
-                    stat = stats.get(PointValueTimeWriter.INTEGRAL);
-                    if(stat == null)
-                        fail("Missing " + PointValueTimeWriter.INTEGRAL + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
-                    assertEquals(gen.getIntegral(), value.getDoubleValue(), 0.00001);
-                });
-
-        DataPointVO multistateDp = createDataPoint(ds.getId(), DataType.MULTISTATE, cacheSize);
-        DataPointWrapper<StartsAndRuntimeList> multistatePoint = new DataPointWrapper<StartsAndRuntimeList>(ds, multistateDp,
-                new PointValueTime(1, 0),
-                (value) -> {
-                    return new MultistateValue(value.getIntegerValue() + 1);
-                },
-                (info, w) ->{
-                    return new StartsAndRuntimeList(info.getFromMillis(), info.getToMillis(), null, w.values);
-                },
-                (w, gen, root) -> {
-                    JsonNode stats = root.get(w.vo.getXid());
-                    if(stats == null)
-                        fail("Missing stats for point " + w.vo.getXid());
-
-                    JsonNode stat = stats.get(PointValueTimeWriter.START);
-                    if(stat == null)
-                        fail("Missing " + PointValueTimeWriter.START + " entry");
-
-                    assertNull(gen.getStartValue());
-                    assertTrue(stat.isNull());
-
-                    stat = stats.get(PointValueTimeWriter.FIRST);
-                    if(stat == null)
-                        fail("Missing " + PointValueTimeWriter.FIRST + " entry");
-                    PointValueTime value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
-                    assertEquals(gen.getFirstValue(), value.getValue());
-                    assertEquals((long)gen.getFirstTime(), value.getTime());
-
-                    stat = stats.get(PointValueTimeWriter.LAST);
-                    if(stat == null)
-                        fail("Missing " + PointValueTimeWriter.LAST + " entry");
-                    value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
-                    assertEquals(gen.getLastValue(), value.getValue());
-                    assertEquals((long)gen.getLastTime(), value.getTime());
-
-                    stat = stats.get(PointValueTimeWriter.COUNT);
-                    if(stat == null)
-                        fail("Missing " + PointValueTimeWriter.COUNT + " entry");
-                    assertEquals(gen.getCount(), stat.asInt());
-
-                    //Test data
-                    stat = stats.get(PointValueTimeWriter.STARTS_AND_RUNTIMES);
-                    if(stat == null)
-                        fail("Missing data entry");
-
-                    for(int i=0; i<gen.getData().size(); i++) {
-                        StartsAndRuntime expected = gen.getData().get(i);
-                        JsonNode actual = stat.get(i);
-                        assertEquals((int)expected.getValue(), actual.get(PointValueTimeWriter.VALUE).intValue());
-                        assertEquals(expected.getStarts(), actual.get(PointValueTimeWriter.STARTS).intValue());
-                        assertEquals(expected.getRuntime(), actual.get(PointValueTimeWriter.RUNTIME).asLong());
-                        assertEquals(expected.getProportion(), actual.get(PointValueTimeWriter.PROPORTION).doubleValue(), 0.000001);
-                    }
-                });
-
-        //Insert the data skipping first day so we get the initial value
-        ZonedDateTime time = (ZonedDateTime) adjuster.adjustInto(from);
-        timer.setStartTime(time.toInstant().toEpochMilli());
-
-        while(time.toInstant().isBefore(to.toInstant())) {
-            numericPoint.updatePointValue(new PointValueTime(numericPoint.getNextValue(), time.toInstant().toEpochMilli()));
-            multistatePoint.updatePointValue(new PointValueTime(multistatePoint.getNextValue(), time.toInstant().toEpochMilli()));
-            time = (ZonedDateTime) adjuster.adjustInto(time);
-            timer.fastForwardTo(time.toInstant().toEpochMilli());
+    protected void test(Object result, DataPointWrapper<?>... points) {
+        JsonNode root = generateOutput(result);
+        for (DataPointWrapper<?> wrapper : points) {
+            wrapper.verify(root);
         }
-
-        //Insert some values directly into the cache
-        numericPoint.values.clear();
-        multistatePoint.values.clear();
-        for(int i=0; i<cacheSize; i++) {
-            time = (ZonedDateTime) adjuster.adjustInto(time);
-            timer.fastForwardTo(time.toInstant().toEpochMilli());
-            numericPoint.saveOnlyToCache(new PointValueTime(numericPoint.getNextValue(), timer.currentTimeMillis()));
-            multistatePoint.saveOnlyToCache(new PointValueTime(multistatePoint.getNextValue(), timer.currentTimeMillis()));
-        }
-
-        //Ensure we get all the data
-        Instant now = Instant.ofEpochMilli(timer.currentTimeMillis() + 1);
-        to = ZonedDateTime.ofInstant(now, zoneId);
-        //Perform the query
-        String dateTimeFormat = null;
-        String timezone = zoneId.getId();
-        PointValueTimeCacheControl cache = PointValueTimeCacheControl.CACHE_ONLY;
-        PointValueField[] fields =  getFields();
-        ZonedDateTimeStatisticsQueryInfo info = new ZonedDateTimeStatisticsQueryInfo(from, to, dateTimeFormat, timezone, cache, fields);
-
-        test(info, numericPoint, multistatePoint);
-    }
-
-    /**
-     */
-    private void test(ZonedDateTimeStatisticsQueryInfo info, DataPointWrapper<?>...points) throws IOException, QueryCancelledException {
-        Map<Integer, DataPointVO> voMap = new HashMap<>();
-        for(DataPointWrapper<?> wrapper : points)
-            voMap.put(wrapper.vo.getSeriesId(), wrapper.vo);
-        JsonNode root = generateOutput(info, voMap);
-        for(DataPointWrapper<?> wrapper : points)
-            wrapper.verify(info, root);
     }
 
     protected PointValueField[] getFields() {
@@ -844,18 +332,18 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
     }
 
     protected PointValueTime getPointValueTime(DataType dataType, JsonNode stat) {
-        if(stat.isNull()) {
+        if (stat.isNull()) {
             return null;
         }
-        assertNotNull(stat.get(PointValueTimeWriter.TIMESTAMP));
-        assertNotNull(stat.get(PointValueTimeWriter.VALUE));
-        switch(dataType) {
+        assertNotNull(stat.get(TIMESTAMP));
+        assertNotNull(stat.get(VALUE));
+        switch (dataType) {
             case MULTISTATE:
-                return new PointValueTime(stat.get(PointValueTimeWriter.VALUE).asInt(), stat.get(PointValueTimeWriter.TIMESTAMP).asLong());
+                return new PointValueTime(stat.get(VALUE).asInt(), stat.get(TIMESTAMP).asLong());
             case NUMERIC:
-                return new PointValueTime(stat.get(PointValueTimeWriter.VALUE).asDouble(), stat.get(PointValueTimeWriter.TIMESTAMP).asLong());
+                return new PointValueTime(stat.get(VALUE).asDouble(), stat.get(TIMESTAMP).asLong());
             case ALPHANUMERIC:
-                return new PointValueTime(stat.get(PointValueTimeWriter.VALUE).asText(), stat.get(PointValueTimeWriter.TIMESTAMP).asLong());
+                return new PointValueTime(stat.get(VALUE).asText(), stat.get(TIMESTAMP).asLong());
             default:
                 throw new ShouldNeverHappenException("Unsupported data type: " + dataType);
         }
@@ -864,21 +352,8 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
     /**
      * Generate a JsonNode from the query
      */
-    protected JsonNode generateOutput(ZonedDateTimeStatisticsQueryInfo info, Map<Integer, DataPointVO> voMap) throws QueryCancelledException, IOException {
-        MultiPointStatisticsStream stream = new MultiPointStatisticsStream(info, voMap, Common.getBean(PointValueDao.class));
-
-        JsonFactory factory = new JsonFactory();
-        ByteArrayOutputStream output = new ByteArrayOutputStream();
-        JsonGenerator jgen = factory.createGenerator(output);
-        PointValueTimeWriter writer = new PointValueTimeJsonWriter(stream.getQueryInfo(), jgen);
-        stream.setContentType(StreamContentType.JSON);
-        stream.start(writer);
-        stream.streamData(writer);
-        stream.finish(writer);
-        jgen.flush();
-
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.readTree(output.toString(StandardCharsets.UTF_8.name()));
+    protected JsonNode generateOutput(Object result) {
+        return mapper.valueToTree(result);
     }
 
     protected MockDataSourceVO createDataSource() {
@@ -902,22 +377,53 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
         return vo;
     }
 
+    @Override
+    protected MockMangoLifecycle getLifecycle() {
+        return new TestLifecycle(modules, runtimeManager);
+    }
+
+    interface StatisticsExpectedResultCreator<T extends StatisticsGenerator> {
+        T create(DataPointWrapper<T> w);
+    }
+
+    interface StatisticsVerifier<T extends StatisticsGenerator> {
+        void verify(DataPointVO point, T expectedResult, JsonNode root);
+    }
+
+    static class TestLifecycle extends MockMangoLifecycle {
+        public TestLifecycle(List<Module> modules, TestRuntimeManager runtimeManager) {
+            super(modules);
+            this.runtimeManager = runtimeManager;
+        }
+    }
+
+    static class TestRuntimeManager extends MockRuntimeManager {
+        final List<DataPointRT> points = new ArrayList<>();
+
+        @Override
+        public DataPointRT getDataPoint(int dataPointId) {
+            for (DataPointRT rt : points) {
+                if (rt.getVO().getId() == dataPointId)
+                    return rt;
+            }
+            return null;
+        }
+    }
+
     class DataPointWrapper<T extends StatisticsGenerator> {
-        MockDataSourceVO dsVo;
-        DataPointVO vo;
-        DataPointRT rt;
-        PointValueTime initialValue;
+        final DataPointVO vo;
+        final DataPointRT rt;
+        final PointValueTime initialValue;
+        final List<PointValueTime> values;
+        final Function<DataValue, DataValue> nextValue;
+        final StatisticsExpectedResultCreator<T> expectedResultCreator;
+        final StatisticsVerifier<T> verifier;
         PointValueTime current;
-        List<PointValueTime> values;
-        Function<DataValue, DataValue> nextValue;
-        StatisticsCreator<T> creator;
-        StatisticsVerifier<T> verifyResults;
 
         public DataPointWrapper(MockDataSourceVO dsVo, DataPointVO vo, PointValueTime initial,
-                Function<DataValue, DataValue> nextValue,
-                StatisticsCreator<T> creator,
-                StatisticsVerifier<T> verify) {
-            this.dsVo = dsVo;
+                                Function<DataValue, DataValue> nextValue,
+                                StatisticsExpectedResultCreator<T> expectedResultCreator,
+                                StatisticsVerifier<T> verifier) {
             this.vo = vo;
             this.initialValue = initial;
             DataPointWithEventDetectors dp = new DataPointWithEventDetectors(vo, new ArrayList<>());
@@ -926,20 +432,14 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                     timer);
             runtimeManager.points.add(this.rt);
             this.nextValue = nextValue;
-            this.creator = creator;
-            this.verifyResults = verify;
+            this.expectedResultCreator = expectedResultCreator;
+            this.verifier = verifier;
             this.values = new ArrayList<>();
 
-            if(initialValue != null) {
+            if (initialValue != null) {
                 this.rt.updatePointValue(initialValue, false);
                 this.current = initialValue;
             }
-        }
-
-        void saveOnlyToCache(PointValueTime pvt) {
-            rt.savePointValueDirectToCache(pvt, null, false, false, FireEvents.NEVER);
-            values.add(pvt);
-            current = pvt;
         }
 
         DataValue getNextValue() {
@@ -952,234 +452,184 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
             current = pvt;
         }
 
-        void verify(ZonedDateTimeStatisticsQueryInfo info, JsonNode root) {
-            T stats = creator.create(info, this);
-            verifyResults.verify(this, stats, root);
+        void verify(JsonNode root) {
+            T expectedResult = expectedResultCreator.create(this);
+            verifier.verify(vo, expectedResult, root);
         }
-    }
-
-    interface StatisticsCreator<T extends StatisticsGenerator> {
-        T create(ZonedDateTimeStatisticsQueryInfo info, DataPointWrapper<T> w);
-    }
-    interface StatisticsVerifier<T extends StatisticsGenerator> {
-        void verify(DataPointWrapper<T> w, T generator, JsonNode root);
     }
 
     class ValueChangeCounterVerifier implements StatisticsVerifier<ValueChangeCounter> {
 
-        /* (non-Javadoc)
-         * @see com.infiniteautomation.mango.rest.latest.model.pointValue.query.MultiPointStatisticsStreamTest.StatisticsVerifier#verify(com.infiniteautomation.mango.rest.latest.model.pointValue.query.MultiPointStatisticsStreamTest.DataPointWrapper, com.serotonin.m2m2.view.stats.StatisticsGenerator, com.fasterxml.jackson.databind.JsonNode)
-         */
         @Override
-        public void verify(DataPointWrapper<ValueChangeCounter> w, ValueChangeCounter gen,
-                JsonNode root) {
-            JsonNode stats = root.get(w.vo.getXid());
-            if(stats == null)
-                fail("Missing stats for point " + w.vo.getXid());
+        public void verify(DataPointVO point, ValueChangeCounter expectedResult, JsonNode root) {
+            JsonNode stats = root.get(point.getXid());
+            if (stats == null)
+                fail("Missing stats for point " + point.getXid());
 
-            JsonNode stat = stats.get(PointValueTimeWriter.START);
-            if(stat == null)
-                fail("Missing " + PointValueTimeWriter.START + " entry");
-            PointValueTime value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
-            assertEquals(gen.getStartValue(), value.getValue());
-            assertEquals(gen.getPeriodStartTime(), value.getTime());
+            JsonNode stat = stats.get(START);
+            if (stat == null)
+                fail("Missing " + START + " entry");
+            PointValueTime value = getPointValueTime(point.getPointLocator().getDataType(), stat);
+            assertEquals(expectedResult.getStartValue(), value.getValue());
+            assertEquals(expectedResult.getPeriodStartTime(), value.getTime());
 
-            stat = stats.get(PointValueTimeWriter.FIRST);
-            if(stat == null)
-                fail("Missing " + PointValueTimeWriter.FIRST + " entry");
-            value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
-            assertEquals(gen.getFirstValue(), value.getValue());
-            assertEquals((long)gen.getFirstTime(), value.getTime());
+            stat = stats.get(FIRST);
+            if (stat == null)
+                fail("Missing " + FIRST + " entry");
+            value = getPointValueTime(point.getPointLocator().getDataType(), stat);
+            assertEquals(expectedResult.getFirstValue(), value.getValue());
+            assertEquals((long) expectedResult.getFirstTime(), value.getTime());
 
-            stat = stats.get(PointValueTimeWriter.LAST);
-            if(stat == null)
-                fail("Missing " + PointValueTimeWriter.LAST + " entry");
-            value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
-            assertEquals(gen.getLastValue(), value.getValue() );
-            assertEquals((long)gen.getLastTime(), value.getTime());
+            stat = stats.get(LAST);
+            if (stat == null)
+                fail("Missing " + LAST + " entry");
+            value = getPointValueTime(point.getPointLocator().getDataType(), stat);
+            assertEquals(expectedResult.getLastValue(), value.getValue());
+            assertEquals((long) expectedResult.getLastTime(), value.getTime());
 
-            stat = stats.get(PointValueTimeWriter.COUNT);
-            if(stat == null)
-                fail("Missing " + PointValueTimeWriter.COUNT + " entry");
-            assertEquals(gen.getCount(), stat.asInt());
+            stat = stats.get(COUNT);
+            if (stat == null)
+                fail("Missing " + COUNT + " entry");
+            assertEquals(expectedResult.getCount(), stat.asInt());
         }
     }
 
     class StartsAndRuntimeListVerifier implements StatisticsVerifier<StartsAndRuntimeList> {
 
-        /* (non-Javadoc)
-         * @see com.infiniteautomation.mango.rest.latest.model.pointValue.query.MultiPointStatisticsStreamTest.StatisticsVerifier#verify(com.infiniteautomation.mango.rest.latest.model.pointValue.query.MultiPointStatisticsStreamTest.DataPointWrapper, com.serotonin.m2m2.view.stats.StatisticsGenerator, com.fasterxml.jackson.databind.JsonNode)
-         */
         @Override
-        public void verify(DataPointWrapper<StartsAndRuntimeList> w, StartsAndRuntimeList gen,
-                JsonNode root) {
-            JsonNode stats = root.get(w.vo.getXid());
-            if(stats == null)
-                fail("Missing stats for point " + w.vo.getXid());
+        public void verify(DataPointVO point, StartsAndRuntimeList expectedResult, JsonNode root) {
+            JsonNode stats = root.get(point.getXid());
+            if (stats == null)
+                fail("Missing stats for point " + point.getXid());
 
-            JsonNode stat = stats.get(PointValueTimeWriter.START);
-            if(stat == null)
-                fail("Missing " + PointValueTimeWriter.START + " entry");
-            PointValueTime value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
-            assertEquals(gen.getStartValue(), value.getValue());
-            assertEquals(gen.getPeriodStartTime(), value.getTime());
+            JsonNode stat = stats.get(START);
+            if (stat == null)
+                fail("Missing " + START + " entry");
+            PointValueTime value = getPointValueTime(point.getPointLocator().getDataType(), stat);
+            assertEquals(expectedResult.getStartValue(), value.getValue());
+            assertEquals(expectedResult.getPeriodStartTime(), value.getTime());
 
-            stat = stats.get(PointValueTimeWriter.FIRST);
-            if(stat == null)
-                fail("Missing " + PointValueTimeWriter.FIRST + " entry");
-            value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
-            assertEquals(gen.getFirstValue(), value.getValue());
-            assertEquals((long)gen.getFirstTime(), value.getTime());
+            stat = stats.get(FIRST);
+            if (stat == null)
+                fail("Missing " + FIRST + " entry");
+            value = getPointValueTime(point.getPointLocator().getDataType(), stat);
+            assertEquals(expectedResult.getFirstValue(), value.getValue());
+            assertEquals((long) expectedResult.getFirstTime(), value.getTime());
 
-            stat = stats.get(PointValueTimeWriter.LAST);
-            if(stat == null)
-                fail("Missing " + PointValueTimeWriter.LAST + " entry");
-            value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
-            assertEquals(gen.getLastValue(), value.getValue() );
-            assertEquals((long)gen.getLastTime(), value.getTime());
+            stat = stats.get(LAST);
+            if (stat == null)
+                fail("Missing " + LAST + " entry");
+            value = getPointValueTime(point.getPointLocator().getDataType(), stat);
+            assertEquals(expectedResult.getLastValue(), value.getValue());
+            assertEquals((long) expectedResult.getLastTime(), value.getTime());
 
-            stat = stats.get(PointValueTimeWriter.COUNT);
-            if(stat == null)
-                fail("Missing " + PointValueTimeWriter.COUNT + " entry");
-            assertEquals(gen.getCount(), stat.asInt());
+            stat = stats.get(COUNT);
+            if (stat == null)
+                fail("Missing " + COUNT + " entry");
+            assertEquals(expectedResult.getCount(), stat.asInt());
 
             //Test data
-            stat = stats.get(PointValueTimeWriter.STARTS_AND_RUNTIMES);
-            if(stat == null)
+            stat = stats.get(STARTS_AND_RUNTIMES);
+            if (stat == null)
                 fail("Missing data entry");
 
-            for(int i=0; i<gen.getData().size(); i++) {
-                StartsAndRuntime expected = gen.getData().get(i);
+            for (int i = 0; i < expectedResult.getData().size(); i++) {
+                StartsAndRuntime expected = expectedResult.getData().get(i);
                 JsonNode actual = stat.get(i);
-                assertEquals((int)expected.getValue(), actual.get(PointValueTimeWriter.VALUE).intValue());
-                assertEquals(expected.getStarts(), actual.get(PointValueTimeWriter.STARTS).intValue());
-                assertEquals(expected.getRuntime(), actual.get(PointValueTimeWriter.RUNTIME).asLong());
-                assertEquals(expected.getProportion(), actual.get(PointValueTimeWriter.PROPORTION).doubleValue(), 0.000001);
+                assertEquals((int) expected.getValue(), actual.get(VALUE).intValue());
+                assertEquals(expected.getStarts(), actual.get(STARTS).intValue());
+                assertEquals(expected.getRuntime(), actual.get(RUNTIME).asLong());
+                assertEquals(expected.getProportion(), actual.get(PROPORTION).doubleValue(), 0.000001);
             }
 
         }
 
     }
+
     class AnalogStatisticsVerifier implements StatisticsVerifier<AnalogStatistics> {
 
-        /* (non-Javadoc)
-         * @see com.infiniteautomation.mango.rest.latest.model.pointValue.query.MultiPointStatisticsStreamTest.StatisticsVerifier#verify(com.infiniteautomation.mango.rest.latest.model.pointValue.query.MultiPointStatisticsStreamTest.DataPointWrapper, com.serotonin.m2m2.view.stats.StatisticsGenerator, com.fasterxml.jackson.databind.JsonNode)
-         */
         @Override
-        public void verify(DataPointWrapper<AnalogStatistics> w, AnalogStatistics gen,
-                JsonNode root) {
-            JsonNode stats = root.get(w.vo.getXid());
-            if(stats == null)
-                fail("Missing stats for point " + w.vo.getXid());
+        public void verify(DataPointVO point, AnalogStatistics expectedResult, JsonNode root) {
+            JsonNode stats = root.get(point.getXid());
+            if (stats == null)
+                fail("Missing stats for point " + point.getXid());
 
-            JsonNode stat = stats.get(PointValueTimeWriter.START);
-            if(stat == null)
-                fail("Missing " + PointValueTimeWriter.START + " entry");
-            PointValueTime value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
-            assertEquals(gen.getStartValue().getDoubleValue(), value.getDoubleValue(), 0.00001);
-            assertEquals(gen.getPeriodStartTime(), value.getTime());
+            JsonNode stat = stats.get(START);
+            if (stat == null)
+                fail("Missing " + START + " entry");
+            PointValueTime value = getPointValueTime(point.getPointLocator().getDataType(), stat);
+            assertEquals(expectedResult.getStartValue().getDoubleValue(), value.getDoubleValue(), 0.00001);
+            assertEquals(expectedResult.getPeriodStartTime(), value.getTime());
 
-            stat = stats.get(PointValueTimeWriter.FIRST);
-            if(stat == null)
-                fail("Missing " + PointValueTimeWriter.FIRST + " entry");
-            value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
-            assertEquals(gen.getFirstValue().getDoubleValue(), value.getValue().getDoubleValue(), 0.00001);
-            assertEquals((long)gen.getFirstTime(), value.getTime());
+            stat = stats.get(FIRST);
+            if (stat == null)
+                fail("Missing " + FIRST + " entry");
+            value = getPointValueTime(point.getPointLocator().getDataType(), stat);
+            assertEquals(expectedResult.getFirstValue().getDoubleValue(), value.getValue().getDoubleValue(), 0.00001);
+            assertEquals((long) expectedResult.getFirstTime(), value.getTime());
 
-            stat = stats.get(PointValueTimeWriter.LAST);
-            if(stat == null)
-                fail("Missing " + PointValueTimeWriter.LAST + " entry");
-            value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
-            assertEquals(gen.getLastValue().getDoubleValue(), value.getValue().getDoubleValue(), 0.00001);
-            assertEquals((long)gen.getLastTime(), value.getTime());
+            stat = stats.get(LAST);
+            if (stat == null)
+                fail("Missing " + LAST + " entry");
+            value = getPointValueTime(point.getPointLocator().getDataType(), stat);
+            assertEquals(expectedResult.getLastValue().getDoubleValue(), value.getValue().getDoubleValue(), 0.00001);
+            assertEquals((long) expectedResult.getLastTime(), value.getTime());
 
-            stat = stats.get(PointValueTimeWriter.COUNT);
-            if(stat == null)
-                fail("Missing " + PointValueTimeWriter.COUNT + " entry");
-            assertEquals(gen.getCount(), stat.asLong());
+            stat = stats.get(COUNT);
+            if (stat == null)
+                fail("Missing " + COUNT + " entry");
+            assertEquals(expectedResult.getCount(), stat.asLong());
 
-            stat = stats.get(PointValueTimeWriter.ACCUMULATOR);
-            if(stat == null)
-                fail("Missing " + PointValueTimeWriter.ACCUMULATOR + " entry");
-            value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
+            stat = stats.get(ACCUMULATOR);
+            if (stat == null)
+                fail("Missing " + ACCUMULATOR + " entry");
+            value = getPointValueTime(point.getPointLocator().getDataType(), stat);
             Double accumulatorValue;
-            if(gen.getLastValue() == null)
-                accumulatorValue = gen.getMaximumValue();
+            if (expectedResult.getLastValue() == null)
+                accumulatorValue = expectedResult.getMaximumValue();
             else
-                accumulatorValue = gen.getLastValue().getDoubleValue();
+                accumulatorValue = expectedResult.getLastValue().getDoubleValue();
             assertEquals(accumulatorValue, value.getDoubleValue(), 0.00001);
 
-            stat = stats.get(PointValueTimeWriter.AVERAGE);
-            if(stat == null)
-                fail("Missing " + PointValueTimeWriter.AVERAGE + " entry");
-            value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
-            assertEquals(gen.getAverage(), value.getDoubleValue(), 0.00001);
+            stat = stats.get(AVERAGE);
+            if (stat == null)
+                fail("Missing " + AVERAGE + " entry");
+            value = getPointValueTime(point.getPointLocator().getDataType(), stat);
+            assertEquals(expectedResult.getAverage(), value.getDoubleValue(), 0.00001);
 
-            stat = stats.get(PointValueTimeWriter.DELTA);
-            if(stat == null)
-                fail("Missing " + PointValueTimeWriter.DELTA + " entry");
-            value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
-            assertEquals(gen.getDelta(), value.getDoubleValue(), 0.00001);
+            stat = stats.get(DELTA);
+            if (stat == null)
+                fail("Missing " + DELTA + " entry");
+            value = getPointValueTime(point.getPointLocator().getDataType(), stat);
+            assertEquals(expectedResult.getDelta(), value.getDoubleValue(), 0.00001);
 
 
-            stat = stats.get(PointValueTimeWriter.MINIMUM);
-            if(stat == null)
-                fail("Missing " + PointValueTimeWriter.MINIMUM + " entry");
-            value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
-            assertEquals(gen.getMinimumValue(), value.getValue().getDoubleValue(), 0.00001);
-            assertEquals((long)gen.getMinimumTime(), value.getTime());
+            stat = stats.get(MINIMUM);
+            if (stat == null)
+                fail("Missing " + MINIMUM + " entry");
+            value = getPointValueTime(point.getPointLocator().getDataType(), stat);
+            assertEquals(expectedResult.getMinimumValue(), value.getValue().getDoubleValue(), 0.00001);
+            assertEquals((long) expectedResult.getMinimumTime(), value.getTime());
 
-            stat = stats.get(PointValueTimeWriter.MAXIMUM);
-            if(stat == null)
-                fail("Missing " + PointValueTimeWriter.MAXIMUM + " entry");
-            value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
-            assertEquals(gen.getMaximumValue(), value.getValue().getDoubleValue(), 0.00001);
-            assertEquals((long)gen.getMaximumTime(), value.getTime());
+            stat = stats.get(MAXIMUM);
+            if (stat == null)
+                fail("Missing " + MAXIMUM + " entry");
+            value = getPointValueTime(point.getPointLocator().getDataType(), stat);
+            assertEquals(expectedResult.getMaximumValue(), value.getValue().getDoubleValue(), 0.00001);
+            assertEquals((long) expectedResult.getMaximumTime(), value.getTime());
 
-            stat = stats.get(PointValueTimeWriter.SUM);
-            if(stat == null)
-                fail("Missing " + PointValueTimeWriter.SUM + " entry");
-            value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
-            assertEquals(gen.getSum(), value.getDoubleValue(), 0.00001);
+            stat = stats.get(SUM);
+            if (stat == null)
+                fail("Missing " + SUM + " entry");
+            value = getPointValueTime(point.getPointLocator().getDataType(), stat);
+            assertEquals(expectedResult.getSum(), value.getDoubleValue(), 0.00001);
 
-            stat = stats.get(PointValueTimeWriter.INTEGRAL);
-            if(stat == null)
-                fail("Missing " + PointValueTimeWriter.INTEGRAL + " entry");
-            value = getPointValueTime(w.vo.getPointLocator().getDataType(), stat);
-            assertEquals(gen.getIntegral(), value.getDoubleValue(), 0.00001);
+            stat = stats.get(INTEGRAL);
+            if (stat == null)
+                fail("Missing " + INTEGRAL + " entry");
+            value = getPointValueTime(point.getPointLocator().getDataType(), stat);
+            assertEquals(expectedResult.getIntegral(), value.getDoubleValue(), 0.00001);
         }
-
-    }
-
-    @Override
-    protected MockMangoLifecycle getLifecycle() {
-        return new TestLifecycle(modules, runtimeManager);
-    }
-
-    class TestLifecycle extends MockMangoLifecycle {
-
-        /**
-         */
-        public TestLifecycle(List<Module> modules, TestRuntimeManager runtimeManager) {
-            super(modules);
-            this.runtimeManager = runtimeManager;
-        }
-
-    }
-
-    static class TestRuntimeManager extends MockRuntimeManager {
-
-        List<DataPointRT> points = new ArrayList<>();
-
-        @Override
-        public DataPointRT getDataPoint(int dataPointId) {
-            for(DataPointRT rt : points) {
-                if(rt.getVO().getId() == dataPointId)
-                    return rt;
-            }
-            return null;
-        };
-
 
     }
 }
