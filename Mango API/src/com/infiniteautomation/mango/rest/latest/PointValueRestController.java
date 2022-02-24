@@ -4,6 +4,7 @@
 package com.infiniteautomation.mango.rest.latest;
 
 import java.net.URI;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -65,14 +66,12 @@ import com.infiniteautomation.mango.rest.latest.model.pointValue.query.LatestQue
 import com.infiniteautomation.mango.rest.latest.model.pointValue.query.MultiPointLatestDatabaseStream;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.query.MultiPointSimplifyLatestDatabaseStream;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.query.MultiPointSimplifyTimeRangeDatabaseStream;
-import com.infiniteautomation.mango.rest.latest.model.pointValue.query.MultiPointStatisticsStream;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.query.MultiPointTimeRangeDatabaseStream;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.query.PointValueTimeCacheControl;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.query.XidLatestQueryInfoModel;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.query.XidRollupTimeRangeQueryModel;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.query.XidTimeRangeQueryModel;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.query.ZonedDateTimeRangeQueryInfo;
-import com.infiniteautomation.mango.rest.latest.model.pointValue.query.ZonedDateTimeStatisticsQueryInfo;
 import com.infiniteautomation.mango.rest.latest.model.time.TimePeriodType;
 import com.infiniteautomation.mango.rest.latest.streamingvalues.mapper.AggregateValueMapper;
 import com.infiniteautomation.mango.rest.latest.streamingvalues.mapper.DefaultStreamMapper;
@@ -829,7 +828,7 @@ public class PointValueRestController extends AbstractMangoRestController {
             notes = "From time inclusive, To time exclusive. Returns map of xid to Statistics object",
             response = PointValueTimeModel.class, responseContainer = "Map")
     @RequestMapping(method = RequestMethod.GET, value = "/statistics/{xids}")
-    public ResponseEntity<MultiPointStatisticsStream> getStatistics(
+    public Map<String, StreamingPointValueTimeModel> getStatistics(
             @ApiParam(value = "Point xids", required = true, allowMultiple = true)
             @PathVariable String[] xids,
 
@@ -847,15 +846,28 @@ public class PointValueRestController extends AbstractMangoRestController {
             @ApiParam(value = "Date Time format pattern for timestamps as strings, if not included epoch milli number is used")
             @RequestParam(value = "dateTimeFormat", required = false) String dateTimeFormat,
 
-            @ApiParam(value = "Use cached/intra-interval logging data")
-            @RequestParam(value = "useCache", required = false, defaultValue = "NONE") PointValueTimeCacheControl useCache,
-
             @ApiParam(value = "Fields to be included in the returned data, default is TIMESTAMP,VALUE")
             @RequestParam(required = false) PointValueField[] fields) {
 
-        ZonedDateTimeStatisticsQueryInfo info = new ZonedDateTimeStatisticsQueryInfo(from, to, dateTimeFormat, timezone, useCache, fields);
-        Map<Integer, DataPointVO> voMap = buildMap(xids, info.getRollup());
-        return ResponseEntity.ok(new MultiPointStatisticsStream(info, voMap, this.dao));
+        var points = Arrays.stream(xids).distinct()
+                .map(dataPointService::get)
+                .collect(Collectors.toUnmodifiableSet());
+
+        var mapperBuilder = new StreamMapperBuilder()
+                .withDataPoints(points)
+                .withRollup(RollupEnum.ALL)
+                .withFields(fields)
+                .withDateTimeFormat(dateTimeFormat)
+                .withTimezone(timezone, from, to);
+
+        var aggregateMapper = mapperBuilder.build(AggregateValueMapper::new);
+        var rollupPeriod = Duration.between(from, to);
+
+        return points.stream().collect(Collectors.toUnmodifiableMap(DataPointVO::getXid,
+                point -> dao.getAggregateDao(rollupPeriod)
+                        .query(point, from, to, null)
+                        .map(aggregateMapper)
+                        .findAny().orElseThrow()));
     }
 
     /**

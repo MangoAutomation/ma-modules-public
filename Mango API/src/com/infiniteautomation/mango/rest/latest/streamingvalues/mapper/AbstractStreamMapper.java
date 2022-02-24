@@ -35,7 +35,7 @@ import com.serotonin.m2m2.vo.DataPointVO;
 @NonNull
 public abstract class AbstractStreamMapper<T> implements Function<T, StreamingPointValueTimeModel> {
 
-    public static final String RENDERED_NULL_STRING = "-";
+    public static final String RENDERED_NULL_STRING = "—";
 
     private final Map<Integer, DataPointVO> dataPoints;
     protected final Set<PointValueField> fields;
