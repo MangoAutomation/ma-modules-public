@@ -466,6 +466,9 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
             if (stats == null)
                 fail("Missing stats for point " + point.getXid());
 
+            long timestamp = stats.get(TIMESTAMP).asLong();
+            assertEquals(expectedResult.getPeriodStartTime(), timestamp);
+
             JsonNode stat = stats.get(START);
             if (stat == null)
                 fail("Missing " + START + " entry");
@@ -501,6 +504,9 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
             JsonNode stats = root.get(point.getXid());
             if (stats == null)
                 fail("Missing stats for point " + point.getXid());
+
+            long timestamp = stats.get(TIMESTAMP).asLong();
+            assertEquals(expectedResult.getPeriodStartTime(), timestamp);
 
             JsonNode stat = stats.get(START);
             if (stat == null)
@@ -553,6 +559,9 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
             JsonNode stats = root.get(point.getXid());
             if (stats == null)
                 fail("Missing stats for point " + point.getXid());
+
+            long timestamp = stats.get(TIMESTAMP).asLong();
+            assertEquals(expectedResult.getPeriodStartTime(), timestamp);
 
             JsonNode stat = stats.get(START);
             if (stat == null)
