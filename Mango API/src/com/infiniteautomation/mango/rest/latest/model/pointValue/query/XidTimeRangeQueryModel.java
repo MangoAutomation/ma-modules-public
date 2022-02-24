@@ -5,9 +5,7 @@ package com.infiniteautomation.mango.rest.latest.model.pointValue.query;
 
 import java.time.ZonedDateTime;
 
-import com.infiniteautomation.mango.rest.latest.exception.ValidationFailedRestException;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueField;
-import com.infiniteautomation.mango.rest.latest.model.pointValue.RollupEnum;
 
 /**
  *
@@ -92,15 +90,5 @@ public class XidTimeRangeQueryModel extends XidQueryInfoModel{
     public void setUseCache(PointValueTimeCacheControl useCache) {
         this.useCache = useCache;
     }
-
-    /**
-     * Create a time range query info object for use in the query
-     */
-    public ZonedDateTimeRangeQueryInfo createZonedDateTimeRangeQueryInfo(boolean multiplePointsPerArray,
-            boolean singleArray) throws ValidationFailedRestException {
-        return new ZonedDateTimeRangeQueryInfo(from, to, dateTimeFormat, timezone,
-                RollupEnum.NONE, null, limit, bookend, multiplePointsPerArray,
-                singleArray, useCache, simplifyTolerance, simplifyTarget, false, fields);
-    };
 
 }

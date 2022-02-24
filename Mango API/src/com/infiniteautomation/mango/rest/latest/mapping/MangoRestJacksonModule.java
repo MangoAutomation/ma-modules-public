@@ -9,7 +9,6 @@ import com.infiniteautomation.mango.io.serial.virtual.VirtualSerialPortConfig;
 import com.infiniteautomation.mango.rest.latest.exception.ExceptionMixin;
 import com.infiniteautomation.mango.rest.latest.model.JSONStreamedArray;
 import com.infiniteautomation.mango.rest.latest.model.permissions.MangoPermissionModel;
-import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueTimeStream;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 
 /**
@@ -32,7 +31,6 @@ public class MangoRestJacksonModule extends SimpleModule {
         this.addSerializer(JSONStreamedArray.class, new JSONStreamedArraySerializer());
         this.addSerializer(TranslatableMessage.class, new TranslatableMessageSerializer());
         this.addDeserializer(VirtualSerialPortConfig.class, new VirtualSerialPortConfigDeserializer());
-        this.addSerializer(PointValueTimeStream.class, new PointValueTimeStreamJsonSerializer());
         this.addSerializer(MangoPermissionModel.class, new MangoPermissionModelSerializer());
         this.addDeserializer(MangoPermissionModel.class, new MangoPermissionModelDeserializer());
         super.setupModule(context);

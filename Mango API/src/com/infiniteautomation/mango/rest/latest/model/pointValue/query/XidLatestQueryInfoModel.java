@@ -5,7 +5,6 @@ package com.infiniteautomation.mango.rest.latest.model.pointValue.query;
 
 import java.time.ZonedDateTime;
 
-import com.infiniteautomation.mango.rest.latest.exception.ValidationFailedRestException;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueField;
 
 /**
@@ -54,12 +53,5 @@ public class XidLatestQueryInfoModel extends XidQueryInfoModel{
     public void setUseCache(PointValueTimeCacheControl useCache) {
         this.useCache = useCache;
     }
-    
-    /**
-     *
-     */
-    public  LatestQueryInfo createLatestQueryInfo(boolean multiplePointsPerArray, boolean singleArray) throws ValidationFailedRestException {
-        return new LatestQueryInfo(before, dateTimeFormat, timezone, limit, multiplePointsPerArray, singleArray, 
-                useCache, simplifyTolerance, simplifyTarget, fields);
-    }
+
 }

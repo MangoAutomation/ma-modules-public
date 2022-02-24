@@ -49,11 +49,10 @@ import com.infiniteautomation.mango.rest.latest.genericcsv.GenericCSVMessageConv
 import com.infiniteautomation.mango.rest.latest.mapping.HtmlHttpMessageConverter;
 import com.infiniteautomation.mango.rest.latest.mapping.JScienceModule;
 import com.infiniteautomation.mango.rest.latest.mapping.JsonStreamMessageConverter;
-import com.infiniteautomation.mango.rest.latest.mapping.SingleMintermPermissionConverter;
-import com.infiniteautomation.mango.rest.latest.mapping.PermissionConverter;
 import com.infiniteautomation.mango.rest.latest.mapping.MangoRestJacksonModule;
-import com.infiniteautomation.mango.rest.latest.mapping.PointValueTimeStreamCsvMessageConverter;
+import com.infiniteautomation.mango.rest.latest.mapping.PermissionConverter;
 import com.infiniteautomation.mango.rest.latest.mapping.SerotoninJsonMessageConverter;
+import com.infiniteautomation.mango.rest.latest.mapping.SingleMintermPermissionConverter;
 import com.infiniteautomation.mango.rest.latest.mapping.SqlMessageConverter;
 import com.infiniteautomation.mango.rest.latest.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.latest.util.MangoRestTemporaryResourceContainer;
@@ -130,7 +129,6 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
         converters.add(new HtmlHttpMessageConverter());
         converters.add(new SerotoninJsonMessageConverter());
         converters.add(new SqlMessageConverter());
-        converters.add(new PointValueTimeStreamCsvMessageConverter(csvMapper()));
         converters.add(new GenericCSVMessageConverter(csvObjectMapper()));
         converters.add(new StringHttpMessageConverter(StandardCharsets.UTF_8));
     }

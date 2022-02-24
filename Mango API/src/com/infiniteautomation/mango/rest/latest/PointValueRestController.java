@@ -14,7 +14,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -44,7 +43,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.goebl.simplify.SimplifyUtility;
-import com.google.common.base.Functions;
 import com.infiniteautomation.mango.db.iterators.MergingIterator;
 import com.infiniteautomation.mango.rest.latest.exception.AbstractRestException;
 import com.infiniteautomation.mango.rest.latest.exception.BadRequestException;
@@ -56,22 +54,13 @@ import com.infiniteautomation.mango.rest.latest.model.pointValue.LegacyXidPointV
 import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueField;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueImportResult;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueTimeModel;
-import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueTimeStream;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.PurgeDataPointValuesModel;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.PurgePointValuesResponseModel;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.RollupEnum;
-import com.infiniteautomation.mango.rest.latest.model.pointValue.quantize.MultiDataPointDefaultRollupStatisticsQuantizerStream;
-import com.infiniteautomation.mango.rest.latest.model.pointValue.quantize.MultiDataPointStatisticsQuantizerStream;
-import com.infiniteautomation.mango.rest.latest.model.pointValue.query.LatestQueryInfo;
-import com.infiniteautomation.mango.rest.latest.model.pointValue.query.MultiPointLatestDatabaseStream;
-import com.infiniteautomation.mango.rest.latest.model.pointValue.query.MultiPointSimplifyLatestDatabaseStream;
-import com.infiniteautomation.mango.rest.latest.model.pointValue.query.MultiPointSimplifyTimeRangeDatabaseStream;
-import com.infiniteautomation.mango.rest.latest.model.pointValue.query.MultiPointTimeRangeDatabaseStream;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.query.PointValueTimeCacheControl;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.query.XidLatestQueryInfoModel;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.query.XidRollupTimeRangeQueryModel;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.query.XidTimeRangeQueryModel;
-import com.infiniteautomation.mango.rest.latest.model.pointValue.query.ZonedDateTimeRangeQueryInfo;
 import com.infiniteautomation.mango.rest.latest.model.time.TimePeriodType;
 import com.infiniteautomation.mango.rest.latest.streamingvalues.mapper.AggregateValueMapper;
 import com.infiniteautomation.mango.rest.latest.streamingvalues.mapper.DefaultStreamMapper;
@@ -1267,72 +1256,6 @@ public class PointValueRestController extends AbstractMangoRestController {
 
         TemporaryResource<PurgePointValuesResponseModel, AbstractRestException> resource = resourceManager.get(id);
         resource.remove();
-    }
-
-    /**
-     * The Hard Working Value Generation Logic for Latest Value Queries
-     */
-    protected <T, INFO extends LatestQueryInfo> ResponseEntity<PointValueTimeStream<T, INFO>> generateLatestStream(INFO info, String[] xids) {
-        //Build the map, check permissions
-        Map<Integer, DataPointVO> voMap = buildMap(xids, info.getRollup());
-        if (info.isUseSimplify()) {
-            //Ensure no Simplify support
-            for (DataPointVO vo : voMap.values())
-                if (vo.getPointLocator().getDataType() == DataType.ALPHANUMERIC)
-                    throw new BadRequestException(new TranslatableMessage("rest.validation.noSimplifySupport", vo.getXid()));
-            return ResponseEntity.ok(new MultiPointSimplifyLatestDatabaseStream<>(info, voMap, this.dao));
-        } else
-            return ResponseEntity.ok(new MultiPointLatestDatabaseStream<>(info, voMap, this.dao));
-    }
-
-    /**
-     * The Hard Working Value Generation Logic for Time Range Queries
-     */
-    protected <T, INFO extends ZonedDateTimeRangeQueryInfo> ResponseEntity<PointValueTimeStream<T, INFO>> generateStream(INFO info, String[] xids) {
-
-        //Build the map, check permissions
-        Map<Integer, DataPointVO> voMap = buildMap(xids, info.getRollup());
-
-        // Are we using rollup
-        if (info.getRollup() != RollupEnum.NONE) {
-            if (info.getRollup() == RollupEnum.POINT_DEFAULT)
-                return ResponseEntity.ok(new MultiDataPointDefaultRollupStatisticsQuantizerStream<>(info, voMap, this.dao));
-            else
-                return ResponseEntity.ok(new MultiDataPointStatisticsQuantizerStream<>(info, voMap, this.dao));
-        } else {
-            if (info.isUseSimplify()) {
-                //Ensure no Simplify support
-                for (DataPointVO vo : voMap.values())
-                    if (vo.getPointLocator().getDataType() == DataType.ALPHANUMERIC)
-                        throw new BadRequestException(new TranslatableMessage("rest.validation.noSimplifySupport", vo.getXid()));
-                return ResponseEntity.ok(new MultiPointSimplifyTimeRangeDatabaseStream<>(info, voMap, this.dao));
-            } else
-                return ResponseEntity.ok(new MultiPointTimeRangeDatabaseStream<>(info, voMap, this.dao));
-        }
-    }
-
-    /**
-     * Build and validate the map of Requested Data Points
-     *
-     * @return Map of series ids to data points
-     */
-    protected Map<Integer, DataPointVO> buildMap(String[] xids, RollupEnum rollup) {
-        if (xids == null)
-            throw new BadRequestException(new TranslatableMessage("validate.invalidValueForField", "xids"));
-
-        //Do we have any points
-        if (xids.length == 0) throw new NotFoundRestException();
-
-        // Build the map, check permissions, we want this map ordered so our results are in order for csv output
-
-        return Arrays.stream(xids)
-                .map(dataPointService::get)
-                .peek(point -> {
-                    if (!rollup.nonNumericSupport() && point.getPointLocator().getDataType() != DataType.NUMERIC) {
-                        throw new BadRequestException(new TranslatableMessage("rest.validate.rollup.incompatible", rollup.toString(), point.getXid()));
-                    }
-                })
-                .collect(Collectors.toMap(DataPointVO::getSeriesId, Functions.identity(), (x,y) -> y, LinkedHashMap::new));
     }
 
 }
