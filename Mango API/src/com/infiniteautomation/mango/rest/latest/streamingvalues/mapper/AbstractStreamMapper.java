@@ -22,7 +22,6 @@ import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueField
 import com.infiniteautomation.mango.rest.latest.model.pointValue.RollupEnum;
 import com.infiniteautomation.mango.rest.latest.streamingvalues.model.StreamingPointValueTimeModel;
 import com.serotonin.m2m2.DataType;
-import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.rt.dataImage.types.NumericValue;
 import com.serotonin.m2m2.vo.DataPointVO;
 
@@ -85,11 +84,6 @@ public abstract class AbstractStreamMapper<T> implements Function<T, StreamingPo
                 return convertValue(point, ((NumericValue) value).getDoubleValue());
             }
         }
-
-        if (value instanceof DataValue) {
-            return ((DataValue) value).getObjectValue();
-        }
-
         return value;
     }
 

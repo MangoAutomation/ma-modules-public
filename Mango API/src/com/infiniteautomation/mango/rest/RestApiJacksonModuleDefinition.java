@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.serotonin.json.type.JsonValue;
 import com.serotonin.m2m2.module.JacksonModuleDefinition;
+import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 
 import net.jazdw.rql.parser.ASTNode;
 
@@ -42,6 +43,8 @@ public class RestApiJacksonModuleDefinition extends JacksonModuleDefinition {
 
             this.addDeserializer(JsonValue.class, new SerotoninJsonValueDeserializer());
             this.addDeserializer(ASTNode.class, new ASTNodeDeserializer());
+
+            this.addSerializer(DataValue.class, new DataValueSerializer());
         }
     }
 

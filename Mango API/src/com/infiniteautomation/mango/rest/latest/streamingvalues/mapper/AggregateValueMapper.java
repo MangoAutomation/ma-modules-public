@@ -184,7 +184,7 @@ public class AggregateValueMapper extends AbstractStreamMapper<SeriesValueTime<?
             model.setValue(convertedValue);
         }
         if (fields.contains(PointValueField.RAW)) {
-            model.setRaw(rawValue instanceof DataValue ? ((DataValue) rawValue).getObjectValue() : rawValue);
+            model.setRaw(rawValue);
         }
         if (fields.contains(PointValueField.RENDERED)) {
             String rendered;
