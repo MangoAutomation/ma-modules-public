@@ -5,6 +5,8 @@
 package com.infiniteautomation.mango.rest.latest.streamingvalues.model;
 
 /**
+ * Used for data points with ALPHANUMERIC data type.
+ *
  * @author Jared Wiltshire
  */
 public class AllStatisticsModel {

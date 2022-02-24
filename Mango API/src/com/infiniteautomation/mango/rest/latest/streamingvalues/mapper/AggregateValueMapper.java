@@ -5,18 +5,22 @@
 package com.infiniteautomation.mango.rest.latest.streamingvalues.mapper;
 
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueField;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.RollupEnum;
 import com.infiniteautomation.mango.rest.latest.streamingvalues.model.AllStatisticsModel;
+import com.infiniteautomation.mango.rest.latest.streamingvalues.model.MultistateAllStatisticsModel;
+import com.infiniteautomation.mango.rest.latest.streamingvalues.model.MultistateAllStatisticsModel.StartsAndRuntimeModel;
 import com.infiniteautomation.mango.rest.latest.streamingvalues.model.NumericAllModel;
 import com.infiniteautomation.mango.rest.latest.streamingvalues.model.StreamingPointValueTimeModel;
 import com.infiniteautomation.mango.rest.latest.streamingvalues.model.ValueModel;
 import com.serotonin.m2m2.DataType;
 import com.serotonin.m2m2.db.dao.pointvalue.AggregateValue;
 import com.serotonin.m2m2.db.dao.pointvalue.NumericAggregate;
+import com.serotonin.m2m2.db.dao.pointvalue.StartsAndRuntimeAggregate;
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.view.stats.SeriesValueTime;
 import com.serotonin.m2m2.view.text.TextRenderer;
@@ -101,6 +105,16 @@ public class AggregateValueMapper extends AbstractStreamMapper<SeriesValueTime<?
             model.setMaximumInPeriod(getRollupValue(point, stats, RollupEnum.MAXIMUM_IN_PERIOD));
             model.setMinimumInPeriod(getRollupValue(point, stats, RollupEnum.MINIMUM_IN_PERIOD));
             model.setArithmeticMean(getRollupValue(point, stats, RollupEnum.ARITHMETIC_MEAN));
+            all = model;
+        } else if (stats instanceof StartsAndRuntimeAggregate) {
+            MultistateAllStatisticsModel model = new MultistateAllStatisticsModel();
+            var startsStats = ((StartsAndRuntimeAggregate) stats);
+            var startsModel = startsStats.getData().stream().map(start -> {
+                String rendered = point.getTextRenderer().getText(start.getDataValue(), TextRenderer.HINT_FULL);
+                return new StartsAndRuntimeModel(start.getDataValue(), rendered, start.getStarts(),
+                        start.getRuntime(), start.getProportion());
+            }).collect(Collectors.toUnmodifiableList());
+            model.setStartsAndRuntimes(startsModel);
             all = model;
         } else {
             all = new AllStatisticsModel();
