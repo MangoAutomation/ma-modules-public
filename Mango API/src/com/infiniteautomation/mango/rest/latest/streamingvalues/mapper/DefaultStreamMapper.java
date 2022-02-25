@@ -8,7 +8,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
 import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueField;
 import com.infiniteautomation.mango.rest.latest.streamingvalues.model.StreamingPointValueTimeModel;
-import com.infiniteautomation.mango.rest.latest.streamingvalues.model.ValueModel;
+import com.infiniteautomation.mango.rest.latest.streamingvalues.model.ValueTimeModel;
 import com.serotonin.m2m2.rt.dataImage.IAnnotated;
 import com.serotonin.m2m2.rt.dataImage.IdPointValueTime;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
@@ -48,10 +48,10 @@ public class DefaultStreamMapper extends AbstractStreamMapper<IdPointValueTime> 
         return copyPointPropertiesToModel(point, model);
     }
 
-    private ValueModel getValue(DataPointVO point, PointValueTime valueTime) {
+    private ValueTimeModel getValue(DataPointVO point, PointValueTime valueTime) {
         DataValue rawValue = valueTime.getValue();
 
-        ValueModel model = new ValueModel();
+        ValueTimeModel model = new ValueTimeModel();
         if (fields.contains(PointValueField.TIMESTAMP)) {
             model.setTimestamp(formatTime(valueTime.getTime()));
         }

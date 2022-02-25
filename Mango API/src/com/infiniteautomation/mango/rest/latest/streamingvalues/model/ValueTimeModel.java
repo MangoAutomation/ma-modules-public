@@ -6,14 +6,23 @@ package com.infiniteautomation.mango.rest.latest.streamingvalues.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueField;
 
 /**
+ * <p>Model for a point value or an aggregated value (statistic) with a timestamp.</p>
+ *
+ * <p>Holds the value (can be a {@link com.serotonin.m2m2.rt.dataImage.types.DataValue}, or a primitive),
+ * a raw value (i.e. the unconverted value for NUMERIC points), and the rendered value from the point's text renderer.</p>
+ *
+ * <p>The fields returned in the model can be specified via REST parameters, with the default being
+ * {@link PointValueField#TIMESTAMP} and {@link PointValueField#VALUE}.</p>
+ *
  * @author Jared Wiltshire
  */
 @JsonInclude(Include.NON_NULL)
-public class ValueModel {
+public class ValueTimeModel {
     /**
-     * Can hold a formatted timestamp (String) or an epoch ms (long)
+     * Can hold a formatted timestamp (String) or an epoch ms (long).
      */
     Object timestamp;
     Object value;

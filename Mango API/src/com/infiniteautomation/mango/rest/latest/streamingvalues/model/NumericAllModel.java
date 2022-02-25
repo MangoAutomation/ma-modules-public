@@ -11,94 +11,94 @@ package com.infiniteautomation.mango.rest.latest.streamingvalues.model;
  */
 public class NumericAllModel extends AllStatisticsModel {
 
-    ValueModel accumulator;
-    ValueModel average;
-    ValueModel delta;
-    ValueModel integral;
-    ValueModel maximum;
-    ValueModel minimum;
-    ValueModel sum;
-    ValueModel maximumInPeriod;
-    ValueModel minimumInPeriod;
-    ValueModel arithmeticMean;
+    ValueTimeModel accumulator;
+    ValueTimeModel average;
+    ValueTimeModel delta;
+    ValueTimeModel integral;
+    ValueTimeModel maximum;
+    ValueTimeModel minimum;
+    ValueTimeModel sum;
+    ValueTimeModel maximumInPeriod;
+    ValueTimeModel minimumInPeriod;
+    ValueTimeModel arithmeticMean;
 
-    public ValueModel getAccumulator() {
+    public ValueTimeModel getAccumulator() {
         return accumulator;
     }
 
-    public void setAccumulator(ValueModel accumulator) {
+    public void setAccumulator(ValueTimeModel accumulator) {
         this.accumulator = accumulator;
     }
 
-    public ValueModel getAverage() {
+    public ValueTimeModel getAverage() {
         return average;
     }
 
-    public void setAverage(ValueModel average) {
+    public void setAverage(ValueTimeModel average) {
         this.average = average;
     }
 
-    public ValueModel getDelta() {
+    public ValueTimeModel getDelta() {
         return delta;
     }
 
-    public void setDelta(ValueModel delta) {
+    public void setDelta(ValueTimeModel delta) {
         this.delta = delta;
     }
 
-    public ValueModel getIntegral() {
+    public ValueTimeModel getIntegral() {
         return integral;
     }
 
-    public void setIntegral(ValueModel integral) {
+    public void setIntegral(ValueTimeModel integral) {
         this.integral = integral;
     }
 
-    public ValueModel getMaximum() {
+    public ValueTimeModel getMaximum() {
         return maximum;
     }
 
-    public void setMaximum(ValueModel maximum) {
+    public void setMaximum(ValueTimeModel maximum) {
         this.maximum = maximum;
     }
 
-    public ValueModel getMinimum() {
+    public ValueTimeModel getMinimum() {
         return minimum;
     }
 
-    public void setMinimum(ValueModel minimum) {
+    public void setMinimum(ValueTimeModel minimum) {
         this.minimum = minimum;
     }
 
-    public ValueModel getSum() {
+    public ValueTimeModel getSum() {
         return sum;
     }
 
-    public void setSum(ValueModel sum) {
+    public void setSum(ValueTimeModel sum) {
         this.sum = sum;
     }
 
-    public ValueModel getMaximumInPeriod() {
+    public ValueTimeModel getMaximumInPeriod() {
         return maximumInPeriod;
     }
 
-    public void setMaximumInPeriod(ValueModel maximumInPeriod) {
+    public void setMaximumInPeriod(ValueTimeModel maximumInPeriod) {
         this.maximumInPeriod = maximumInPeriod;
     }
 
-    public ValueModel getMinimumInPeriod() {
+    public ValueTimeModel getMinimumInPeriod() {
         return minimumInPeriod;
     }
 
-    public void setMinimumInPeriod(ValueModel minimumInPeriod) {
+    public void setMinimumInPeriod(ValueTimeModel minimumInPeriod) {
         this.minimumInPeriod = minimumInPeriod;
     }
 
-    public ValueModel getArithmeticMean() {
+    public ValueTimeModel getArithmeticMean() {
         return arithmeticMean;
     }
 
-    public void setArithmeticMean(ValueModel arithmeticMean) {
+    public void setArithmeticMean(ValueTimeModel arithmeticMean) {
         this.arithmeticMean = arithmeticMean;
     }
 }

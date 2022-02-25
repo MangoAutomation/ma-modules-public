@@ -20,9 +20,9 @@ public class AllStatisticsModel {
     Object timestamp;
 
     long count;
-    ValueModel first;
-    ValueModel last;
-    ValueModel start;
+    ValueTimeModel first;
+    ValueTimeModel last;
+    ValueTimeModel start;
 
     public Object getTimestamp() {
         return timestamp;
@@ -40,27 +40,27 @@ public class AllStatisticsModel {
         this.count = count;
     }
 
-    public ValueModel getFirst() {
+    public ValueTimeModel getFirst() {
         return first;
     }
 
-    public void setFirst(ValueModel first) {
+    public void setFirst(ValueTimeModel first) {
         this.first = first;
     }
 
-    public ValueModel getLast() {
+    public ValueTimeModel getLast() {
         return last;
     }
 
-    public void setLast(ValueModel last) {
+    public void setLast(ValueTimeModel last) {
         this.last = last;
     }
 
-    public ValueModel getStart() {
+    public ValueTimeModel getStart() {
         return start;
     }
 
-    public void setStart(ValueModel start) {
+    public void setStart(ValueTimeModel start) {
         this.start = start;
     }
 

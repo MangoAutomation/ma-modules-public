@@ -16,7 +16,7 @@ import com.infiniteautomation.mango.rest.latest.streamingvalues.model.Multistate
 import com.infiniteautomation.mango.rest.latest.streamingvalues.model.MultistateAllStatisticsModel.StartsAndRuntimeModel;
 import com.infiniteautomation.mango.rest.latest.streamingvalues.model.NumericAllModel;
 import com.infiniteautomation.mango.rest.latest.streamingvalues.model.StreamingPointValueTimeModel;
-import com.infiniteautomation.mango.rest.latest.streamingvalues.model.ValueModel;
+import com.infiniteautomation.mango.rest.latest.streamingvalues.model.ValueTimeModel;
 import com.serotonin.m2m2.DataType;
 import com.serotonin.m2m2.db.dao.pointvalue.AggregateValue;
 import com.serotonin.m2m2.db.dao.pointvalue.NumericAggregate;
@@ -50,7 +50,7 @@ public class AggregateValueMapper extends AbstractStreamMapper<SeriesValueTime<?
             AllStatisticsModel allStatisticsModel = getAllRollup(point, aggregate);
             model.setAllStatistics(allStatisticsModel);
         } else {
-            ValueModel rollupValue = getRollupValue(point, aggregate, rollup);
+            ValueTimeModel rollupValue = getRollupValue(point, aggregate, rollup);
             model.setValue(rollupValue);
         }
 
@@ -101,7 +101,7 @@ public class AggregateValueMapper extends AbstractStreamMapper<SeriesValueTime<?
         return all;
     }
 
-    private ValueModel getRollupValue(DataPointVO point, AggregateValue aggregate, RollupEnum rollup) {
+    private ValueTimeModel getRollupValue(DataPointVO point, AggregateValue aggregate, RollupEnum rollup) {
         Object rawValue;
         Long timestamp = aggregate.getPeriodStartTime();
 
@@ -158,7 +158,7 @@ public class AggregateValueMapper extends AbstractStreamMapper<SeriesValueTime<?
                 throw new IllegalArgumentException("Unsupported rollup: " + rollup);
         }
 
-        ValueModel model = new ValueModel();
+        ValueTimeModel model = new ValueTimeModel();
         if (fields.contains(PointValueField.TIMESTAMP)) {
             model.setTimestamp(formatTime(timestamp));
         }
