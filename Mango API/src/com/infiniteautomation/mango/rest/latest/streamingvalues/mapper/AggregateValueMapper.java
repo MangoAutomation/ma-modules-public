@@ -54,41 +54,13 @@ public class AggregateValueMapper extends AbstractStreamMapper<SeriesValueTime<?
             model.setValue(rollupValue);
         }
 
-        for (PointValueField field : fields) {
-            switch (field) {
-                case TIMESTAMP:
-                    model.setTimestamp(formatTime(value.getTime()));
-                    break;
-                case CACHED:
-                    model.setCached(false);
-                    break;
-                case BOOKEND:
-                    model.setBookend(false);
-                    break;
-                case XID:
-                    model.setXid(point.getXid());
-                    break;
-                case NAME:
-                    model.setName(point.getName());
-                    break;
-                case DEVICE_NAME:
-                    model.setDeviceName(point.getDeviceName());
-                    break;
-                case DATA_SOURCE_NAME:
-                    model.setDataSourceName(point.getDataSourceName());
-                    break;
-                case ANNOTATION:
-                    // can't annotate rollup values
-                case VALUE:
-                case RENDERED:
-                case RAW:
-                    // handled above by getRollupValue()
-                    break;
-                default:
-                    throw new IllegalStateException("Unknown field: " + field);
-            }
+        if (fields.contains(PointValueField.CACHED)) {
+            model.setCached(false);
         }
-        return model;
+        if (fields.contains(PointValueField.BOOKEND)) {
+            model.setBookend(false);
+        }
+        return copyPointPropertiesToModel(point, model);
     }
 
     private AllStatisticsModel getAllRollup(DataPointVO point, AggregateValue stats) {
@@ -119,6 +91,9 @@ public class AggregateValueMapper extends AbstractStreamMapper<SeriesValueTime<?
         } else {
             all = new AllStatisticsModel();
         }
+        if (fields.contains(PointValueField.TIMESTAMP)) {
+            all.setTimestamp(formatTime(stats.getPeriodStartTime()));
+        }
         all.setCount(stats.getCount());
         all.setFirst(getRollupValue(point, stats, RollupEnum.FIRST));
         all.setLast(getRollupValue(point, stats, RollupEnum.LAST));
@@ -128,13 +103,16 @@ public class AggregateValueMapper extends AbstractStreamMapper<SeriesValueTime<?
 
     private ValueModel getRollupValue(DataPointVO point, AggregateValue aggregate, RollupEnum rollup) {
         Object rawValue;
+        Long timestamp = aggregate.getPeriodStartTime();
 
         switch (rollup) {
             case FIRST:
                 rawValue = aggregate.getFirstValue();
+                timestamp = aggregate.getFirstTime();
                 break;
             case LAST:
                 rawValue = aggregate.getLastValue();
+                timestamp = aggregate.getLastTime();
                 break;
             case COUNT:
                 rawValue = aggregate.getCount();
@@ -153,9 +131,11 @@ public class AggregateValueMapper extends AbstractStreamMapper<SeriesValueTime<?
                 break;
             case MINIMUM:
                 rawValue = extractNumeric(aggregate, NumericAggregate::getMinimumValue);
+                timestamp = extractNumeric(aggregate, NumericAggregate::getMinimumTime);
                 break;
             case MAXIMUM:
                 rawValue = extractNumeric(aggregate, NumericAggregate::getMaximumValue);
+                timestamp = extractNumeric(aggregate, NumericAggregate::getMaximumTime);
                 break;
             case SUM:
                 rawValue = extractNumeric(aggregate, NumericAggregate::getSum);
@@ -179,6 +159,9 @@ public class AggregateValueMapper extends AbstractStreamMapper<SeriesValueTime<?
         }
 
         ValueModel model = new ValueModel();
+        if (fields.contains(PointValueField.TIMESTAMP)) {
+            model.setTimestamp(formatTime(timestamp));
+        }
         if (fields.contains(PointValueField.VALUE)) {
             Object convertedValue = extractValue(point, rawValue);
             model.setValue(convertedValue);

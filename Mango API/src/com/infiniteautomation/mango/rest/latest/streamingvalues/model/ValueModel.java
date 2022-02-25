@@ -12,9 +12,21 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
  */
 @JsonInclude(Include.NON_NULL)
 public class ValueModel {
+    /**
+     * Can hold a formatted timestamp (String) or an epoch ms (long)
+     */
+    Object timestamp;
     Object value;
     Object raw;
     String rendered;
+
+    public Object getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(Object timestamp) {
+        this.timestamp = timestamp;
+    }
 
     public Object getValue() {
         return value;

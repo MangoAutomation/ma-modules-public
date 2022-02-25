@@ -62,8 +62,8 @@ public abstract class AbstractStreamMapper<T> implements Function<T, StreamingPo
         return zoneId;
     }
 
-    protected Object formatTime(long timestamp) {
-        if (dateTimeFormatter != null) {
+    protected Object formatTime(Long timestamp) {
+        if (dateTimeFormatter != null && timestamp != null) {
             return dateTimeFormatter.format(ZonedDateTime.ofInstant(Instant.ofEpochMilli(timestamp), zoneId()));
         }
         return timestamp;
@@ -90,5 +90,21 @@ public abstract class AbstractStreamMapper<T> implements Function<T, StreamingPo
     protected double convertValue(DataPointVO point, double value) {
         UnitConverter converter = point.getUnit().getConverterTo(point.getRenderedUnit());
         return converter.convert(value);
+    }
+
+    protected StreamingPointValueTimeModel copyPointPropertiesToModel(DataPointVO point, StreamingPointValueTimeModel model) {
+        if (fields.contains(PointValueField.XID)) {
+            model.setXid(point.getXid());
+        }
+        if (fields.contains(PointValueField.NAME)) {
+            model.setName(point.getName());
+        }
+        if (fields.contains(PointValueField.DEVICE_NAME)) {
+            model.setDeviceName(point.getDeviceName());
+        }
+        if (fields.contains(PointValueField.DATA_SOURCE_NAME)) {
+            model.setDataSourceName(point.getDataSourceName());
+        }
+        return model;
     }
 }

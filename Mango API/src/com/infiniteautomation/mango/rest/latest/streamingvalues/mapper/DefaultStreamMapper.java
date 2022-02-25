@@ -11,6 +11,7 @@ import com.infiniteautomation.mango.rest.latest.streamingvalues.model.StreamingP
 import com.infiniteautomation.mango.rest.latest.streamingvalues.model.ValueModel;
 import com.serotonin.m2m2.rt.dataImage.IAnnotated;
 import com.serotonin.m2m2.rt.dataImage.IdPointValueTime;
+import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.view.text.TextRenderer;
 import com.serotonin.m2m2.vo.DataPointVO;
@@ -28,54 +29,32 @@ public class DefaultStreamMapper extends AbstractStreamMapper<IdPointValueTime> 
     }
 
     @Override
-    public StreamingPointValueTimeModel apply(IdPointValueTime v) {
-        DataPointVO point = lookupPoint(v.getSeriesId());
-        StreamingPointValueTimeModel model = new StreamingPointValueTimeModel(point.getXid(), v.getTime());
+    public StreamingPointValueTimeModel apply(IdPointValueTime valueTime) {
+        DataPointVO point = lookupPoint(valueTime.getSeriesId());
+        StreamingPointValueTimeModel model = new StreamingPointValueTimeModel(point.getXid(), valueTime.getTime());
 
-        model.setValue(getValue(point, v.getValue()));
-
-        for (PointValueField field : fields) {
-            switch (field) {
-                case TIMESTAMP:
-                    model.setTimestamp(formatTime(v.getTime()));
-                    break;
-                case ANNOTATION:
-                    if (v instanceof IAnnotated) {
-                        model.setAnnotation(((IAnnotated) v).getSourceMessage());
-                    }
-                    break;
-                case CACHED:
-                    model.setCached(v.isFromCache());
-                    break;
-                case BOOKEND:
-                    model.setBookend(v.isBookend());
-                    break;
-                case XID:
-                    model.setXid(point.getXid());
-                    break;
-                case NAME:
-                    model.setName(point.getName());
-                    break;
-                case DEVICE_NAME:
-                    model.setDeviceName(point.getDeviceName());
-                    break;
-                case DATA_SOURCE_NAME:
-                    model.setDataSourceName(point.getDataSourceName());
-                    break;
-                case VALUE:
-                case RENDERED:
-                case RAW:
-                    // handled above by getValue()
-                    break;
-                default:
-                    throw new IllegalArgumentException("Unsupported field: " + field);
+        model.setValue(getValue(point, valueTime));
+        if (fields.contains(PointValueField.CACHED)) {
+            model.setCached(valueTime.isFromCache());
+        }
+        if (fields.contains(PointValueField.BOOKEND)) {
+            model.setBookend(valueTime.isBookend());
+        }
+        if (fields.contains(PointValueField.ANNOTATION)) {
+            if (valueTime instanceof IAnnotated) {
+                model.setAnnotation(((IAnnotated) valueTime).getSourceMessage());
             }
         }
-        return model;
+        return copyPointPropertiesToModel(point, model);
     }
 
-    private ValueModel getValue(DataPointVO point, DataValue rawValue) {
+    private ValueModel getValue(DataPointVO point, PointValueTime valueTime) {
+        DataValue rawValue = valueTime.getValue();
+
         ValueModel model = new ValueModel();
+        if (fields.contains(PointValueField.TIMESTAMP)) {
+            model.setTimestamp(formatTime(valueTime.getTime()));
+        }
         if (fields.contains(PointValueField.VALUE)) {
             Object convertedValue = extractValue(point, rawValue);
             model.setValue(convertedValue);

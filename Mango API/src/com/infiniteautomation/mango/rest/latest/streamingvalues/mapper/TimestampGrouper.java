@@ -23,7 +23,7 @@ public class TimestampGrouper implements Combiner<StreamingPointValueTimeModel, 
     @Override
     public @NonNull StreamingMultiPointModel combineValue(StreamingMultiPointModel group, StreamingPointValueTimeModel value) {
         if (group == null || group.getExactTimestamp() != value.getExactTimestamp()) {
-            group = new StreamingMultiPointModel(value.getExactTimestamp(), value.getTimestamp());
+            group = new StreamingMultiPointModel(value.getExactTimestamp(), value.getValue().getTimestamp());
         }
         group.addPointValue(value.getDataPointXid(), value);
         return group;

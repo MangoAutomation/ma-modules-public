@@ -27,7 +27,6 @@ public class StreamingPointValueTimeModel {
     @JsonUnwrapped
     AllStatisticsModel allStatistics;
 
-    Object timestamp;
     TranslatableMessage annotation;
     Boolean cached;
     Boolean bookend;
@@ -75,14 +74,6 @@ public class StreamingPointValueTimeModel {
 
     public void setAllStatistics(AllStatisticsModel allStatistics) {
         this.allStatistics = allStatistics;
-    }
-
-    public Object getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(Object timestamp) {
-        this.timestamp = timestamp;
     }
 
     public TranslatableMessage getAnnotation() {
