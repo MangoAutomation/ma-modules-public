@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -35,6 +36,7 @@ public class StreamMapperBuilder {
     DateTimeFormatter dateTimeFormatter = null;
     ZoneId zoneId;
     RollupEnum rollup;
+    Locale locale = Locale.getDefault();
 
     public <T> T build(Function<StreamMapperBuilder, T> constructor) {
         return constructor.apply(this);
@@ -81,6 +83,11 @@ public class StreamMapperBuilder {
 
     public StreamMapperBuilder withRollup(RollupEnum rollup) {
         this.rollup = rollup;
+        return this;
+    }
+
+    public StreamMapperBuilder withLocale(Locale locale) {
+        this.locale = locale;
         return this;
     }
 

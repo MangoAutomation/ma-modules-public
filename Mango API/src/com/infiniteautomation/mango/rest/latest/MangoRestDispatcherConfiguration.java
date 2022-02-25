@@ -61,6 +61,7 @@ import com.infiniteautomation.mango.spring.MangoRuntimeContextConfiguration;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.webapp.RestWebApplicationInitializer;
 import com.serotonin.m2m2.web.MediaTypes;
+import com.serotonin.m2m2.web.mvc.spring.MangoLocaleResolver;
 import com.serotonin.m2m2.web.mvc.spring.security.MangoMethodSecurityConfiguration;
 
 /**
@@ -231,5 +232,13 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
         for (HandlerInterceptor interceptor : interceptors) {
             registry.addInterceptor(interceptor);
         }
+    }
+
+    /**
+     * Not inherited from {@link com.serotonin.m2m2.web.mvc.spring.MangoRootWebContextConfiguration}, must redefine.
+     */
+    @Bean(name="localeResolver")
+    public MangoLocaleResolver getSessionLocaleResolver() {
+        return new MangoLocaleResolver();
     }
 }

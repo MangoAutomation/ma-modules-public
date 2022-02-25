@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -255,7 +256,9 @@ public class PointValueRestController extends AbstractMangoRestController {
             @RequestParam(required = false) Integer simplifyTarget,
 
             @ApiParam(value = "Fields to be included in the returned data, default is TIMESTAMP,VALUE")
-            @RequestParam(required = false) PointValueField[] fields
+            @RequestParam(required = false) PointValueField[] fields,
+
+            Locale locale
     ) {
 
         DataPointVO point = dataPointService.get(xid);
@@ -268,6 +271,7 @@ public class PointValueRestController extends AbstractMangoRestController {
                 .withFields(fields)
                 .withDateTimeFormat(dateTimeFormat)
                 .withTimezone(timezone, before)
+                .withLocale(locale)
                 .build(DefaultStreamMapper::new);
 
         return stream.map(mapper);
@@ -299,7 +303,9 @@ public class PointValueRestController extends AbstractMangoRestController {
             @RequestParam(value = "useCache", required = false, defaultValue = "NONE") PointValueTimeCacheControl useCache,
 
             @ApiParam(value = "Fields to be included in the returned data, default is TIMESTAMP,VALUE")
-            @RequestParam(required = false) PointValueField[] fields) {
+            @RequestParam(required = false) PointValueField[] fields,
+
+            Locale locale) {
 
         var points = Arrays.stream(xids).distinct()
                 .map(dataPointService::get)
@@ -311,6 +317,7 @@ public class PointValueRestController extends AbstractMangoRestController {
                 .withFields(fields)
                 .withDateTimeFormat(dateTimeFormat)
                 .withTimezone(timezone, before)
+                .withLocale(locale)
                 .build(DefaultStreamMapper::new);
 
         return TimestampGrouper.groupByTimestamp(mergedStream.map(mapper));
@@ -325,10 +332,12 @@ public class PointValueRestController extends AbstractMangoRestController {
     @RequestMapping(method = RequestMethod.POST, value = "/single-array/latest")
     public Stream<StreamingMultiPointModel> postLatestPointValuesAsSingleArray(
             @ApiParam(value = "Query Information", required = true)
-            @RequestBody XidLatestQueryInfoModel info) {
+            @RequestBody XidLatestQueryInfoModel info,
+
+            Locale locale) {
 
         return getLatestPointValuesAsSingleArray(info.getXids(), info.getDateTimeFormat(), info.getBefore(),
-                info.getTimezone(), info.getLimit(), info.getUseCache(), info.getFields());
+                info.getTimezone(), info.getLimit(), info.getUseCache(), info.getFields(), locale);
     }
 
     @ApiOperation(
@@ -365,8 +374,9 @@ public class PointValueRestController extends AbstractMangoRestController {
             @RequestParam(required = false) Integer simplifyTarget,
 
             @ApiParam(value = "Fields to be included in the returned data, default is TIMESTAMP,VALUE")
-            @RequestParam(required = false) PointValueField[] fields
-    ) {
+            @RequestParam(required = false) PointValueField[] fields,
+
+            Locale locale) {
 
         var points = Arrays.stream(xids).distinct()
                 .map(dataPointService::get)
@@ -377,6 +387,7 @@ public class PointValueRestController extends AbstractMangoRestController {
                 .withFields(fields)
                 .withDateTimeFormat(dateTimeFormat)
                 .withTimezone(timezone, before)
+                .withLocale(locale)
                 .build(DefaultStreamMapper::new);
 
         return points.stream()
@@ -396,11 +407,13 @@ public class PointValueRestController extends AbstractMangoRestController {
     @RequestMapping(method = RequestMethod.POST, value = "/multiple-arrays/latest")
     public Map<String, Stream<StreamingPointValueTimeModel>> postLatestPointValuesAsMultipleArrays(
             @ApiParam(value = "Query Information", required = true)
-            @RequestBody XidLatestQueryInfoModel info) {
+            @RequestBody XidLatestQueryInfoModel info,
+
+            Locale locale) {
 
         return getLatestPointValuesAsMultipleArrays(info.getXids(), info.getDateTimeFormat(), info.getBefore(),
                 info.getTimezone(), info.getLimit(), info.getUseCache(),
-                info.getSimplifyTolerance(), info.getSimplifyTarget(), info.getFields());
+                info.getSimplifyTolerance(), info.getSimplifyTarget(), info.getFields(), locale);
     }
 
     @ApiOperation(
@@ -441,8 +454,9 @@ public class PointValueRestController extends AbstractMangoRestController {
             @RequestParam(required = false) Integer simplifyTarget,
 
             @ApiParam(value = "Fields to be included in the returned data, default is TIMESTAMP,VALUE")
-            @RequestParam(required = false) PointValueField[] fields
-    ) {
+            @RequestParam(required = false) PointValueField[] fields,
+
+            Locale locale) {
 
         DataPointVO point = dataPointService.get(xid);
 
@@ -451,6 +465,7 @@ public class PointValueRestController extends AbstractMangoRestController {
                 .withFields(fields)
                 .withDateTimeFormat(dateTimeFormat)
                 .withTimezone(timezone, from, to)
+                .withLocale(locale)
                 .build(DefaultStreamMapper::new);
 
         return timeRangeStream(from, to, limit, bookend, simplifyTolerance, simplifyTarget, mapper).apply(point);
@@ -497,7 +512,9 @@ public class PointValueRestController extends AbstractMangoRestController {
             @RequestParam(value = "truncate", required = false, defaultValue = "false") boolean truncate,
 
             @ApiParam(value = "Fields to be included in the returned data, default is TIMESTAMP,VALUE")
-            @RequestParam(required = false) PointValueField[] fields) {
+            @RequestParam(required = false) PointValueField[] fields,
+
+            Locale locale) {
 
         DataPointVO point = dataPointService.get(xid);
 
@@ -506,7 +523,8 @@ public class PointValueRestController extends AbstractMangoRestController {
                 .withRollup(rollup)
                 .withFields(fields)
                 .withDateTimeFormat(dateTimeFormat)
-                .withTimezone(timezone, from, to);
+                .withTimezone(timezone, from, to)
+                .withLocale(locale);
 
         var defaultMapper = mapperBuilder.build(DefaultStreamMapper::new);
         var aggregateMapper = mapperBuilder.build(AggregateValueMapper::new);
@@ -549,7 +567,9 @@ public class PointValueRestController extends AbstractMangoRestController {
             @RequestParam(value = "bookend", required = false, defaultValue = "false") boolean bookend,
 
             @ApiParam(value = "Fields to be included in the returned data, default is TIMESTAMP,VALUE")
-            @RequestParam(required = false) PointValueField[] fields) {
+            @RequestParam(required = false) PointValueField[] fields,
+
+            Locale locale) {
 
         var points = Arrays.stream(xids).distinct()
                 .map(dataPointService::get)
@@ -560,6 +580,7 @@ public class PointValueRestController extends AbstractMangoRestController {
                 .withFields(fields)
                 .withDateTimeFormat(dateTimeFormat)
                 .withTimezone(timezone, from, to)
+                .withLocale(locale)
                 .build(DefaultStreamMapper::new);
 
         var streamGenerator = timeRangeStream(from, to, limit, bookend, null, null, mapper);
@@ -576,10 +597,12 @@ public class PointValueRestController extends AbstractMangoRestController {
     @RequestMapping(method = RequestMethod.POST, value = "/single-array/time-period")
     public Stream<StreamingMultiPointModel> postPointValuesAsSingleArray(
             @ApiParam(value = "Query Information", required = true)
-            @RequestBody XidTimeRangeQueryModel model) {
+            @RequestBody XidTimeRangeQueryModel model,
+
+            Locale locale) {
 
         return getPointValuesAsSingleArray(model.getXids(), model.getDateTimeFormat(), model.getFrom(), model.getTo(),
-                model.getTimezone(), model.getLimit(), model.isBookend(), model.getFields());
+                model.getTimezone(), model.getLimit(), model.isBookend(), model.getFields(), locale);
     }
 
     @ApiOperation(value = "Rollup values for multiple data points, return in time ascending order",
@@ -621,7 +644,9 @@ public class PointValueRestController extends AbstractMangoRestController {
             @RequestParam(value = "truncate", required = false, defaultValue = "false") boolean truncate,
 
             @ApiParam(value = "Fields to be included in the returned data, default is TIMESTAMP,VALUE")
-            @RequestParam(required = false) PointValueField[] fields) {
+            @RequestParam(required = false) PointValueField[] fields,
+
+            Locale locale) {
 
         var points = Arrays.stream(xids).distinct()
                 .map(dataPointService::get)
@@ -632,7 +657,8 @@ public class PointValueRestController extends AbstractMangoRestController {
                 .withRollup(rollup)
                 .withFields(fields)
                 .withDateTimeFormat(dateTimeFormat)
-                .withTimezone(timezone, from, to);
+                .withTimezone(timezone, from, to)
+                .withLocale(locale);
 
         var defaultMapper = mapperBuilder.build(DefaultStreamMapper::new);
         var aggregateMapper = mapperBuilder.build(AggregateValueMapper::new);
@@ -662,11 +688,13 @@ public class PointValueRestController extends AbstractMangoRestController {
             @PathVariable(value = "rollup") RollupEnum rollup,
 
             @ApiParam(value = "Query Information", required = true)
-            @RequestBody XidRollupTimeRangeQueryModel model) {
+            @RequestBody XidRollupTimeRangeQueryModel model,
+
+            Locale locale) {
 
         return getRollupPointValuesAsSingleArray(model.getXids(), rollup, model.getFrom(), model.getTo(),
                 model.getTimePeriod().getType(), model.getTimePeriod().getPeriods(), model.getTimezone(),
-                model.getLimit(), model.getDateTimeFormat(), model.isTruncate(), model.getFields());
+                model.getLimit(), model.getDateTimeFormat(), model.isTruncate(), model.getFields(), locale);
     }
 
     @ApiOperation(value = "Query time range for multiple data points, return in time ascending order",
@@ -704,7 +732,9 @@ public class PointValueRestController extends AbstractMangoRestController {
             @RequestParam(required = false) Integer simplifyTarget,
 
             @ApiParam(value = "Fields to be included in the returned data, default is TIMESTAMP,VALUE")
-            @RequestParam(required = false) PointValueField[] fields) {
+            @RequestParam(required = false) PointValueField[] fields,
+
+            Locale locale) {
 
         var points = Arrays.stream(xids).distinct()
                 .map(dataPointService::get)
@@ -715,6 +745,7 @@ public class PointValueRestController extends AbstractMangoRestController {
                 .withFields(fields)
                 .withDateTimeFormat(dateTimeFormat)
                 .withTimezone(timezone, from, to)
+                .withLocale(locale)
                 .build(DefaultStreamMapper::new);
 
         var streamGenerator = timeRangeStream(from, to, limit,
@@ -729,11 +760,13 @@ public class PointValueRestController extends AbstractMangoRestController {
     @RequestMapping(method = RequestMethod.POST, value = "/multiple-arrays/time-period")
     public Map<String, Stream<StreamingPointValueTimeModel>> postPointValuesForMultiplePointsAsMultipleArrays(
             @ApiParam(value = "Query Information", required = true)
-            @RequestBody XidTimeRangeQueryModel model) {
+            @RequestBody XidTimeRangeQueryModel model,
+
+            Locale locale) {
 
         return getPointValuesForMultiplePointsAsMultipleArrays(model.getXids(), model.getDateTimeFormat(),
                 model.getFrom(), model.getTo(), model.getTimezone(), model.getLimit(), model.isBookend(),
-                model.getSimplifyTolerance(), model.getSimplifyTarget(), model.getFields());
+                model.getSimplifyTolerance(), model.getSimplifyTarget(), model.getFields(), locale);
     }
 
     @ApiOperation(value = "Rollup values for multiple data points, return in time ascending order",
@@ -772,7 +805,9 @@ public class PointValueRestController extends AbstractMangoRestController {
             @RequestParam(value = "truncate", required = false, defaultValue = "false") boolean truncate,
 
             @ApiParam(value = "Fields to be included in the returned data, default is TIMESTAMP,VALUE")
-            @RequestParam(required = false) PointValueField[] fields) {
+            @RequestParam(required = false) PointValueField[] fields,
+
+            Locale locale) {
 
         var points = Arrays.stream(xids).distinct()
                 .map(dataPointService::get)
@@ -783,7 +818,8 @@ public class PointValueRestController extends AbstractMangoRestController {
                 .withRollup(rollup)
                 .withFields(fields)
                 .withDateTimeFormat(dateTimeFormat)
-                .withTimezone(timezone, from, to);
+                .withTimezone(timezone, from, to)
+                .withLocale(locale);
 
         var defaultMapper = mapperBuilder.build(DefaultStreamMapper::new);
         var aggregateMapper = mapperBuilder.build(AggregateValueMapper::new);
@@ -808,11 +844,13 @@ public class PointValueRestController extends AbstractMangoRestController {
             @PathVariable(value = "rollup") RollupEnum rollup,
 
             @ApiParam(value = "Query Information", required = true)
-            @RequestBody XidRollupTimeRangeQueryModel model) {
+            @RequestBody XidRollupTimeRangeQueryModel model,
+
+            Locale locale) {
 
         return getRollupPointValuesAsMultipleArrays(model.getXids(), rollup, model.getFrom(), model.getTo(),
                 model.getTimePeriod().getType(), model.getTimePeriod().getPeriods(), model.getTimezone(),
-                model.getLimit(), model.getDateTimeFormat(), model.isTruncate(), model.getFields());
+                model.getLimit(), model.getDateTimeFormat(), model.isTruncate(), model.getFields(), locale);
     }
 
     @ApiOperation(value = "GET statistics for data point(s) over the given time range",
@@ -838,7 +876,9 @@ public class PointValueRestController extends AbstractMangoRestController {
             @RequestParam(value = "dateTimeFormat", required = false) String dateTimeFormat,
 
             @ApiParam(value = "Fields to be included in the returned data, default is TIMESTAMP,VALUE")
-            @RequestParam(required = false) PointValueField[] fields) {
+            @RequestParam(required = false) PointValueField[] fields,
+
+            Locale locale) {
 
         var points = Arrays.stream(xids).distinct()
                 .map(dataPointService::get)
@@ -849,7 +889,8 @@ public class PointValueRestController extends AbstractMangoRestController {
                 .withRollup(RollupEnum.ALL)
                 .withFields(fields)
                 .withDateTimeFormat(dateTimeFormat)
-                .withTimezone(timezone, from, to);
+                .withTimezone(timezone, from, to)
+                .withLocale(locale);
 
         var aggregateMapper = mapperBuilder.build(AggregateValueMapper::new);
         var rollupPeriod = Duration.between(from, to);

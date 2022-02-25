@@ -13,7 +13,6 @@ import com.serotonin.m2m2.rt.dataImage.IAnnotated;
 import com.serotonin.m2m2.rt.dataImage.IdPointValueTime;
 import com.serotonin.m2m2.rt.dataImage.PointValueTime;
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
-import com.serotonin.m2m2.view.text.TextRenderer;
 import com.serotonin.m2m2.vo.DataPointVO;
 
 /**
@@ -63,12 +62,7 @@ public class DefaultStreamMapper extends AbstractStreamMapper<IdPointValueTime> 
             model.setRaw(rawValue);
         }
         if (fields.contains(PointValueField.RENDERED)) {
-            if (rawValue != null) {
-                // the text renderer converts numeric values to the appropriate unit before rendering
-                model.setRendered(point.getTextRenderer().getText(rawValue, TextRenderer.HINT_FULL));
-            } else {
-                model.setRendered(RENDERED_NULL_STRING);
-            }
+            model.setRendered(renderValue(point, rawValue));
         }
         return model;
     }

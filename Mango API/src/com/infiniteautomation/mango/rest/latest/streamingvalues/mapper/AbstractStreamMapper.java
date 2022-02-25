@@ -9,18 +9,22 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueField;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.RollupEnum;
 import com.infiniteautomation.mango.rest.latest.streamingvalues.model.StreamingPointValueTimeModel;
 import com.serotonin.m2m2.DataType;
+import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 import com.serotonin.m2m2.rt.dataImage.types.NumericValue;
+import com.serotonin.m2m2.view.text.TextRenderer;
 import com.serotonin.m2m2.vo.DataPointVO;
 
 /**
@@ -34,11 +38,12 @@ public abstract class AbstractStreamMapper<T> implements Function<T, StreamingPo
 
     public static final String RENDERED_NULL_STRING = "—";
 
-    private final Map<Integer, DataPointVO> dataPoints;
+    protected final Map<Integer, DataPointVO> dataPoints;
     protected final Set<PointValueField> fields;
-    private final DateTimeFormatter dateTimeFormatter;
-    private final ZoneId zoneId;
-    private final RollupEnum rollup;
+    protected final DateTimeFormatter dateTimeFormatter;
+    protected final ZoneId zoneId;
+    protected final RollupEnum rollup;
+    protected final Locale locale;
 
     protected AbstractStreamMapper(StreamMapperBuilder options) {
         this.dataPoints = Collections.unmodifiableMap(options.dataPoints);
@@ -46,6 +51,7 @@ public abstract class AbstractStreamMapper<T> implements Function<T, StreamingPo
         this.dateTimeFormatter = options.dateTimeFormatter;
         this.zoneId = options.zoneId;
         this.rollup = options.rollup;
+        this.locale = options.locale;
     }
 
     protected DataPointVO lookupPoint(int seriesId) {
@@ -111,5 +117,23 @@ public abstract class AbstractStreamMapper<T> implements Function<T, StreamingPo
             model.setDataSourceName(point.getDataSourceName());
         }
         return model;
+    }
+
+    /**
+     * Renders a value using the point's text renderer. The text renderer converts numeric values to the rendered
+     * unit before rendering.
+     *
+     * @param point data point
+     * @param value point value
+     * @return rendered string
+     */
+    protected String renderValue(DataPointVO point, @Nullable DataValue value) {
+        return value == null ?
+                RENDERED_NULL_STRING :
+                point.getTextRenderer().getText(value, TextRenderer.HINT_FULL, locale);
+    }
+
+    protected String renderValue(DataPointVO point, double value) {
+        return point.getTextRenderer().getText(value, TextRenderer.HINT_FULL, locale);
     }
 }

@@ -82,7 +82,7 @@ public class AggregateValueMapper extends AbstractStreamMapper<SeriesValueTime<?
             MultistateAllStatisticsModel model = new MultistateAllStatisticsModel();
             var startsStats = ((StartsAndRuntimeAggregate) stats);
             var startsModel = startsStats.getData().stream().map(start -> {
-                String rendered = point.getTextRenderer().getText(start.getDataValue(), TextRenderer.HINT_FULL);
+                String rendered = renderValue(point, start.getDataValue());
                 return new StartsAndRuntimeModel(start.getDataValue(), rendered, start.getStarts(),
                         start.getRuntime(), start.getProportion());
             }).collect(Collectors.toUnmodifiableList());
@@ -177,7 +177,7 @@ public class AggregateValueMapper extends AbstractStreamMapper<SeriesValueTime<?
         if (fields.contains(PointValueField.RENDERED)) {
             String rendered;
             if (rollup == RollupEnum.INTEGRAL && rawValue != null) {
-                rendered = point.createIntegralRenderer().getText((double) rawValue, TextRenderer.HINT_FULL);
+                rendered = point.createIntegralRenderer().getText((double) rawValue, TextRenderer.HINT_FULL, locale);
             } else {
                 rendered = getRenderedValue(point, rawValue);
             }
@@ -188,13 +188,11 @@ public class AggregateValueMapper extends AbstractStreamMapper<SeriesValueTime<?
 
     private String getRenderedValue(DataPointVO point, Object rawValue) {
         String result;
-        if (rawValue instanceof DataValue) {
+        if (rawValue instanceof DataValue || rawValue == null) {
             // the text renderer converts numeric values to the appropriate unit before rendering
-            result = point.getTextRenderer().getText((DataValue) rawValue, TextRenderer.HINT_FULL);
+            result = renderValue(point, (DataValue) rawValue);
         } else if (rawValue instanceof Double && point.getPointLocator().getDataType() == DataType.NUMERIC) {
-            result = point.getTextRenderer().getText((double) rawValue, TextRenderer.HINT_FULL);
-        } else if (rawValue == null) {
-            result = RENDERED_NULL_STRING;
+            result = renderValue(point, (double) rawValue);
         } else {
             result = String.valueOf(rawValue);
         }
