@@ -14,8 +14,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 
-import javax.measure.converter.UnitConverter;
-
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueField;
@@ -76,7 +74,15 @@ public abstract class AbstractStreamMapper<T> implements Function<T, StreamingPo
         return this.rollup;
     }
 
-    protected Object extractValue(DataPointVO point, Object value) {
+    /**
+     * For NUMERIC points, converts a value from the raw value to the rendered unit value.
+     * For non-NUMERIC points this method has no effect.
+     *
+     * @param point data point
+     * @param value the raw value
+     * @return the converted value if point is NUMERIC, otherwise the same value passed in.
+     */
+    protected Object convertValue(DataPointVO point, Object value) {
         if (point.getPointLocator().getDataType() == DataType.NUMERIC) {
             if (value instanceof Double) {
                 return convertValue(point, (double) value);
@@ -88,8 +94,7 @@ public abstract class AbstractStreamMapper<T> implements Function<T, StreamingPo
     }
 
     protected double convertValue(DataPointVO point, double value) {
-        UnitConverter converter = point.getUnit().getConverterTo(point.getRenderedUnit());
-        return converter.convert(value);
+        return point.getRenderedUnitConverter().convert(value);
     }
 
     protected StreamingPointValueTimeModel copyPointPropertiesToModel(DataPointVO point, StreamingPointValueTimeModel model) {

@@ -23,6 +23,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.measure.converter.UnitConverter;
+
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -900,16 +902,11 @@ public class PointValueRestController extends AbstractMangoRestController {
 
         // Are we converting from the rendered Unit?
         if (unitConversion) {
-            if ((model.getDataType() == DataType.NUMERIC)
-                    && (model.getValue() instanceof Number)) {
-                double value;
-                if (model.getValue() instanceof Integer) {
-                    value = ((Integer) model.getValue());
-                } else {
-                    value = ((Double) model.getValue());
-                }
-                model.setValue(vo.getRenderedUnit()
-                        .getConverterTo(vo.getUnit()).convert(value));
+            if (model.getDataType() == DataType.NUMERIC && model.getValue() instanceof Number) {
+                double convertedValue = ((Number) model.getValue()).doubleValue();
+                UnitConverter inverseConverter = vo.getRenderedUnitConverter().inverse();
+                double rawValue = inverseConverter.convert(convertedValue);
+                model.setValue(rawValue);
             } else {
                 throw new GenericRestException(HttpStatus.NOT_ACCEPTABLE,
                         new TranslatableMessage("common.default", "[" + xid

@@ -192,7 +192,7 @@ public class PointValueWebSocketHandler extends MangoWebSocketHandler {
 
                 renderedValue = Functions.getRenderedText(vo, pvt);
                 if (vo.getPointLocator().getDataType() == DataType.NUMERIC) {
-                    convertedValue = vo.getUnit().getConverterTo(vo.getRenderedUnit()).convert(pvt.getValue().getDoubleValue());
+                    convertedValue = vo.getRenderedUnitConverter().convert(pvt.getValue().getDoubleValue());
                 }
             }
 

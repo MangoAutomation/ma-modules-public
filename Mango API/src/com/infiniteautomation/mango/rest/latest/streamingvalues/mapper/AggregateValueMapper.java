@@ -127,7 +127,7 @@ public class AggregateValueMapper extends AbstractStreamMapper<SeriesValueTime<?
                 rawValue = extractNumeric(aggregate, NumericAggregate::getDelta);
                 break;
             case ACCUMULATOR:
-                rawValue = extractNumeric(aggregate, v -> v.getLastValue() == null ? v.getMaximumValue() : v.getLastValue().getDoubleValue());
+                rawValue = extractNumeric(aggregate, NumericAggregate::getAccumulator);
                 break;
             case MINIMUM:
                 rawValue = extractNumeric(aggregate, NumericAggregate::getMinimumValue);
@@ -163,7 +163,12 @@ public class AggregateValueMapper extends AbstractStreamMapper<SeriesValueTime<?
             model.setTimestamp(formatTime(timestamp));
         }
         if (fields.contains(PointValueField.VALUE)) {
-            Object convertedValue = extractValue(point, rawValue);
+            Object convertedValue;
+            if (rollup == RollupEnum.INTEGRAL && rawValue != null) {
+                convertedValue = point.getIntegralConverter().convert((double) rawValue);
+            } else {
+                convertedValue = convertValue(point, rawValue);
+            }
             model.setValue(convertedValue);
         }
         if (fields.contains(PointValueField.RAW)) {
@@ -171,19 +176,29 @@ public class AggregateValueMapper extends AbstractStreamMapper<SeriesValueTime<?
         }
         if (fields.contains(PointValueField.RENDERED)) {
             String rendered;
-            if (rawValue instanceof DataValue) {
-                // the text renderer converts numeric values to the appropriate unit before rendering
-                rendered = point.getTextRenderer().getText((DataValue) rawValue, TextRenderer.HINT_FULL);
-            } else if (rawValue instanceof Double && point.getPointLocator().getDataType() == DataType.NUMERIC) {
-                rendered = point.getTextRenderer().getText((double) rawValue, TextRenderer.HINT_FULL);
-            } else if (rawValue == null) {
-                rendered = RENDERED_NULL_STRING;
+            if (rollup == RollupEnum.INTEGRAL && rawValue != null) {
+                rendered = point.createIntegralRenderer().getText((double) rawValue, TextRenderer.HINT_FULL);
             } else {
-                rendered = String.valueOf(rawValue);
+                rendered = getRenderedValue(point, rawValue);
             }
             model.setRendered(rendered);
         }
         return model;
+    }
+
+    private String getRenderedValue(DataPointVO point, Object rawValue) {
+        String result;
+        if (rawValue instanceof DataValue) {
+            // the text renderer converts numeric values to the appropriate unit before rendering
+            result = point.getTextRenderer().getText((DataValue) rawValue, TextRenderer.HINT_FULL);
+        } else if (rawValue instanceof Double && point.getPointLocator().getDataType() == DataType.NUMERIC) {
+            result = point.getTextRenderer().getText((double) rawValue, TextRenderer.HINT_FULL);
+        } else if (rawValue == null) {
+            result = RENDERED_NULL_STRING;
+        } else {
+            result = String.valueOf(rawValue);
+        }
+        return result;
     }
 
     private <X> X extractNumeric(AggregateValue value, Function<NumericAggregate, X> extractor) {

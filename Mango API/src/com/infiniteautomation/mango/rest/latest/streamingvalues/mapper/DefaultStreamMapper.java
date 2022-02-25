@@ -56,7 +56,7 @@ public class DefaultStreamMapper extends AbstractStreamMapper<IdPointValueTime> 
             model.setTimestamp(formatTime(valueTime.getTime()));
         }
         if (fields.contains(PointValueField.VALUE)) {
-            Object convertedValue = extractValue(point, rawValue);
+            Object convertedValue = convertValue(point, rawValue);
             model.setValue(convertedValue);
         }
         if (fields.contains(PointValueField.RAW)) {
