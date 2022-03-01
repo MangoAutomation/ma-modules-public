@@ -6,6 +6,7 @@ package com.infiniteautomation.mango.rest.latest.genericcsv;
 import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
@@ -13,6 +14,7 @@ import com.fasterxml.jackson.databind.util.NameTransformer;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueField;
 import com.infiniteautomation.mango.rest.latest.streamingvalues.model.StreamingMultiPointModel;
 import com.infiniteautomation.mango.rest.latest.streamingvalues.model.StreamingPointValueTimeModel;
+import com.infiniteautomation.mango.rest.latest.streamingvalues.model.ValueTimeModel;
 
 /**
  * @author Jared Wiltshire
@@ -31,6 +33,7 @@ public class CsvJacksonModule extends SimpleModule {
         addDeserializer(long.class, longAsDateDeserializer);
 
         addSerializer(StreamingMultiPointModel.class, new StreamingMultiPointModelSerializer());
+        addSerializer(StreamingPointValueTimeModel.class, new StreamingPointValueTimeModelSerializer());
     }
 
     public static class StreamingMultiPointModelSerializer extends StdSerializer<StreamingMultiPointModel> {
@@ -50,14 +53,71 @@ public class CsvJacksonModule extends SimpleModule {
                 gen.writeStringField(PointValueField.TIMESTAMP.getFieldName(), (String) timestamp);
             }
 
-            var baseSerializer = provider.findValueSerializer(StreamingPointValueTimeModel.class);
             for (var entry : value.getPointValues().entrySet()) {
-                var unwrappingSerializer = baseSerializer
-                        .unwrappingSerializer(new XidPrefixNameTransformer(entry.getKey()));
-                unwrappingSerializer.serialize(entry.getValue(), gen, provider);
+                var serializer = new StreamingPointValueTimeModelSerializer(entry.getKey());
+                serializer.serialize(entry.getValue(), gen, provider);
             }
 
             gen.writeEndObject();
+        }
+    }
+
+    public static class StreamingPointValueTimeModelSerializer extends StdSerializer<StreamingPointValueTimeModel> {
+
+        private final boolean unwrapped;
+        private final NameTransformer nameTransformer;
+
+        protected StreamingPointValueTimeModelSerializer() {
+            super(StreamingPointValueTimeModel.class);
+            this.unwrapped = false;
+            this.nameTransformer = NameTransformer.NOP;
+        }
+
+        protected StreamingPointValueTimeModelSerializer(String xid) {
+            this(new XidPrefixNameTransformer(xid));
+        }
+
+        protected StreamingPointValueTimeModelSerializer(NameTransformer nameTransformer) {
+            super(StreamingPointValueTimeModel.class);
+            this.unwrapped = true;
+            this.nameTransformer = nameTransformer;
+        }
+
+        @Override
+        public void serialize(StreamingPointValueTimeModel value, JsonGenerator gen, SerializerProvider provider) throws IOException {
+            if (!unwrapped) {
+                gen.writeStartObject();
+            }
+
+            var serializer = provider.findValueSerializer(ValueTimeModel.class)
+                    .unwrappingSerializer(nameTransformer);
+            serializer.serialize(value.getValueModel(), gen, provider);
+
+            provider.defaultSerializeField(fieldName(PointValueField.ANNOTATION), value.getAnnotation(), gen);
+            provider.defaultSerializeField(fieldName(PointValueField.CACHED), value.getCached(), gen);
+            provider.defaultSerializeField(fieldName(PointValueField.BOOKEND), value.getBookend(), gen);
+            provider.defaultSerializeField(fieldName(PointValueField.XID), value.getXid(), gen);
+            provider.defaultSerializeField(fieldName(PointValueField.NAME), value.getName(), gen);
+            provider.defaultSerializeField(fieldName(PointValueField.DEVICE_NAME), value.getDeviceName(), gen);
+            provider.defaultSerializeField(fieldName(PointValueField.DATA_SOURCE_NAME), value.getDataSourceName(), gen);
+
+            if (!unwrapped) {
+                gen.writeEndObject();
+            }
+        }
+
+        @Override
+        public boolean isUnwrappingSerializer() {
+            return unwrapped;
+        }
+
+        @Override
+        public JsonSerializer<StreamingPointValueTimeModel> unwrappingSerializer(NameTransformer unwrapper) {
+            return new StreamingPointValueTimeModelSerializer(unwrapper);
+        }
+
+        private String fieldName(PointValueField field) {
+            return nameTransformer.transform(field.getFieldName());
         }
     }
 
@@ -86,4 +146,5 @@ public class CsvJacksonModule extends SimpleModule {
             return null;
         }
     }
+
 }

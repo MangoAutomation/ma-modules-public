@@ -11,8 +11,11 @@ import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.infiniteautomation.mango.rest.latest.genericcsv.CsvJacksonModule.StreamingMultiPointModelSerializer;
 
 /**
+ * Note: this class has a custom serializer for CSV, see {@link StreamingMultiPointModelSerializer}.
+ *
  * @author Jared Wiltshire
  */
 @JsonInclude(Include.NON_NULL)

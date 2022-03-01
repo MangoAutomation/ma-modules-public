@@ -10,9 +10,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import com.infiniteautomation.mango.rest.latest.genericcsv.CsvJacksonModule.StreamingPointValueTimeModelSerializer;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 
 /**
+ * Note: this class has a custom serializer for CSV, see {@link StreamingPointValueTimeModelSerializer}.
+ *
  * @author Jared Wiltshire
  */
 @JsonInclude(Include.NON_NULL)
