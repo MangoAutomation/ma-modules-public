@@ -51,7 +51,7 @@ public class AggregateValueMapper extends AbstractStreamMapper<SeriesValueTime<?
             model.setAllStatistics(allStatisticsModel);
         } else {
             ValueTimeModel rollupValue = getRollupValue(point, aggregate, rollup);
-            model.setValue(rollupValue);
+            model.setValueModel(rollupValue);
         }
 
         if (fields.contains(PointValueField.CACHED)) {

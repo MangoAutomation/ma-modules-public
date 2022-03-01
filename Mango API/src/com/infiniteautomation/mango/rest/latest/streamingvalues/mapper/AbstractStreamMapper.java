@@ -17,6 +17,8 @@ import java.util.function.Function;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
 
 import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueField;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.RollupEnum;
@@ -36,6 +38,7 @@ import com.serotonin.m2m2.vo.DataPointVO;
 @NonNull
 public abstract class AbstractStreamMapper<T> implements Function<T, StreamingPointValueTimeModel> {
 
+    public static final String REQUEST_ATTRIBUTE_NAME = "mango_point_value_stream_mapper";
     public static final String RENDERED_NULL_STRING = "—";
 
     protected final Map<Integer, DataPointVO> dataPoints;
@@ -52,6 +55,9 @@ public abstract class AbstractStreamMapper<T> implements Function<T, StreamingPo
         this.zoneId = options.zoneId;
         this.rollup = options.rollup;
         this.locale = options.locale;
+
+        RequestContextHolder.currentRequestAttributes()
+                .setAttribute(REQUEST_ATTRIBUTE_NAME, this, RequestAttributes.SCOPE_REQUEST);
     }
 
     protected DataPointVO lookupPoint(int seriesId) {
@@ -135,5 +141,29 @@ public abstract class AbstractStreamMapper<T> implements Function<T, StreamingPo
 
     protected String renderValue(DataPointVO point, double value) {
         return point.getTextRenderer().getText(value, TextRenderer.HINT_FULL, locale);
+    }
+
+    public Map<Integer, DataPointVO> getDataPoints() {
+        return dataPoints;
+    }
+
+    public Set<PointValueField> getFields() {
+        return fields;
+    }
+
+    public DateTimeFormatter getDateTimeFormatter() {
+        return dateTimeFormatter;
+    }
+
+    public ZoneId getZoneId() {
+        return zoneId;
+    }
+
+    public RollupEnum getRollup() {
+        return rollup;
+    }
+
+    public Locale getLocale() {
+        return locale;
     }
 }

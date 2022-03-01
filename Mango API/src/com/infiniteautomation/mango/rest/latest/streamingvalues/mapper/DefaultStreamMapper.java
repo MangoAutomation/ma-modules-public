@@ -32,7 +32,7 @@ public class DefaultStreamMapper extends AbstractStreamMapper<IdPointValueTime> 
         DataPointVO point = lookupPoint(valueTime.getSeriesId());
         StreamingPointValueTimeModel model = new StreamingPointValueTimeModel(point.getXid(), valueTime.getTime());
 
-        model.setValue(getValue(point, valueTime));
+        model.setValueModel(getValue(point, valueTime));
         if (fields.contains(PointValueField.CACHED)) {
             model.setCached(valueTime.isFromCache());
         }

@@ -36,6 +36,7 @@ import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.util.UrlPathHelper;
 
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvGenerator;
@@ -55,6 +56,9 @@ import com.infiniteautomation.mango.rest.latest.mapping.SerotoninJsonMessageConv
 import com.infiniteautomation.mango.rest.latest.mapping.SingleMintermPermissionConverter;
 import com.infiniteautomation.mango.rest.latest.mapping.SqlMessageConverter;
 import com.infiniteautomation.mango.rest.latest.model.RestModelMapper;
+import com.infiniteautomation.mango.rest.latest.streamingvalues.converter.StreamingMapPointValueCsvConverter;
+import com.infiniteautomation.mango.rest.latest.streamingvalues.converter.StreamingMultiPointValueCsvConverter;
+import com.infiniteautomation.mango.rest.latest.streamingvalues.converter.StreamingPointValueCsvConverter;
 import com.infiniteautomation.mango.rest.latest.util.MangoRestTemporaryResourceContainer;
 import com.infiniteautomation.mango.spring.MangoCommonConfiguration;
 import com.infiniteautomation.mango.spring.MangoRuntimeContextConfiguration;
@@ -130,6 +134,10 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
         converters.add(new HtmlHttpMessageConverter());
         converters.add(new SerotoninJsonMessageConverter());
         converters.add(new SqlMessageConverter());
+        var converter = new StreamingPointValueCsvConverter(csvMapper());
+        converters.add(converter);
+        converters.add(new StreamingMapPointValueCsvConverter(converter));
+        converters.add(new StreamingMultiPointValueCsvConverter(csvMapper()));
         converters.add(new GenericCSVMessageConverter(csvObjectMapper()));
         converters.add(new StringHttpMessageConverter(StandardCharsets.UTF_8));
     }
@@ -187,7 +195,10 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
         csvMapper.configure(CsvGenerator.Feature.ALWAYS_QUOTE_STRINGS, true);
         csvMapper.configure(CsvParser.Feature.FAIL_ON_MISSING_COLUMNS, false);
         csvMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        // drops any properties/columns not registered in the schema when serializing
+        csvMapper.configure(JsonGenerator.Feature.IGNORE_UNKNOWN, true);
         csvMapper.registerModule(new JavaTimeModule());
+        csvMapper.registerModule(new Jdk8Module());
         csvMapper.registerModule(new CsvJacksonModule());
         csvMapper.setTimeZone(TimeZone.getDefault()); //Set to system tz
         return csvMapper;

@@ -22,7 +22,7 @@ public class StreamingPointValueTimeModel {
     final long exactTimestamp;
 
     @JsonUnwrapped
-    ValueTimeModel value;
+    ValueTimeModel valueModel;
 
     @JsonUnwrapped
     AllStatisticsModel allStatistics;
@@ -60,12 +60,12 @@ public class StreamingPointValueTimeModel {
         return exactTimestamp;
     }
 
-    public ValueTimeModel getValue() {
-        return value;
+    public ValueTimeModel getValueModel() {
+        return valueModel;
     }
 
-    public void setValue(ValueTimeModel value) {
-        this.value = value;
+    public void setValueModel(ValueTimeModel valueModel) {
+        this.valueModel = valueModel;
     }
 
     public AllStatisticsModel getAllStatistics() {
