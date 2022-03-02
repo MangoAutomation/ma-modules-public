@@ -42,6 +42,7 @@ import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvParser;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.infiniteautomation.mango.rest.RestApiJacksonModuleDefinition;
 import com.infiniteautomation.mango.rest.latest.JsonEmportController.ImportStatusProvider;
 import com.infiniteautomation.mango.rest.latest.genericcsv.CsvJacksonModule;
 import com.infiniteautomation.mango.rest.latest.genericcsv.GenericCSVMessageConverter;
@@ -163,7 +164,7 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
     }
 
     @Bean("csvMapper")
-    public CsvMapper csvMapper() {
+    public CsvMapper csvMapper(RestApiJacksonModuleDefinition jacksonModuleDef) {
         CsvMapper csvMapper = new CsvMapper();
         csvMapper.configure(CsvGenerator.Feature.ALWAYS_QUOTE_STRINGS, true);
         csvMapper.configure(CsvParser.Feature.FAIL_ON_MISSING_COLUMNS, false);
@@ -173,6 +174,9 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
         csvMapper.registerModule(new JavaTimeModule());
         csvMapper.registerModule(new Jdk8Module());
         csvMapper.registerModule(new CsvJacksonModule());
+        for (var jacksonModule : jacksonModuleDef.getJacksonModules()) {
+            csvMapper.registerModule(jacksonModule);
+        }
         csvMapper.setTimeZone(TimeZone.getDefault()); //Set to system tz
         return csvMapper;
     }

@@ -85,7 +85,7 @@ public class PointValueModificationRestController {
             try {
                 PointValueDao pointValueDao = Common.getBean(PointValueDao.class);
                 Map<String, PointValueTimeImport> results = new LinkedHashMap<>();
-                stream.forEach((pvt) -> {
+                stream.forEachOrdered((pvt) -> {
 
                     results.compute(pvt.getXid(), (xidKey, entry) ->{
                         if(entry == null) {
@@ -242,7 +242,7 @@ public class PointValueModificationRestController {
                 PointValueDao pointValueDao = Common.getBean(PointValueDao.class);
                 Map<String, PointValueTimeDelete> results = new HashMap<>();
 
-                stream.forEach((pvt) ->{
+                stream.forEachOrdered((pvt) ->{
 
                     results.compute(pvt.getXid(), (xidKey, entry) ->{
                         if(entry == null) {

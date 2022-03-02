@@ -4,19 +4,18 @@
 
 package com.infiniteautomation.mango.rest.latest.streamingvalues.converter;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.lang.reflect.Type;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ResolvableType;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.databind.SequenceWriter;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.infiniteautomation.mango.rest.latest.streamingvalues.model.StreamingPointValueTimeModel;
@@ -24,8 +23,9 @@ import com.infiniteautomation.mango.rest.latest.streamingvalues.model.StreamingP
 /**
  * @author Jared Wiltshire
  */
+@Order(0)
 @Component
-public class StreamingMapPointValueCsvConverter extends BaseCsvConverter<Map<String, Stream<StreamingPointValueTimeModel>>> {
+public class StreamingMapPointValueCsvConverter extends BaseCsvConverter<Map<String, Stream<StreamingPointValueTimeModel>>, StreamingPointValueTimeModel> {
 
     public static final ResolvableType SUPPORTED_TYPE = ResolvableType.forClassWithGenerics(Map.class,
             ResolvableType.forClass(String.class),
@@ -35,26 +35,23 @@ public class StreamingMapPointValueCsvConverter extends BaseCsvConverter<Map<Str
 
     @Autowired
     public StreamingMapPointValueCsvConverter(CsvMapper mapper, StreamingPointValueCsvConverter delegate) {
-        super(mapper);
+        super(mapper, StreamingPointValueTimeModel.class);
         this.delegate = delegate;
     }
 
     @Override
-    protected CsvSchema createSchema(@Nullable Type type) {
-        return delegate.createSchema(type);
+    protected CsvSchema createSchema(@Nullable Type messageType) {
+        return delegate.createSchema(messageType);
     }
 
     @Override
-    protected void writeValues(Map<String, Stream<StreamingPointValueTimeModel>> value, SequenceWriter writer) {
-        for (var stream : value.values()) {
-            stream.forEachOrdered(model -> {
-                try {
-                    writer.write(model);
-                } catch (IOException e) {
-                    throw new UncheckedIOException(e);
-                }
-            });
-        }
+    protected Stream<StreamingPointValueTimeModel> writeRows(Map<String, Stream<StreamingPointValueTimeModel>> message) {
+        return message.values().stream().flatMap(Function.identity());
+    }
+
+    @Override
+    protected Map<String, Stream<StreamingPointValueTimeModel>> readRows(Stream<StreamingPointValueTimeModel> rows) {
+        throw new UnsupportedOperationException();
     }
 
     @Override

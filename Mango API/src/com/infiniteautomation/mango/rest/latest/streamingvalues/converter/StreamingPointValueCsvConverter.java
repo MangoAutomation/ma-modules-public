@@ -4,17 +4,14 @@
 
 package com.infiniteautomation.mango.rest.latest.streamingvalues.converter;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.lang.reflect.Type;
 import java.util.stream.Stream;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.springframework.core.ResolvableType;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.databind.SequenceWriter;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema.ColumnType;
@@ -27,17 +24,16 @@ import com.infiniteautomation.mango.rest.latest.streamingvalues.model.StreamingP
  *
  * @author Jared Wiltshire
  */
+@Order(0)
 @Component
-public class StreamingPointValueCsvConverter extends BaseCsvConverter<Stream<StreamingPointValueTimeModel>> {
-
-    public static final ResolvableType SUPPORTED_TYPE = ResolvableType.forClassWithGenerics(Stream.class, StreamingPointValueTimeModel.class);
+public class StreamingPointValueCsvConverter extends StreamCsvConverter<StreamingPointValueTimeModel> {
 
     public StreamingPointValueCsvConverter(CsvMapper mapper) {
-        super(mapper);
+        super(mapper, StreamingPointValueTimeModel.class);
     }
 
     @Override
-    protected CsvSchema createSchema(@Nullable Type type) {
+    protected CsvSchema createSchema(@Nullable Type messageType) {
         var fields = fields();
 
         var schemaBuilder = CsvSchema.builder();
@@ -70,22 +66,6 @@ public class StreamingPointValueCsvConverter extends BaseCsvConverter<Stream<Str
             schemaBuilder.addColumn(PointValueField.DATA_SOURCE_NAME.getFieldName(), ColumnType.STRING);
         }
         return schemaBuilder.build();
-    }
-
-    @Override
-    protected void writeValues(Stream<StreamingPointValueTimeModel> value, SequenceWriter writer) {
-        value.forEachOrdered(model -> {
-            try {
-                writer.write(model);
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
-        });
-    }
-
-    @Override
-    protected boolean supportsType(Type type) {
-        return SUPPORTED_TYPE.isAssignableFrom(ResolvableType.forType(type));
     }
 
 }
