@@ -8,7 +8,6 @@ import java.lang.reflect.Type;
 import java.util.stream.Stream;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.springframework.core.annotation.Order;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.stereotype.Component;
@@ -25,7 +24,6 @@ import com.infiniteautomation.mango.rest.latest.streamingvalues.model.StreamingP
  *
  * @author Jared Wiltshire
  */
-@Order(0)
 @Component
 public class StreamingPointValueCsvConverter extends StreamCsvConverter<StreamingPointValueTimeModel> {
 

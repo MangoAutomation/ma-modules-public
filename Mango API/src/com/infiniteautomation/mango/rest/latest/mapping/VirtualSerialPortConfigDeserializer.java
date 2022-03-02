@@ -25,7 +25,7 @@ public class VirtualSerialPortConfigDeserializer extends StdDeserializer<Virtual
 
     private static final long serialVersionUID = 1L;
     
-    protected VirtualSerialPortConfigDeserializer() {
+    public VirtualSerialPortConfigDeserializer() {
         super(VirtualSerialPortConfig.class);
     }
 

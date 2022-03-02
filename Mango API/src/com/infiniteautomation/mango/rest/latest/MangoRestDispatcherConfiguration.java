@@ -42,12 +42,11 @@ import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvParser;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.infiniteautomation.mango.rest.OrderComparatorWithDefault;
 import com.infiniteautomation.mango.rest.RestApiJacksonModuleDefinition;
 import com.infiniteautomation.mango.rest.latest.JsonEmportController.ImportStatusProvider;
 import com.infiniteautomation.mango.rest.latest.genericcsv.CsvJacksonModule;
 import com.infiniteautomation.mango.rest.latest.genericcsv.GenericCSVMessageConverter;
-import com.infiniteautomation.mango.rest.latest.mapping.JScienceModule;
-import com.infiniteautomation.mango.rest.latest.mapping.MangoRestJacksonModule;
 import com.infiniteautomation.mango.rest.latest.mapping.PermissionConverter;
 import com.infiniteautomation.mango.rest.latest.mapping.SingleMintermPermissionConverter;
 import com.infiniteautomation.mango.rest.latest.util.MangoRestTemporaryResourceContainer;
@@ -104,16 +103,16 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
         this.env = env;
         this.permissionService = permissionService;
 
-        // register Jackson modules from API module
-        mapper.registerModule(new MangoRestJacksonModule())
-            .registerModule(new JScienceModule());
-
-        this.converters.addAll(injectedConverters);
-        this.converters.add(new ResourceHttpMessageConverter());
-        this.converters.add(new ResourceRegionHttpMessageConverter());
-        this.converters.add(new MappingJackson2HttpMessageConverter(mapper));
-        this.converters.add(new ByteArrayHttpMessageConverter());
-        this.converters.add(new StringHttpMessageConverter(StandardCharsets.UTF_8));
+        // Injected converters may be assigned an order via the @Order annotation.
+        // Converters are picked firstly based on how specifically they match the "accept" header, then by their order.
+        converters.addAll(injectedConverters);
+        converters.add(new ResourceHttpMessageConverter());
+        converters.add(new ResourceRegionHttpMessageConverter());
+        converters.add(new MappingJackson2HttpMessageConverter(mapper));
+        converters.add(new ByteArrayHttpMessageConverter());
+        converters.add(new StringHttpMessageConverter(StandardCharsets.UTF_8));
+        // use a default order of 100
+        converters.sort(new OrderComparatorWithDefault(100));
     }
 
     /**

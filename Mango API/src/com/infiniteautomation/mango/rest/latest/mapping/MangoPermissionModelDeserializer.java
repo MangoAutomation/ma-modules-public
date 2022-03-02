@@ -30,11 +30,10 @@ public class MangoPermissionModelDeserializer extends StdDeserializer<MangoPermi
     private static final long serialVersionUID = 1L;
     private final PermissionService permissionService;
 
-    public MangoPermissionModelDeserializer() {
+    public MangoPermissionModelDeserializer(PermissionService permissionService) {
         super(MangoPermissionModel.class);
-        this.permissionService = Common.getBean(PermissionService.class);
+        this.permissionService = permissionService;
     }
-
 
     @Override
     public MangoPermissionModel deserialize(JsonParser jp, DeserializationContext ctxt)

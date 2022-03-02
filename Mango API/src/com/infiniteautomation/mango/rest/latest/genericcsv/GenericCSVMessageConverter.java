@@ -25,6 +25,7 @@ import org.apache.commons.io.ByteOrderMark;
 import org.apache.commons.io.input.BOMInputStream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.MediaType;
@@ -56,8 +57,11 @@ import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
 
 /**
+ * Lower priority than default (100) so it is lower than our MappingJackson2HttpMessageConverter for JSON.
+ * This is required for when the "accept" header is a wildcard (*&#x2F;*) and all the converters are checked in order.
  * @author Jared Wiltshire
  */
+@Order(200)
 @Component
 public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConverter {
 

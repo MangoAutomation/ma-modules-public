@@ -4,13 +4,27 @@
 
 package com.infiniteautomation.mango.rest;
 
-import java.util.Collections;
 import java.util.EnumSet;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.infiniteautomation.mango.io.serial.virtual.VirtualSerialPortConfig;
+import com.infiniteautomation.mango.rest.latest.exception.ExceptionMixin;
+import com.infiniteautomation.mango.rest.latest.mapping.JSONStreamedArraySerializer;
+import com.infiniteautomation.mango.rest.latest.mapping.JScienceModule;
+import com.infiniteautomation.mango.rest.latest.mapping.MangoPermissionModelDeserializer;
+import com.infiniteautomation.mango.rest.latest.mapping.MangoPermissionModelSerializer;
+import com.infiniteautomation.mango.rest.latest.mapping.TranslatableMessageSerializer;
+import com.infiniteautomation.mango.rest.latest.mapping.VirtualSerialPortConfigDeserializer;
+import com.infiniteautomation.mango.rest.latest.model.JSONStreamedArray;
+import com.infiniteautomation.mango.rest.latest.model.permissions.MangoPermissionModel;
+import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.serotonin.json.type.JsonValue;
+import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.JacksonModuleDefinition;
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 
@@ -22,9 +36,15 @@ import net.jazdw.rql.parser.ASTNode;
  */
 public class RestApiJacksonModuleDefinition extends JacksonModuleDefinition {
 
+    @Autowired
+    PermissionService permissionService;
+
     @Override
     public Iterable<? extends Module> getJacksonModules() {
-        return Collections.singleton(new RestApiJacksonModule(getModule().getName(), createJacksonVersion()));
+        return List.of(
+                new RestApiJacksonModule(getModule().getName(), createJacksonVersion(), permissionService),
+                new JScienceModule()
+        );
     }
 
     @Override
@@ -32,19 +52,31 @@ public class RestApiJacksonModuleDefinition extends JacksonModuleDefinition {
         return EnumSet.of(ObjectMapperSource.REST);
     }
 
+
     public static class RestApiJacksonModule extends SimpleModule {
         private static final long serialVersionUID = 1L;
 
-        public RestApiJacksonModule(String name, Version version) {
+        private final PermissionService permissionService;
+
+        public RestApiJacksonModule(String name, Version version, PermissionService permissionService) {
             super(name, version);
+            this.permissionService = permissionService;
+            setMixInAnnotation(Exception.class, ExceptionMixin.class);
+        }
 
-            this.addSerializer(ASTNode.class, new ASTNodeSerializer());
-            this.addSerializer(JsonValue.class, new SerotoninJsonValueSerializer());
-
-            this.addDeserializer(JsonValue.class, new SerotoninJsonValueDeserializer());
-            this.addDeserializer(ASTNode.class, new ASTNodeDeserializer());
-
-            this.addSerializer(DataValue.class, new DataValueSerializer());
+        @Override
+        public void setupModule(SetupContext context) {
+            addSerializer(ASTNode.class, new ASTNodeSerializer());
+            addDeserializer(ASTNode.class, new ASTNodeDeserializer());
+            addSerializer(JsonValue.class, new SerotoninJsonValueSerializer());
+            addDeserializer(JsonValue.class, new SerotoninJsonValueDeserializer());
+            addSerializer(DataValue.class, new DataValueSerializer());
+            addSerializer(JSONStreamedArray.class, new JSONStreamedArraySerializer());
+            addSerializer(TranslatableMessage.class, new TranslatableMessageSerializer());
+            addDeserializer(VirtualSerialPortConfig.class, new VirtualSerialPortConfigDeserializer());
+            addSerializer(MangoPermissionModel.class, new MangoPermissionModelSerializer());
+            addDeserializer(MangoPermissionModel.class, new MangoPermissionModelDeserializer(permissionService));
+            super.setupModule(context);
         }
     }
 
