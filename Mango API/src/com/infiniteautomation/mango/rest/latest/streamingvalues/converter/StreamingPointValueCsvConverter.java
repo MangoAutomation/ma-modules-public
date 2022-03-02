@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.stereotype.Component;
 
@@ -68,6 +69,11 @@ public class StreamingPointValueCsvConverter extends StreamCsvConverter<Streamin
             schemaBuilder.addColumn(PointValueField.DATA_SOURCE_NAME.getFieldName(), ColumnType.STRING);
         }
         return schemaBuilder.build();
+    }
+
+    @Override
+    protected boolean canRead(@Nullable MediaType mediaType) {
+        return false;
     }
 
 }

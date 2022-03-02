@@ -38,7 +38,7 @@ import com.serotonin.m2m2.vo.DataPointVO;
 @NonNull
 public abstract class AbstractStreamMapper<T> implements Function<T, StreamingPointValueTimeModel> {
 
-    public static final String REQUEST_ATTRIBUTE_NAME = "mango_point_value_stream_mapper";
+    public static final String MAPPER_ATTRIBUTE = "mango_point_value_stream_mapper";
     public static final String RENDERED_NULL_STRING = "—";
 
     protected final Map<Integer, DataPointVO> dataPoints;
@@ -56,8 +56,9 @@ public abstract class AbstractStreamMapper<T> implements Function<T, StreamingPo
         this.rollup = options.rollup;
         this.locale = options.locale;
 
+        // Mapper is used inside HttpMessageConverter, no way to pass it through directly so use request attribute
         RequestContextHolder.currentRequestAttributes()
-                .setAttribute(REQUEST_ATTRIBUTE_NAME, this, RequestAttributes.SCOPE_REQUEST);
+                .setAttribute(MAPPER_ATTRIBUTE, this, RequestAttributes.SCOPE_REQUEST);
     }
 
     protected DataPointVO lookupPoint(int seriesId) {
@@ -153,6 +154,10 @@ public abstract class AbstractStreamMapper<T> implements Function<T, StreamingPo
 
     public DateTimeFormatter getDateTimeFormatter() {
         return dateTimeFormatter;
+    }
+
+    public boolean isTimestampFormatted() {
+        return dateTimeFormatter != null;
     }
 
     public ZoneId getZoneId() {

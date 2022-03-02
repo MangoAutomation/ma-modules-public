@@ -21,6 +21,9 @@ import java.util.stream.Collectors;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -116,6 +119,11 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                                                                     ZonedDateTime from, ZonedDateTime to,
                                                                     String timezone,
                                                                     PointValueField[] fields) {
+
+        // AbstractStreamMapper stores itself in a request attribute for retrieval inside HttpMessageConverter
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
+
         var mapper = new StreamMapperBuilder()
                 .withDataPoints(points)
                 .withRollup(RollupEnum.ALL)

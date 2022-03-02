@@ -4,10 +4,11 @@
 
 package com.infiniteautomation.mango.rest.latest.streamingvalues.converter;
 
-import static com.infiniteautomation.mango.rest.latest.streamingvalues.mapper.AbstractStreamMapper.REQUEST_ATTRIBUTE_NAME;
+import static com.infiniteautomation.mango.rest.latest.streamingvalues.mapper.AbstractStreamMapper.MAPPER_ATTRIBUTE;
 
 import java.lang.reflect.Type;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -49,15 +50,17 @@ public class StreamingMultiPointValueCsvConverter extends StreamCsvConverter<Str
 
         AbstractStreamMapper<?> mapper = (AbstractStreamMapper<?>) Objects.requireNonNull(
                 RequestContextHolder.currentRequestAttributes()
-                .getAttribute(REQUEST_ATTRIBUTE_NAME, RequestAttributes.SCOPE_REQUEST));
+                .getAttribute(MAPPER_ATTRIBUTE, RequestAttributes.SCOPE_REQUEST));
 
-        if (mapper.getFields().contains(PointValueField.TIMESTAMP)) {
-            var columnType = mapper.getDateTimeFormatter() == null ? ColumnType.NUMBER : ColumnType.STRING;
+        Set<PointValueField> fields = mapper.getFields();
+
+        if (fields.contains(PointValueField.TIMESTAMP)) {
+            var columnType = mapper.isTimestampFormatted() ? ColumnType.STRING : ColumnType.NUMBER;
             schemaBuilder.addColumn(PointValueField.TIMESTAMP.getFieldName(), columnType);
         }
 
         for (var point : mapper.getDataPoints().values()) {
-            for (var field : mapper.getFields()) {
+            for (var field : fields) {
                 if (field == PointValueField.VALUE) {
                     // value is put into XID column with no suffix
                     var dataType = point.getPointLocator().getDataType();

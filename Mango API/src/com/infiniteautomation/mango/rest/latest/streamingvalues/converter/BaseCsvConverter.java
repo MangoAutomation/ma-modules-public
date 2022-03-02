@@ -4,7 +4,7 @@
 
 package com.infiniteautomation.mango.rest.latest.streamingvalues.converter;
 
-import static com.infiniteautomation.mango.rest.latest.streamingvalues.mapper.AbstractStreamMapper.REQUEST_ATTRIBUTE_NAME;
+import static com.infiniteautomation.mango.rest.latest.streamingvalues.mapper.AbstractStreamMapper.MAPPER_ATTRIBUTE;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -160,7 +160,7 @@ public abstract class BaseCsvConverter<T, R> extends AbstractGenericHttpMessageC
     protected Set<PointValueField> fields() {
         AbstractStreamMapper<?> mapper = (AbstractStreamMapper<?>) Objects.requireNonNull(
                 RequestContextHolder.currentRequestAttributes()
-                        .getAttribute(REQUEST_ATTRIBUTE_NAME, RequestAttributes.SCOPE_REQUEST));
+                        .getAttribute(MAPPER_ATTRIBUTE, RequestAttributes.SCOPE_REQUEST));
         return mapper.getFields();
     }
 
