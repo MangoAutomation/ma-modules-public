@@ -3,21 +3,19 @@
  */
 package com.infiniteautomation.mango.rest.latest.mapping;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.StringHttpMessageConverter;
+import org.springframework.stereotype.Component;
 
 /**
  * @author Terry Packer
  *
  */
+@Component
 public class HtmlHttpMessageConverter extends StringHttpMessageConverter{
-
-	
 	public HtmlHttpMessageConverter(){
-		ArrayList<MediaType> types = new ArrayList<MediaType>();
-		types.add(MediaType.TEXT_HTML);
-		this.setSupportedMediaTypes(types);
+		this.setSupportedMediaTypes(List.of(MediaType.TEXT_HTML));
 	}
 }

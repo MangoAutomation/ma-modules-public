@@ -3,20 +3,20 @@
  */
 package com.infiniteautomation.mango.rest.latest.mapping;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.StringHttpMessageConverter;
+import org.springframework.stereotype.Component;
 
 /**
  *
  * @author Terry Packer
  */
+@Component
 public class SqlMessageConverter extends StringHttpMessageConverter {
 
     public SqlMessageConverter(){
-        ArrayList<MediaType> types = new ArrayList<MediaType>();
-        types.add(new MediaType("application", "sql"));
-        this.setSupportedMediaTypes(types);
+        this.setSupportedMediaTypes(List.of(new MediaType("application", "sql")));
     }
 }

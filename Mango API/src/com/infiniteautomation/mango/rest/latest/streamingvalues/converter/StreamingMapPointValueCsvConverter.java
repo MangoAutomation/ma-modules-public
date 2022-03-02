@@ -11,13 +11,20 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ResolvableType;
 import org.springframework.http.MediaType;
+import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.SequenceWriter;
+import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.infiniteautomation.mango.rest.latest.streamingvalues.model.StreamingPointValueTimeModel;
 
+/**
+ * @author Jared Wiltshire
+ */
+@Component
 public class StreamingMapPointValueCsvConverter extends BaseCsvConverter<Map<String, Stream<StreamingPointValueTimeModel>>> {
 
     public static final ResolvableType SUPPORTED_TYPE = ResolvableType.forClassWithGenerics(Map.class,
@@ -26,8 +33,9 @@ public class StreamingMapPointValueCsvConverter extends BaseCsvConverter<Map<Str
 
     private final StreamingPointValueCsvConverter delegate;
 
-    public StreamingMapPointValueCsvConverter(StreamingPointValueCsvConverter delegate) {
-        super(delegate.mapper);
+    @Autowired
+    public StreamingMapPointValueCsvConverter(CsvMapper mapper, StreamingPointValueCsvConverter delegate) {
+        super(mapper);
         this.delegate = delegate;
     }
 

@@ -23,6 +23,8 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.ByteOrderMark;
 import org.apache.commons.io.input.BOMInputStream;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.MediaType;
@@ -31,6 +33,7 @@ import org.springframework.http.converter.HttpMessageNotWritableException;
 import org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJacksonInputMessage;
 import org.springframework.http.converter.json.MappingJacksonValue;
+import org.springframework.stereotype.Component;
 import org.springframework.util.TypeUtils;
 
 import com.fasterxml.jackson.core.JsonParser;
@@ -55,6 +58,7 @@ import au.com.bytecode.opencsv.CSVWriter;
 /**
  * @author Jared Wiltshire
  */
+@Component
 public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConverter {
 
     // when saving in Excel ensure that dates are saved in this format, the equivalent excel format pattern is
@@ -76,7 +80,8 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
 
     private final JsonNodeFactory nodeFactory;
 
-    public GenericCSVMessageConverter(ObjectMapper objectMapper) {
+    @Autowired
+    public GenericCSVMessageConverter(@Qualifier("csvObjectMapper") ObjectMapper objectMapper) {
         super(objectMapper, MediaTypes.CSV_V2);
         this.nodeFactory = objectMapper.getNodeFactory();
     }

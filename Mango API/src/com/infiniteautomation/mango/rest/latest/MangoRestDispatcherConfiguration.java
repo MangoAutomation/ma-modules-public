@@ -8,8 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TimeZone;
 
-import javax.annotation.PostConstruct;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -47,18 +45,10 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.infiniteautomation.mango.rest.latest.JsonEmportController.ImportStatusProvider;
 import com.infiniteautomation.mango.rest.latest.genericcsv.CsvJacksonModule;
 import com.infiniteautomation.mango.rest.latest.genericcsv.GenericCSVMessageConverter;
-import com.infiniteautomation.mango.rest.latest.mapping.HtmlHttpMessageConverter;
 import com.infiniteautomation.mango.rest.latest.mapping.JScienceModule;
-import com.infiniteautomation.mango.rest.latest.mapping.JsonStreamMessageConverter;
 import com.infiniteautomation.mango.rest.latest.mapping.MangoRestJacksonModule;
 import com.infiniteautomation.mango.rest.latest.mapping.PermissionConverter;
-import com.infiniteautomation.mango.rest.latest.mapping.SerotoninJsonMessageConverter;
 import com.infiniteautomation.mango.rest.latest.mapping.SingleMintermPermissionConverter;
-import com.infiniteautomation.mango.rest.latest.mapping.SqlMessageConverter;
-import com.infiniteautomation.mango.rest.latest.model.RestModelMapper;
-import com.infiniteautomation.mango.rest.latest.streamingvalues.converter.StreamingMapPointValueCsvConverter;
-import com.infiniteautomation.mango.rest.latest.streamingvalues.converter.StreamingMultiPointValueCsvConverter;
-import com.infiniteautomation.mango.rest.latest.streamingvalues.converter.StreamingPointValueCsvConverter;
 import com.infiniteautomation.mango.rest.latest.util.MangoRestTemporaryResourceContainer;
 import com.infiniteautomation.mango.spring.MangoCommonConfiguration;
 import com.infiniteautomation.mango.spring.MangoRuntimeContextConfiguration;
@@ -86,10 +76,9 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
     public static final String CONTEXT_ID = "restV3Context";
     public static final String DISPATCHER_NAME = "restV3DispatcherServlet";
 
-    ObjectMapper mapper;
-    List<HandlerMethodArgumentResolver> handlerMethodArgumentResolvers;
-    List<HttpMessageConverter<?>> converters;
-    List<HandlerInterceptor> interceptors;
+    final List<HandlerMethodArgumentResolver> handlerMethodArgumentResolvers = new ArrayList<>();
+    final List<HttpMessageConverter<?>> converters = new ArrayList<>();
+    final List<HandlerInterceptor> interceptors = new ArrayList<>();
     Environment env;
     PermissionService permissionService;
 
@@ -102,44 +91,28 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
     @Autowired
     public void configureMangoRestDispatcherConfiguration(
             @Qualifier(MangoRuntimeContextConfiguration.REST_OBJECT_MAPPER_NAME) ObjectMapper mapper,
-            RestModelMapper modelMapper,
             List<HandlerMethodArgumentResolver> handlerMethodArgumentResolvers,
             List<HandlerInterceptor> interceptors, AsyncTaskExecutor asyncTaskExecutor,
+            List<HttpMessageConverter<?>> injectedConverters,
             Environment env,
             PermissionService permissionService) {
-        this.mapper = mapper;
-        this.handlerMethodArgumentResolvers = handlerMethodArgumentResolvers;
-        this.interceptors = interceptors;
-        this.converters = new ArrayList<>();
+
+        this.handlerMethodArgumentResolvers.addAll(handlerMethodArgumentResolvers);
+        this.interceptors.addAll(interceptors);
         this.asyncTaskExecutor = asyncTaskExecutor;
         this.env = env;
         this.permissionService = permissionService;
 
-        mapper
-        .registerModule(new MangoRestJacksonModule())
-        .registerModule(new Jdk8Module())
-        .registerModule(new JScienceModule());
+        // register Jackson modules from API module
+        mapper.registerModule(new MangoRestJacksonModule())
+            .registerModule(new JScienceModule());
 
-        modelMapper.addMappings(mapper);
-    }
-
-    @PostConstruct
-    public void init() {
-        //Setup our message converter list
-        converters.add(new ResourceHttpMessageConverter());
-        converters.add(new ResourceRegionHttpMessageConverter());
-        converters.add(new JsonStreamMessageConverter(mapper));
-        converters.add(new MappingJackson2HttpMessageConverter(mapper));
-        converters.add(new ByteArrayHttpMessageConverter());
-        converters.add(new HtmlHttpMessageConverter());
-        converters.add(new SerotoninJsonMessageConverter());
-        converters.add(new SqlMessageConverter());
-        var converter = new StreamingPointValueCsvConverter(csvMapper());
-        converters.add(converter);
-        converters.add(new StreamingMapPointValueCsvConverter(converter));
-        converters.add(new StreamingMultiPointValueCsvConverter(csvMapper()));
-        converters.add(new GenericCSVMessageConverter(csvObjectMapper()));
-        converters.add(new StringHttpMessageConverter(StandardCharsets.UTF_8));
+        this.converters.addAll(injectedConverters);
+        this.converters.add(new ResourceHttpMessageConverter());
+        this.converters.add(new ResourceRegionHttpMessageConverter());
+        this.converters.add(new MappingJackson2HttpMessageConverter(mapper));
+        this.converters.add(new ByteArrayHttpMessageConverter());
+        this.converters.add(new StringHttpMessageConverter(StandardCharsets.UTF_8));
     }
 
     /**
@@ -183,7 +156,7 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
     }
 
     @Bean("csvObjectMapper")
-    public ObjectMapper csvObjectMapper() {
+    public ObjectMapper csvObjectMapper(@Qualifier(MangoRuntimeContextConfiguration.REST_OBJECT_MAPPER_NAME) ObjectMapper mapper) {
         return mapper.copy()
                 .setDateFormat(GenericCSVMessageConverter.EXCEL_DATE_FORMAT)
                 .registerModule(new CsvJacksonModule());

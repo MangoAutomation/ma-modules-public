@@ -15,6 +15,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
@@ -29,15 +30,18 @@ import com.fasterxml.jackson.databind.SequenceWriter;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema.ColumnType;
+import com.infiniteautomation.mango.rest.latest.genericcsv.GenericCSVMessageConverter;
 import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueField;
 import com.infiniteautomation.mango.rest.latest.streamingvalues.mapper.AbstractStreamMapper;
 import com.serotonin.m2m2.DataType;
 import com.serotonin.m2m2.web.MediaTypes;
 
 /**
+ * Ordered so it is higher priority than {@link GenericCSVMessageConverter}.
  * @author Jared Wiltshire
  */
-public abstract class BaseCsvConverter<T> extends AbstractGenericHttpMessageConverter<T>  {
+@Order(0)
+public abstract class BaseCsvConverter<T> extends AbstractGenericHttpMessageConverter<T> {
 
     protected final CsvMapper mapper;
 

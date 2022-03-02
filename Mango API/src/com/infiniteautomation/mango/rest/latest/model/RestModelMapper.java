@@ -9,12 +9,14 @@ import java.util.Objects;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
 import com.infiniteautomation.mango.rest.latest.exception.ServerErrorException;
+import com.infiniteautomation.mango.spring.MangoRuntimeContextConfiguration;
 import com.serotonin.m2m2.i18n.ProcessResult;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
@@ -31,11 +33,13 @@ public class RestModelMapper {
     private final List<RestModelMapping<?,?>> mappings;
 
     @Autowired
-    public RestModelMapper(Optional<List<RestModelMapping<?,?>>> mappings) {
+    public RestModelMapper(Optional<List<RestModelMapping<?,?>>> mappings, @Qualifier(MangoRuntimeContextConfiguration.REST_OBJECT_MAPPER_NAME) ObjectMapper mapper) {
         this.mappings = mappings.orElseGet(Collections::emptyList);
+
+        addMappings(mapper);
     }
 
-    public void addMappings(ObjectMapper objectMapper) {
+    private void addMappings(ObjectMapper objectMapper) {
         //Load in the mappings for Jackson
         for(RestModelMapping<?,?> mapping : this.mappings) {
             if(mapping instanceof RestModelJacksonMapping)

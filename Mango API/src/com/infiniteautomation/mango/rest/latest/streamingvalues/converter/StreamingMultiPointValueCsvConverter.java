@@ -13,9 +13,11 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ResolvableType;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
@@ -33,10 +35,12 @@ import com.infiniteautomation.mango.rest.latest.streamingvalues.model.StreamingM
  *
  * @author Jared Wiltshire
  */
+@Component
 public class StreamingMultiPointValueCsvConverter extends BaseCsvConverter<Stream<StreamingMultiPointModel>> {
 
     public static final ResolvableType SUPPORTED_TYPE = ResolvableType.forClassWithGenerics(Stream.class, StreamingMultiPointModel.class);
 
+    @Autowired
     public StreamingMultiPointValueCsvConverter(CsvMapper mapper) {
         super(mapper);
     }

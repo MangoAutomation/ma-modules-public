@@ -10,16 +10,20 @@ import java.util.Spliterators;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.ResolvableType;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJacksonInputMessage;
+import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
+import com.infiniteautomation.mango.spring.MangoRuntimeContextConfiguration;
 
 /**
  * Generic converter for JSON Streams
@@ -28,12 +32,13 @@ import com.fasterxml.jackson.databind.ObjectReader;
  * @author Terry Packer
  *
  */
+@Component
 public class JsonStreamMessageConverter extends MappingJackson2HttpMessageConverter {
 
-    public JsonStreamMessageConverter(ObjectMapper objectMapper) {
+    @Autowired
+    public JsonStreamMessageConverter(@Qualifier(MangoRuntimeContextConfiguration.REST_OBJECT_MAPPER_NAME) ObjectMapper objectMapper) {
         super(objectMapper);
     }
-
     
     @Override
     public boolean canRead(Type type, Class<?> contextClass, MediaType mediaType) {
