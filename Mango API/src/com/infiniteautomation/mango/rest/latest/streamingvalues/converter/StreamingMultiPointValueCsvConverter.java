@@ -43,8 +43,9 @@ public class StreamingMultiPointValueCsvConverter extends StreamCsvConverter<Str
 
     @Override
     protected CsvSchema createSchema(@Nullable Type messageType) {
-        var schemaBuilder = CsvSchema.builder();
-        schemaBuilder.setUseHeader(true);
+        var schemaBuilder = CsvSchema.builder()
+                .setUseHeader(true)
+                .setReorderColumns(true);
 
         AbstractStreamMapper<?> mapper = (AbstractStreamMapper<?>) Objects.requireNonNull(
                 RequestContextHolder.currentRequestAttributes()

@@ -36,8 +36,10 @@ public class StreamingPointValueCsvConverter extends StreamCsvConverter<Streamin
     protected CsvSchema createSchema(@Nullable Type messageType) {
         var fields = fields();
 
-        var schemaBuilder = CsvSchema.builder();
-        schemaBuilder.setUseHeader(true);
+        var schemaBuilder = CsvSchema.builder()
+            .setUseHeader(true)
+            .setReorderColumns(true);
+
         if (fields.contains(PointValueField.TIMESTAMP)) {
             schemaBuilder.addColumn(PointValueField.TIMESTAMP.getFieldName(), ColumnType.NUMBER_OR_STRING);
         }

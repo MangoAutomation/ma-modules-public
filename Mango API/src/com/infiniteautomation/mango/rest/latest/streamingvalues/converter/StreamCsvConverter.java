@@ -34,7 +34,7 @@ public abstract class StreamCsvConverter<T> extends BaseCsvConverter<Stream<T>, 
 
     @Override
     protected CsvSchema createSchema(@Nullable Type messageType) {
-        return mapper.schemaFor(rowType).withHeader();
+        return mapper.schemaFor(rowType).withHeader().withColumnReordering(true);
     }
 
     @Override
