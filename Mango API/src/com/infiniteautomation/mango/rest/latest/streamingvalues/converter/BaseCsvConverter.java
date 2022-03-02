@@ -6,6 +6,7 @@ package com.infiniteautomation.mango.rest.latest.streamingvalues.converter;
 
 import static com.infiniteautomation.mango.rest.latest.streamingvalues.mapper.AbstractStreamMapper.MAPPER_ATTRIBUTE;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -110,22 +111,34 @@ public abstract class BaseCsvConverter<T, R> extends AbstractGenericHttpMessageC
 
     @Override
     protected void writeInternal(T value, @Nullable Type type, HttpOutputMessage outputMessage) throws IOException, HttpMessageNotWritableException {
-        Charset charset = resolveCharset(outputMessage.getHeaders());
-        var messageType = mapper.getTypeFactory().constructType(rowType);
+        try {
+            Charset charset = resolveCharset(outputMessage.getHeaders());
+            var messageType = mapper.getTypeFactory().constructType(rowType);
 
-        var writer = new OutputStreamWriter(outputMessage.getBody(), charset);
-        var sequenceWriter = mapper.writerFor(messageType)
-                .with(createSchema(type))
-                .writeValues(writer);
+            var writer = new OutputStreamWriter(outputMessage.getBody(), charset);
+            var sequenceWriter = mapper.writerFor(messageType)
+                    .with(createSchema(type))
+                    .writeValues(writer);
 
-        try (var stream = writeRows(value)) {
-            stream.forEachOrdered(r -> {
+            // close the stream after writing
+            try (var stream = writeRows(value)) {
+                stream.forEachOrdered(r -> {
+                    try {
+                        sequenceWriter.write(r);
+                    } catch (IOException e) {
+                        throw new UncheckedIOException(e);
+                    }
+                });
+            }
+        } finally {
+            // ensure the message is closed after writing, value may be a stream from the database layer for example
+            if (value instanceof AutoCloseable) {
                 try {
-                    sequenceWriter.write(r);
-                } catch (IOException e) {
-                    throw new UncheckedIOException(e);
+                    ((AutoCloseable) value).close();
+                } catch (Exception e) {
+                    logger.warn("Failed to close output message", e);
                 }
-            });
+            }
         }
     }
 
