@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.TimeZone;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -40,10 +39,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvGenerator;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvParser;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.infiniteautomation.mango.rest.OrderComparatorWithDefault;
-import com.infiniteautomation.mango.rest.RestApiJacksonModuleDefinition;
 import com.infiniteautomation.mango.rest.latest.JsonEmportController.ImportStatusProvider;
 import com.infiniteautomation.mango.rest.latest.genericcsv.CsvJacksonModule;
 import com.infiniteautomation.mango.rest.latest.genericcsv.GenericCSVMessageConverter;
@@ -51,9 +47,10 @@ import com.infiniteautomation.mango.rest.latest.mapping.PermissionConverter;
 import com.infiniteautomation.mango.rest.latest.mapping.SingleMintermPermissionConverter;
 import com.infiniteautomation.mango.rest.latest.util.MangoRestTemporaryResourceContainer;
 import com.infiniteautomation.mango.spring.MangoCommonConfiguration;
-import com.infiniteautomation.mango.spring.MangoRuntimeContextConfiguration;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.webapp.RestWebApplicationInitializer;
+import com.serotonin.m2m2.module.JacksonModuleDefinition;
+import com.infiniteautomation.mango.spring.annotations.RestMapper;
 import com.serotonin.m2m2.web.MediaTypes;
 import com.serotonin.m2m2.web.mvc.spring.MangoLocaleResolver;
 import com.serotonin.m2m2.web.mvc.spring.security.MangoMethodSecurityConfiguration;
@@ -90,7 +87,7 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
 
     @Autowired
     public void configureMangoRestDispatcherConfiguration(
-            @Qualifier(MangoRuntimeContextConfiguration.REST_OBJECT_MAPPER_NAME) ObjectMapper mapper,
+            @RestMapper ObjectMapper mapper,
             List<HandlerMethodArgumentResolver> handlerMethodArgumentResolvers,
             List<HandlerInterceptor> interceptors, AsyncTaskExecutor asyncTaskExecutor,
             List<HttpMessageConverter<?>> injectedConverters,
@@ -156,25 +153,25 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
     }
 
     @Bean("csvObjectMapper")
-    public ObjectMapper csvObjectMapper(@Qualifier(MangoRuntimeContextConfiguration.REST_OBJECT_MAPPER_NAME) ObjectMapper mapper) {
+    public ObjectMapper csvObjectMapper(@RestMapper ObjectMapper mapper) {
         return mapper.copy()
                 .setDateFormat(GenericCSVMessageConverter.EXCEL_DATE_FORMAT)
                 .registerModule(new CsvJacksonModule());
     }
 
     @Bean("csvMapper")
-    public CsvMapper csvMapper(RestApiJacksonModuleDefinition jacksonModuleDef) {
+    public CsvMapper csvMapper(@RestMapper List<JacksonModuleDefinition> jacksonModuleDefs) {
         CsvMapper csvMapper = new CsvMapper();
         csvMapper.configure(CsvGenerator.Feature.ALWAYS_QUOTE_STRINGS, true);
         csvMapper.configure(CsvParser.Feature.FAIL_ON_MISSING_COLUMNS, false);
         csvMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         // drops any properties/columns not registered in the schema when serializing
         csvMapper.configure(JsonGenerator.Feature.IGNORE_UNKNOWN, true);
-        csvMapper.registerModule(new JavaTimeModule());
-        csvMapper.registerModule(new Jdk8Module());
         csvMapper.registerModule(new CsvJacksonModule());
-        for (var jacksonModule : jacksonModuleDef.getJacksonModules()) {
-            csvMapper.registerModule(jacksonModule);
+        for (var def : jacksonModuleDefs) {
+            for (var jacksonModule : def.getJacksonModules()) {
+                csvMapper.registerModule(jacksonModule);
+            }
         }
         csvMapper.setTimeZone(TimeZone.getDefault()); //Set to system tz
         return csvMapper;

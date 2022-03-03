@@ -4,7 +4,6 @@
 
 package com.infiniteautomation.mango.rest;
 
-import java.util.EnumSet;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.infiniteautomation.mango.io.serial.virtual.VirtualSerialPortConfig;
 import com.infiniteautomation.mango.rest.latest.exception.ExceptionMixin;
 import com.infiniteautomation.mango.rest.latest.mapping.JSONStreamedArraySerializer;
@@ -26,6 +27,7 @@ import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.serotonin.json.type.JsonValue;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
 import com.serotonin.m2m2.module.JacksonModuleDefinition;
+import com.infiniteautomation.mango.spring.annotations.RestMapper;
 import com.serotonin.m2m2.rt.dataImage.types.DataValue;
 
 import net.jazdw.rql.parser.ASTNode;
@@ -34,6 +36,7 @@ import net.jazdw.rql.parser.ASTNode;
  * Common api jackson module
  * @author Terry Packer
  */
+@RestMapper
 public class RestApiJacksonModuleDefinition extends JacksonModuleDefinition {
 
     @Autowired
@@ -43,15 +46,11 @@ public class RestApiJacksonModuleDefinition extends JacksonModuleDefinition {
     public Iterable<? extends Module> getJacksonModules() {
         return List.of(
                 new RestApiJacksonModule(getModule().getName(), createJacksonVersion(), permissionService),
-                new JScienceModule()
+                new JScienceModule(),
+                new JavaTimeModule(),
+                new Jdk8Module()
         );
     }
-
-    @Override
-    public EnumSet<ObjectMapperSource> getSourceMapperTypes() {
-        return EnumSet.of(ObjectMapperSource.REST);
-    }
-
 
     public static class RestApiJacksonModule extends SimpleModule {
         private static final long serialVersionUID = 1L;

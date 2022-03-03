@@ -10,7 +10,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpInputMessage;
@@ -31,9 +30,9 @@ import com.infiniteautomation.mango.rest.latest.advice.MangoRequestBodyAdvice;
 import com.infiniteautomation.mango.rest.latest.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.latest.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.latest.patch.PatchVORequestBody;
-import com.infiniteautomation.mango.spring.MangoRuntimeContextConfiguration;
 import com.infiniteautomation.mango.spring.service.AbstractVOService;
 import com.serotonin.m2m2.Common;
+import com.infiniteautomation.mango.spring.annotations.RestMapper;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 /**
@@ -55,7 +54,7 @@ public class PartialUpdateArgumentResolver implements HandlerMethodArgumentResol
     private final RestModelMapper modelMapper;
 
     @Autowired
-    public PartialUpdateArgumentResolver(@Qualifier(MangoRuntimeContextConfiguration.REST_OBJECT_MAPPER_NAME) ObjectMapper objectMapper,
+    public PartialUpdateArgumentResolver(@RestMapper ObjectMapper objectMapper,
             ApplicationContext context,
             RestModelMapper modelMapper) {
         this.objectMapper = objectMapper;

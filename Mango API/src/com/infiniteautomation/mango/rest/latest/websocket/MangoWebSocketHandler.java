@@ -3,7 +3,6 @@
  */
 package com.infiniteautomation.mango.rest.latest.websocket;
 
-import java.io.IOException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -28,12 +27,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.infiniteautomation.mango.permission.MangoPermission;
-import com.infiniteautomation.mango.spring.MangoRuntimeContextConfiguration;
+import com.infiniteautomation.mango.spring.components.RunAs;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.i18n.TranslatableMessage;
+import com.infiniteautomation.mango.spring.annotations.RestMapper;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
-import com.infiniteautomation.mango.spring.components.RunAs;
 
 /**
  * @author Terry Packer
@@ -58,7 +57,7 @@ public abstract class MangoWebSocketHandler extends TextWebSocketHandler {
     protected int pingPongTimeoutMs;
 
     @Autowired
-    @Qualifier(MangoRuntimeContextConfiguration.REST_OBJECT_MAPPER_NAME)
+    @RestMapper
     protected ObjectMapper jacksonMapper;
 
     @Autowired
