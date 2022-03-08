@@ -13,6 +13,7 @@ import java.util.stream.Stream;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.stereotype.Component;
@@ -32,6 +33,7 @@ import com.infiniteautomation.mango.rest.latest.streamingvalues.model.StreamingM
  *
  * @author Jared Wiltshire
  */
+@Order(200)
 @Component
 public class StreamingMultiPointValueCsvConverter extends StreamCsvConverter<StreamingMultiPointModel> {
 

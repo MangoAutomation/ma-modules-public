@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.converter.AbstractHttpMessageConverter;
@@ -14,6 +15,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
 import org.springframework.stereotype.Component;
 
+import com.infiniteautomation.mango.rest.latest.genericcsv.GenericCSVMessageConverter;
 import com.serotonin.json.JsonException;
 import com.serotonin.json.JsonWriter;
 import com.serotonin.json.type.JsonTypeReader;
@@ -22,13 +24,16 @@ import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.web.MediaTypes;
 
 /**
- * Convert Outgoing Objects to Serotonin JSON
+ * Convert Outgoing Objects to Serotonin JSON.
+ * Convert Incoming Serotonin JSON to Mango VOs (experimental).
  *
- * Convert Incoming Serotonin JSON to Mango VOs (experimental)
+ * Lower priority than {@link GenericCSVMessageConverter}.
+ * This is required for when the "accept" header is a wildcard (*&#x2F;*) and all the converters are checked in order.
  *
  * TODO the read internal method will not work properly
  * @author Terry Packer
  */
+@Order(300)
 @Component
 public class SerotoninJsonMessageConverter extends AbstractHttpMessageConverter<Object>{
 

@@ -12,6 +12,7 @@ import java.util.stream.Stream;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ResolvableType;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
@@ -22,6 +23,7 @@ import com.infiniteautomation.mango.rest.latest.streamingvalues.model.StreamingP
 /**
  * @author Jared Wiltshire
  */
+@Order(200)
 @Component
 public class StreamingMapPointValueCsvConverter extends BaseCsvConverter<Map<String, Stream<StreamingPointValueTimeModel>>, StreamingPointValueTimeModel> {
 
