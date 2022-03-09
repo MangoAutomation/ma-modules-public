@@ -895,11 +895,13 @@ public class PointValueRestController extends AbstractMangoRestController {
         var aggregateMapper = mapperBuilder.build(AggregateValueMapper::new);
         var rollupPeriod = Duration.between(from, to);
 
-        return points.stream().collect(Collectors.toUnmodifiableMap(DataPointVO::getXid,
-                point -> dao.getAggregateDao(rollupPeriod)
-                        .query(point, from, to, null)
-                        .map(aggregateMapper)
-                        .findAny().orElseThrow()));
+        return points.stream().collect(Collectors.toUnmodifiableMap(DataPointVO::getXid, point -> {
+            var aggregateDao = dao.getAggregateDao(rollupPeriod);
+            try (var stream = aggregateDao.query(point, from, to, null)) {
+                return stream.map(aggregateMapper)
+                        .findAny().orElseThrow();
+            }
+        }));
     }
 
     /**
