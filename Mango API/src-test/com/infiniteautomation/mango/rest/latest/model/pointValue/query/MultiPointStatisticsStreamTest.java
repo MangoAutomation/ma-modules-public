@@ -132,8 +132,8 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                 .build(AggregateValueMapper::new);
 
         return points.stream().collect(Collectors.toMap(DataPointVO::getXid, point ->
-                pointValueDao.getAggregateDao(Duration.between(from, to))
-                        .query(point, from, to, null).map(mapper)
+                pointValueDao.getAggregateDao()
+                        .query(point, from, to, null, Duration.between(from, to)).map(mapper)
                         .findAny()
                         .orElseThrow()
         ));
