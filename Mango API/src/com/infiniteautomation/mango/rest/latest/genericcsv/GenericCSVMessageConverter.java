@@ -101,13 +101,13 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
             }
             ObjectWriter objectWriter;
             if (serializationView != null) {
-                objectWriter = this.getObjectMapper().writerWithView(serializationView);
+                objectWriter = this.objectMapper.writerWithView(serializationView);
             }
             else if (filters != null) {
-                objectWriter = this.getObjectMapper().writer(filters);
+                objectWriter = this.objectMapper.writer(filters);
             }
             else {
-                objectWriter = this.getObjectMapper().writer();
+                objectWriter = this.objectMapper.writer();
             }
 
             // TODO Mango 3.6
@@ -125,8 +125,8 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
             }
 
             JsonNode root;
-            try (TokenBuffer generator = new TokenBuffer(this.getObjectMapper(), false)) {
-                if (this.getObjectMapper().isEnabled(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS)) {
+            try (TokenBuffer generator = new TokenBuffer(this.objectMapper, false)) {
+                if (this.objectMapper.isEnabled(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS)) {
                     generator.forceUseOfBigDecimal(true);
                 }
 
@@ -135,7 +135,7 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
                 generator.flush();
 
                 JsonParser p = generator.asParser();
-                root = this.getObjectMapper().readTree(p);
+                root = this.objectMapper.readTree(p);
                 p.close();
             }
 
@@ -287,9 +287,9 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
 
             ObjectReader reader;
             if (deserializationView != null) {
-                reader = this.getObjectMapper().readerWithView(deserializationView);
+                reader = this.objectMapper.readerWithView(deserializationView);
             } else {
-                reader = this.getObjectMapper().reader();
+                reader = this.objectMapper.reader();
             }
 
             reader = reader.forType(javaType);
@@ -320,7 +320,7 @@ public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConve
                 rootNode = root.get(0);
             }
 
-            return reader.readValue(this.getObjectMapper().treeAsTokens(rootNode));
+            return reader.readValue(this.objectMapper.treeAsTokens(rootNode));
         }
         catch (JsonProcessingException ex) {
             throw new HttpMessageNotReadableException("JSON parse error: " + ex.getOriginalMessage(), ex, inputMessage);

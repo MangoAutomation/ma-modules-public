@@ -70,9 +70,9 @@ public class JsonStreamMessageConverter extends MappingJackson2HttpMessageConver
 
         ObjectReader reader;
         if (deserializationView != null) {
-            reader = this.getObjectMapper().readerWithView(deserializationView);
+            reader = this.objectMapper.readerWithView(deserializationView);
         } else {
-            reader = this.getObjectMapper().reader();
+            reader = this.objectMapper.reader();
         }
         reader = reader.forType(javaType.containedType(0));
         try {

@@ -100,9 +100,9 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
 
         ObjectReader reader;
         if (deserializationView != null) {
-            reader = this.getObjectMapper().readerWithView(deserializationView);
+            reader = this.objectMapper.readerWithView(deserializationView);
         } else {
-            reader = this.getObjectMapper().reader();
+            reader = this.objectMapper.reader();
         }
 
         //TODO detect type/schema for the callback
@@ -152,7 +152,7 @@ public class PointValueTimeStreamCsvMessageConverter extends AbstractJackson2Htt
         try {
             PointValueTimeStream<?,?> stream = (PointValueTimeStream<?,?>)object;
             stream.setContentType(StreamContentType.CSV);
-            JsonGenerator generator = this.getObjectMapper().getFactory().createGenerator(outputMessage.getBody(), encoding);
+            JsonGenerator generator = this.objectMapper.getFactory().createGenerator(outputMessage.getBody(), encoding);
             //Set the schema
             CsvSchema.Builder builder = CsvSchema.builder();
             builder.setUseHeader(true);
