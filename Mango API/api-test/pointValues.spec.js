@@ -163,7 +163,8 @@ describe('Point values', function() {
         });
     });
 
-    it('Gets latest point values for a data point, using cache both', function() {
+    // no longer supported
+    it.skip('Gets latest point values for a data point, using cache both', function() {
         return client.pointValues.latest({
             xid: testPointXid1,
             useCache: 'BOTH',
@@ -259,12 +260,12 @@ describe('Point values', function() {
         }).then(result => {
             comparePointValues({
                 responseData: result,
-                expectedValues: pointValues1.slice(0, 10),
+                expectedValues: pointValues1.slice(0, 20),
                 valueProperty: testPointXid1
             });
             comparePointValues({
                 responseData: result,
-                expectedValues: pointValues2.slice(0, 10),
+                expectedValues: pointValues2.slice(0, 20),
                 valueProperty: testPointXid2
             });
         });
@@ -343,7 +344,7 @@ describe('Point values', function() {
             assert.isArray(result);
             const startBookend = result.shift();
             const endBookend = result.pop();
-            assert.strictEqual(startBookend.value, null);
+            assert.strictEqual(startBookend.value, undefined);
             assert.isTrue(endBookend.bookend);
             assert.strictEqual(endBookend.timestamp, endTime + 10);
             assert.strictEqual(endBookend.value, result[result.length - 1].value);
@@ -364,7 +365,7 @@ describe('Point values', function() {
             fields: ['TIMESTAMP', 'VALUE', 'BOOKEND']
         }).then(result => {
             assert.isArray(result);
-            assert.notProperty(result[0], 'bookend');
+            assert.isFalse(result[0].bookend, 'bookend should be false');
 
             assert.isAbove(result[1].timestamp, result[0].timestamp);
 
@@ -392,11 +393,11 @@ describe('Point values', function() {
             assert.isArray(result);
             assert.strictEqual(result.length, 2);
             assert.strictEqual(result[0].bookend, true);
-            assert.strictEqual(result[0].value, null);
+            assert.strictEqual(result[0].value, undefined);
             assert.strictEqual(result[0].timestamp, startTime - 60000);
             
             assert.strictEqual(result[1].bookend, true);
-            assert.strictEqual(result[1].value, null);
+            assert.strictEqual(result[1].value, undefined);
             assert.strictEqual(result[1].timestamp, startTime);
         });
     });
@@ -597,8 +598,11 @@ describe('Point values', function() {
 
             let prevTime = startTime - 60000;
             result.forEach((pv, i) => {
-                assert.strictEqual(pv[testPointXid1].value, null);
-                assert.strictEqual(pv[testPointXid1].timestamp, prevTime);
+                assert.strictEqual(pv[testPointXid1].value, undefined);
+                // start value doesn't exist, neither should its timestamp
+                assert.strictEqual(pv[testPointXid1].timestamp, undefined);
+                // timestamp relates to the start value
+                assert.strictEqual(pv.timestamp, prevTime);
                 prevTime += 1000;
             });
         });
@@ -736,7 +740,7 @@ describe('Point values', function() {
             
             let prevTime = startTime - 60000;
             result.forEach((pv, i) => {
-                assert.strictEqual(pv[testPointXid1].value, null);
+                assert.strictEqual(pv[testPointXid1].value, undefined);
                 assert.strictEqual(pv.timestamp, prevTime);
                 assert.strictEqual(pv[testPointXid4].value, 0);
                 prevTime += 1000;
@@ -760,9 +764,9 @@ describe('Point values', function() {
             
             let prevTime = startTime - 60000;
             result.forEach((pv, i) => {
-                assert.strictEqual(pv[testPointXid1].value, null);
+                assert.strictEqual(pv[testPointXid1].value, undefined);
                 assert.strictEqual(pv.timestamp, prevTime);
-                assert.strictEqual(pv[testPointXid2].value, null);
+                assert.strictEqual(pv[testPointXid2].value, undefined);
                 prevTime += 1000;
             });
         });
@@ -851,15 +855,15 @@ describe('Point values', function() {
             assert.strictEqual(result.length, 2);
             
             assert.strictEqual(result[0][testPointXid1].bookend, true);
-            assert.strictEqual(result[0][testPointXid1].value, null);
+            assert.strictEqual(result[0][testPointXid1].value, undefined);
             assert.strictEqual(result[0][testPointXid2].bookend, true);
-            assert.strictEqual(result[0][testPointXid2].value, null);
+            assert.strictEqual(result[0][testPointXid2].value, undefined);
             assert.strictEqual(result[0].timestamp, startTime - 60000);
             
             assert.strictEqual(result[1][testPointXid1].bookend, true);
-            assert.strictEqual(result[1][testPointXid1].value, null);
+            assert.strictEqual(result[1][testPointXid1].value, undefined);
             assert.strictEqual(result[1][testPointXid2].bookend, true);
-            assert.strictEqual(result[1][testPointXid2].value, null);
+            assert.strictEqual(result[1][testPointXid2].value, undefined);
             assert.strictEqual(result[1].timestamp, startTime);
 
         });
@@ -883,20 +887,20 @@ describe('Point values', function() {
             
             assert.strictEqual(point1Result.length, 2);
             assert.strictEqual(point1Result[0].bookend, true);
-            assert.strictEqual(point1Result[0].value, null);
+            assert.strictEqual(point1Result[0].value, undefined);
             assert.strictEqual(point1Result[0].timestamp, startTime - 60000);
             
             assert.strictEqual(point1Result[1].bookend, true);
-            assert.strictEqual(point1Result[1].value, null);
+            assert.strictEqual(point1Result[1].value, undefined);
             assert.strictEqual(point1Result[1].timestamp, startTime);
             
             assert.strictEqual(point2Result.length, 2);
             assert.strictEqual(point2Result[0].bookend, true);
-            assert.strictEqual(point2Result[0].value, null);
+            assert.strictEqual(point2Result[0].value, undefined);
             assert.strictEqual(point2Result[0].timestamp, startTime - 60000);
             
             assert.strictEqual(point2Result[1].bookend, true);
-            assert.strictEqual(point2Result[1].value, null);
+            assert.strictEqual(point2Result[1].value, undefined);
             assert.strictEqual(point2Result[1].timestamp, startTime);
         });
     });
@@ -1015,7 +1019,7 @@ describe('Point values', function() {
 
             let prevTime = startTime - 60000;
             point1Result.forEach((pv, i) => {
-                assert.strictEqual(pv.value, null);
+                assert.strictEqual(pv.value, undefined);
                 assert.strictEqual(pv.timestamp, prevTime);
                 prevTime += 1000;
             });
@@ -1229,7 +1233,7 @@ describe('Point values', function() {
             
             let prevTime = startTime - 60000;
             point1Result.forEach((pv, i) => {
-                assert.strictEqual(pv.value, null);
+                assert.strictEqual(pv.value, undefined);
                 assert.strictEqual(pv.timestamp, prevTime);
                 prevTime += 1000;
             });
