@@ -73,7 +73,7 @@ public abstract class AbstractStreamMapper<T> implements Function<T, StreamingPo
         return zoneId;
     }
 
-    protected Object formatTime(Long timestamp) {
+    public Object formatTime(Long timestamp) {
         if (dateTimeFormatter != null && timestamp != null) {
             return dateTimeFormatter.format(ZonedDateTime.ofInstant(Instant.ofEpochMilli(timestamp), zoneId()));
         }

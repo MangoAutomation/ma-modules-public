@@ -157,7 +157,8 @@ public class PointValueRestController extends AbstractMangoRestController {
             var streams = points.stream()
                     .map(point -> streamCache(point, beforeTimestamp, limit))
                     .collect(Collectors.toList());
-            return MergingIterator.mergeStreams(streams, TimeOrder.DESCENDING.getComparator());
+            var merged = MergingIterator.mergeStreams(streams, TimeOrder.DESCENDING.getComparator());
+            return limit == null ? merged : merged.limit(limit);
         } else {
             throw new UnsupportedOperationException("Cache option not supported: " + useCache);
         }
@@ -182,16 +183,16 @@ public class PointValueRestController extends AbstractMangoRestController {
     }
 
     private Function<DataPointVO, Stream<StreamingPointValueTimeModel>> timeRangeStream(
-            ZonedDateTime from, ZonedDateTime to, @Nullable Integer limit,
+            ZonedDateTime from, ZonedDateTime to, @Nullable Integer perPointLimit,
             boolean bookend, @Nullable Double simplifyTolerance, @Nullable Integer simplifyTarget,
             DefaultStreamMapper mapper) {
 
         return point -> {
             Stream<IdPointValueTime> stream;
             if (bookend) {
-                stream = dao.bookendStream(point, from.toInstant().toEpochMilli(), to.toInstant().toEpochMilli(), limit);
+                stream = dao.bookendStream(point, from.toInstant().toEpochMilli(), to.toInstant().toEpochMilli(), perPointLimit);
             } else {
-                stream = dao.streamPointValues(point, from.toInstant().toEpochMilli(), to.toInstant().toEpochMilli(), limit, TimeOrder.ASCENDING);
+                stream = dao.streamPointValues(point, from.toInstant().toEpochMilli(), to.toInstant().toEpochMilli(), perPointLimit, TimeOrder.ASCENDING);
             }
             stream = simplifyStream(stream, simplifyTolerance, simplifyTarget);
             return stream.map(mapper);
@@ -199,7 +200,7 @@ public class PointValueRestController extends AbstractMangoRestController {
     }
 
     private Function<DataPointVO, Stream<StreamingPointValueTimeModel>> rollupStream(
-            ZonedDateTime from, ZonedDateTime to, @Nullable Integer limit,
+            ZonedDateTime from, ZonedDateTime to, @Nullable Integer perPointLimit,
             RollupEnum rollup, TemporalAmount rollupPeriod,
             DefaultStreamMapper defaultMapper, AggregateValueMapper aggregateMapper) {
 
@@ -212,13 +213,13 @@ public class PointValueRestController extends AbstractMangoRestController {
             }
 
             if (pointRollup == RollupEnum.NONE) {
-                Stream<IdPointValueTime> stream = dao.bookendStream(point, from.toInstant().toEpochMilli(), to.toInstant().toEpochMilli(), limit);
+                Stream<IdPointValueTime> stream = dao.bookendStream(point, from.toInstant().toEpochMilli(), to.toInstant().toEpochMilli(), perPointLimit);
                 if (simplify) {
                     stream = simplifyStream(stream, point.getSimplifyTolerance(), point.getSimplifyTarget());
                 }
                 return stream.map(defaultMapper);
             } else {
-                var stream = dao.getAggregateDao().query(point, from, to, limit, rollupPeriod);
+                var stream = dao.getAggregateDao().query(point, from, to, perPointLimit, rollupPeriod);
                 return stream.map(aggregateMapper);
             }
         };
@@ -296,7 +297,7 @@ public class PointValueRestController extends AbstractMangoRestController {
             @ApiParam(value = "Time zone")
             @RequestParam(value = "timezone", required = false) String timezone,
 
-            @ApiParam(value = "Limit")
+            @ApiParam(value = "Limit, limits returned array size")
             @RequestParam(value = "limit", required = false) Integer limit,
 
             @ApiParam(value = "Use cached/intra-interval logging data")
@@ -311,7 +312,7 @@ public class PointValueRestController extends AbstractMangoRestController {
                 .map(dataPointService::get)
                 .collect(Collectors.toUnmodifiableSet());
 
-        var mergedStream = latestStream(points, before, limit, useCache);
+        var mergedStream = latestStream(points, before, null, useCache);
         var mapper = new StreamMapperBuilder()
                 .withDataPoints(points)
                 .withFields(fields)
@@ -320,7 +321,8 @@ public class PointValueRestController extends AbstractMangoRestController {
                 .withLocale(locale)
                 .build(DefaultStreamMapper::new);
 
-        return TimestampGrouper.groupByTimestamp(mergedStream.map(mapper));
+        var grouped = TimestampGrouper.groupByTimestamp(mergedStream.map(mapper), mapper::formatTime);
+        return limit == null ? grouped : grouped.limit(limit);
     }
 
     @ApiOperation(
@@ -560,7 +562,7 @@ public class PointValueRestController extends AbstractMangoRestController {
             @ApiParam(value = "Time zone")
             @RequestParam(value = "timezone", required = false) String timezone,
 
-            @ApiParam(value = "Limit (not including bookend values)")
+            @ApiParam(value = "Limit (not including bookend values), limits returned array size")
             @RequestParam(value = "limit", required = false) Integer limit,
 
             @ApiParam(value = "Bookend")
@@ -583,12 +585,14 @@ public class PointValueRestController extends AbstractMangoRestController {
                 .withLocale(locale)
                 .build(DefaultStreamMapper::new);
 
+        // limit is a total limit, however may as well limit per point
         var streamGenerator = timeRangeStream(from, to, limit, bookend, null, null, mapper);
         var streams = points.stream().map(streamGenerator).collect(Collectors.toList());
 
         // merge the streams and group by timestamp
         var mergedStream = MergingIterator.mergeStreams(streams, modelComparator);
-        return TimestampGrouper.groupByTimestamp(mergedStream);
+        var grouped = TimestampGrouper.groupByTimestamp(mergedStream, mapper::formatTime);
+        return limit == null ? grouped : grouped.limit(limit);
     }
 
     @ApiOperation(value = "POST to query a time range for multiple data points, return in time ascending order",
@@ -634,7 +638,7 @@ public class PointValueRestController extends AbstractMangoRestController {
             @ApiParam(value = "Time zone")
             @RequestParam(value = "timezone", required = false) String timezone,
 
-            @ApiParam(value = "Limit")
+            @ApiParam(value = "Limit, limits returned array size")
             @RequestParam(value = "limit", required = false) Integer limit,
 
             @ApiParam(value = "Date Time format pattern for timestamps as strings, if not included epoch milli number is used")
@@ -669,6 +673,7 @@ public class PointValueRestController extends AbstractMangoRestController {
         }
 
         var rollupPeriod = timePeriodType.toTemporalAmount(timePeriods);
+        // limit is a total limit, however may as well limit per point
         var streamGenerator = rollupStream(from, to, limit, rollup, rollupPeriod, defaultMapper, aggregateMapper);
         var streams = points.stream()
                 .map(streamGenerator)
@@ -676,7 +681,8 @@ public class PointValueRestController extends AbstractMangoRestController {
 
         // merge the streams and group by timestamp
         var mergedStream = MergingIterator.mergeStreams(streams, Comparator.comparingLong(StreamingPointValueTimeModel::getExactTimestamp));
-        return TimestampGrouper.groupByTimestamp(mergedStream);
+        var grouped = TimestampGrouper.groupByTimestamp(mergedStream, defaultMapper::formatTime);
+        return limit == null ? grouped : grouped.limit(limit);
     }
 
     @ApiOperation(value = "POST to get rollup values for multiple data points, return in time ascending order",
