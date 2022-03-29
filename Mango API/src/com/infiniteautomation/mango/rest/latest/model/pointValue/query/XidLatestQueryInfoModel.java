@@ -14,7 +14,7 @@ import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueField
 public class XidLatestQueryInfoModel extends XidQueryInfoModel{
 
     protected ZonedDateTime before;
-    protected PointValueTimeCacheControl useCache;
+    protected PointValueTimeCacheControl useCache = PointValueTimeCacheControl.NONE;
     
     public XidLatestQueryInfoModel() {
         
