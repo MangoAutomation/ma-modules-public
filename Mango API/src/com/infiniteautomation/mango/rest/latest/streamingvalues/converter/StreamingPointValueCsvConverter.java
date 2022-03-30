@@ -47,6 +47,15 @@ public class StreamingPointValueCsvConverter extends StreamCsvConverter<Streamin
         if (fields.contains(PointValueField.VALUE)) {
             schemaBuilder.addColumn(PointValueField.VALUE.getFieldName(), ColumnType.NUMBER_OR_STRING);
         }
+        if (fields.contains(PointValueField.CACHED)) {
+            schemaBuilder.addColumn(PointValueField.CACHED.getFieldName(), ColumnType.BOOLEAN);
+        }
+        if (fields.contains(PointValueField.BOOKEND)) {
+            schemaBuilder.addColumn(PointValueField.BOOKEND.getFieldName(), ColumnType.BOOLEAN);
+        }
+        if (fields.contains(PointValueField.ANNOTATION)) {
+            schemaBuilder.addColumn(PointValueField.ANNOTATION.getFieldName(), ColumnType.STRING);
+        }
         if (fields.contains(PointValueField.RAW)) {
             schemaBuilder.addColumn(PointValueField.RAW.getFieldName(), ColumnType.NUMBER_OR_STRING);
         }
