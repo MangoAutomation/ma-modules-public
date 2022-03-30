@@ -6,6 +6,8 @@
 * /point-values some JSON fields which used to contain null values will now be excluded from the model
 * /point-values bookend JSON field will always be true/false if BOOKEND is specified in fields
 * /point-values limit parameter now applies to the returned JSON array length for all single-array queries
+* /point-values fix queries for POINT_DEFAULT rollup for points configured with NONE rollup type
+* /point-values queries for POINT_DEFAULT rollup will only use point's "simplify type" if the point's rollup is set to NONE
 
 *Version 4.3.0*
 * Upgraded for Mango 4.3.0

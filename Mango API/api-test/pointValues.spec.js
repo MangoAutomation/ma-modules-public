@@ -125,7 +125,7 @@ describe('Point values', function() {
         }).then(() => {
             this.testPoint1 = newDataPoint(testPointXid1, this.ds.xid, 'FIRST', 'NONE', 0);
             this.testPoint2 = newDataPoint(testPointXid2, this.ds.xid, 'FIRST', 'NONE', 0);
-            this.testPoint3 = newDataPoint(testPointXid3, this.ds.xid, 'COUNT', 'TOLERANCE', 10.0);
+            this.testPoint3 = newDataPoint(testPointXid3, this.ds.xid, 'NONE', 'TOLERANCE', 10.0);
             this.testPoint4 = newDataPoint(testPointXid4, this.ds.xid, 'COUNT', 'NONE', 0);
             this.testPoint5 = newDataPoint(testPointXid5, this.ds.xid, 'NONE', 'NONE', 0);
             return Promise.all([this.testPoint1.save(), this.testPoint2.save(), this.testPoint3.save(), this.testPoint4.save(), this.testPoint5.save()]);
@@ -663,14 +663,14 @@ describe('Point values', function() {
         }).then(result => {
             assert.isArray(result);
 
-            assert.isBelow(result.length, pointValues1.length);
+            assert.isBelow(result.length, pointValues3.length);
 
             let prevTime = startTime;
             result.forEach(pv => {
                 assert.isNumber(pv[testPointXid3].value);
                 assert.isNumber(pv[testPointXid3].timestamp);
                 assert.isAtLeast(pv[testPointXid3].timestamp, prevTime);
-                assert.isBelow(pv[testPointXid3].timestamp, endTime);
+                assert.isAtMost(pv[testPointXid3].timestamp, endTime);
                 prevTime = pv[testPointXid3].timestamp;
             });
 
@@ -830,14 +830,20 @@ describe('Point values', function() {
             }
         }).then(result => {
             assert.isArray(result);
-            assert.strictEqual(result.length, pointValues1.length);
+            // extra sample at end from bookend of test point 3
+            assert.strictEqual(result.length, 101);
             
             let testPoint3Count = 0;
             result.forEach((pv, i) => {
-                assert.strictEqual(pv[testPointXid1].value, pointValues1[i].value);
-                assert.strictEqual(pv.timestamp, pointValues1[i].timestamp);
-                if(typeof pv[testPointXid3] !== 'undefined')
+                if (pv[testPointXid1]) {
+                    assert.strictEqual(pv[testPointXid1].value, pointValues1[i].value);
+                }
+                if (pv[testPointXid3]) {
                     testPoint3Count++;
+                }
+                if (pointValues1[i]) {
+                    assert.strictEqual(pv.timestamp, pointValues1[i].timestamp);
+                }
             });
             assert.isBelow(testPoint3Count, result.length);
         });
@@ -944,14 +950,13 @@ describe('Point values', function() {
             assert.isObject(result);
             const point5Result = result[testPointXid5];
             assert.isArray(point5Result);
-            assert.strictEqual(point5Result.length, 60);
+            assert.strictEqual(point5Result.length, 2);
 
-            let prevTime = startTime - 60000;
-            point5Result.forEach((pv, i) => {
-                assert.strictEqual(pv.value, null);
-                assert.strictEqual(pv.timestamp, prevTime);
-                prevTime += 1000;
-            });
+            // will only contain 2  values, a bookend at each end of period with no value
+            assert.strictEqual(point5Result[0].value, undefined);
+            assert.strictEqual(point5Result[0].timestamp, startTime - 60000);
+            assert.strictEqual(point5Result[1].value, undefined);
+            assert.strictEqual(point5Result[1].timestamp, startTime);
         });
     });
     
@@ -992,11 +997,18 @@ describe('Point values', function() {
             assert.isObject(result);
             let point5Result = result[testPointXid5];
             assert.isArray(point5Result);
-            assert.strictEqual(point5Result.length, pointValues5.length);
+            // one extra point value for bookend at end of array
+            assert.strictEqual(point5Result.length, 101);
 
             point5Result.forEach((pv, i) => {
-                assert.strictEqual(pv.value, pointValues5[i].value);
-                assert.strictEqual(pv.timestamp, pointValues5[i].timestamp);
+                if (i < pointValues5.length) {
+                    assert.strictEqual(pv.value, pointValues5[i].value);
+                    assert.strictEqual(pv.timestamp, pointValues5[i].timestamp);
+                } else if (i === 100) {
+                    // bookend
+                    assert.strictEqual(pv.value, pointValues5[99].value);
+                    assert.strictEqual(pv.timestamp, endTime);
+                }
             });
         });
     });
@@ -1094,7 +1106,7 @@ describe('Point values', function() {
                 assert.isNumber(pv.value);
                 assert.isNumber(pv.timestamp);
                 assert.isAtLeast(pv.timestamp, prevTime);
-                assert.isBelow(pv.timestamp, endTime);
+                assert.isAtMost(pv.timestamp, endTime);
                 prevTime = pv.timestamp;
             });
             
@@ -1187,28 +1199,28 @@ describe('Point values', function() {
             
             assert.strictEqual(point1Result.length, 60);
             assert.strictEqual(point2Result.length, 60);
-            assert.strictEqual(point5Result.length, 60);
+            // point 5 has its rollup set to NONE
+            assert.strictEqual(point5Result.length, 2);
             
             let prevTime = startTime - 60000;
             point1Result.forEach((pv, i) => {
-                assert.strictEqual(pv.value, null);
+                assert.strictEqual(pv.value, undefined);
                 assert.strictEqual(pv.timestamp, prevTime);
                 prevTime += 1000;
             });
             
             prevTime = startTime - 60000;
             point2Result.forEach((pv, i) => {
-                assert.strictEqual(pv.value, null);
+                assert.strictEqual(pv.value, undefined);
                 assert.strictEqual(pv.timestamp, prevTime);
                 prevTime += 1000;
             });
-            
-            prevTime = startTime - 60000;
-            point5Result.forEach((pv, i) => {
-                assert.strictEqual(pv.value, null);
-                assert.strictEqual(pv.timestamp, prevTime);
-                prevTime += 1000;
-            });
+
+            // will only contain 2  values, a bookend at each end of period with no value
+            assert.strictEqual(point5Result[0].value, undefined);
+            assert.strictEqual(point5Result[0].timestamp, startTime - 60000);
+            assert.strictEqual(point5Result[1].value, undefined);
+            assert.strictEqual(point5Result[1].timestamp, startTime);
         });
     });
     
@@ -1336,7 +1348,7 @@ describe('Point values', function() {
                 assert.isNumber(pv.value);
                 assert.isNumber(pv.timestamp);
                 assert.isAtLeast(pv.timestamp, prevTime);
-                assert.isBelow(pv.timestamp, endTime);
+                assert.isAtMost(pv.timestamp, endTime);
                 prevTime = pv.timestamp;
             });
             
