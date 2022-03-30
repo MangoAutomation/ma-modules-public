@@ -904,7 +904,8 @@ public class PointValueRestController extends AbstractMangoRestController {
                 .withFields(fields)
                 .withDateTimeFormat(dateTimeFormat)
                 .withTimezone(timezone, from, to)
-                .withLocale(locale);
+                .withLocale(locale)
+                .withTimestampSource(TimestampSource.STATISTIC);
 
         var aggregateMapper = mapperBuilder.build(AggregateValueMapper::new);
         var rollupPeriod = Duration.between(from, to);

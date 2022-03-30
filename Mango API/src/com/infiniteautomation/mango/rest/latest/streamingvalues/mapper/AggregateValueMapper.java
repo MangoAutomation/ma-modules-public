@@ -38,7 +38,10 @@ public class AggregateValueMapper extends AbstractStreamMapper<SeriesValueTime<?
 
     public AggregateValueMapper(StreamMapperBuilder options) {
         super(options);
-        this.timestampSource = options.timestampSource;
+        // always use statistics timestamp if our rollup type is ALL
+        this.timestampSource = options.rollup == RollupEnum.ALL ?
+                TimestampSource.STATISTIC :
+                options.timestampSource;
     }
 
     @Override

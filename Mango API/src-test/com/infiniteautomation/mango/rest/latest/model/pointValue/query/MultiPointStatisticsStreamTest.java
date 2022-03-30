@@ -32,6 +32,7 @@ import com.infiniteautomation.mango.rest.latest.model.pointValue.PointValueField
 import com.infiniteautomation.mango.rest.latest.model.pointValue.RollupEnum;
 import com.infiniteautomation.mango.rest.latest.streamingvalues.mapper.AggregateValueMapper;
 import com.infiniteautomation.mango.rest.latest.streamingvalues.mapper.StreamMapperBuilder;
+import com.infiniteautomation.mango.rest.latest.streamingvalues.mapper.TimestampSource;
 import com.infiniteautomation.mango.rest.latest.streamingvalues.model.StreamingPointValueTimeModel;
 import com.infiniteautomation.mango.statistics.AnalogStatistics;
 import com.infiniteautomation.mango.statistics.StartsAndRuntime;
@@ -129,6 +130,7 @@ public class MultiPointStatisticsStreamTest extends MangoTestBase {
                 .withRollup(RollupEnum.ALL)
                 .withFields(fields)
                 .withTimezone(timezone, from, to)
+                .withTimestampSource(TimestampSource.STATISTIC)
                 .build(AggregateValueMapper::new);
 
         return points.stream().collect(Collectors.toMap(DataPointVO::getXid, point ->
