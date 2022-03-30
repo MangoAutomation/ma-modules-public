@@ -325,7 +325,7 @@ describe('Point values csv', function() {
         }).then(() => {
             this.testPoint1 = newDataPoint(testPointXid1, this.ds.xid, 'FIRST', 'NONE', 0);
             this.testPoint2 = newDataPoint(testPointXid2, this.ds.xid, 'FIRST', 'NONE', 0);
-            this.testPoint3 = newDataPoint(testPointXid3, this.ds.xid, 'COUNT', 'TOLERANCE', 5.0);
+            this.testPoint3 = newDataPoint(testPointXid3, this.ds.xid, 'NONE', 'TOLERANCE', 5.0);
             this.testPoint4 = newDataPoint(testPointXid4, this.ds.xid, 'COUNT', 'NONE', 0);
             return Promise.all([this.testPoint1.save(), this.testPoint2.save(), this.testPoint3.save(), this.testPoint4.save()]);
         }).then(() => {
@@ -370,7 +370,8 @@ describe('Point values csv', function() {
         });
     });
 
-    it('Gets latest point values for a data point, using cache both as csv', function() {
+    // BOTH is no longer supported
+    it.skip('Gets latest point values for a data point, using cache both as csv', function() {
         return this.csvClient.pointValues.latest({
             xid: testPointXid1,
             useCache: 'BOTH',
@@ -379,6 +380,7 @@ describe('Point values csv', function() {
             assert.isArray(result);
 
             const headers = result.shift();
+            assert.strictEqual(headers.length, 3);
             assert.strictEqual(headers[0], 'timestamp');
             assert.strictEqual(headers[1], 'value');
             assert.strictEqual(headers[2], 'cached');
@@ -402,6 +404,7 @@ describe('Point values csv', function() {
             assert.isArray(result);
 
             const headers = result.shift();
+            assert.strictEqual(headers.length, 2);
             assert.strictEqual(headers[0], 'timestamp');
             assert.strictEqual(headers[1], 'value');
 
@@ -419,9 +422,10 @@ describe('Point values csv', function() {
             assert.isArray(result);
 
             const headers = result.shift();
-            assert.strictEqual(headers[0], 'timestamp');
-            assert.strictEqual(headers[1], testPointXid1);
-            assert.strictEqual(headers[2], testPointXid2);
+            assert.strictEqual(headers.length, 3);
+            assert.include(headers, 'timestamp');
+            assert.include(headers, testPointXid1);
+            assert.include(headers, testPointXid2);
             
             comparePointValues({
                 responseData: result.slice().reverse(),
@@ -439,19 +443,21 @@ describe('Point values csv', function() {
     it('Gets latest point values for multiple points as csv', function() {
         return this.csvClient.pointValues.latest({
             xids: [testPointXid1, testPointXid2],
-            fields: ['XID', 'VALUE', 'TIMESTAMP']
+            fields: ['TIMESTAMP', 'VALUE', 'XID']
         }).then(result => {
             assert.isArray(result);
-            
             const headers = result.shift();
-            assert.strictEqual(headers[0], 'xid');
+            assert.strictEqual(headers.length, 3);
+            assert.strictEqual(headers[0], 'timestamp');
             assert.strictEqual(headers[1], 'value');
-            assert.strictEqual(headers[2], 'timestamp');
+            assert.strictEqual(headers[2], 'xid');
 
             assert.strictEqual(result.length, 200);
             
-            const point1Result = result.slice(0, 100).reverse();
-            const point2Result = result.slice(100, 200).reverse();
+            const point1Result = result.filter(r => r.xid === testPointXid1).reverse();
+            const point2Result = result.filter(r => r.xid === testPointXid2).reverse();
+            assert.strictEqual(point1Result.length, 100);
+            assert.strictEqual(point2Result.length, 100);
             
             //Assert xid
             point1Result.forEach(pv => {
@@ -483,9 +489,9 @@ describe('Point values csv', function() {
             assert.isArray(result);
             
             const headers = result.shift();
-            assert.strictEqual(headers[0], 'timestamp');
-            assert.strictEqual(headers[1], testPointXid1);
-            assert.strictEqual(headers[2], testPointXid2);
+            assert.include(headers, 'timestamp');
+            assert.include(headers, testPointXid1);
+            assert.include(headers, testPointXid2);
             
             comparePointValues({
                 responseData: result,
@@ -510,18 +516,19 @@ describe('Point values csv', function() {
             assert.isArray(result);
             
             const headers = result.shift();
-            assert.strictEqual(headers[0], 'timestamp');
-            assert.strictEqual(headers[1], testPointXid1);
-            assert.strictEqual(headers[2], testPointXid2);
+            assert.strictEqual(headers.length, 3);
+            assert.include(headers, 'timestamp');
+            assert.include(headers, testPointXid1);
+            assert.include(headers, testPointXid2);
             
             comparePointValues({
                 responseData: result,
-                expectedValues: pointValues1.slice(0, 10),
+                expectedValues: pointValues1.slice(0, 20),
                 valueProperty: testPointXid1
             });
             comparePointValues({
                 responseData: result,
-                expectedValues: pointValues2.slice(0, 10),
+                expectedValues: pointValues2.slice(0, 20),
                 valueProperty: testPointXid2
             });
         });
@@ -537,14 +544,16 @@ describe('Point values csv', function() {
             assert.isArray(result);
             
             const headers = result.shift();
-            assert.strictEqual(headers[0], 'xid');
+            assert.strictEqual(headers[0], 'timestamp');
             assert.strictEqual(headers[1], 'value');
-            assert.strictEqual(headers[2], 'timestamp');
+            assert.strictEqual(headers[2], 'xid');
             
             assert.strictEqual(result.length, 200);
-            
-            const point1Result = result.slice(0, 100);
-            const point2Result = result.slice(100, 200);
+
+            const point1Result = result.filter(r => r.xid === testPointXid1);
+            const point2Result = result.filter(r => r.xid === testPointXid2);
+            assert.strictEqual(point1Result.length, 100);
+            assert.strictEqual(point2Result.length, 100);
             
             //Assert xid
             point1Result.forEach(pv => {
@@ -578,14 +587,16 @@ describe('Point values csv', function() {
             assert.isArray(result);
             
             const headers = result.shift();
-            assert.strictEqual(headers[0], 'xid');
+            assert.strictEqual(headers[0], 'timestamp');
             assert.strictEqual(headers[1], 'value');
-            assert.strictEqual(headers[2], 'timestamp');
+            assert.strictEqual(headers[2], 'xid');
             
             assert.strictEqual(result.length, 40);
-            
-            const point1Result = result.slice(0, 20);
-            const point2Result = result.slice(20, 40);
+
+            const point1Result = result.filter(r => r.xid === testPointXid1);
+            const point2Result = result.filter(r => r.xid === testPointXid2);
+            assert.strictEqual(point1Result.length, 20);
+            assert.strictEqual(point2Result.length, 20);
             
             //Assert xid
             point1Result.forEach(pv => {
@@ -692,7 +703,7 @@ describe('Point values csv', function() {
             assert.strictEqual(headers[1], 'value');
             assert.strictEqual(headers[2], 'bookend');
 
-            assert.strictEqual(result[0].bookend, '');
+            assert.strictEqual(result[0].bookend, 'false');
 
             assert.isAbove(Number(result[1].timestamp), Number(result[0].timestamp));
 
@@ -1023,7 +1034,7 @@ describe('Point values csv', function() {
             result.forEach(pv => {
                 assert.isNumber(Number(pv[testPointXid3]));
                 assert.isAtLeast(Number(pv.timestamp), prevTime);
-                assert.isBelow(Number(pv.timestamp), endTime);
+                assert.isAtMost(Number(pv.timestamp), endTime);
                 prevTime = Number(pv.timestamp);
             });
 
@@ -1044,9 +1055,10 @@ describe('Point values csv', function() {
             assert.isArray(result);
             
             const headers = result.shift();
-            assert.strictEqual(headers[0], 'timestamp');
-            assert.strictEqual(headers[1], testPointXid1);
-            assert.strictEqual(headers[2], testPointXid2);
+            assert.strictEqual(headers.length, 3);
+            assert.include(headers, 'timestamp');
+            assert.include(headers, testPointXid1);
+            assert.include(headers, testPointXid2);
 
             assert.strictEqual(result.length, 60);
             
@@ -1074,9 +1086,10 @@ describe('Point values csv', function() {
             assert.isArray(result);
             
             const headers = result.shift();
-            assert.strictEqual(headers[0], 'timestamp');
-            assert.strictEqual(headers[1], testPointXid1);
-            assert.strictEqual(headers[2], testPointXid2);
+            assert.strictEqual(headers.length, 3);
+            assert.include(headers, 'timestamp');
+            assert.include(headers, testPointXid1);
+            assert.include(headers, testPointXid2);
             
             assert.strictEqual(result.length, pointValues1.length);
             
@@ -1103,9 +1116,10 @@ describe('Point values csv', function() {
             assert.isArray(result);
             
             const headers = result.shift();
-            assert.strictEqual(headers[0], 'timestamp');
-            assert.strictEqual(headers[1], testPointXid1);
-            assert.strictEqual(headers[2], testPointXid2);
+            assert.strictEqual(headers.length, 3);
+            assert.include(headers, 'timestamp');
+            assert.include(headers, testPointXid1);
+            assert.include(headers, testPointXid2);
             
             assert.strictEqual(result.length, 60);
             
@@ -1133,9 +1147,10 @@ describe('Point values csv', function() {
             assert.isArray(result);
             
             const headers = result.shift();
-            assert.strictEqual(headers[0], 'timestamp');
-            assert.strictEqual(headers[1], testPointXid1);
-            assert.strictEqual(headers[2], testPointXid4);
+            assert.strictEqual(headers.length, 3);
+            assert.include(headers, 'timestamp');
+            assert.include(headers, testPointXid1);
+            assert.include(headers, testPointXid4);
             
             assert.strictEqual(result.length, 60);
             
@@ -1163,9 +1178,10 @@ describe('Point values csv', function() {
             assert.isArray(result);
             
             const headers = result.shift();
-            assert.strictEqual(headers[0], 'timestamp');
-            assert.strictEqual(headers[1], testPointXid1);
-            assert.strictEqual(headers[2], testPointXid2);
+            assert.strictEqual(headers.length, 3);
+            assert.include(headers, 'timestamp');
+            assert.include(headers, testPointXid1);
+            assert.include(headers, testPointXid2);
             
             assert.strictEqual(result.length, pointValues1.length);
             
@@ -1192,9 +1208,10 @@ describe('Point values csv', function() {
             assert.isArray(result);
             
             const headers = result.shift();
-            assert.strictEqual(headers[0], 'timestamp');
-            assert.strictEqual(headers[1], testPointXid1);
-            assert.strictEqual(headers[2], testPointXid2);
+            assert.strictEqual(headers.length, 3);
+            assert.include(headers, 'timestamp');
+            assert.include(headers, testPointXid1);
+            assert.include(headers, testPointXid2);
             
             assert.strictEqual(result.length, pointValues1.length);
             
@@ -1221,16 +1238,20 @@ describe('Point values csv', function() {
             assert.isArray(result);
             
             const headers = result.shift();
-            assert.strictEqual(headers[0], 'timestamp');
-            assert.strictEqual(headers[1], testPointXid1);
-            assert.strictEqual(headers[2], testPointXid3);
-            
-            assert.strictEqual(result.length, pointValues1.length);
+            assert.strictEqual(headers.length, 3);
+            assert.include(headers, 'timestamp');
+            assert.include(headers, testPointXid1);
+            assert.include(headers, testPointXid3);
+
+            // extra value from end bookmark
+            assert.strictEqual(result.length, pointValues1.length + 1);
             
             let testPoint3Count = 0;
             result.forEach((pv, i) => {
-                assert.strictEqual(Number(pv[testPointXid1]), pointValues1[i].value);
-                assert.strictEqual(Number(pv.timestamp), pointValues1[i].timestamp);
+                if (i < pointValues1.length) {
+                    assert.strictEqual(Number(pv[testPointXid1]), pointValues1[i].value);
+                    assert.strictEqual(Number(pv.timestamp), pointValues1[i].timestamp);
+                }
                 if(pv[testPointXid3] !== '')
                     testPoint3Count++;
             });
@@ -1390,7 +1411,7 @@ describe('Point values csv', function() {
             result.forEach(pv => {
                 assert.isString(pv.value);
                 assert.isAtLeast(Number(pv.timestamp), prevTime);
-                assert.isBelow(Number(pv.timestamp), endTime);
+                assert.isAtMost(Number(pv.timestamp), endTime);
                 prevTime = Number(pv.timestamp);
             });
             
@@ -1412,14 +1433,15 @@ describe('Point values csv', function() {
             assert.isArray(result);
             
             const headers = result.shift();
-            assert.strictEqual(headers[0], 'xid');
-            assert.strictEqual(headers[1], 'value');
-            assert.strictEqual(headers[2], 'timestamp');
+            assert.strictEqual(headers.length, 3);
+            assert.include(headers, 'timestamp');
+            assert.include(headers, 'xid');
+            assert.include(headers, 'timestamp');
 
             assert.strictEqual(result.length, 120);
-            
-            const point1Result = result.splice(0, 60);
-            const point2Result = result.splice(60, 120);
+
+            const point1Result = result.filter(r => r.xid === testPointXid1);
+            const point2Result = result.filter(r => r.xid === testPointXid2);
 
             let prevTime = startTime - 60000;
             point1Result.forEach((pv, i) => {
@@ -1453,14 +1475,15 @@ describe('Point values csv', function() {
             assert.isArray(result);
             
             const headers = result.shift();
-            assert.strictEqual(headers[0], 'xid');
-            assert.strictEqual(headers[1], 'value');
-            assert.strictEqual(headers[2], 'timestamp');
-            
+            assert.strictEqual(headers.length, 3);
+            assert.include(headers, 'timestamp');
+            assert.include(headers, 'xid');
+            assert.include(headers, 'timestamp');
+
             assert.strictEqual(result.length, 200);
-            
-            const point1Result = result.splice(0, 100);
-            const point2Result = result.splice(100, 200);
+
+            const point1Result = result.filter(r => r.xid === testPointXid1);
+            const point2Result = result.filter(r => r.xid === testPointXid2);
 
             point1Result.forEach((pv, i) => {
                 assert.strictEqual(Number(pv.value), pointValues1[i].value);
@@ -1491,14 +1514,15 @@ describe('Point values csv', function() {
             assert.isArray(result);
             
             const headers = result.shift();
-            assert.strictEqual(headers[0], 'xid');
-            assert.strictEqual(headers[1], 'value');
-            assert.strictEqual(headers[2], 'timestamp');
+            assert.strictEqual(headers.length, 3);
+            assert.include(headers, 'timestamp');
+            assert.include(headers, 'xid');
+            assert.include(headers, 'timestamp');
             
             assert.strictEqual(result.length, 120);
-            
-            const point1Result = result.splice(0, 60);
-            const point2Result = result.splice(60, 120);
+
+            const point1Result = result.filter(r => r.xid === testPointXid1);
+            const point2Result = result.filter(r => r.xid === testPointXid2);
             
             let prevTime = startTime - 60000;
             point1Result.forEach((pv, i) => {
@@ -1507,6 +1531,7 @@ describe('Point values csv', function() {
                 assert.strictEqual(Number(pv.timestamp), prevTime);
                 prevTime += 1000;
             });
+            prevTime = startTime - 60000;
             point2Result.forEach((pv, i) => {
                 assert.strictEqual(pv.value, '');
                 assert.strictEqual(pv.xid, testPointXid2);
@@ -1531,14 +1556,15 @@ describe('Point values csv', function() {
             assert.isArray(result);
             
             const headers = result.shift();
-            assert.strictEqual(headers[0], 'xid');
-            assert.strictEqual(headers[1], 'value');
-            assert.strictEqual(headers[2], 'timestamp');
+            assert.strictEqual(headers.length, 3);
+            assert.include(headers, 'timestamp');
+            assert.include(headers, 'xid');
+            assert.include(headers, 'timestamp');
             
             assert.strictEqual(result.length, 120);
-            
-            const point1Result = result.splice(0, 60);
-            const point2Result = result.splice(60, 120);
+
+            const point1Result = result.filter(r => r.xid === testPointXid1);
+            const point2Result = result.filter(r => r.xid === testPointXid4);
             
             let prevTime = startTime - 60000;
             point1Result.forEach((pv, i) => {
@@ -1547,6 +1573,7 @@ describe('Point values csv', function() {
                 assert.strictEqual(Number(pv.timestamp), prevTime);
                 prevTime += 1000;
             });
+            prevTime = startTime - 60000;
             point2Result.forEach((pv, i) => {
                 assert.strictEqual(pv.value, '0');
                 assert.strictEqual(pv.xid, testPointXid4);
@@ -1571,14 +1598,15 @@ describe('Point values csv', function() {
             assert.isArray(result);
             
             const headers = result.shift();
-            assert.strictEqual(headers[0], 'xid');
-            assert.strictEqual(headers[1], 'value');
-            assert.strictEqual(headers[2], 'timestamp');
+            assert.strictEqual(headers.length, 3);
+            assert.include(headers, 'timestamp');
+            assert.include(headers, 'xid');
+            assert.include(headers, 'timestamp');
 
             assert.strictEqual(result.length, 200);
-            
-            const point1Result = result.splice(0, 100);
-            const point2Result = result.splice(100, 200);
+
+            const point1Result = result.filter(r => r.xid === testPointXid1);
+            const point2Result = result.filter(r => r.xid === testPointXid2);
 
 
             point1Result.forEach((pv, i) => {
@@ -1609,14 +1637,15 @@ describe('Point values csv', function() {
             assert.isArray(result);
             
             const headers = result.shift();
-            assert.strictEqual(headers[0], 'xid');
-            assert.strictEqual(headers[1], 'value');
-            assert.strictEqual(headers[2], 'timestamp');
+            assert.strictEqual(headers.length, 3);
+            assert.include(headers, 'timestamp');
+            assert.include(headers, 'xid');
+            assert.include(headers, 'timestamp');
             
             assert.strictEqual(result.length, 200);
-            
-            const point1Result = result.splice(0, 100);
-            const point2Result = result.splice(100, 200);
+
+            const point1Result = result.filter(r => r.xid === testPointXid1);
+            const point2Result = result.filter(r => r.xid === testPointXid2);
             
             point1Result.forEach((pv, i) => {
                 assert.strictEqual(Number(pv.value), pointValues1[i].value);
@@ -1646,23 +1675,26 @@ describe('Point values csv', function() {
             assert.isArray(result);
             
             const headers = result.shift();
-            assert.strictEqual(headers[0], 'xid');
-            assert.strictEqual(headers[1], 'value');
-            assert.strictEqual(headers[2], 'timestamp');
+            assert.strictEqual(headers.length, 3);
+            assert.include(headers, 'timestamp');
+            assert.include(headers, 'xid');
+            assert.include(headers, 'timestamp');
             
             assert.isAbove(result.length, pointValues1.length);
 
+            const point1Result = result.filter(r => r.xid === testPointXid1);
+            const point2Result = result.filter(r => r.xid === testPointXid3);
+
+            point1Result.forEach((pv, i) => {
+                assert.strictEqual(Number(pv.value), pointValues1[i].value);
+                assert.strictEqual(pv.xid, testPointXid1);
+                assert.strictEqual(Number(pv.timestamp), pointValues1[i].timestamp);
+            });
             let point3Count = 0;
-            result.forEach((pv, i) => {
-                if(i < 100){
-                    assert.strictEqual(Number(pv.value), pointValues1[i].value);
-                    assert.strictEqual(pv.xid, testPointXid1);
-                    assert.strictEqual(Number(pv.timestamp), pointValues1[i].timestamp);
-                }else{
-                    assert.strictEqual(pv.xid, testPointXid3);
-                    if(pv.value !== '')
-                        point3Count++;  
-                }
+            point2Result.forEach((pv, i) => {
+                assert.strictEqual(pv.xid, testPointXid3);
+                if(pv.value !== '')
+                    point3Count++;
             });
             assert.isBelow(point3Count, result.length);
         });
