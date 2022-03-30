@@ -34,8 +34,11 @@ import com.serotonin.m2m2.vo.DataPointVO;
 @NonNull
 public class AggregateValueMapper extends AbstractStreamMapper<SeriesValueTime<? extends AggregateValue>> {
 
+    private final TimestampSource timestampSource;
+
     public AggregateValueMapper(StreamMapperBuilder options) {
         super(options);
+        this.timestampSource = options.timestampSource;
     }
 
     @Override
@@ -108,11 +111,15 @@ public class AggregateValueMapper extends AbstractStreamMapper<SeriesValueTime<?
         switch (rollup) {
             case FIRST:
                 rawValue = aggregate.getFirstValue();
-                timestamp = aggregate.getFirstTime();
+                if (timestampSource == TimestampSource.STATISTIC) {
+                    timestamp = aggregate.getFirstTime();
+                }
                 break;
             case LAST:
                 rawValue = aggregate.getLastValue();
-                timestamp = aggregate.getLastTime();
+                if (timestampSource == TimestampSource.STATISTIC) {
+                    timestamp = aggregate.getLastTime();
+                }
                 break;
             case COUNT:
                 rawValue = aggregate.getCount();
@@ -131,11 +138,15 @@ public class AggregateValueMapper extends AbstractStreamMapper<SeriesValueTime<?
                 break;
             case MINIMUM:
                 rawValue = extractNumeric(aggregate, NumericAggregate::getMinimumValue);
-                timestamp = extractNumeric(aggregate, NumericAggregate::getMinimumTime);
+                if (timestampSource == TimestampSource.STATISTIC) {
+                    timestamp = extractNumeric(aggregate, NumericAggregate::getMinimumTime);
+                }
                 break;
             case MAXIMUM:
                 rawValue = extractNumeric(aggregate, NumericAggregate::getMaximumValue);
-                timestamp = extractNumeric(aggregate, NumericAggregate::getMaximumTime);
+                if (timestampSource == TimestampSource.STATISTIC) {
+                    timestamp = extractNumeric(aggregate, NumericAggregate::getMaximumTime);
+                }
                 break;
             case SUM:
                 rawValue = extractNumeric(aggregate, NumericAggregate::getSum);

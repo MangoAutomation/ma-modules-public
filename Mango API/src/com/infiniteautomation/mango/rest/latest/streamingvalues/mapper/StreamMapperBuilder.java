@@ -37,6 +37,7 @@ public class StreamMapperBuilder {
     ZoneId zoneId;
     RollupEnum rollup;
     Locale locale = Locale.getDefault();
+    TimestampSource timestampSource = TimestampSource.PERIOD_START_TIME;
 
     public <T> T build(Function<StreamMapperBuilder, T> constructor) {
         return constructor.apply(this);
@@ -91,4 +92,8 @@ public class StreamMapperBuilder {
         return this;
     }
 
+    public StreamMapperBuilder withTimestampSource(TimestampSource timestampSource) {
+        this.timestampSource = timestampSource;
+        return this;
+    }
 }

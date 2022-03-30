@@ -69,6 +69,7 @@ import com.infiniteautomation.mango.rest.latest.streamingvalues.mapper.Aggregate
 import com.infiniteautomation.mango.rest.latest.streamingvalues.mapper.DefaultStreamMapper;
 import com.infiniteautomation.mango.rest.latest.streamingvalues.mapper.StreamMapperBuilder;
 import com.infiniteautomation.mango.rest.latest.streamingvalues.mapper.TimestampGrouper;
+import com.infiniteautomation.mango.rest.latest.streamingvalues.mapper.TimestampSource;
 import com.infiniteautomation.mango.rest.latest.streamingvalues.model.StreamingMultiPointModel;
 import com.infiniteautomation.mango.rest.latest.streamingvalues.model.StreamingPointValueTimeModel;
 import com.infiniteautomation.mango.rest.latest.temporaryResource.MangoTaskTemporaryResourceManager;
@@ -532,8 +533,10 @@ public class PointValueRestController extends AbstractMangoRestController {
         var aggregateMapper = mapperBuilder.build(AggregateValueMapper::new);
 
         if (truncate) {
-            from = from.with(new TruncateTimePeriodAdjuster(timePeriodType.getChronoUnit(), timePeriods));
-            to = to.with(new ExpandTimePeriodAdjuster(from, timePeriodType.getChronoUnit(), timePeriods));
+            from = from.withZoneSameInstant(defaultMapper.getZoneId())
+                    .with(new TruncateTimePeriodAdjuster(timePeriodType.getChronoUnit(), timePeriods));
+            to = to.withZoneSameInstant(defaultMapper.getZoneId())
+                    .with(new ExpandTimePeriodAdjuster(from, timePeriodType.getChronoUnit(), timePeriods));
         }
 
         var rollupPeriod = timePeriodType.toTemporalAmount(timePeriods);
@@ -662,14 +665,17 @@ public class PointValueRestController extends AbstractMangoRestController {
                 .withFields(fields)
                 .withDateTimeFormat(dateTimeFormat)
                 .withTimezone(timezone, from, to)
-                .withLocale(locale);
+                .withLocale(locale)
+                .withTimestampSource(TimestampSource.STATISTIC);
 
         var defaultMapper = mapperBuilder.build(DefaultStreamMapper::new);
         var aggregateMapper = mapperBuilder.build(AggregateValueMapper::new);
 
         if (truncate) {
-            from = from.with(new TruncateTimePeriodAdjuster(timePeriodType.getChronoUnit(), timePeriods));
-            to = to.with(new ExpandTimePeriodAdjuster(from, timePeriodType.getChronoUnit(), timePeriods));
+            from = from.withZoneSameInstant(defaultMapper.getZoneId())
+                    .with(new TruncateTimePeriodAdjuster(timePeriodType.getChronoUnit(), timePeriods));
+            to = to.withZoneSameInstant(defaultMapper.getZoneId())
+                    .with(new ExpandTimePeriodAdjuster(from, timePeriodType.getChronoUnit(), timePeriods));
         }
 
         var rollupPeriod = timePeriodType.toTemporalAmount(timePeriods);
@@ -831,8 +837,10 @@ public class PointValueRestController extends AbstractMangoRestController {
         var aggregateMapper = mapperBuilder.build(AggregateValueMapper::new);
 
         if (truncate) {
-            from = from.with(new TruncateTimePeriodAdjuster(timePeriodType.getChronoUnit(), timePeriods));
-            to = to.with(new ExpandTimePeriodAdjuster(from, timePeriodType.getChronoUnit(), timePeriods));
+            from = from.withZoneSameInstant(defaultMapper.getZoneId())
+                    .with(new TruncateTimePeriodAdjuster(timePeriodType.getChronoUnit(), timePeriods));
+            to = to.withZoneSameInstant(defaultMapper.getZoneId())
+                    .with(new ExpandTimePeriodAdjuster(from, timePeriodType.getChronoUnit(), timePeriods));
         }
 
         var rollupPeriod = timePeriodType.toTemporalAmount(timePeriods);
