@@ -51,6 +51,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.ser.FilterProvider;
 import com.fasterxml.jackson.databind.util.TokenBuffer;
 import com.infiniteautomation.mango.rest.latest.model.ArrayWithTotal;
+import com.infiniteautomation.mango.rest.latest.streamingvalues.converter.StreamCsvConverter;
 import com.serotonin.m2m2.web.MediaTypes;
 
 import au.com.bytecode.opencsv.CSVReader;
@@ -59,9 +60,13 @@ import au.com.bytecode.opencsv.CSVWriter;
 /**
  * Lower priority than default (100) so it is lower than our MappingJackson2HttpMessageConverter for JSON.
  * This is required for when the "accept" header is a wildcard (*&#x2F;*) and all the converters are checked in order.
+ *
+ * <p>Lower priority than our classes which extend {@link StreamCsvConverter} (200) so that the generic converter is not
+ * used when a specific converter is available.</p>
+ *
  * @author Jared Wiltshire
  */
-@Order(200)
+@Order(210)
 @Component
 public class GenericCSVMessageConverter extends AbstractJackson2HttpMessageConverter {
 

@@ -6,7 +6,6 @@ package com.infiniteautomation.mango.rest.latest.streamingvalues.converter;
 
 import static com.infiniteautomation.mango.rest.latest.streamingvalues.mapper.AbstractStreamMapper.MAPPER_ATTRIBUTE;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -52,7 +51,7 @@ public abstract class BaseCsvConverter<T, R> extends AbstractGenericHttpMessageC
     protected final Class<R> rowType;
 
     public BaseCsvConverter(CsvMapper mapper, Class<R> rowType) {
-        super(MediaTypes.CSV_V1);
+        super(MediaTypes.CSV_V2);
         this.mapper = mapper;
         this.rowType = rowType;
     }
