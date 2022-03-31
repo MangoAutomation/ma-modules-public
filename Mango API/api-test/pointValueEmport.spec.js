@@ -212,7 +212,6 @@ describe('Point value emport tests', function() {
     });
     
     it('Fails to upload an invalid CSV file', function() {
-
         return client.restRequest({
             path: `/rest/latest/point-value-modification/import`,
             method: 'POST',
@@ -223,7 +222,7 @@ describe('Point value emport tests', function() {
         }).then(response => {
             assert.fail('should not succeed');
         }, error => {
-            assert.strictEqual(error.status, 400);
+            assert.strictEqual(error.status, 500);
         });
     });
     
