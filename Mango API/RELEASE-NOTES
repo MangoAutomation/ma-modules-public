@@ -1,6 +1,6 @@
 *Version 4.4.0*
 * Upgraded for Mango 4.4.0
-* Upgrade Spring library version to 5.3.7
+* Upgrade Spring library version to 5.3.18 (mitigates CVE-2022-22965)
 * /point-values methods now leverage new AggregateDao interface from Core to query time-series databases
 * /point-values useCache parameters no longer support BOTH option
 * /point-values some JSON fields which used to contain null values will now be excluded from the model
