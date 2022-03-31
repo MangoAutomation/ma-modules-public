@@ -1,3 +1,6 @@
+*Version 4.2.3*
+* Mitigation for CVE-2022-22965
+
 *Version 4.2.2*
 * Allow non-admin users to create reset-password token for users they had permission to edit
 
