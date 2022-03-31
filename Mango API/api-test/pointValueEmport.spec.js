@@ -150,10 +150,14 @@ describe('Point value emport tests', function() {
                 data: fs.readFileSync(uploadFileName)
             }).then(response => {
                 assert.strictEqual(response.data.length, 2);
-                assert.strictEqual(response.data[0].xid, testPointXid1);
-                assert.strictEqual(response.data[0].totalQueued, 100);
-                assert.strictEqual(response.data[1].xid, testPointXid2);
-                assert.strictEqual(response.data[1].totalQueued, 100);
+
+                const testPoint1Result = response.data.find(r => r.xid === testPointXid1);
+                assert.strictEqual(testPoint1Result.xid, testPointXid1);
+                assert.strictEqual(testPoint1Result.totalQueued, 100);
+
+                const testPoint2Result = response.data.find(r => r.xid === testPointXid2);
+                assert.strictEqual(testPoint2Result.xid, testPointXid2);
+                assert.strictEqual(testPoint2Result.totalQueued, 100);
             });
         });
     });

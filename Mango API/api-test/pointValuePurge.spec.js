@@ -116,7 +116,8 @@ describe('Point value purge', function() {
                 from: startTime,
                 to: cutoffTime
             }).then(result => {
-                assert.strictEqual(typeof result, 'undefined');
+                assert.isArray(result);
+                assert.isEmpty(result);
             });
         });
     });
@@ -160,7 +161,11 @@ describe('Point value purge', function() {
                 from: startTime,
                 to: cutoffTime
             }).then(result => {
-                assert.deepEqual(result, {});
+                assert.isObject(result);
+                for (const val of Object.values(result)) {
+                    assert.isArray(val);
+                    assert.isEmpty(val);
+                }
             });
         });
     });
