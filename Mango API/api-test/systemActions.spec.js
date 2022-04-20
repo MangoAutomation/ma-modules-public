@@ -50,13 +50,13 @@ describe('System Action Endpoints', function() {
           path: '/rest/latest/actions/trigger/purgeUsingSettings',
           method: 'PUT'
       }).then(response => {
-
+          assert.equal(response.status, 200);
         return delay(5000).then(() => {
           return client.restRequest({
             path: response.headers.location,
             method: 'GET'
           }).then(response => {
-            assert.equal(response.data.results.finished, true);
+            assert.hasAnyKeys(response.data.results, ["finished", "cancelled"])
           });
         });
       });
