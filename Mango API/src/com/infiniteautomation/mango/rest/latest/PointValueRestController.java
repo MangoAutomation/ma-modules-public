@@ -532,14 +532,20 @@ public class PointValueRestController extends AbstractMangoRestController {
         var defaultMapper = mapperBuilder.build(DefaultStreamMapper::new);
         var aggregateMapper = mapperBuilder.build(AggregateValueMapper::new);
 
-        if (truncate) {
-            from = from.withZoneSameInstant(defaultMapper.getZoneId())
-                    .with(new TruncateTimePeriodAdjuster(timePeriodType.getChronoUnit(), timePeriods));
-            to = to.withZoneSameInstant(defaultMapper.getZoneId())
-                    .with(new ExpandTimePeriodAdjuster(from, timePeriodType.getChronoUnit(), timePeriods));
+        from = from.withZoneSameInstant(defaultMapper.getZoneId());
+        to = to.withZoneSameInstant(defaultMapper.getZoneId());
+
+        TemporalAmount rollupPeriod;
+        if (timePeriodType == null || timePeriods == null) {
+            rollupPeriod = Duration.between(from, to);
+        } else {
+            if (truncate) {
+                from = from.with(new TruncateTimePeriodAdjuster(timePeriodType.getChronoUnit(), timePeriods));
+                to = to.with(new ExpandTimePeriodAdjuster(from, timePeriodType.getChronoUnit(), timePeriods));
+            }
+            rollupPeriod = timePeriodType.toTemporalAmount(timePeriods);
         }
 
-        var rollupPeriod = timePeriodType.toTemporalAmount(timePeriods);
         return rollupStream(from, to, limit, rollup, rollupPeriod, defaultMapper, aggregateMapper).apply(point);
     }
 
@@ -671,14 +677,20 @@ public class PointValueRestController extends AbstractMangoRestController {
         var defaultMapper = mapperBuilder.build(DefaultStreamMapper::new);
         var aggregateMapper = mapperBuilder.build(AggregateValueMapper::new);
 
-        if (truncate) {
-            from = from.withZoneSameInstant(defaultMapper.getZoneId())
-                    .with(new TruncateTimePeriodAdjuster(timePeriodType.getChronoUnit(), timePeriods));
-            to = to.withZoneSameInstant(defaultMapper.getZoneId())
-                    .with(new ExpandTimePeriodAdjuster(from, timePeriodType.getChronoUnit(), timePeriods));
+        from = from.withZoneSameInstant(defaultMapper.getZoneId());
+        to = to.withZoneSameInstant(defaultMapper.getZoneId());
+
+        TemporalAmount rollupPeriod;
+        if (timePeriodType == null || timePeriods == null) {
+            rollupPeriod = Duration.between(from, to);
+        } else {
+            if (truncate) {
+                from = from.with(new TruncateTimePeriodAdjuster(timePeriodType.getChronoUnit(), timePeriods));
+                to = to.with(new ExpandTimePeriodAdjuster(from, timePeriodType.getChronoUnit(), timePeriods));
+            }
+            rollupPeriod = timePeriodType.toTemporalAmount(timePeriods);
         }
 
-        var rollupPeriod = timePeriodType.toTemporalAmount(timePeriods);
         // limit is a total limit, however may as well limit per point
         var streamGenerator = rollupStream(from, to, limit, rollup, rollupPeriod, defaultMapper, aggregateMapper);
         var streams = points.stream()
@@ -836,14 +848,20 @@ public class PointValueRestController extends AbstractMangoRestController {
         var defaultMapper = mapperBuilder.build(DefaultStreamMapper::new);
         var aggregateMapper = mapperBuilder.build(AggregateValueMapper::new);
 
-        if (truncate) {
-            from = from.withZoneSameInstant(defaultMapper.getZoneId())
-                    .with(new TruncateTimePeriodAdjuster(timePeriodType.getChronoUnit(), timePeriods));
-            to = to.withZoneSameInstant(defaultMapper.getZoneId())
-                    .with(new ExpandTimePeriodAdjuster(from, timePeriodType.getChronoUnit(), timePeriods));
+        from = from.withZoneSameInstant(defaultMapper.getZoneId());
+        to = to.withZoneSameInstant(defaultMapper.getZoneId());
+
+        TemporalAmount rollupPeriod;
+        if (timePeriodType == null || timePeriods == null) {
+            rollupPeriod = Duration.between(from, to);
+        } else {
+            if (truncate) {
+                from = from.with(new TruncateTimePeriodAdjuster(timePeriodType.getChronoUnit(), timePeriods));
+                to = to.with(new ExpandTimePeriodAdjuster(from, timePeriodType.getChronoUnit(), timePeriods));
+            }
+            rollupPeriod = timePeriodType.toTemporalAmount(timePeriods);
         }
 
-        var rollupPeriod = timePeriodType.toTemporalAmount(timePeriods);
         var streamGenerator = rollupStream(from, to, limit, rollup, rollupPeriod, defaultMapper, aggregateMapper);
         return points.stream()
                 .collect(Collectors.toUnmodifiableMap(DataPointVO::getXid, streamGenerator));
