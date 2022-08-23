@@ -29,7 +29,7 @@ create table maintenanceEvents (
   primary key (id)
 );
 alter table maintenanceEvents add constraint maintenanceEventsUn1 unique (xid);
-ALTER TABLE maintenanceEvents ADD CONSTRAINT maintenanceEventsFk1 FOREIGN KEY (togglePermissionId) REFERENCES permissions(id) ON DELETE RESTRICT;
+ALTER TABLE maintenanceEvents ADD CONSTRAINT maintenanceEventsFk1 FOREIGN KEY (togglePermissionId) REFERENCES permissions(id) ON DELETE NO ACTION;
 
 CREATE TABLE maintenanceEventDataPoints (
   maintenanceEventId int NOT NULL,
