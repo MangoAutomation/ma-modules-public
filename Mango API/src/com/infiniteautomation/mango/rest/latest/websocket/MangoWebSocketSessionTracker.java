@@ -13,6 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.session.SessionDestroyedEvent;
@@ -23,6 +24,7 @@ import org.springframework.web.socket.WebSocketSession;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.SetMultimap;
+import com.infiniteautomation.mango.spring.components.RunAs;
 import com.infiniteautomation.mango.spring.events.AuthTokensRevokedEvent;
 import com.infiniteautomation.mango.spring.events.DaoEvent;
 import com.infiniteautomation.mango.spring.events.DaoEventType;
@@ -69,6 +71,9 @@ public final class MangoWebSocketSessionTracker {
      * Set of sessions which were established using JWT authentication
      */
     private final Set<WebSocketSession> jwtSessions = ConcurrentHashMap.newKeySet();
+
+    @Autowired
+    private RunAs runAs;
 
     private String httpSessionIdForSession(WebSocketSession session) {
         return (String) session.getAttributes().get(MangoWebSocketHandshakeInterceptor.HTTP_SESSION_ID_ATTR);
@@ -245,8 +250,10 @@ public final class MangoWebSocketSessionTracker {
             JwtAuthentication jwtAuthentication = (JwtAuthentication) authentication;
             Date expiration = jwtAuthentication.getToken().getBody().getExpiration();
 
-            TimeoutTask closeTask = new TimeoutTask(expiration, new CloseSessionTask(session));
-            session.getAttributes().put(CLOSE_TIMEOUT_TASK_ATTR, closeTask);
+            runAs.runAs(runAs.systemSuperadmin(), ()-> {
+                TimeoutTask closeTask = new TimeoutTask(expiration, new CloseSessionTask(session));
+                session.getAttributes().put(CLOSE_TIMEOUT_TASK_ATTR, closeTask);
+            });
 
             jwtSessions.add(session);
         }
