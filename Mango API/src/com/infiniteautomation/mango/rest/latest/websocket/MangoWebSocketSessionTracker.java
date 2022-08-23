@@ -23,9 +23,11 @@ import org.springframework.web.socket.WebSocketSession;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.SetMultimap;
+import com.infiniteautomation.mango.spring.components.RunAs;
 import com.infiniteautomation.mango.spring.events.AuthTokensRevokedEvent;
 import com.infiniteautomation.mango.spring.events.DaoEvent;
 import com.infiniteautomation.mango.spring.events.DaoEventType;
+import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.util.timeout.TimeoutClient;
 import com.serotonin.m2m2.util.timeout.TimeoutTask;
 import com.serotonin.m2m2.vo.User;
@@ -69,6 +71,8 @@ public final class MangoWebSocketSessionTracker {
      * Set of sessions which were established using JWT authentication
      */
     private final Set<WebSocketSession> jwtSessions = ConcurrentHashMap.newKeySet();
+
+    private final RunAs runAs = Common.getBean(RunAs.class);
 
     private String httpSessionIdForSession(WebSocketSession session) {
         return (String) session.getAttributes().get(MangoWebSocketHandshakeInterceptor.HTTP_SESSION_ID_ATTR);
@@ -245,8 +249,10 @@ public final class MangoWebSocketSessionTracker {
             JwtAuthentication jwtAuthentication = (JwtAuthentication) authentication;
             Date expiration = jwtAuthentication.getToken().getBody().getExpiration();
 
-            TimeoutTask closeTask = new TimeoutTask(expiration, new CloseSessionTask(session));
-            session.getAttributes().put(CLOSE_TIMEOUT_TASK_ATTR, closeTask);
+            runAs.runAs(runAs.systemSuperadmin(), ()-> {
+                TimeoutTask closeTask = new TimeoutTask(expiration, new CloseSessionTask(session));
+                session.getAttributes().put(CLOSE_TIMEOUT_TASK_ATTR, closeTask);
+            });
 
             jwtSessions.add(session);
         }
