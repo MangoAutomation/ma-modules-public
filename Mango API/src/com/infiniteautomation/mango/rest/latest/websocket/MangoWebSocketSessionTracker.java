@@ -13,6 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.session.SessionDestroyedEvent;
@@ -27,7 +28,6 @@ import com.infiniteautomation.mango.spring.components.RunAs;
 import com.infiniteautomation.mango.spring.events.AuthTokensRevokedEvent;
 import com.infiniteautomation.mango.spring.events.DaoEvent;
 import com.infiniteautomation.mango.spring.events.DaoEventType;
-import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.util.timeout.TimeoutClient;
 import com.serotonin.m2m2.util.timeout.TimeoutTask;
 import com.serotonin.m2m2.vo.User;
@@ -72,7 +72,8 @@ public final class MangoWebSocketSessionTracker {
      */
     private final Set<WebSocketSession> jwtSessions = ConcurrentHashMap.newKeySet();
 
-    private final RunAs runAs = Common.getBean(RunAs.class);
+    @Autowired
+    private RunAs runAs;
 
     private String httpSessionIdForSession(WebSocketSession session) {
         return (String) session.getAttributes().get(MangoWebSocketHandshakeInterceptor.HTTP_SESSION_ID_ATTR);
