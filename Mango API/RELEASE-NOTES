@@ -1,3 +1,6 @@
+*Version 4.3.2*
+* Fix spring security issue for scheduled tasks
+
 *Version 4.3.1*
 * Implement mitigation for CVE-2022-22965
 
