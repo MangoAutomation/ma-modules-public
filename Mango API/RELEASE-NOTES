@@ -9,6 +9,12 @@
 * /point-values fix queries for POINT_DEFAULT rollup for points configured with NONE rollup type
 * /point-values queries for POINT_DEFAULT rollup will only use point's "simplify type" if the point's rollup is set to NONE
 
+*Version 4.3.2*
+* Fix spring security issue for scheduled tasks
+
+*Version 4.3.1*
+* Implement mitigation for CVE-2022-22965
+
 *Version 4.3.0*
 * Upgraded for Mango 4.3.0
 * Fix bug where PermissionHolder was throwing a NPE when using oAuth
