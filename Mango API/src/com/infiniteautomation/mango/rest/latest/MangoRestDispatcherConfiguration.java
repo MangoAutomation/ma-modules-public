@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
 import org.springframework.core.env.Environment;
 import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.format.FormatterRegistry;
@@ -47,10 +48,10 @@ import com.infiniteautomation.mango.rest.latest.mapping.PermissionConverter;
 import com.infiniteautomation.mango.rest.latest.mapping.SingleMintermPermissionConverter;
 import com.infiniteautomation.mango.rest.latest.util.MangoRestTemporaryResourceContainer;
 import com.infiniteautomation.mango.spring.MangoCommonConfiguration;
+import com.infiniteautomation.mango.spring.annotations.RestMapper;
 import com.infiniteautomation.mango.spring.service.PermissionService;
 import com.infiniteautomation.mango.webapp.RestWebApplicationInitializer;
 import com.serotonin.m2m2.module.JacksonModuleDefinition;
-import com.infiniteautomation.mango.spring.annotations.RestMapper;
 import com.serotonin.m2m2.web.MediaTypes;
 import com.serotonin.m2m2.web.mvc.spring.MangoLocaleResolver;
 import com.serotonin.m2m2.web.mvc.spring.security.MangoMethodSecurityConfiguration;
@@ -159,6 +160,8 @@ public class MangoRestDispatcherConfiguration implements WebMvcConfigurer {
                 .registerModule(new CsvJacksonModule());
     }
 
+
+    @Primary
     @Bean("csvMapper")
     public CsvMapper csvMapper(@RestMapper List<JacksonModuleDefinition> jacksonModuleDefs) {
         CsvMapper csvMapper = new CsvMapper();
