@@ -1,3 +1,6 @@
+*Version 4.4.1*
+* Set CSV mapper to Primary mapper
+
 *Version 4.4.0*
 * Upgraded for Mango 4.4.0
 * Upgrade Spring library version to 5.3.18 (mitigates CVE-2022-22965)
