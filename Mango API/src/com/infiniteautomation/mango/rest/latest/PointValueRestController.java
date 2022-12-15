@@ -175,10 +175,14 @@ public class PointValueRestController extends AbstractMangoRestController {
 
     private Stream<IdPointValueTime> simplifyStream(Stream<IdPointValueTime> stream, @Nullable Double simplifyTolerance, @Nullable Integer simplifyTarget) {
         if (simplifyTolerance != null || simplifyTarget != null) {
-            var list = stream.collect(Collectors.toList());
+            List<IdPointValueTime> list;
+            // original stream must be closed here since we are collecting it and returning a different stream
+            try (stream) {
+                list = stream.collect(Collectors.toList());
+            }
             return SimplifyUtility.simplify(simplifyTolerance, simplifyTarget,
-                    true, true, list, PointValueTimePointExtractor.INSTANCE, ITime.COMPARATOR)
-                    .stream();
+                                true, true, list, PointValueTimePointExtractor.INSTANCE, ITime.COMPARATOR)
+                        .stream();
         }
         return stream;
     }
