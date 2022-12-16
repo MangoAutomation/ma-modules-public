@@ -1,5 +1,8 @@
+*Version 4.4.2*
+* Fix for IasTsdb database locking issue, close original stream when simplifying
+
 *Version 4.4.1*
-* Set CSV mapper to Primary mapper
+* Added a default primary csv bean to avoid multiple beans
 
 *Version 4.4.0*
 * Upgraded for Mango 4.4.0
