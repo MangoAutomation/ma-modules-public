@@ -1,6 +1,9 @@
 *Version 4.5.0*
 * Upgraded for Mango 4.5.0
 
+*Version 4.4.3*
+* Corrected deserialization for points where dataType could not be maped because of incorrect name and type.
+
 *Version 4.4.0*
 * Upgraded for Mango 4.4.0
 
