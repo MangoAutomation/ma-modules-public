@@ -50,7 +50,7 @@ public class AsciiFilePointLocatorVO extends AbstractPointLocatorVO<AsciiFilePoi
     private int pointIdentifierIndex;
     @JsonProperty
     private int valueIndex;
-    private DataType dataType;
+    private DataType dataTypeEnum;
     @JsonProperty
     private boolean hasTimestamp;
     @JsonProperty
@@ -92,11 +92,11 @@ public class AsciiFilePointLocatorVO extends AbstractPointLocatorVO<AsciiFilePoi
 
     @Override
     public DataType getDataType() {
-        return dataType;
+        return dataTypeEnum;
     }
 
-    public void setDataType(DataType dataType) {
-        this.dataType = dataType;
+    public void setDataType(DataType dataTypeEnum) {
+        this.dataTypeEnum = dataTypeEnum;
     }
 
     public boolean getHasTimestamp() {
@@ -135,7 +135,7 @@ public class AsciiFilePointLocatorVO extends AbstractPointLocatorVO<AsciiFilePoi
         SerializationHelper.writeSafeUTF(out, valueRegex);
         out.writeInt(pointIdentifierIndex);
         out.writeInt(valueIndex);
-        out.writeInt(dataType.getId());
+        out.writeInt(dataTypeEnum.getId());
         out.writeBoolean(hasTimestamp);
         out.writeInt(timestampIndex);
         SerializationHelper.writeSafeUTF(out, timestampFormat);
@@ -149,7 +149,7 @@ public class AsciiFilePointLocatorVO extends AbstractPointLocatorVO<AsciiFilePoi
             valueRegex= SerializationHelper.readSafeUTF(in);
             pointIdentifierIndex = in.readInt();
             valueIndex = in.readInt();
-            dataType = DataType.fromId(in.readInt());
+            dataTypeEnum = DataType.fromId(in.readInt());
             hasTimestamp = false;
             timestampIndex = 0;
             timestampFormat = "";
@@ -159,7 +159,7 @@ public class AsciiFilePointLocatorVO extends AbstractPointLocatorVO<AsciiFilePoi
             valueRegex= SerializationHelper.readSafeUTF(in);
             pointIdentifierIndex = in.readInt();
             valueIndex = in.readInt();
-            dataType = DataType.fromId(in.readInt());
+            dataTypeEnum = DataType.fromId(in.readInt());
             hasTimestamp = in.readBoolean();
             timestampIndex = in.readInt();
             timestampFormat = SerializationHelper.readSafeUTF(in);
@@ -174,7 +174,7 @@ public class AsciiFilePointLocatorVO extends AbstractPointLocatorVO<AsciiFilePoi
         }
 
         try {
-            this.dataType = DataType.valueOf(text);
+            this.dataTypeEnum = DataType.valueOf(text);
         } catch (IllegalArgumentException e) {
             throw new TranslatableJsonException("emport.error.invalid", "dataType", text, DataType.formatNames());
         }
@@ -182,7 +182,7 @@ public class AsciiFilePointLocatorVO extends AbstractPointLocatorVO<AsciiFilePoi
 
     @Override
     public void jsonWrite(ObjectWriter writer) throws IOException, JsonException {
-        writer.writeEntry("dataType", dataType.name());
+        writer.writeEntry("dataType", dataTypeEnum.name());
     }
 
     @Override
