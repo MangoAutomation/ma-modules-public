@@ -21,6 +21,7 @@ public class NumericAllModel extends AllStatisticsModel {
     ValueTimeModel maximumInPeriod;
     ValueTimeModel minimumInPeriod;
     ValueTimeModel arithmeticMean;
+    ValueTimeModel rangeInPeriod;
 
     public ValueTimeModel getAccumulator() {
         return accumulator;
@@ -100,5 +101,13 @@ public class NumericAllModel extends AllStatisticsModel {
 
     public void setArithmeticMean(ValueTimeModel arithmeticMean) {
         this.arithmeticMean = arithmeticMean;
+    }
+
+    public ValueTimeModel getRangeInPeriod() {
+        return rangeInPeriod;
+    }
+
+    public void setRangeInPeriod(ValueTimeModel rangeInPeriod) {
+        this.rangeInPeriod = rangeInPeriod;
     }
 }

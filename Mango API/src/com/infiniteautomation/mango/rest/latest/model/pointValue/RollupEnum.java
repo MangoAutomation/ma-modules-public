@@ -27,7 +27,8 @@ public enum RollupEnum {
     POINT_DEFAULT(true, -2),
     ARITHMETIC_MEAN(false, Common.Rollups.ARITHMETIC_MEAN),
     MINIMUM_IN_PERIOD(false, Common.Rollups.MINIMUM_IN_PERIOD),
-    MAXIMUM_IN_PERIOD(false, Common.Rollups.MAXIMUM_IN_PERIOD);
+    MAXIMUM_IN_PERIOD(false, Common.Rollups.MAXIMUM_IN_PERIOD),
+    RANGE_IN_PERIOD(false, Common.Rollups.RANGE_IN_PERIOD);
 
     private final boolean nonNumericSupport; //Does this rollup support Non-Numeric point values
     private final int id;

@@ -83,6 +83,7 @@ public class AggregateValueMapper extends AbstractStreamMapper<SeriesValueTime<?
             model.setMaximumInPeriod(getRollupValue(point, stats, RollupEnum.MAXIMUM_IN_PERIOD));
             model.setMinimumInPeriod(getRollupValue(point, stats, RollupEnum.MINIMUM_IN_PERIOD));
             model.setArithmeticMean(getRollupValue(point, stats, RollupEnum.ARITHMETIC_MEAN));
+            model.setRangeInPeriod(getRollupValue(point, stats, RollupEnum.RANGE_IN_PERIOD));
             all = model;
         } else if (stats instanceof StartsAndRuntimeAggregate) {
             MultistateAllStatisticsModel model = new MultistateAllStatisticsModel();
@@ -165,6 +166,9 @@ public class AggregateValueMapper extends AbstractStreamMapper<SeriesValueTime<?
                 break;
             case MAXIMUM_IN_PERIOD:
                 rawValue = extractNumeric(aggregate, NumericAggregate::getMaximumInPeriod);
+                break;
+            case RANGE_IN_PERIOD:
+                rawValue = extractNumeric(aggregate, NumericAggregate::getRangeInPeriod);
                 break;
             case ALL:
                 // fall through, not supported here
