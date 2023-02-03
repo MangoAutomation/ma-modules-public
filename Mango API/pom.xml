@@ -3,14 +3,14 @@
     <parent>
         <artifactId>ma-modules-public</artifactId>
         <groupId>com.infiniteautomation.mango</groupId>
-        <version>4.4.0</version>
+        <version>4.4.4-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>mango-api</artifactId>
     <name>mangoApi</name>
     <description>REST API Expansion for Mango Automation</description>
-    <version>4.4.3</version>
+    <version>4.4.4-SNAPSHOT</version>
     <build>
         <plugins>
             <plugin>
@@ -29,8 +29,4 @@
             </plugin>
         </plugins>
     </build>
-
-  <scm>
-    <tag>mangoApi-v4.4.3</tag>
-  </scm>
 </project>
