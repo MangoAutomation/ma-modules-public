@@ -6,6 +6,7 @@ package com.infiniteautomation.mango.rest.latest;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -83,7 +84,7 @@ public class UserCommentRestController {
             response=UserCommentQueryResult.class)
     @RequestMapping(method = RequestMethod.GET)
     public StreamedArrayWithTotal queryRQL(
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             HttpServletRequest request) {
         ASTNode query = RQLUtils.parseRQLtoAST(request.getQueryString());
         return doQuery(query, user);
@@ -104,7 +105,7 @@ public class UserCommentRestController {
             @ApiParam( value = "User Comment to save", required = true )
             @RequestBody(required=true)
             UserCommentModel model,
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
 
         if(model.getTimestamp() <= 0) {
@@ -113,8 +114,10 @@ public class UserCommentRestController {
 
         //Assign a userId if there isn't one
         if(model.getUserId() <= 0){
-            model.setUserId(user.getId());
-            model.setUsername(user.getUsername());
+            Objects.requireNonNull(user.getUser());
+            User current = user.getUser();
+            model.setUserId(current.getId());
+            model.setUsername(current.getUsername());
         }
         UserCommentVO vo = service.insert(model.toVO());
         URI location = builder.path("/comments/{xid}").buildAndExpand(vo.getXid()).toUri();
@@ -128,7 +131,7 @@ public class UserCommentRestController {
     public UserCommentModel deleteUserComment(
             @ApiParam(value = "xid", required = true, allowMultiple = false)
             @PathVariable String xid,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal PermissionHolder user) {
         return map.apply(service.delete(xid), user);
     }
 
@@ -136,7 +139,7 @@ public class UserCommentRestController {
     @RequestMapping(method = RequestMethod.GET, value = "/{xid}")
     public UserCommentModel getUserComment(
             @ApiParam(value = "Valid xid", required = true, allowMultiple = false)
-            @PathVariable String xid, @AuthenticationPrincipal User user) {
+            @PathVariable String xid, @AuthenticationPrincipal PermissionHolder user) {
         return map.apply(service.get(xid), user);
     }
 
@@ -145,12 +148,14 @@ public class UserCommentRestController {
     public ResponseEntity<UserCommentModel> updateUserComment(
             @PathVariable String xid,
             @RequestBody(required=true) UserCommentModel model,
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
         //Change the owner
         if(model.getUserId() == 0){
-            model.setUserId(user.getId());
-            model.setUsername(user.getUsername());
+            Objects.requireNonNull(user.getUser());
+            User current = user.getUser();
+            model.setUserId(current.getId());
+            model.setUsername(current.getUsername());
         }
         UserCommentVO updated = service.update(xid, model.toVO());
         URI location = builder.path("/users/{username}").buildAndExpand(updated.getUsername()).toUri();
@@ -159,7 +164,7 @@ public class UserCommentRestController {
         return new ResponseEntity<>(map.apply(updated, user), headers, HttpStatus.OK);
     }
 
-    protected StreamedArrayWithTotal doQuery(ASTNode rql, User user) {
+    protected StreamedArrayWithTotal doQuery(ASTNode rql, PermissionHolder user) {
         return new StreamedBasicVORqlQueryWithTotal<>(service, rql, null, fieldMap, valueConverterMap, vo -> service.hasReadPermission(user, vo), vo -> map.apply(vo, user));
     }
 }
