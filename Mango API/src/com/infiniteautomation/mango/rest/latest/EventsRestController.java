@@ -3,9 +3,6 @@
  */
 package com.infiniteautomation.mango.rest.latest;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URI;
@@ -20,8 +17,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
 import javax.servlet.http.HttpServletRequest;
-import net.jazdw.rql.parser.ASTNode;
 
 import org.jooq.Field;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,9 +63,13 @@ import com.serotonin.m2m2.rt.event.DataPointEventLevelSummary;
 import com.serotonin.m2m2.rt.event.EventInstance;
 import com.serotonin.m2m2.rt.event.UserEventLevelSummary;
 import com.serotonin.m2m2.rt.event.type.EventType.EventTypeNames;
-import com.serotonin.m2m2.vo.User;
 import com.serotonin.m2m2.vo.event.EventInstanceVO;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import net.jazdw.rql.parser.ASTNode;
 
 /**
  * @author Terry Packer
@@ -184,12 +185,12 @@ public class EventsRestController {
     public ResponseEntity<EventInstanceModel> acknowledgeEvent(
             @PathVariable Integer id,
             @RequestBody(required=false) TranslatableMessageModel message,
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder, HttpServletRequest request) {
         TranslatableMessage tlm = null;
         if (message != null)
             tlm = new TranslatableMessage(message.getKey(), message.getArgs().toArray());
-        EventInstanceVO vo = service.acknowledgeEventById(id, user, tlm);
+        EventInstanceVO vo = service.acknowledgeEventById(id, user.getUser(), tlm);
         URI location = builder.path("/events/{id}").buildAndExpand(id).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
