@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "@infinite-automation/log4JReset",
-  "version": "4.5.0-SNAPSHOT",
+  "version": "5.0.0-SNAPSHOT",
   "description": "Log4J Reset",
   "main": "web/log4JReset.js",
   "dependencies": {},
