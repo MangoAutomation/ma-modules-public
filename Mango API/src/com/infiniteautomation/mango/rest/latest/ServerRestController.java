@@ -3,6 +3,11 @@
  */
 package com.infiniteautomation.mango.rest.latest;
 
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.net.SocketException;
 import java.net.URI;
@@ -18,11 +23,6 @@ import java.util.TimeZone;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -291,6 +291,7 @@ public class ServerRestController extends AbstractMangoRestController {
         @ApiResponse(code = 500, message = "Internal error", response = ResponseEntity.class),})
     @RequestMapping(method = {RequestMethod.GET}, value = "system-info")
     public ResponseEntity<Map<String, Object>> getSystemInfo(@AuthenticationPrincipal PermissionHolder user) {
+        System.out.println("Testing on the fly thing");
         Map<String, Object> map = new HashMap<String, Object>();
         for (SystemInfoDefinition<?> def : ModuleRegistry.getSystemInfoDefinitions().values())
             map.put(def.getKey(), def.getValue());
