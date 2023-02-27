@@ -4,7 +4,6 @@
 
 package com.serotonin.m2m2.db.dao;
 
-import java.sql.Blob;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.Types;
@@ -12,13 +11,14 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.sql.rowset.serial.SerialBlob;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.StatementCallback;
 import org.springframework.stereotype.Component;
 
 import com.infiniteautomation.mango.rest.latest.SqlQueryResult;
 import com.serotonin.db.spring.ExtendedJdbcTemplate;
-import com.serotonin.util.SerializationHelper;
 
 @Component
 public class SqlConsole {
@@ -50,13 +50,8 @@ public class SqlConsole {
                         row.add(rs.getString(i + 1));
                     else if (meta.getColumnType(i + 1) == Types.LONGVARBINARY
                             || meta.getColumnType(i + 1) == Types.BLOB) {
-                        Blob blob = rs.getBlob(i + 1);
-                        Object o;
-                        if (blob == null)
-                            o = null;
-                        else
-                            o = SerializationHelper.readObjectInContext(blob.getBinaryStream());
-                        row.add(serializedDataMsg + "(" + o + ")");
+                        SerialBlob blob = new SerialBlob( rs.getBlob(i + 1) );
+                        row.add(serializedDataMsg + "(" + blob + ")");
                     } else
                         row.add(rs.getObject(i + 1));
                 }
