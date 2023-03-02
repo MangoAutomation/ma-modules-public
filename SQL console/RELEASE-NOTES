@@ -1,3 +1,6 @@
+*Version 4.5.1*
+* Fixing issue when trying to deserialize a Blob object.
+
 *Version 4.5.0*
 * Upgraded for Mango 4.5.0
 
