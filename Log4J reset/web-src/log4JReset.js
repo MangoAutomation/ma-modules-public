@@ -20,11 +20,11 @@ const log4JReset = angular.module('maLog4JReset', [])
                 params: {
                     noPadding: false,
                     hideFooter: false,
-                    helpPage: 'ui.help.log4JReset'
+                    helpPage: 'ui.helps.help.log4JReset'
                 },
             },
             {
-                name: 'ui.help.log4JReset',
+                name: 'ui.helps.help.log4JReset',
                 url: '/log4j-reset/help',
                 templatePromise() {
                     return import(/* webpackMode: "eager" */ './help/helpPage.html');

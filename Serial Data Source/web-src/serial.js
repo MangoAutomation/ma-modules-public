@@ -101,13 +101,13 @@ const serialSourceModule = angular.module('maSerialDataSource', ['maUiApp'])
 
     maUiMenuProvider.registerMenuItems([
         {
-            name: 'ui.help.serialDataSource',
+            name: 'ui.helps.help.serialDataSource',
             url: '/serial-data-source',
             menuTr: 'dsEdit.serial',
             template: dsHelpTemplate
         },
         {
-            name: 'ui.help.serialDataPoint',
+            name: 'ui.helps.help.serialDataPoint',
             url: '/serial-data-point',
             menuTr: 'dsEdit.serialPoint',
             template: dpHelpTemplate

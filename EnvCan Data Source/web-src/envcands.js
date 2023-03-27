@@ -78,13 +78,13 @@ const envcandsSourceModule = angular.module('maEnvcandsDataSource', ['maUiApp'])
 
     maUiMenuProvider.registerMenuItems([
         {
-            name: 'ui.help.envcandsDataSource',
+            name: 'ui.helps.help.envcandsDataSource',
             url: '/env-can-data-source',
             menuTr: 'dsEdit.envcands',
             template: dsHelpTemplate
         },
         {
-            name: 'ui.help.envcandsDataPoint',
+            name: 'ui.helps.help.envcandsDataPoint',
             url: '/env-can-data-point',
             menuTr: 'dsEdit.envcandsPoint',
             template: dpHelpTemplate

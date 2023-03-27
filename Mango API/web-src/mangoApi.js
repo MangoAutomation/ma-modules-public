@@ -13,7 +13,7 @@ const mangoApiModule = angular.module('maApi', [])
 .config(['maUiMenuProvider', function(maUiMenuProvider) {
     maUiMenuProvider.registerMenuItems([
         {
-            name: 'ui.settings.system.mangoApiSettings',
+            name: 'ui.system.system.mangoApiSettings',
             url: '/mango-api-settings',
             template: '<ma-api-settings></ma-api-settings>',
             menuTr: 'rest.settings.title',
@@ -22,11 +22,11 @@ const mangoApiModule = angular.module('maApi', [])
             params: {
                 noPadding: false,
                 hideFooter: false,
-                helpPage: 'ui.help.mangoApiSettings'
+                helpPage: 'ui.helps.help.mangoApiSettings'
             },
         },
         {
-            name: 'ui.help.mangoApiSettings',
+            name: 'ui.helps.help.mangoApiSettings',
             url: '/mango-api-settings/help',
             templatePromise() {
                 return import(/* webpackMode: "eager" */ './help/helpPage.html');

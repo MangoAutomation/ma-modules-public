@@ -22,7 +22,7 @@ export default angular.module('maMaintenanceEvents', ['maUiApp'])
 .config(['maUiMenuProvider', 'maEventTypeInfoProvider', function(maUiMenuProvider, eventTypeInfoProvider) {
     maUiMenuProvider.registerMenuItems([
         {
-            name: 'ui.settings.maintenanceEvents',
+            name: 'ui.automation.maintenanceEvents',
             url: '/maintenance-events/{xid}',
             template: '<ma-maintenance-events></ma-maintenance-events>',
             menuTr: 'header.maintenanceEvents',
@@ -31,12 +31,12 @@ export default angular.module('maMaintenanceEvents', ['maUiApp'])
             params: {
                 noPadding: false,
                 hideFooter: false,
-                helpPage: 'ui.help.maintenanceEvents'
+                helpPage: 'ui.helps.help.maintenanceEvents'
             },
             permission: ['superadmin']
         },
         {
-            name: 'ui.help.maintenanceEvents',
+            name: 'ui.helps.help.maintenanceEvents',
             url: '/maintenance-events/help',
             templatePromise() {
                 return import(/* webpackMode: "eager" */ './help/helpPage.html');

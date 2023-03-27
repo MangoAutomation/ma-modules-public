@@ -66,13 +66,13 @@ const virtualDataSourceModule = angular.module('maVirtualDataSource', ['maUiApp'
     });
     maUiMenuProvider.registerMenuItems([
         {
-            name: 'ui.help.virtualDataSource',
+            name: 'ui.helps.help.virtualDataSource',
             url: '/virtual-data-source',
             menuTr: 'dsEdit.virtual',
             template: dsHelpTemplate
         },
         {
-            name: 'ui.help.virtualDataPoint',
+            name: 'ui.helps.help.virtualDataPoint',
             url: '/virtual-data-point',
             menuTr: 'dsEdit.virtualPoint',
             template: dpHelpTemplate
