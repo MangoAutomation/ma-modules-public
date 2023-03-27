@@ -257,7 +257,9 @@ public class PublishersRestController {
                 if(StringUtils.isEmpty(pm.getXid())) {
                     pm.setXid(publishedPointService.generateUniqueXid());
                 }
-                pm.setName(publisherVO.getName() + " point " + i);
+                if (StringUtils.isEmpty(pm.getName())) {
+                    pm.setName(publisherVO.getName() + " point " + i);
+                }
                 pm.setEnabled(true);
                 i++;
                 publishedPointService.insert(unmapPoint.apply(pm, user));
