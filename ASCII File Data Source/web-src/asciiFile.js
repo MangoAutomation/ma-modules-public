@@ -82,31 +82,31 @@ const asciiFileDataSourceModule = angular.module('maAsciiFileDataSource', ['maUi
 
     maUiMenuProvider.registerMenuItems([
         {
-            name: 'ui.help.asciiDataSource',
+            name: 'ui.helps.help.asciiDataSource',
             url: '/ascii-file-data-source',
             menuTr: 'dsEdit.asciiFile',
             template: dsHelpTemplate
         },
         {
-            name: 'ui.help.asciiDataPoint',
+            name: 'ui.helps.help.asciiDataPoint',
             url: '/ascii-file-data-point',
             menuTr: 'dsEdit.asciiFilePoint',
             template: dpHelpTemplate
         },
         {
-            name: 'ui.help.systemSettings',
+            name: 'ui.helps.help.systemSettings',
             url: '/ascii-file-system-settings',
             menuTr: 'dsEdit.file.systemSettingsDescription',
             template: systemSettingsTemplate
         },
         {
-            name: 'ui.settings.system.asciiFile',
+            name: 'ui.system.system.asciiFile',
             url: '/ascii-file',
             template: settingsTemplate,
             menuTr: 'dsEdit.file.systemSettingsDescription',
             menuHidden: true,
             params: {
-                helpPage: 'ui.help.systemSettings'
+                helpPage: 'ui.helps.help.systemSettings'
             },
         }
     ]);

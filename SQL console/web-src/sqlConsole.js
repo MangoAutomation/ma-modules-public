@@ -24,11 +24,11 @@ const sqlConsoleModule = angular.module('maSqlConsole', [])
             params: {
                 noPadding: false,
                 hideFooter: false,
-                helpPage: 'ui.help.sqlConsole'
+                helpPage: 'ui.helps.help.sqlConsole'
             },
         },
         {
-            name: 'ui.help.sqlConsole',
+            name: 'ui.helps.help.sqlConsole',
             url: '/sql-console/help',
             templatePromise() {
                 return import(/* webpackMode: "eager" */ './help/helpPage.html');

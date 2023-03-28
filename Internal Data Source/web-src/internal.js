@@ -52,13 +52,13 @@ function(maDataSourceProvider, maPointProvider, maUiMenuProvider) {
 
     maUiMenuProvider.registerMenuItems([
         {
-            name: 'ui.help.internalDataSource',
+            name: 'ui.helps.help.internalDataSource',
             url: '/internal-data-source',
             menuTr: 'dsEdit.internal',
             template: dsHelpTemplate
         },
         {
-            name: 'ui.help.internalDataPoint',
+            name: 'ui.helps.help.internalDataPoint',
             url: '/internal-data-point',
             menuTr: 'dsEdit.internalPoint',
             template: dpHelpTemplate
