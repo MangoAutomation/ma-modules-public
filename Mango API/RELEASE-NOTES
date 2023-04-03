@@ -1,3 +1,6 @@
+*Version 4.5.1*
+* publisher/{xid} POST, PUT, PATCH methods now allows setting published point names if provided
+
 *Version 4.5.0*
 * Upgraded for Mango 4.5.0
 
