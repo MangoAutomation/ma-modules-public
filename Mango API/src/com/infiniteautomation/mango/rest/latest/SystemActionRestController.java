@@ -11,6 +11,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +29,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.infiniteautomation.mango.rest.latest.exception.NotFoundRestException;
 import com.infiniteautomation.mango.rest.latest.util.MangoRestTemporaryResourceContainer;
 import com.infiniteautomation.mango.rest.latest.util.SystemActionTemporaryResource;
+import com.serotonin.m2m2.Common;
 import com.serotonin.m2m2.module.ModuleRegistry;
 import com.serotonin.m2m2.module.SystemActionDefinition;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
@@ -53,8 +55,13 @@ public class SystemActionRestController extends AbstractMangoRestController {
 
     private MangoRestTemporaryResourceContainer<SystemActionTemporaryResource> resources;
 
-    public SystemActionRestController(){
+    private long defaultResourceTimeout;
+
+    public SystemActionRestController(@Value("${rest.systemAction.expirationPeriodType:WEEKS}") String expirationPeriodType,
+            @Value("${rest.systemAction.expirationPeriods:1}") int expirationPeriods){
         this.resources = new MangoRestTemporaryResourceContainer<>("SYSACTION_");
+        this.defaultResourceTimeout = Common.getMillis(
+                Common.TIME_PERIOD_CODES.getId(expirationPeriodType), expirationPeriods);
     }
 
     @ApiOperation(
@@ -86,7 +93,7 @@ public class SystemActionRestController extends AbstractMangoRestController {
             @ApiParam(value = "Input for task", required = false, allowMultiple = false)
             @RequestBody(required=false)
             JsonNode input,
-            @RequestParam(required=false, defaultValue="604800000") // Week
+            @RequestParam(required=false)
             Long timeout,
             @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
@@ -94,6 +101,10 @@ public class SystemActionRestController extends AbstractMangoRestController {
         SystemActionDefinition def = ModuleRegistry.getSystemActionDefinition(action);
         if(def == null)
             throw new NotFoundRestException();
+
+        if (timeout == null){
+            timeout = defaultResourceTimeout;
+        }
 
         String resourceId = resources.generateResourceId();
         SystemActionTemporaryResource resource = new SystemActionTemporaryResource(resourceId, def.getTask(user, input), resources, new Date(System.currentTimeMillis() + timeout));
