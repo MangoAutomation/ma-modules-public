@@ -1,6 +1,6 @@
 *Version 4.5.1*
 * publisher/{xid} POST, PUT, PATCH methods now allows setting published point names if provided
-* SystemActionTemporaryResource default expiration time increased to 7 days
+* New properties added for System Action task and resource lifetime (SystemActionTemporaryResource) rest.systemAction.expirationPeriods default is 1 and rest.systemAction.expirationPeriodType default is WEEKS
 
 *Version 4.5.0*
 * Upgraded for Mango 4.5.0
