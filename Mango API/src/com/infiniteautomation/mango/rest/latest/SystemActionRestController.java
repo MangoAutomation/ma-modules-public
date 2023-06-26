@@ -86,7 +86,7 @@ public class SystemActionRestController extends AbstractMangoRestController {
             @ApiParam(value = "Input for task", required = false, allowMultiple = false)
             @RequestBody(required=false)
             JsonNode input,
-            @RequestParam(required=false, defaultValue="12000000")
+            @RequestParam(required=false, defaultValue="604800000") // Week
             Long timeout,
             @AuthenticationPrincipal PermissionHolder user,
             UriComponentsBuilder builder) {
@@ -98,7 +98,7 @@ public class SystemActionRestController extends AbstractMangoRestController {
         String resourceId = resources.generateResourceId();
         SystemActionTemporaryResource resource = new SystemActionTemporaryResource(resourceId, def.getTask(user, input), resources, new Date(System.currentTimeMillis() + timeout));
 
-        //Resource can live for up to 10 minutes (TODO Configurable?)
+        //Resource can live for up to week by default
         resources.put(resourceId, resource);
         URI location = builder.path("/actions/status/{resourceId}").buildAndExpand(resourceId).toUri();
 
