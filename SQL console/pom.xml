@@ -29,8 +29,4 @@
             </plugin>
         </plugins>
     </build>
-
-  <scm>
-    <tag>sqlConsole-v4.5.1</tag>
-  </scm>
 </project>
