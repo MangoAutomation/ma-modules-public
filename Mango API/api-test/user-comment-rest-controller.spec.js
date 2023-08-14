@@ -14,12 +14,60 @@
  * limitations under the License.
  */
 
-const {createClient, login, uuid, assertValidationErrors, noop} = require('@infinite-automation/mango-module-tools/test-helper/testHelper');
+const {createClient, login, uuid, assertValidationErrors, noop, defer, delay} = require('@infinite-automation/mango-module-tools/test-helper/testHelper');
 const client = createClient();
+const User = client.User;
+const DataSource = client.DataSource;
+const DataPoint = client.DataPoint;
 
 // Mango REST V1 API - User Comments
 describe('user-comment-rest-controller', function() {
     before('Login', function() { return login.call(this, client); });
+
+    const newDataPoint = (xid, dsXid, readPermission) => {
+        return new DataPoint({
+            xid: xid,
+            deviceName: "_",
+            name: "Virtual Test Point 1",
+            enabled: false,
+            dataSourceXid: dsXid,
+            readPermission: readPermission,
+            setPermission: 'superadmin',
+            modelType: "DATA_POINT",
+            pointLocator: {
+                startValue: "true",
+                modelType: "PL.VIRTUAL",
+                dataType: "BINARY",
+                settable: true,
+                changeType: "ALTERNATE_BOOLEAN",
+            }
+        });
+    };
+
+    beforeEach('Create a virtual data source, points', function () {
+        const testPointXid1 = uuid();
+        const testPointXid2 = uuid();
+        this.ds = new DataSource({
+            xid: uuid(),
+            name: 'Mango client test',
+            enabled: true,
+            modelType: 'VIRTUAL',
+            pollPeriod: {periods: 5, type: 'HOURS'},
+            purgeSettings: {override: false, frequency: {periods: 1, type: 'YEARS'}},
+            alarmLevels: {POLL_ABORTED: 'URGENT'},
+            editPermission: null
+        });
+
+        return this.ds.save().then((savedDs) => {
+            assert.strictEqual(savedDs.name, 'Mango client test');
+            assert.isNumber(savedDs.id);
+        }).then(() => {
+            this.testPointWithRoleSuperadmin = newDataPoint(testPointXid1, this.ds.xid, 'superadmin');
+            this.testPointWithRoleUser = newDataPoint(testPointXid2, this.ds.xid, 'user');
+            return Promise.all([this.testPointWithRoleSuperadmin.save(), this.testPointWithRoleUser.save()]);
+        });
+    });
+
 
     const noCreate = [];
     
@@ -52,8 +100,16 @@ describe('user-comment-rest-controller', function() {
             path: `/rest/latest/comments/${this.currentTest.xid}`,
         }).catch(noop);
     });
-    
-    // Query User Comments - 
+
+    afterEach('Deletes the new virtual data source and its points', function() {
+        return this.ds.delete();
+    });
+
+    afterEach('Delete the test users', function() {
+        if (this.testUser) this.testUser.delete();
+    });
+
+    // Query User Comments -
     it('GET /rest/latest/comments', function() {
         return client.restRequest({
             method: 'GET',
@@ -262,4 +318,170 @@ describe('user-comment-rest-controller', function() {
         });
     });
 
+    it('Websocket notifications for comments for DPs with role user and User with role user', function () {
+        this.timeout(5000);
+
+        let ws;
+        const socketOpenDeferred = defer();
+        const gotMessageDeferred = defer();
+        const username = uuid();
+        const msgArray = [];
+        this.testUserPassword = uuid();
+        this.testUser = new User({
+            username,
+            email: `${username}@example.com`,
+            name: `${username}`,
+            roles: ['user'],
+            password: this.testUserPassword,
+            locale: '',
+            receiveAlarmEmails: 'IGNORE'
+        });
+
+        return this.testUser.save().then(() => {
+            this.lowerPermissionClient = createClient();
+            return this.lowerPermissionClient.User.login(this.testUser.username, this.testUserPassword).then((...args) => {
+
+                return Promise.resolve().then(() => {
+                    ws = this.lowerPermissionClient.openWebSocket({
+                        path: '/rest/latest/websocket/user-comments'
+                    });
+
+                    ws.on('open', () => {
+                        socketOpenDeferred.resolve();
+                    });
+
+                    ws.on('error', error => {
+                        const msg = new Error(`WebSocket error, error: ${error}`);
+                        socketOpenDeferred.reject(msg);
+                        gotMessageDeferred.reject(msg);
+                    });
+
+                    ws.on('close', (code, reason) => {
+                        const msg = new Error(`WebSocket closed, code: ${code}, reason: ${reason}`);
+                        socketOpenDeferred.reject(msg);
+                        gotMessageDeferred.reject(msg);
+                    });
+
+                    ws.on('message', msgStr => {
+                        const msg = JSON.parse(msgStr);
+                        msgArray.push(msg);
+                        gotMessageDeferred.resolve(msg);
+                    });
+
+                    return socketOpenDeferred.promise.then(() => delay(1000));
+                }).then(() => {
+                    const requestBody =
+                        {
+                            comment: 'string',
+                            commentType: 'POINT',
+                            referenceId: this.testPointWithRoleUser.id,
+                            timestamp: null,
+                            //userId: 0,
+                            name: 'some name',
+                            username: 'admin',
+                            xid: uuid()
+                        };
+
+                    return client.restRequest({
+                        method: 'POST',
+                        path: `/rest/latest/comments`,
+                        data: requestBody
+                    });
+                }).then(() => {
+                    // data point was saved, wait for the WebSocket message
+                    return gotMessageDeferred.promise;
+                }).then(msg => {
+                    // check if array contains msgs. User should  have received a web socket message
+                    assert.isNotEmpty(msgArray);
+                }).finally(() => {
+                    if (ws) {
+                        // Close websocket
+                        ws.close();
+                    }
+                });
+            });
+        });
+    });
+
+    it('Websocket notifications for comments for DPs with role superadmin and User with role user', function () {
+
+        this.timeout(5000);
+
+        let ws;
+        const socketOpenDeferred = defer();
+        const username = uuid();
+        const msgArray = [];
+        this.testUserPassword = uuid();
+        this.testUser = new User({
+            username,
+            email: `${username}@example.com`,
+            name: `${username}`,
+            roles: ['user'],
+            password: this.testUserPassword,
+            locale: '',
+            receiveAlarmEmails: 'IGNORE'
+        });
+
+        return this.testUser.save().then(() => {
+            this.lowerPermissionClient = createClient();
+            return this.lowerPermissionClient.User.login(this.testUser.username, this.testUserPassword).then((...args) => {
+
+                return Promise.resolve().then(() => {
+                    ws = this.lowerPermissionClient.openWebSocket({
+                        path: '/rest/latest/websocket/user-comments'
+                    });
+
+                    ws.on('open', () => {
+                        socketOpenDeferred.resolve();
+                    });
+
+                    ws.on('error', error => {
+                        const msg = new Error(`WebSocket error, error: ${error}`);
+                        socketOpenDeferred.reject(msg);
+                    });
+
+                    ws.on('close', (code, reason) => {
+                        const msg = new Error(`WebSocket closed, code: ${code}, reason: ${reason}`);
+                        socketOpenDeferred.reject(msg);
+                    });
+
+                    ws.on('message', msgStr => {
+                        const msg = JSON.parse(msgStr);
+                        msgArray.push(msg);
+                    });
+
+                    return socketOpenDeferred.promise.then(() => delay(1000));
+                }).then(() => {
+                    const requestBody =
+                        {
+                            comment: 'string',
+                            commentType: 'POINT',
+                            referenceId: this.testPointWithRoleSuperadmin.id,
+                            timestamp: null,
+                            //userId: 0,
+                            name: 'some name',
+                            username: 'admin',
+                            xid: uuid()
+                        };
+
+                    return client.restRequest({
+                        method: 'POST',
+                        path: `/rest/latest/comments`,
+                        data: requestBody
+                    });
+                }).then(() => {
+                    // comment was saved, wait for the WebSocket message
+                    return delay(3000)
+                }).then(() => {
+                    // check if array is empty. User should not have received any web socket messages
+                    assert.isEmpty(msgArray);
+                }).finally(() => {
+                    if (ws) {
+                        // Close websocket
+                        ws.close();
+                    }
+                });
+            });
+        });
+    });
 });
