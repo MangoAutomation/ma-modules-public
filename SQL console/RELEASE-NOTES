@@ -1,3 +1,6 @@
+*Version 4.5.2*
+* Upgrade semver version from 5.7.1 to 5.7.2 and 6.3.0 to 6.3.1
+
 *Version 4.5.1*
 * Fixing issue when trying to deserialize a Blob object.
 
