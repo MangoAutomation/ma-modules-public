@@ -3,22 +3,18 @@
  */
 package com.infiniteautomation.mango.rest.latest.model.event;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.springframework.stereotype.Component;
 
 import com.infiniteautomation.mango.rest.latest.model.RestModelMapper;
 import com.infiniteautomation.mango.rest.latest.model.RestModelMapping;
-import com.infiniteautomation.mango.rest.latest.model.comment.UserCommentModel;
 import com.serotonin.m2m2.vo.event.EventInstanceI;
 import com.serotonin.m2m2.vo.permission.PermissionHolder;
 
 /**
- * @author Terry Packer
+ * @author Mert Cingöz
  */
 @Component
-public class EventInstanceModelMapping implements RestModelMapping<EventInstanceI, EventInstanceModel> {
+public class EventInstanceReducedModelMapping implements RestModelMapping<EventInstanceI, EventInstanceReducedModel> {
 
     @Override
     public Class<? extends EventInstanceI> fromClass() {
@@ -26,15 +22,14 @@ public class EventInstanceModelMapping implements RestModelMapping<EventInstance
     }
 
     @Override
-    public Class<? extends EventInstanceModel> toClass() {
-        return EventInstanceModel.class;
+    public Class<? extends EventInstanceReducedModel> toClass() {
+        return EventInstanceReducedModel.class;
     }
 
     @Override
-    public EventInstanceModel map(Object from, PermissionHolder user, RestModelMapper mapper) {
+    public EventInstanceReducedModel map(Object from, PermissionHolder user, RestModelMapper mapper) {
         EventInstanceI evt = (EventInstanceI) from;
         AbstractEventTypeModel<?, ?, ?> eventTypeModel = mapper.map(evt.getEventType(), AbstractEventTypeModel.class, user);
-        List<UserCommentModel> comments = evt.getEventComments().stream().map(UserCommentModel::new).collect(Collectors.toList());
-        return new EventInstanceModel(evt, eventTypeModel, comments);
+        return new EventInstanceReducedModel(evt, eventTypeModel);
     }
 }
