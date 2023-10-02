@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Radix IoT LLC. All rights reserved.
+ * Copyright (C) 2023 Radix IoT LLC. All rights reserved.
  */
 package com.infiniteautomation.mango.rest.latest;
 
@@ -28,6 +28,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -48,6 +49,7 @@ import com.infiniteautomation.mango.rest.latest.model.TranslatableMessageModel;
 import com.infiniteautomation.mango.rest.latest.model.event.AlarmPointTagCountModel;
 import com.infiniteautomation.mango.rest.latest.model.event.DataPointEventSummaryModel;
 import com.infiniteautomation.mango.rest.latest.model.event.EventInstanceModel;
+import com.infiniteautomation.mango.rest.latest.model.event.EventInstanceReducedModel;
 import com.infiniteautomation.mango.rest.latest.model.event.EventLevelSummaryModel;
 import com.infiniteautomation.mango.rest.latest.model.event.EventQueryBySourceType;
 import com.infiniteautomation.mango.spring.service.DataPointService;
@@ -83,6 +85,7 @@ public class EventsRestController {
     private final RestModelMapper modelMapper;
     private final EventInstanceService service;
     private final BiFunction<EventInstanceVO, PermissionHolder, EventInstanceModel> map;
+    private final BiFunction<EventInstanceVO, PermissionHolder, EventInstanceReducedModel> reducedMap;
 
     private final Map<String, Function<Object, Object>> valueConverters;
     private final Map<String, Field<?>> fieldMap;
@@ -98,6 +101,7 @@ public class EventsRestController {
         this.modelMapper = modelMapper;
         this.service = service;
         this.map = (vo, user) -> modelMapper.map(vo, EventInstanceModel.class, user);
+        this.reducedMap = (vo, user) -> modelMapper.map(vo, EventInstanceReducedModel.class, user);
 
         this.valueConverters = new HashMap<>();
         this.fieldMap = new EventTableRqlMappings(eventTable);
@@ -176,6 +180,19 @@ public class EventsRestController {
             @AuthenticationPrincipal PermissionHolder user,
             ASTNode rql) {
         return doQuery(rql, user);
+    }
+
+    @ApiOperation(
+            value = "Query Events Reduced Format",
+            notes = "Use RQL formatted query",
+            response = EventQueryResult.class,
+            responseContainer="List"
+    )
+    @GetMapping(value = "/reduced")
+    public StreamedArrayWithTotal queryReducedRQL(
+            @AuthenticationPrincipal PermissionHolder user,
+            ASTNode rql) {
+        return doQuery(rql, user, reducedMap);
     }
 
     @ApiOperation(
@@ -330,7 +347,11 @@ public class EventsRestController {
     }
 
     private StreamedArrayWithTotal doQuery(ASTNode rql, PermissionHolder user) {
-        return new StreamedVORqlQueryWithTotal<>(service, rql, null, fieldMap, valueConverters, null, vo -> map.apply(vo, user));
+        return doQuery(rql, user, map);
+    }
+
+    private StreamedArrayWithTotal doQuery(ASTNode rql, PermissionHolder user, BiFunction<EventInstanceVO, PermissionHolder, ?> biFunction) {
+        return new StreamedVORqlQueryWithTotal<>(service, rql, null, fieldMap, valueConverters, null, vo -> biFunction.apply(vo, user));
     }
 
     /**
