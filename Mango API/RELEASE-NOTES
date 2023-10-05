@@ -1,5 +1,6 @@
 *Version 4.5.3*
 * Upgrade semver version from 5.7.1 to 5.7.2 and 6.3.0 to 6.3.1
+* Add endpoint /event/reduced GET to download events in reduced CSV format
 
 *Version 4.5.2*
 * Fix to allow users to see comments for active alarms in real-time
