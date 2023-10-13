@@ -1,21 +1,5 @@
-/**
- * Copyright (C) 2021 Radix IoT LLC. All rights reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * 
- * This test suit is designed to help develop a streaming api for point values but will not run every night 
- *  as it is for performance testing.
- * 
+/*
+ * Copyright (C) 2023 Radix IoT LLC. All rights reserved.
  */
 
 const {createClient, login, uuid, delay} = require('@infinite-automation/mango-module-tools/test-helper/testHelper');
@@ -124,8 +108,7 @@ describe('Point value emport tests', function() {
             path: `/rest/latest/point-values/multiple-arrays/time-period/AVERAGE`,
             method: 'POST',
             headers: {
-                'Accept': 'text/csv',
-                'Accept-Encoding': 'gzip, deflate'
+                'Accept': 'text/csv'
             },
             data: {
                 dateTimeFormat: "yyyy-MM-dd'T'HH:mm:ss.SSSXXX",
