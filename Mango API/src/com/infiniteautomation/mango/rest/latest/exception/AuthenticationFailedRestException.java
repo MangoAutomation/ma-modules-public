@@ -27,24 +27,24 @@ public class AuthenticationFailedRestException extends AbstractRestException {
     public static AuthenticationFailedRestException restExceptionFor(AuthenticationException cause) {
         if (cause instanceof BadCredentialsException || cause instanceof UsernameNotFoundException) {
             return new AuthenticationFailedRestException(MangoRestErrorCode.BAD_CREDENTIALS,
-                    new TranslatableMessage("rest.exception.badCredentials"),
-                    cause);
+                new TranslatableMessage("rest.exception.badCredentials"),
+                cause);
         } else if (cause instanceof CredentialsExpiredException) {
             return new AuthenticationFailedRestException(MangoRestErrorCode.CREDENTIALS_EXPIRED,
-                    new TranslatableMessage("rest.exception.credentialsExpired"),
-                    cause);
+                new TranslatableMessage("rest.exception.credentialsExpired"),
+                cause);
         } else if (cause instanceof DisabledException) {
             return new AuthenticationFailedRestException(MangoRestErrorCode.ACCOUNT_DISABLED,
-                    new TranslatableMessage("rest.exception.accountDisabled"),
-                    cause);
+                new TranslatableMessage("rest.exception.accountDisabled"),
+                cause);
         } else if (cause instanceof PasswordChangeException) {
             return new AuthenticationFailedRestException(MangoRestErrorCode.PASSWORD_CHANGE_FAILED,
-                    ((PasswordChangeException) cause).getTranslatableMessage(),
-                    cause);
+                ((PasswordChangeException) cause).getTranslatableMessage(),
+                cause);
         } else {
             return new AuthenticationFailedRestException(MangoRestErrorCode.GENERIC_AUTHENTICATION_FAILED,
-                    new TranslatableMessage("rest.exception.genericAuthenticationFailed", cause.getClass().getSimpleName() + " " + cause.getMessage()),
-                    cause);
+                new TranslatableMessage("rest.exception.genericAuthenticationFailed", cause.getMessage()),
+                cause);
         }
     }
 }
