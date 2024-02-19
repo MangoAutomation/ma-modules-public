@@ -10,7 +10,7 @@
     <artifactId>mango-api</artifactId>
     <name>mangoApi</name>
     <description>REST API Expansion for Mango Automation</description>
-    <version>4.5.4</version>
+    <version>4.5.5-SNAPSHOT</version>
     <build>
         <plugins>
             <plugin>
@@ -29,8 +29,4 @@
             </plugin>
         </plugins>
     </build>
-
-  <scm>
-    <tag>mangoApi-v4.5.4</tag>
-  </scm>
 </project>
