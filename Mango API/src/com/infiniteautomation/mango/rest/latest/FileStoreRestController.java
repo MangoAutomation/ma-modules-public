@@ -3,9 +3,6 @@
  */
 package com.infiniteautomation.mango.rest.latest;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -19,10 +16,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import springfox.documentation.annotations.ApiIgnore;
 
 import org.apache.commons.fileupload.FileItem;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,6 +53,11 @@ import com.infiniteautomation.mango.spring.service.FileStoreService;
 import com.infiniteautomation.mango.spring.service.FileStoreService.FileStorePath;
 import com.infiniteautomation.mango.webapp.FileStoreFilter;
 import com.serotonin.m2m2.web.mvc.spring.security.permissions.AnonymousAccess;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import springfox.documentation.annotations.ApiIgnore;
 
 /**
  * Manage files from stores defined by FileStoreDefinition(s)
@@ -110,6 +112,7 @@ public class FileStoreRestController extends AbstractMangoRestController {
                 }
 
                 Path newFile = findUniqueFileName(outputDirectory.getAbsolutePath(), filename, overwrite);
+                FileStorePath destination = outputDirectory.resolve(newFile);
 
                 try (OutputStream output = Files.newOutputStream(newFile)) {
                     try (InputStream input = file.getInputStream()) {
@@ -117,7 +120,7 @@ public class FileStoreRestController extends AbstractMangoRestController {
                     }
                 }
 
-                fileModels.add(fileToModel(outputDirectory.resolve(newFile), request.getServletContext()));
+                fileModels.add(fileToModel(destination, request.getServletContext()));
             }
         }
 
@@ -286,7 +289,11 @@ public class FileStoreRestController extends AbstractMangoRestController {
     }
 
     private Path findUniqueFileName(Path directory, String filename, boolean overwrite) {
-        Path file = directory.resolve(filename).toAbsolutePath().normalize();
+        // retrieve just the filename, removing path separators
+        Path pathFileName = Path.of(filename).getFileName();
+        filename = pathFileName.toString();
+
+        Path file = directory.resolve(pathFileName).toAbsolutePath().normalize();
         if (overwrite) {
             return file;
         }
