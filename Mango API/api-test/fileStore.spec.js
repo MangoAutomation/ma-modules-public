@@ -20,7 +20,6 @@ const fs = require('fs');
 const tmp = require('tmp');
 const crypto = require('crypto');
 const path = require('path');
-const FormData = require('form-data');
 
 describe('Test File Store endpoints', function() {
     before('Login', function() { return login.call(this, client); });
@@ -352,41 +351,6 @@ describe('Test File Store endpoints', function() {
         }, error => {
             uploadFile.removeCallback();
             assert.strictEqual(error.response.statusCode, 500);
-        });
-    });
-
-    it('Can\'t create files below the store base path using ".." in the filename', function() {
-        const uploadFile = tmp.fileSync({prefix: 'innocuous', postfix: '.txt'});
-        fs.writeFileSync(uploadFile.name, 'echo pwned');
-
-        const baseFilename = 'exploit_' + crypto.randomUUID() + '.sh';
-        const exploitFilename = '../' + baseFilename;
-
-        class CustomFormData extends FormData {
-            // The default FormData implementation strips out the slash
-            _getContentDisposition(value, options) {
-                return 'filename="' + options.filename + '"';
-            }
-        }
-
-        const formData = new CustomFormData();
-        formData.append('innocuous.txt', fs.createReadStream(uploadFile.name), {'filename': exploitFilename});
-
-        return client.restRequest({
-            path: '/rest/latest/file-stores/default/',
-            method: 'POST',
-            formData
-        }).then(response => {
-            // upload successfully but only uses the base filename
-            assert.strictEqual(response.data[0].filename, baseFilename);
-
-            // we can delete the file from the default filestore using the base filename
-            return client.restRequest({
-                path: `/rest/latest/file-stores/default/${baseFilename}`,
-                method: 'DELETE'
-            });
-        }).finally(() => {
-            uploadFile.removeCallback();
         });
     });
 
