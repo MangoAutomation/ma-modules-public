@@ -1,3 +1,6 @@
+*Version 4.5.5*
+* Fix path traversal security vulnerability in file store upload functionality.
+
 *Version 4.5.4*
 * Allowing grateful fallback when Ldap server is down.
 
