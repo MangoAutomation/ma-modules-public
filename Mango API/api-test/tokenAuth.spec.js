@@ -572,4 +572,22 @@ describe('JSON Web Token authentication', function() {
             assert.isNumber(response.data);
         });
     });
+
+    it('Last login time is not updated when using JWT token to authenticate', function() {
+        let lastLoginTime;
+        return client.User.current().then(user => {
+            lastLoginTime = user.lastLogin;
+            return this.createToken();
+        }).then(token => {
+            const jwtClient = createClient(this.noCookieConfig);
+            jwtClient.setBearerAuthentication(token);
+            // use the token
+            return jwtClient.User.current();
+        }).then(() => {
+            // get the current user again using session login client
+            return client.User.current();
+        }).then(user => {
+            assert.strictEqual(user.lastLogin, lastLoginTime);
+        });
+    });
 });
